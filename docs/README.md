@@ -8,31 +8,28 @@ This document serves as the comprehensive specification for the Collection CRM r
 
 1. [System Architecture](system-architecture.md) - System boundaries and component diagram
 2. [Data Model](data-model.md) - Data model with entity relationships
-3. [API Specifications](api-specifications.md) - API specifications for integrations
-4. [System Modules](modules.md) - Modular breakdown of the system
-5. [Technology Stack](technology-stack.md) - Technology stack recommendations
-6. [Development Phases](development-phases.md) - Development phases and priorities
+3. [Technology Stack](technology-stack.md) - Technology stack recommendations
+4. [Microservices](microservices.md) - Microservices structure
 
 ## Key Requirements
 
 ### 1. Data Management
 - Customer data (read-only core data, editable contact info)
 - Loan details (read-only)
-- Case tracking (read-only)
 - Due amounts (read-only)
 - Collateral information (read-only)
-- Action records (fully editable)
 - Payment tracking (read-only, real-time updates)
+- Customer cases record & tracking (editable)
+- Action records (editable)
 
 ### 2. Workflow Management
 - Collection strategies configuration
-- Task assignment
+- Customer assignment
 - Activity recording
-- Skip tracing
 
 ### 3. Role-Based Access Control
 - Collection Agent
-- Team Lead
+- Supervisor
 - Administrator
 
 ### 4. Integration Requirements

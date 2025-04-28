@@ -341,6 +341,26 @@ interface CustomerAgent {
 }
 ```
 
+### 12. CustomerCase
+
+Represents current status of customers, for strategy allocation. cif is unique key
+
+```typescript
+interface CustomerCase {
+  id: string;          // Internal database ID
+  cif: string;         // Reference to customer 
+  
+  assignedCallAgentId: string;  // Assigned call agent ID - isCurrent record from CustomerAgent
+  assignedFieldAgentId: string; // Assigned field agent ID - isCurrent record from CustomerAgent
+  fUpdate: Date; // Followup date, get updated when agents record new records
+  customerStatus: CustomerStatusType;        // Customer latest status 
+  collateralStatus: CollateralStatusType;    // Collateral latest status 
+  processingStateStatus: ProcessingStateStatusType; // Processing state latest status 
+  lendingViolationStatus: LendingViolationStatusType; // Lending violation latest status 
+  recoveryAbilityStatus: RecoveryAbilityStatusType; // Recovery ability latest status 
+}
+```
+
 ### 13. CustomerCaseAction
 
 Represents actions and status inputs from agents at the customer level.

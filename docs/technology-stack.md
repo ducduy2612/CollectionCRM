@@ -404,8 +404,6 @@ flowchart TD
 | Messaging | MSK | Managed Kafka service for reliable messaging |
 | Caching | Custom Redis Solution | Flexible, cost-effective caching |
 | Database | RDS PostgreSQL | Managed relational database with high availability |
-| Search | OpenSearch Service | Managed search service with scaling capabilities |
-| Data Warehouse | Redshift | Managed data warehouse for analytics |
 | ETL | Glue | Serverless ETL service |
 | Event Processing | Lambda + EventBridge | Serverless event processing |
 | CI/CD | CodePipeline | Managed CI/CD pipeline |
