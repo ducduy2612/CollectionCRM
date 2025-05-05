@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Center Agent Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: #ddd;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .dashboard-card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+        }
+        .dashboard-card h2 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .metric-card {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .metric-label {
+            font-size: 14px;
+            color: #666;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #f9f9f9;
+        }
+        .priority-high {
+            color: #d9534f;
+        }
+        .priority-medium {
+            color: #f0ad4e;
+        }
+        .priority-low {
+            color: #5bc0de;
+        }
+        .annotation {
+            background-color: #ffffcc;
+            border: 1px dashed #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>CollectionCRM</h1>
+            <div class="user-info">
+                <div class="user-avatar"></div>
+                <div>Maya Chen</div>
+            </div>
+        </header>
+
+        <div class="annotation">
+            This dashboard is designed for Maya's morning portfolio review. It provides a quick overview of her performance metrics and prioritized call list to help her efficiently plan her day.
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <h2>Today's Performance</h2>
+                <div class="annotation">
+                    Performance metrics are prominently displayed to help Maya track her progress toward goals. The visual indicators show how close she is to meeting targets.
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">65%</div>
+                        <div class="metric-label">Contact Rate</div>
+                        <div class="metric-target">Target: 65%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">38%</div>
+                        <div class="metric-label">Promise-to-Pay Rate</div>
+                        <div class="metric-target">Target: 40%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">42</div>
+                        <div class="metric-label">Calls Made Today</div>
+                        <div class="metric-target">Target: 50-60</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">$12,450</div>
+                        <div class="metric-label">Amount Collected</div>
+                        <div class="metric-target">Target: $15,000</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <h2>Promised Payments Due Today</h2>
+                <div class="annotation">
+                    This section highlights accounts with promised payments due today, allowing Maya to prioritize follow-up calls to these customers.
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Promise Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>John Smith</td>
+                            <td>$350.00</td>
+                            <td>Today</td>
+                            <td><button>Call Now</button></td>
+                        </tr>
+                        <tr>
+                            <td>Sarah Johnson</td>
+                            <td>$1,200.00</td>
+                            <td>Today</td>
+                            <td><button>Call Now</button></td>
+                        </tr>
+                        <tr>
+                            <td>Michael Brown</td>
+                            <td>$750.00</td>
+                            <td>Today</td>
+                            <td><button>Call Now</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="dashboard-card">
+                <h2>Prioritized Call List</h2>
+                <div class="annotation">
+                    This prioritized call list helps Maya efficiently work through her assigned accounts. The list is automatically sorted based on delinquency status, promise dates, and risk levels.
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Days Past Due</th>
+                            <th>Amount</th>
+                            <th>Priority</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Robert Williams</td>
+                            <td>90</td>
+                            <td>$2,450.00</td>
+                            <td class="priority-high">High</td>
+                            <td><button>Call Now</button></td>
+                        </tr>
+                        <tr>
+                            <td>Jennifer Davis</td>
+                            <td>60</td>
+                            <td>$1,800.00</td>
+                            <td class="priority-high">High</td>
+                            <td><button>Call Now</button></td>
+                        </tr>
+                        <tr>
+                            <td>Thomas Miller</td>
+                            <td>45</td>
+                            <td>$950.00</td>
+                            <td class="priority-medium">Medium</td>
+                            <td><button>Call Now</button></td>
+                        </tr>
+                        <tr>
+                            <td>Lisa Garcia</td>
+                            <td>30</td>
+                            <td>$650.00</td>
+                            <td class="priority-medium">Medium</td>
+                            <td><button>Call Now</button></td>
+                        </tr>
+                        <tr>
+                            <td>David Wilson</td>
+                            <td>15</td>
+                            <td>$350.00</td>
+                            <td class="priority-low">Low</td>
+                            <td><button>Call Now</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="dashboard-card">
+                <h2>Recent Activities</h2>
+                <div class="annotation">
+                    This section shows Maya's recent call activities, helping her keep track of her work and quickly reference recent customer interactions.
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Customer</th>
+                            <th>Outcome</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>9:45 AM</td>
+                            <td>Emily Johnson</td>
+                            <td>Promise to Pay</td>
+                            <td><button>View</button></td>
+                        </tr>
+                        <tr>
+                            <td>9:30 AM</td>
+                            <td>Kevin Martinez</td>
+                            <td>Left Voicemail</td>
+                            <td><button>View</button></td>
+                        </tr>
+                        <tr>
+                            <td>9:15 AM</td>
+                            <td>Amanda Taylor</td>
+                            <td>No Answer</td>
+                            <td><button>View</button></td>
+                        </tr>
+                        <tr>
+                            <td>9:00 AM</td>
+                            <td>Christopher Lee</td>
+                            <td>Payment Made</td>
+                            <td><button>View</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

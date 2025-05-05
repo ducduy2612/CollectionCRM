@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Documentation - CollectionCRM</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: #ddd;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .back-button {
+            padding: 8px 15px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #333;
+            margin-right: 10px;
+        }
+        .call-info {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .customer-name {
+            font-size: 24px;
+            margin: 0 0 10px 0;
+        }
+        .call-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .call-detail {
+            margin-bottom: 5px;
+        }
+        .detail-label {
+            font-size: 12px;
+            color: #666;
+        }
+        .detail-value {
+            font-weight: bold;
+        }
+        .form-container {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .form-section {
+            margin-bottom: 20px;
+        }
+        .form-section h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select, input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        .radio-group {
+            display: flex;
+            gap: 15px;
+        }
+        .radio-option {
+            display: flex;
+            align-items: center;
+        }
+        .radio-option input {
+            width: auto;
+            margin-right: 5px;
+        }
+        .payment-form {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        .payment-form h4 {
+            margin-top: 0;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .follow-up-form {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        .follow-up-form h4 {
+            margin-top: 0;
+        }
+        .button-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .button {
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .button-primary {
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+        .button-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+        .annotation {
+            background-color: #ffffcc;
+            border: 1px dashed #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <a href="customer-profile.html" class="back-button">← Back to Customer Profile</a>
+                <h1 style="display: inline;">CollectionCRM</h1>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar"></div>
+                <div>Maya Chen</div>
+            </div>
+        </header>
+
+        <div class="annotation">
+            This call documentation screen allows Maya to efficiently record call outcomes and next steps, addressing her pain point of time-consuming documentation.
+        </div>
+
+        <div class="call-info">
+            <h2 class="customer-name">John Smith - Call Documentation</h2>
+            <div class="call-details">
+                <div class="call-detail">
+                    <div class="detail-label">Call Date & Time</div>
+                    <div class="detail-value">May 5, 2025 - 10:30 AM</div>
+                </div>
+                <div class="call-detail">
+                    <div class="detail-label">Call Duration</div>
+                    <div class="detail-value">00:08:45</div>
+                </div>
+                <div class="call-detail">
+                    <div class="detail-label">Phone Number</div>
+                    <div class="detail-value">(555) 123-4567</div>
+                </div>
+                <div class="call-detail">
+                    <div class="detail-label">Account Number</div>
+                    <div class="detail-value">A-98765432</div>
+                </div>
+                <div class="call-detail">
+                    <div class="detail-label">Loan Number</div>
+                    <div class="detail-value">L-12345678</div>
+                </div>
+                <div class="call-detail">
+                    <div class="detail-label">Days Past Due</div>
+                    <div class="detail-value">45 Days</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <div class="form-section">
+                <h3>Call Outcome</h3>
+                <div class="annotation">
+                    The structured call outcome section uses standardized categories to ensure consistent documentation across the team, making it easier to analyze trends and follow up appropriately.
+                </div>
+                <div class="form-group">
+                    <label for="call-result">Call Result</label>
+                    <select id="call-result">
+                        <option value="">Select a result</option>
+                        <option value="right-party">Right Party Contact</option>
+                        <option value="wrong-party">Wrong Party Contact</option>
+                        <option value="voicemail">Left Voicemail</option>
+                        <option value="no-answer">No Answer</option>
+                        <option value="disconnected">Disconnected Number</option>
+                        <option value="callback">Callback Requested</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Customer Response</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="response-ptp" name="customer-response" value="ptp">
+                            <label for="response-ptp">Promise to Pay</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="response-refused" name="customer-response" value="refused">
+                            <label for="response-refused">Refused to Pay</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="response-dispute" name="customer-response" value="dispute">
+                            <label for="response-dispute">Disputed Debt</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="response-hardship" name="customer-response" value="hardship">
+                            <label for="response-hardship">Claimed Hardship</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="call-notes">Call Notes</label>
+                    <textarea id="call-notes" placeholder="Enter detailed notes about the call..."></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Promise to Pay</h3>
+                <div class="annotation">
+                    The promise to pay section is designed to capture all necessary details about payment arrangements, making it easy for Maya to track and follow up on commitments.
+                </div>
+                <div class="payment-form">
+                    <h4>Payment Details</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="payment-amount">Amount Promised</label>
+                            <input type="text" id="payment-amount" placeholder="$0.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="payment-date">Payment Date</label>
+                            <input type="date" id="payment-date">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="payment-method">Payment Method</label>
+                        <select id="payment-method">
+                            <option value="">Select payment method</option>
+                            <option value="bank-transfer">Bank Transfer</option>
+                            <option value="credit-card">Credit Card</option>
+                            <option value="debit-card">Debit Card</option>
+                            <option value="check">Check</option>
+                            <option value="cash">Cash</option>
+                            <option value="money-order">Money Order</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="payment-notes">Payment Notes</label>
+                        <textarea id="payment-notes" placeholder="Enter any additional details about the payment arrangement..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Follow-up Actions</h3>
+                <div class="annotation">
+                    The follow-up section helps Maya schedule and track next steps, ensuring no customer falls through the cracks and addressing her need for efficient follow-up management.
+                </div>
+                <div class="follow-up-form">
+                    <h4>Schedule Follow-up</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="follow-up-type">Follow-up Type</label>
+                            <select id="follow-up-type">
+                                <option value="">Select follow-up type</option>
+                                <option value="call">Phone Call</option>
+                                <option value="email">Email</option>
+                                <option value="sms">SMS</option>
+                                <option value="letter">Letter</option>
+                                <option value="payment-check">Payment Verification</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="follow-up-date">Follow-up Date</label>
+                            <input type="date" id="follow-up-date">
+                        </div>
+                        <div class="form-group">
+                            <label for="follow-up-time">Follow-up Time</label>
+                            <input type="time" id="follow-up-time">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="follow-up-notes">Follow-up Notes</label>
+                        <textarea id="follow-up-notes" placeholder="Enter any specific details for the follow-up..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Update Customer Information</h3>
+                <div class="annotation">
+                    This section allows Maya to update customer contact information during the call, ensuring the database stays current and addressing the pain point of incomplete or outdated customer information.
+                </div>
+                <div class="form-group">
+                    <label>Has customer information changed?</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="info-changed-yes" name="info-changed" value="yes">
+                            <label for="info-changed-yes">Yes</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="info-changed-no" name="info-changed" value="no" checked>
+                            <label for="info-changed-no">No</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="update-phone">Phone Number</label>
+                        <input type="tel" id="update-phone" placeholder="(555) 123-4567">
+                    </div>
+                    <div class="form-group">
+                        <label for="update-email">Email Address</label>
+                        <input type="email" id="update-email" placeholder="example@email.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="update-address">Address</label>
+                    <input type="text" id="update-address" placeholder="Street Address">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="update-city">City</label>
+                        <input type="text" id="update-city" placeholder="City">
+                    </div>
+                    <div class="form-group">
+                        <label for="update-state">State</label>
+                        <input type="text" id="update-state" placeholder="State">
+                    </div>
+                    <div class="form-group">
+                        <label for="update-zip">ZIP Code</label>
+                        <input type="text" id="update-zip" placeholder="ZIP Code">
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="button button-secondary">Cancel</button>
+                <button class="button button-primary">Save & Close</button>
+                <button class="button button-primary">Save & Make Next Call</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
