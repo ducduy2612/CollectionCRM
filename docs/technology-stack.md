@@ -86,8 +86,7 @@ flowchart TD
 
 - **Framework**: React 18+
 - **Language**: TypeScript 5.0+
-- **State Management**: Redux Toolkit
-- **UI Component Library**: Material-UI (MUI)
+- **UI Component Library**: Tailwind UI
 - **Form Handling**: React Hook Form
 - **API Client**: Axios
 - **Data Visualization**: D3.js / Chart.js

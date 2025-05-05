@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Supervisor Dashboard - CollectionCRM</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: #ddd;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .dashboard-card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+        }
+        .dashboard-card h2 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .metric-card {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .metric-label {
+            font-size: 14px;
+            color: #666;
+        }
+        .metric-trend {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .trend-up {
+            color: green;
+        }
+        .trend-down {
+            color: red;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #f9f9f9;
+        }
+        .status-good {
+            color: green;
+        }
+        .status-warning {
+            color: orange;
+        }
+        .status-alert {
+            color: red;
+        }
+        .progress-bar-container {
+            background-color: #eee;
+            height: 8px;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 4px;
+            background-color: #4CAF50;
+        }
+        .progress-bar.warning {
+            background-color: #FFC107;
+        }
+        .progress-bar.danger {
+            background-color: #F44336;
+        }
+        .chart-container {
+            height: 200px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            margin-top: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        .chart-bar {
+            position: absolute;
+            bottom: 0;
+            width: 30px;
+            background-color: #4CAF50;
+            border-radius: 3px 3px 0 0;
+        }
+        .chart-label {
+            position: absolute;
+            bottom: -25px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            width: 30px;
+        }
+        .button {
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .button-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+        .alert-badge {
+            display: inline-block;
+            background-color: #F44336;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        .annotation {
+            background-color: #ffffcc;
+            border: 1px dashed #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>CollectionCRM - Supervisor Dashboard</h1>
+            <div class="user-info">
+                <div class="user-avatar"></div>
+                <div>Sarah Johnson</div>
+            </div>
+        </header>
+
+        <div class="annotation">
+            This supervisor dashboard provides Sarah with a comprehensive overview of her team's performance, addressing her need for real-time visibility into agent activities and performance metrics.
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card" style="grid-column: span 3;">
+                <h2>Team Performance Overview</h2>
+                <div class="annotation">
+                    The team performance overview gives Sarah a quick snapshot of key metrics, helping her identify areas that need attention.
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">42%</div>
+                        <div class="metric-label">Recovery Rate</div>
+                        <div class="metric-trend trend-up">↑ 3% from last week</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">68%</div>
+                        <div class="metric-label">Contact Rate</div>
+                        <div class="metric-trend trend-up">↑ 5% from last week</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">39%</div>
+                        <div class="metric-label">Promise-to-Pay Rate</div>
+                        <div class="metric-trend trend-down">↓ 2% from last week</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">$145,250</div>
+                        <div class="metric-label">Amount Collected (MTD)</div>
+                        <div class="metric-trend trend-up">↑ $12,450 from last month</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card" style="grid-column: span 2;">
+                <h2>Agent Performance</h2>
+                <div class="annotation">
+                    The agent performance table allows Sarah to quickly identify top performers and those who need coaching, addressing her need to efficiently monitor individual performance.
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Agent</th>
+                            <th>Calls</th>
+                            <th>Contacts</th>
+                            <th>Promises</th>
+                            <th>Amount</th>
+                            <th>Performance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Maya Chen</td>
+                            <td>52</td>
+                            <td>34</td>
+                            <td>14</td>
+                            <td>$5,250</td>
+                            <td>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 95%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>James Wilson</td>
+                            <td>48</td>
+                            <td>30</td>
+                            <td>12</td>
+                            <td>$4,800</td>
+                            <td>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 85%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Emily Johnson</td>
+                            <td>45</td>
+                            <td>28</td>
+                            <td>15</td>
+                            <td>$6,200</td>
+                            <td>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 90%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Michael Brown</td>
+                            <td>38</td>
+                            <td>22</td>
+                            <td>8</td>
+                            <td>$3,100</td>
+                            <td>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar warning" style="width: 65%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Jennifer Davis</td>
+                            <td>32</td>
+                            <td>18</td>
+                            <td>6</td>
+                            <td>$2,400</td>
+                            <td>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar danger" style="width: 55%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="text-align: right; margin-top: 10px;">
+                    <button class="button">View Detailed Report</button>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <h2>Compliance Alerts <span class="alert-badge">3</span></h2>
+                <div class="annotation">
+                    The compliance alerts section highlights potential compliance issues that need Sarah's attention, addressing her responsibility for ensuring regulatory compliance.
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Agent</th>
+                            <th>Issue</th>
+                            <th>Severity</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Michael Brown</td>
+                            <td>Missing disclosure statement</td>
+                            <td class="status-alert">High</td>
+                            <td><button class="button">Review</button></td>
+                        </tr>
+                        <tr>
+                            <td>Jennifer Davis</td>
+                            <td>Incomplete documentation</td>
+                            <td class="status-warning">Medium</td>
+                            <td><button class="button">Review</button></td>
+                        </tr>
+                        <tr>
+                            <td>James Wilson</td>
+                            <td>Call time exceeded limit</td>
+                            <td class="status-warning">Medium</td>
+                            <td><button class="button">Review</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="dashboard-card">
+                <h2>Workload Distribution</h2>
+                <div class="annotation">
+                    The workload distribution chart helps Sarah ensure balanced workloads across her team, addressing her pain point of difficulty balancing work among team members.
+                </div>
+                <div class="chart-container">
+                    <div class="chart-bar" style="height: 70%; left: 5%; background-color: #4CAF50;">
+                        <div class="chart-label">Maya</div>
+                    </div>
+                    <div class="chart-bar" style="height: 65%; left: 20%; background-color: #4CAF50;">
+                        <div class="chart-label">James</div>
+                    </div>
+                    <div class="chart-bar" style="height: 60%; left: 35%; background-color: #4CAF50;">
+                        <div class="chart-label">Emily</div>
+                    </div>
+                    <div class="chart-bar" style="height: 45%; left: 50%; background-color: #FFC107;">
+                        <div class="chart-label">Michael</div>
+                    </div>
+                    <div class="chart-bar" style="height: 40%; left: 65%; background-color: #F44336;">
+                        <div class="chart-label">Jennifer</div>
+                    </div>
+                    <div class="chart-bar" style="height: 55%; left: 80%; background-color: #4CAF50;">
+                        <div class="chart-label">Team Avg</div>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="button">Redistribute Cases</button>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <h2>Unassigned Cases <span class="alert-badge">12</span></h2>
+                <div class="annotation">
+                    The unassigned cases section shows new accounts that need to be assigned to agents, supporting Sarah's workload management responsibilities.
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Account</th>
+                            <th>Balance</th>
+                            <th>Days Past Due</th>
+                            <th>Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>A-12345678</td>
+                            <td>$5,250.00</td>
+                            <td>90</td>
+                            <td class="status-alert">High</td>
+                        </tr>
+                        <tr>
+                            <td>A-23456789</td>
+                            <td>$3,800.00</td>
+                            <td>60</td>
+                            <td class="status-warning">Medium</td>
+                        </tr>
+                        <tr>
+                            <td>A-34567890</td>
+                            <td>$2,100.00</td>
+                            <td>45</td>
+                            <td class="status-warning">Medium</td>
+                        </tr>
+                        <tr>
+                            <td>A-45678901</td>
+                            <td>$1,500.00</td>
+                            <td>30</td>
+                            <td class="status-good">Low</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="text-align: right; margin-top: 10px;">
+                    <button class="button">Assign Cases</button>
+                </div>
+            </div>
+
+            <div class="dashboard-card" style="grid-column: span 3;">
+                <h2>Team Activity Feed</h2>
+                <div class="annotation">
+                    The activity feed gives Sarah real-time visibility into her team's actions, addressing her need to monitor ongoing collection activities.
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Agent</th>
+                            <th>Activity</th>
+                            <th>Customer</th>
+                            <th>Details</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>10:45 AM</td>
+                            <td>Maya Chen</td>
+                            <td>Promise to Pay</td>
+                            <td>John Smith</td>
+                            <td>$350.00 due on May 15</td>
+                            <td><button class="button button-secondary">View</button></td>
+                        </tr>
+                        <tr>
+                            <td>10:30 AM</td>
+                            <td>James Wilson</td>
+                            <td>Payment Received</td>
+                            <td>Sarah Johnson</td>
+                            <td>$1,200.00 via bank transfer</td>
+                            <td><button class="button button-secondary">View</button></td>
+                        </tr>
+                        <tr>
+                            <td>10:15 AM</td>
+                            <td>Emily Johnson</td>
+                            <td>Call Completed</td>
+                            <td>Michael Brown</td>
+                            <td>Left voicemail</td>
+                            <td><button class="button button-secondary">View</button></td>
+                        </tr>
+                        <tr>
+                            <td>10:00 AM</td>
+                            <td>Michael Brown</td>
+                            <td>Case Escalated</td>
+                            <td>Robert Williams</td>
+                            <td>Customer disputed debt</td>
+                            <td><button class="button button-secondary">View</button></td>
+                        </tr>
+                        <tr>
+                            <td>9:45 AM</td>
+                            <td>Jennifer Davis</td>
+                            <td>Call Completed</td>
+                            <td>Thomas Miller</td>
+                            <td>Customer requested callback</td>
+                            <td><button class="button button-secondary">View</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

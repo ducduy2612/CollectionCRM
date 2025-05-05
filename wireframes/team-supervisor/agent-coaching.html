@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Coaching - CollectionCRM</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: #ddd;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .back-button {
+            padding: 8px 15px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #333;
+            margin-right: 10px;
+        }
+        .coaching-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .agent-profile {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .agent-avatar {
+            width: 80px;
+            height: 80px;
+            background-color: #ddd;
+            border-radius: 50%;
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .agent-info h3 {
+            margin: 0 0 5px 0;
+        }
+        .agent-title {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .agent-badges {
+            display: flex;
+            gap: 10px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .badge-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .badge-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .badge-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .badge-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .metric-card {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .metric-label {
+            font-size: 14px;
+            color: #666;
+        }
+        .metric-trend {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .trend-up {
+            color: green;
+        }
+        .trend-down {
+            color: red;
+        }
+        .progress-bar-container {
+            background-color: #eee;
+            height: 8px;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 4px;
+            background-color: #4CAF50;
+        }
+        .progress-bar.warning {
+            background-color: #FFC107;
+        }
+        .progress-bar.danger {
+            background-color: #F44336;
+        }
+        .chart-container {
+            height: 200px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            margin-top: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        .chart-bar {
+            position: absolute;
+            bottom: 0;
+            width: 30px;
+            background-color: #4CAF50;
+            border-radius: 3px 3px 0 0;
+        }
+        .chart-label {
+            position: absolute;
+            bottom: -25px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            width: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #f9f9f9;
+        }
+        .status-good {
+            color: green;
+        }
+        .status-warning {
+            color: orange;
+        }
+        .status-alert {
+            color: red;
+        }
+        .call-recording {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .recording-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .recording-title {
+            font-weight: bold;
+        }
+        .recording-date {
+            color: #666;
+            font-size: 14px;
+        }
+        .recording-player {
+            background-color: #eee;
+            border-radius: 5px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            margin-bottom: 10px;
+        }
+        .recording-controls {
+            display: flex;
+            gap: 10px;
+        }
+        .recording-button {
+            width: 30px;
+            height: 30px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .recording-timeline {
+            flex-grow: 1;
+            height: 4px;
+            background-color: #ddd;
+            margin: 0 15px;
+            position: relative;
+        }
+        .recording-progress {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 30%;
+            background-color: #007bff;
+        }
+        .recording-time {
+            font-size: 12px;
+            color: #666;
+        }
+        .recording-scores {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .recording-score {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background-color: white;
+            border-radius: 5px;
+        }
+        .score-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .score-label {
+            font-size: 12px;
+            color: #666;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select, input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        .button-row {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .button {
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .button-primary {
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+        .button-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+        .button-success {
+            background-color: #28a745;
+            color: white;
+            border: none;
+        }
+        .button-danger {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+        }
+        .tab-container {
+            margin-bottom: 20px;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        .tab.active {
+            border-bottom: 2px solid #007bff;
+            font-weight: bold;
+        }
+        .tab-content {
+            padding: 15px 0;
+        }
+        .annotation {
+            background-color: #ffffcc;
+            border: 1px dashed #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <a href="dashboard.html" class="back-button">← Back to Dashboard</a>
+                <h1 style="display: inline;">CollectionCRM</h1>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar"></div>
+                <div>Sarah Johnson</div>
+            </div>
+        </header>
+
+        <div class="annotation">
+            This agent coaching screen helps Sarah monitor agent performance, review call recordings, and provide structured feedback to improve agent skills.
+        </div>
+
+        <div class="coaching-grid">
+            <div>
+                <div class="card">
+                    <h2>Agent Profile</h2>
+                    <div class="annotation">
+                        The agent profile provides a quick overview of the agent's background, skills, and performance metrics.
+                    </div>
+                    <div class="agent-profile">
+                        <div class="agent-avatar">MB</div>
+                        <div class="agent-info">
+                            <h3>Michael Brown</h3>
+                            <div class="agent-title">Call Center Agent (3 months)</div>
+                            <div class="agent-badges">
+                                <span class="badge badge-warning">New Hire</span>
+                                <span class="badge badge-info">French Speaker</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value">65%</div>
+                            <div class="metric-label">Performance Score</div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar warning" style="width: 65%;"></div>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">55%</div>
+                            <div class="metric-label">Promise-to-Pay Rate</div>
+                            <div class="metric-trend trend-up">↑ 5% from last month</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">38</div>
+                            <div class="metric-label">Avg. Calls per Day</div>
+                            <div class="metric-trend trend-down">↓ 2 from last month</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">$3,100</div>
+                            <div class="metric-label">Amount Collected Today</div>
+                            <div class="metric-trend trend-up">↑ $450 from yesterday</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Coaching History</h2>
+                    <div class="annotation">
+                        The coaching history section shows previous feedback and coaching sessions, helping Sarah track the agent's development over time.
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Focus Area</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Apr 28, 2025</td>
+                                <td>Call Review</td>
+                                <td>Negotiation Skills</td>
+                                <td><button class="button button-secondary">View</button></td>
+                            </tr>
+                            <tr>
+                                <td>Apr 15, 2025</td>
+                                <td>Weekly 1:1</td>
+                                <td>Performance Goals</td>
+                                <td><button class="button button-secondary">View</button></td>
+                            </tr>
+                            <tr>
+                                <td>Apr 5, 2025</td>
+                                <td>Call Review</td>
+                                <td>Compliance</td>
+                                <td><button class="button button-secondary">View</button></td>
+                            </tr>
+                            <tr>
+                                <td>Mar 22, 2025</td>
+                                <td>Training Session</td>
+                                <td>Payment Options</td>
+                                <td><button class="button button-secondary">View</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <h2>Skill Assessment</h2>
+                    <div class="annotation">
+                        The skill assessment section visualizes the agent's strengths and areas for improvement, helping Sarah identify specific coaching needs.
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Skill</th>
+                                <th>Rating</th>
+                                <th>Trend</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Customer Communication</td>
+                                <td>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar" style="width: 70%;"></div>
+                                    </div>
+                                </td>
+                                <td class="trend-up">↑</td>
+                            </tr>
+                            <tr>
+                                <td>Negotiation</td>
+                                <td>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar warning" style="width: 55%;"></div>
+                                    </div>
+                                </td>
+                                <td class="trend-up">↑</td>
+                            </tr>
+                            <tr>
+                                <td>Compliance Knowledge</td>
+                                <td>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar warning" style="width: 60%;"></div>
+                                    </div>
+                                </td>
+                                <td class="trend-up">↑</td>
+                            </tr>
+                            <tr>
+                                <td>Documentation</td>
+                                <td>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar danger" style="width: 45%;"></div>
+                                    </div>
+                                </td>
+                                <td class="trend-down">↓</td>
+                            </tr>
+                            <tr>
+                                <td>Payment Processing</td>
+                                <td>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar" style="width: 75%;"></div>
+                                    </div>
+                                </td>
+                                <td class="trend-up">↑</td>
+                            </tr>
+                            <tr>
+                                <td>Call Efficiency</td>
+                                <td>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar warning" style="width: 65%;"></div>
+                                    </div>
+                                </td>
+                                <td class="trend-up">↑</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div>
+                <div class="card">
+                    <div class="tab-container">
+                        <div class="tabs">
+                            <div class="tab active">Call Recordings</div>
+                            <div class="tab">Quality Scores</div>
+                            <div class="tab">Development Plan</div>
+                        </div>
+                        <div class="tab-content">
+                            <div class="annotation">
+                                The call recordings section allows Sarah to listen to agent calls and provide specific feedback, addressing her need for quality monitoring.
+                            </div>
+                            <div class="call-recording">
+                                <div class="recording-header">
+                                    <div class="recording-title">Call with Robert Williams (A-12345678)</div>
+                                    <div class="recording-date">Today, 10:15 AM</div>
+                                </div>
+                                <div class="recording-player">
+                                    <div class="recording-controls">
+                                        <div class="recording-button">▶</div>
+                                        <div class="recording-button">⏸</div>
+                                    </div>
+                                    <div class="recording-timeline">
+                                        <div class="recording-progress"></div>
+                                    </div>
+                                    <div class="recording-time">2:45 / 8:30</div>
+                                </div>
+                                <div class="recording-scores">
+                                    <div class="recording-score">
+                                        <div class="score-value status-good">85%</div>
+                                        <div class="score-label">Greeting & Introduction</div>
+                                    </div>
+                                    <div class="recording-score">
+                                        <div class="score-value status-warning">65%</div>
+                                        <div class="score-label">Negotiation</div>
+                                    </div>
+                                    <div class="recording-score">
+                                        <div class="score-value status-alert">45%</div>
+                                        <div class="score-label">Compliance</div>
+                                    </div>
+                                    <div class="recording-score">
+                                        <div class="score-value status-warning">70%</div>
+                                        <div class="score-label">Overall</div>
+                                    </div>
+                                </div>
+                                <div class="button-row">
+                                    <button class="button button-secondary">Download</button>
+                                    <button class="button button-primary">Provide Feedback</button>
+                                </div>
+                            </div>
+
+                            <div class="call-recording">
+                                <div class="recording-header">
+                                    <div class="recording-title">Call with Jennifer Davis (A-23456789)</div>
+                                    <div class="recording-date">Today, 9:30 AM</div>
+                                </div>
+                                <div class="recording-player">
+                                    <div class="recording-controls">
+                                        <div class="recording-button">▶</div>
+                                        <div class="recording-button">⏸</div>
+                                    </div>
+                                    <div class="recording-timeline">
+                                        <div class="recording-progress" style="width: 0;"></div>
+                                    </div>
+                                    <div class="recording-time">0:00 / 6:15</div>
+                                </div>
+                                <div class="recording-scores">
+                                    <div class="recording-score">
+                                        <div class="score-value">--</div>
+                                        <div class="score-label">Greeting & Introduction</div>
+                                    </div>
+                                    <div class="recording-score">
+                                        <div class="score-value">--</div>
+                                        <div class="score-label">Negotiation</div>
+                                    </div>
+                                    <div class="recording-score">
+                                        <div class="score-value">--</div>
+                                        <div class="score-label">Compliance</div>
+                                    </div>
+                                    <div class="recording-score">
+                                        <div class="score-value">--</div>
+                                        <div class="score-label">Overall</div>
+                                    </div>
+                                </div>
+                                <div class="button-row">
+                                    <button class="button button-secondary">Download</button>
+                                    <button class="button button-primary">Start Review</button>
+                                </div>
+                            </div>
+
+                            <div class="call-recording">
+                                <div class="recording-header">
+                                    <div class="recording-title">Call with Thomas Miller (A-34567890)</div>
+                                    <div class="recording-date">Yesterday, 3:45 PM</div>
+                                </div>
+                                <div class="recording-player">
+                                    <div class="recording-controls">
+                                        <div class="recording-button">▶</div>
+                                        <div class="recording-button">⏸</div>
+                                    </div>
+                                    <div class="recording-timeline">
+                                        <div class="recording-progress" style="width: 0;"></div>
+                                    </div>
+                                    <div class="recording-time">0:00 / 7:20</div>
+                                </div>
+                                <div class="recording-scores">
+                                    <div class="recording-score">
+                                        <div class="score-value">--</div>
+                                        <div class="score-label">Greeting & Introduction</div>
+                                    </div>
+                                    <div class="recording-score">
+                                        <div class="score-value">--</div>
+                                        <div class="score-label">Negotiation</div>
+                                    </div>
+                                    <div class="recording-score">
+                                        <div class="score-value">--</div>
+                                        <div class="score-label">Compliance</div>
+                                    </div>
+                                    <div class="recording-score">
+                                        <div class="score-value">--</div>
+                                        <div class="score-label">Overall</div>
+                                    </div>
+                                </div>
+                                <div class="button-row">
+                                    <button class="button button-secondary">Download</button>
+                                    <button class="button button-primary">Start Review</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Coaching Session</h2>
+                    <div class="annotation">
+                        The coaching session form allows Sarah to document feedback and create action plans, addressing her need for structured coaching documentation.
+                    </div>
+                    <form>
+                        <div class="form-group">
+                            <label for="session-type">Session Type</label>
+                            <select id="session-type">
+                                <option>Call Review</option>
+                                <option>Weekly 1:1</option>
+                                <option>Performance Review</option>
+                                <option>Training Session</option>
+                                <option>Compliance Review</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="focus-areas">Focus Areas</label>
+                            <select id="focus-areas" multiple style="height: 80px;">
+                                <option>Negotiation Skills</option>
+                                <option>Compliance</option>
+                                <option>Documentation</option>
+                                <option>Call Efficiency</option>
+                                <option>Customer Communication</option>
+                                <option>Payment Processing</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="strengths">Strengths Observed</label>
+                            <textarea id="strengths" placeholder="Enter strengths observed during the session..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="improvement">Areas for Improvement</label>
+                            <textarea id="improvement" placeholder="Enter areas that need improvement..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="action-plan">Action Plan</label>
+                            <textarea id="action-plan" placeholder="Enter specific actions to improve performance..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="follow-up">Follow-up Date</label>
+                            <input type="date" id="follow-up">
+                        </div>
+                        <div class="button-row">
+                            <button type="button" class="button button-secondary">Cancel</button>
+                            <button type="button" class="button button-primary">Save Draft</button>
+                            <button type="button" class="button button-success">Complete & Share</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

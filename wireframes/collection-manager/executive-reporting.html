@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Reporting - CollectionCRM</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: #ddd;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .back-button {
+            padding: 8px 15px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #333;
+            margin-right: 10px;
+        }
+        .reporting-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .metric-card {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .metric-label {
+            font-size: 14px;
+            color: #666;
+        }
+        .chart-container {
+            height: 300px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            margin-top: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #f9f9f9;
+        }
+        .status-good {
+            color: green;
+        }
+        .status-warning {
+            color: orange;
+        }
+        .status-alert {
+            color: red;
+        }
+        .button {
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .button-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .filter-item {
+            flex: 1;
+        }
+        .filter-label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        select, input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .button-row {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .report-item {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .report-title {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .report-date {
+            color: #666;
+            font-size: 14px;
+        }
+        .report-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .tab-container {
+            margin-bottom: 20px;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        .tab.active {
+            border-bottom: 2px solid #007bff;
+            font-weight: bold;
+        }
+        .tab-content {
+            padding: 15px 0;
+        }
+        .report-preview {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+            background-color: white;
+        }
+        .report-preview h1 {
+            margin-top: 0;
+            font-size: 24px;
+            text-align: center;
+        }
+        .report-preview h2 {
+            font-size: 18px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .report-section {
+            margin-bottom: 20px;
+        }
+        .annotation {
+            background-color: #ffffcc;
+            border: 1px dashed #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <a href="executive-dashboard.html" class="back-button">← Back to Dashboard</a>
+                <h1 style="display: inline;">CollectionCRM</h1>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar"></div>
+                <div>David Okonkwo</div>
+            </div>
+        </header>
+
+        <div class="annotation">
+            This executive reporting screen helps David generate comprehensive performance reports for leadership, addressing his need to demonstrate department value to executive leadership.
+        </div>
+
+        <div class="filter-row">
+            <div class="filter-item">
+                <label class="filter-label">Report Type</label>
+                <select>
+                    <option>Monthly Performance Report</option>
+                    <option>Quarterly Business Review</option>
+                    <option>Strategy Effectiveness Report</option>
+                    <option>Resource Utilization Report</option>
+                    <option>Compliance Status Report</option>
+                    <option>Custom Report</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label class="filter-label">Time Period</label>
+                <select>
+                    <option>Current Month</option>
+                    <option>Previous Month</option>
+                    <option>Current Quarter</option>
+                    <option>Previous Quarter</option>
+                    <option>Year to Date</option>
+                    <option>Custom Range</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="reporting-grid">
+            <div>
+                <div class="card">
+                    <h2>Report Templates</h2>
+                    <div class="annotation">
+                        The templates section provides quick access to standardized report formats, addressing David's need for efficient reporting tools.
+                    </div>
+                    <div class="report-item">
+                        <div>
+                            <div class="report-title">Monthly Performance Report</div>
+                            <div class="report-date">Last generated: May 1, 2025</div>
+                        </div>
+                        <div class="report-actions">
+                            <button class="button">Generate</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <div>
+                            <div class="report-title">Quarterly Business Review</div>
+                            <div class="report-date">Last generated: Apr 5, 2025</div>
+                        </div>
+                        <div class="report-actions">
+                            <button class="button">Generate</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <div>
+                            <div class="report-title">Strategy Effectiveness Report</div>
+                            <div class="report-date">Last generated: Apr 15, 2025</div>
+                        </div>
+                        <div class="report-actions">
+                            <button class="button">Generate</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <div>
+                            <div class="report-title">Resource Utilization Report</div>
+                            <div class="report-date">Last generated: Apr 20, 2025</div>
+                        </div>
+                        <div class="report-actions">
+                            <button class="button">Generate</button>
+                        </div>
+                    </div>
+                    <div class="report-item">
+                        <div>
+                            <div class="report-title">Compliance Status Report</div>
+                            <div class="report-date">Last generated: Apr 28, 2025</div>
+                        </div>
+                        <div class="report-actions">
+                            <button class="button">Generate</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Recent Reports</h2>
+                    <div class="annotation">
+                        The recent reports section provides quick access to previously generated reports, making it easy to reference past performance.
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Report Name</th>
+                                <th>Generated</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Monthly Performance - April 2025</td>
+                                <td>May 1, 2025</td>
+                                <td>
+                                    <button class="button button-secondary">View</button>
+                                    <button class="button button-secondary">Download</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Q1 2025 Business Review</td>
+                                <td>Apr 5, 2025</td>
+                                <td>
+                                    <button class="button button-secondary">View</button>
+                                    <button class="button button-secondary">Download</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Strategy Effectiveness - Q1 2025</td>
+                                <td>Apr 15, 2025</td>
+                                <td>
+                                    <button class="button button-secondary">View</button>
+                                    <button class="button button-secondary">Download</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Resource Utilization - April 2025</td>
+                                <td>Apr 20, 2025</td>
+                                <td>
+                                    <button class="button button-secondary">View</button>
+                                    <button class="button button-secondary">Download</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Compliance Status - April 2025</td>
+                                <td>Apr 28, 2025</td>
+                                <td>
+                                    <button class="button button-secondary">View</button>
+                                    <button class="button button-secondary">Download</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div>
+                <div class="card">
+                    <h2>Report Builder</h2>
+                    <div class="annotation">
+                        The report builder allows David to customize reports with specific metrics and visualizations, addressing his need for flexible reporting capabilities.
+                    </div>
+                    <div class="tab-container">
+                        <div class="tabs">
+                            <div class="tab active">Content</div>
+                            <div class="tab">Layout</div>
+                            <div class="tab">Preview</div>
+                        </div>
+                        <div class="tab-content">
+                            <div class="filter-row">
+                                <div class="filter-item">
+                                    <label class="filter-label">Report Title</label>
+                                    <input type="text" value="Monthly Performance Report - April 2025">
+                                </div>
+                            </div>
+                            
+                            <h3>Select Sections to Include</h3>
+                            <div style="margin-bottom: 20px;">
+                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <input type="checkbox" id="section-executive" checked>
+                                    <label for="section-executive" style="margin-left: 5px;">Executive Summary</label>
+                                </div>
+                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <input type="checkbox" id="section-kpi" checked>
+                                    <label for="section-kpi" style="margin-left: 5px;">Key Performance Indicators</label>
+                                </div>
+                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <input type="checkbox" id="section-team" checked>
+                                    <label for="section-team" style="margin-left: 5px;">Team Performance</label>
+                                </div>
+                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <input type="checkbox" id="section-strategy" checked>
+                                    <label for="section-strategy" style="margin-left: 5px;">Strategy Effectiveness</label>
+                                </div>
+                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <input type="checkbox" id="section-resource">
+                                    <label for="section-resource" style="margin-left: 5px;">Resource Utilization</label>
+                                </div>
+                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <input type="checkbox" id="section-compliance" checked>
+                                    <label for="section-compliance" style="margin-left: 5px;">Compliance Status</label>
+                                </div>
+                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <input type="checkbox" id="section-forecast" checked>
+                                    <label for="section-forecast" style="margin-left: 5px;">Forecast & Projections</label>
+                                </div>
+                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <input type="checkbox" id="section-recommendations" checked>
+                                    <label for="section-recommendations" style="margin-left: 5px;">Recommendations</label>
+                                </div>
+                            </div>
+                            
+                            <h3>Key Metrics to Highlight</h3>
+                            <div class="filter-row">
+                                <div class="filter-item">
+                                    <select multiple style="height: 150px;">
+                                        <option selected>Recovery Rate</option>
+                                        <option selected>Total Collections</option>
+                                        <option selected>Cost to Collect Ratio</option>
+                                        <option selected>ROI</option>
+                                        <option>Average Days to Collect</option>
+                                        <option selected>Team Performance Comparison</option>
+                                        <option>Channel Effectiveness</option>
+                                        <option>Strategy Performance</option>
+                                        <option selected>Compliance Score</option>
+                                        <option>Resource Utilization</option>
+                                        <option>Technology ROI</option>
+                                        <option selected>Month-over-Month Trends</option>
+                                        <option>Quarter-over-Quarter Trends</option>
+                                        <option>Year-over-Year Trends</option>
+                                        <option>Benchmark Comparison</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="button-row">
+                                <button class="button button-secondary">Save Template</button>
+                                <button class="button">Generate Report</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Report Preview</h2>
+                    <div class="annotation">
+                        The report preview shows how the final report will look, allowing David to make adjustments before finalizing it.
+                    </div>
+                    <div class="report-preview">
+                        <h1>Monthly Performance Report - April 2025</h1>
+                        <p style="text-align: center;">Collection Department | Generated: May 5, 2025</p>
+                        
+                        <div class="report-section">
+                            <h2>Executive Summary</h2>
+                            <p>The Collection Department achieved a recovery rate of 48.5% in April 2025, exceeding the target of 47% and showing a 2.5% improvement over the previous month. Total collections reached $3.2M, representing a 14% increase from March. Cost to collect ratio improved to 13.3%, down from 14% in March, resulting in an overall ROI of 7.5:1.</p>
+                            <p>Key achievements include the successful implementation of the Digital-First Approach strategy, which has shown promising early results with a 42.8% recovery rate at only 2.1% cost ratio. The Call Center Team continues to be the top performer with a 9.6:1 ROI.</p>
+                            <p>Areas requiring attention include the Late Stage Team performance, which declined for the third consecutive month, and resource constraints in the Digital Collections Team, which is currently understaffed relative to demand.</p>
+                        </div>
+                        
+                        <div class="report-section">
+                            <h2>Key Performance Indicators</h2>
+                            <div class="chart-container" style="height: 200px;">
+                                <!-- This would be a chart showing KPIs -->
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #999;">
+                                    [KPI dashboard showing key metrics and trends]
+                                </div>
+                            </div>
+                            <table style="margin-top: 15px;">
+                                <thead>
+                                    <tr>
+                                        <th>Metric</th>
+                                        <th>Current</th>
+                                        <th>Target</th>
+                                        <th>vs. Previous</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Recovery Rate</td>
+                                        <td>48.5%</td>
+                                        <td>47.0%</td>
+                                        <td>+2.5%</td>
+                                        <td class="status-good">Above Target</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Total Collections</td>
+                                        <td>$3.2M</td>
+                                        <td>$3.0M</td>
+                                        <td>+$450K</td>
+                                        <td class="status-good">Above Target</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Cost to Collect</td>
+                                        <td>13.3%</td>
+                                        <td>14.0%</td>
+                                        <td>-0.7%</td>
+                                        <td class="status-good">Above Target</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ROI</td>
+                                        <td>7.5:1</td>
+                                        <td>7.0:1</td>
+                                        <td>+0.5</td>
+                                        <td class="status-good">Above Target</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Compliance Score</td>
+                                        <td>98.5%</td>
+                                        <td>98.0%</td>
+                                        <td>+0.5%</td>
+                                        <td class="status-good">Above Target</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div style="text-align: center; color: #999; margin: 20px 0;">
+                            [Additional report sections would appear here]
+                        </div>
+                    </div>
+                    
+                    <div class="button-row">
+                        <button class="button button-secondary">Edit Report</button>
+                        <button class="button button-secondary">Download PDF</button>
+                        <button class="button button-secondary">Download PowerPoint</button>
+                        <button class="button">Share Report</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

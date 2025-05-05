@@ -40,8 +40,6 @@ Base interface for all entities that are synchronized from external systems:
 
 ```typescript
 interface SynchronizedEntity {
-  id: string;                 // Unique identifier 
-  naturalKey: string;         // Stable business identifier (never changes)
   sourceSystem: SourceSystemType; // Origin system
   createdBy: string;          // User/system that created
   updatedBy: string;          // User/system that last updated
