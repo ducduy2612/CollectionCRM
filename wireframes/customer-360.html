@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer 360 View - Collection CRM</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background-color: #ddd;
+        }
+        .nav-menu {
+            background-color: #34495e;
+            padding: 10px 0;
+        }
+        .nav-menu ul {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0 20px;
+        }
+        .nav-menu li {
+            margin-right: 20px;
+        }
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+        }
+        .nav-menu a.active {
+            font-weight: bold;
+            border-bottom: 2px solid white;
+        }
+        .customer-header {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .customer-info {
+            display: flex;
+            align-items: center;
+        }
+        .customer-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #ddd;
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: #7f8c8d;
+        }
+        .customer-details h1 {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+        }
+        .customer-details p {
+            margin: 0;
+            color: #7f8c8d;
+        }
+        .customer-status {
+            display: flex;
+            align-items: center;
+        }
+        .status-indicator {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status-active {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .status-risk {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        .tab.active {
+            border-bottom-color: #3498db;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .tab-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card h2 .icon {
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+        .contact-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .contact-icon {
+            width: 30px;
+            height: 30px;
+            background-color: #f8f9fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+        .contact-details {
+            flex: 1;
+        }
+        .contact-details .label {
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        .contact-details .value {
+            font-weight: bold;
+        }
+        .contact-actions {
+            display: flex;
+        }
+        .contact-actions button {
+            background: none;
+            border: none;
+            color: #3498db;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .success-rate {
+            display: inline-block;
+            width: 50px;
+            height: 6px;
+            background-color: #ecf0f1;
+            border-radius: 3px;
+            margin-left: 10px;
+            position: relative;
+        }
+        .success-rate::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background-color: #2ecc71;
+            border-radius: 3px;
+        }
+        .success-rate.high::after {
+            width: 80%;
+        }
+        .success-rate.medium::after {
+            width: 50%;
+        }
+        .success-rate.low::after {
+            width: 20%;
+            background-color: #e74c3c;
+        }
+        .best-time {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-left: 10px;
+        }
+        .loan-item {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+        }
+        .loan-item.overdue {
+            border-left-color: #e74c3c;
+        }
+        .loan-item.warning {
+            border-left-color: #f39c12;
+        }
+        .loan-item.good {
+            border-left-color: #2ecc71;
+        }
+        .loan-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .loan-title {
+            font-weight: bold;
+        }
+        .loan-status {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 10px;
+        }
+        .loan-status.overdue {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .loan-status.warning {
+            background-color: #f39c12;
+            color: white;
+        }
+        .loan-status.good {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .loan-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 14px;
+        }
+        .loan-detail-item .label {
+            color: #7f8c8d;
+        }
+        .loan-detail-item .value {
+            font-weight: bold;
+        }
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background-color: #ddd;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #3498db;
+            border: 2px solid white;
+        }
+        .timeline-item.call::before {
+            background-color: #3498db;
+        }
+        .timeline-item.sms::before {
+            background-color: #2ecc71;
+        }
+        .timeline-item.email::before {
+            background-color: #f39c12;
+        }
+        .timeline-item.visit::before {
+            background-color: #9b59b6;
+        }
+        .timeline-item.payment::before {
+            background-color: #1abc9c;
+        }
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .timeline-type {
+            font-weight: bold;
+        }
+        .timeline-date {
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        .timeline-content {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .timeline-result {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        .timeline-result.success {
+            color: #2ecc71;
+        }
+        .timeline-result.failure {
+            color: #e74c3c;
+        }
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .payment-date {
+            font-weight: bold;
+        }
+        .payment-amount {
+            font-weight: bold;
+            color: #2ecc71;
+        }
+        .payment-method {
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        .action-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .action-buttons {
+            display: flex;
+        }
+        .action-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .primary-action {
+            background-color: #3498db;
+            color: white;
+        }
+        .secondary-action {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+        }
+        .full-width {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Collection CRM</div>
+        <div class="user-info">
+            <img src="#" alt="User Avatar">
+            <span>Minh Nguyen</span>
+        </div>
+    </header>
+    
+    <div class="nav-menu">
+        <ul>
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#" class="active">Customers</a></li>
+            <li><a href="#">Calendar</a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <!-- Customer Header -->
+        <div class="customer-header">
+            <div class="customer-info">
+                <div class="customer-avatar">NVA</div>
+                <div class="customer-details">
+                    <h1>Nguyen Van A</h1>
+                    <p>CIF: 123456789 | Individual | Segment: Premium</p>
+                    <p>Case Status: Active Collection</p>
+                </div>
+            </div>
+            <div class="customer-status">
+                <div class="status-indicator status-active">ACTIVE</div>
+                <div class="status-indicator status-risk">HIGH RISK</div>
+            </div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active">Overview</div>
+            <div class="tab">Loans</div>
+            <div class="tab">Actions</div>
+            <div class="tab">Payments</div>
+            <div class="tab">Documents</div>
+            <div class="tab">References</div>
+        </div>
+        
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Contact Information Card -->
+            <div class="card">
+                <h2>
+                    Contact Information
+                    <span class="icon">⚙️</span>
+                </h2>
+                
+                <!-- Phone Numbers -->
+                <div class="contact-item">
+                    <div class="contact-icon">📱</div>
+                    <div class="contact-details">
+                        <div class="label">MOBILE (Primary, Verified)</div>
+                        <div class="value">+84 90 123 4567</div>
+                    </div>
+                    <div class="contact-actions">
+                        <button>Call</button>
+                        <button>SMS</button>
+                    </div>
+                    <div class="success-rate high"></div>
+                    <div class="best-time">Best: 9-11 AM</div>
+                </div>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">☎️</div>
+                    <div class="contact-details">
+                        <div class="label">HOME</div>
+                        <div class="value">+84 28 1234 5678</div>
+                    </div>
+                    <div class="contact-actions">
+                        <button>Call</button>
+                    </div>
+                    <div class="success-rate medium"></div>
+                    <div class="best-time">Best: 6-8 PM</div>
+                </div>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">🏢</div>
+                    <div class="contact-details">
+                        <div class="label">WORK</div>
+                        <div class="value">+84 28 9876 5432</div>
+                    </div>
+                    <div class="contact-actions">
+                        <button>Call</button>
+                    </div>
+                    <div class="success-rate low"></div>
+                </div>
+                
+                <!-- Email Addresses -->
+                <div class="contact-item">
+                    <div class="contact-icon">✉️</div>
+                    <div class="contact-details">
+                        <div class="label">EMAIL (Primary, Verified)</div>
+                        <div class="value">nguyenvana@email.com</div>
+                    </div>
+                    <div class="contact-actions">
+                        <button>Email</button>
+                    </div>
+                </div>
+                
+                <!-- Physical Address -->
+                <div class="contact-item">
+                    <div class="contact-icon">🏠</div>
+                    <div class="contact-details">
+                        <div class="label">HOME ADDRESS (Primary, Verified)</div>
+                        <div class="value">123 Nguyen Hue Street, District 1, Ho Chi Minh City</div>
+                    </div>
+                    <div class="contact-actions">
+                        <button>Map</button>
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">🏢</div>
+                    <div class="contact-details">
+                        <div class="label">WORK ADDRESS</div>
+                        <div class="value">456 Le Loi Street, District 1, Ho Chi Minh City</div>
+                    </div>
+                    <div class="contact-actions">
+                        <button>Map</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Loan Summary Card -->
+            <div class="card">
+                <h2>
+                    Loan Summary
+                    <span class="icon">📊</span>
+                </h2>
+                
+                <div class="loan-item overdue">
+                    <div class="loan-header">
+                        <div class="loan-title">Personal Loan #PL12345</div>
+                        <div class="loan-status overdue">45 DPD</div>
+                    </div>
+                    <div class="loan-details">
+                        <div class="loan-detail-item">
+                            <div class="label">Outstanding</div>
+                            <div class="value">₫150,000,000</div>
+                        </div>
+                        <div class="loan-detail-item">
+                            <div class="label">Due Amount</div>
+                            <div class="value">₫15,000,000</div>
+                        </div>
+                        <div class="loan-detail-item">
+                            <div class="label">Next Payment</div>
+                            <div class="value">05/15/2025</div>
+                        </div>
+                        <div class="loan-detail-item">
+                            <div class="label">Product Type</div>
+                            <div class="value">Personal Loan</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="loan-item warning">
+                    <div class="loan-header">
+                        <div class="loan-title">Credit Card #CC67890</div>
+                        <div class="loan-status warning">30 DPD</div>
+                    </div>
+                    <div class="loan-details">
+                        <div class="loan-detail-item">
+                            <div class="label">Outstanding</div>
+                            <div class="value">₫45,000,000</div>
+                        </div>
+                        <div class="loan-detail-item">
+                            <div class="label">Minimum Payment</div>
+                            <div class="value">₫2,250,000</div>
+                        </div>
+                        <div class="loan-detail-item">
+                            <div class="label">Due Date</div>
+                            <div class="value">05/10/2025</div>
+                        </div>
+                        <div class="loan-detail-item">
+                            <div class="label">Credit Limit</div>
+                            <div class="value">₫50,000,000</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="loan-item good">
+                    <div class="loan-header">
+                        <div class="loan-title">Auto Loan #AL54321</div>
+                        <div class="loan-status good">Current</div>
+                    </div>
+                    <div class="loan-details">
+                        <div class="loan-detail-item">
+                            <div class="label">Outstanding</div>
+                            <div class="value">₫200,000,000</div>
+                        </div>
+                        <div class="loan-detail-item">
+                            <div class="label">Monthly Payment</div>
+                            <div class="value">₫8,500,000</div>
+                        </div>
+                        <div class="loan-detail-item">
+                            <div class="label">Next Payment</div>
+                            <div class="value">05/20/2025</div>
+                        </div>
+                        <div class="loan-detail-item">
+                            <div class="label">Collateral</div>
+                            <div class="value">Toyota Camry (2023)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action History Card -->
+            <div class="card">
+                <h2>
+                    Action History
+                    <span class="icon">📝</span>
+                </h2>
+                
+                <div class="timeline">
+                    <div class="timeline-item call">
+                        <div class="timeline-header">
+                            <div class="timeline-type">Call</div>
+                            <div class="timeline-date">May 5, 2025 - 10:30 AM</div>
+                        </div>
+                        <div class="timeline-content">
+                            Discussed overdue payment on Personal Loan. Customer promised to pay ₫15M by May 10.
+                            <div class="timeline-result success">PROMISE TO PAY</div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item sms">
+                        <div class="timeline-header">
+                            <div class="timeline-type">SMS</div>
+                            <div class="timeline-date">May 4, 2025 - 2:15 PM</div>
+                        </div>
+                        <div class="timeline-content">
+                            Sent payment reminder for Personal Loan and Credit Card.
+                            <div class="timeline-result">SENT</div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item call">
+                        <div class="timeline-header">
+                            <div class="timeline-type">Call</div>
+                            <div class="timeline-date">May 2, 2025 - 11:45 AM</div>
+                        </div>
+                        <div class="timeline-content">
+                            Called to discuss overdue payments. No answer.
+                            <div class="timeline-result failure">NO ANSWER</div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item email">
+                        <div class="timeline-header">
+                            <div class="timeline-type">Email</div>
+                            <div class="timeline-date">May 1, 2025 - 9:00 AM</div>
+                        </div>
+                        <div class="timeline-content">
+                            Sent statement of account and payment reminder.
+                            <div class="timeline-result">SENT</div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item payment">
+                        <div class="timeline-header">
+                            <div class="timeline-type">Payment</div>
+                            <div class="timeline-date">April 15, 2025 - 3:30 PM</div>
+                        </div>
+                        <div class="timeline-content">
+                            Received partial payment of ₫5M for Personal Loan.
+                            <div class="timeline-result success">COMPLETED</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment History Card -->
+            <div class="card">
+                <h2>
+                    Payment History
+                    <span class="icon">💰</span>
+                </h2>
+                
+                <div class="payment-item">
+                    <div>
+                        <div class="payment-date">April 15, 2025</div>
+                        <div class="payment-method">Bank Transfer</div>
+                    </div>
+                    <div class="payment-amount">₫5,000,000</div>
+                </div>
+                
+                <div class="payment-item">
+                    <div>
+                        <div class="payment-date">March 20, 2025</div>
+                        <div class="payment-method">Cash</div>
+                    </div>
+                    <div class="payment-amount">₫15,000,000</div>
+                </div>
+                
+                <div class="payment-item">
+                    <div>
+                        <div class="payment-date">February 18, 2025</div>
+                        <div class="payment-method">Bank Transfer</div>
+                    </div>
+                    <div class="payment-amount">₫15,000,000</div>
+                </div>
+                
+                <div class="payment-item">
+                    <div>
+                        <div class="payment-date">January 15, 2025</div>
+                        <div class="payment-method">Bank Transfer</div>
+                    </div>
+                    <div class="payment-amount">₫15,000,000</div>
+                </div>
+                
+                <div class="payment-item">
+                    <div>
+                        <div class="payment-date">December 18, 2024</div>
+                        <div class="payment-method">Cash</div>
+                    </div>
+                    <div class="payment-amount">₫15,000,000</div>
+                </div>
+            </div>
+            
+            <!-- Customer Sentiment Card -->
+            <div class="card full-width">
+                <h2>
+                    Customer Status
+                    <span class="icon">📊</span>
+                </h2>
+                
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px;">
+                    <div style="text-align: center; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+                        <div style="font-weight: bold; margin-bottom: 5px;">Customer Status</div>
+                        <div style="color: #e74c3c; font-weight: bold;">UNCOOPERATIVE</div>
+                    </div>
+                    
+                    <div style="text-align: center; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+                        <div style="font-weight: bold; margin-bottom: 5px;">Collateral Status</div>
+                        <div style="color: #2ecc71; font-weight: bold;">SECURED</div>
+                    </div>
+                    
+                    <div style="text-align: center; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+                        <div style="font-weight: bold; margin-bottom: 5px;">Processing State</div>
+                        <div style="color: #f39c12; font-weight: bold;">FOLLOW_UP</div>
+                    </div>
+                    
+                    <div style="text-align: center; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+                        <div style="font-weight: bold; margin-bottom: 5px;">Lending Violation</div>
+                        <div style="color: #3498db; font-weight: bold;">NONE</div>
+                    </div>
+                    
+                    <div style="text-align: center; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+                        <div style="font-weight: bold; margin-bottom: 5px;">Recovery Ability</div>
+                        <div style="color: #f39c12; font-weight: bold;">PARTIAL</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Panel -->
+        <div class="action-panel">
+            <div>
+                <strong>Nguyen Van A</strong> - Last contacted: May 5, 2025 (2 days ago)
+            </div>
+            <div class="action-buttons">
+                <button class="action-button secondary-action">Send SMS</button>
+                <button class="action-button secondary-action">Send Email</button>
+                <button class="action-button primary-action">Call Now</button>
+                <button class="action-button primary-action">Record Action</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comments explaining the wireframe -->
+    <!--
+    This wireframe represents the Customer 360 View screen for a Collection Agent with the following key components:
+    
+    1. Customer Header: Shows basic customer information and status indicators
+    2. Tabs: Allow navigation between different sections of customer information
+    3. Contact Information: Displays all contact methods with success rates and best times to call
+    4. Loan Summary: Shows all loans with their status, amounts, and due dates
+    5. Action History: Chronological timeline of all interactions with the customer
+    6. Payment History: Record of all payments made by the customer
+    7. Customer Status: Current status indicators for the customer case
+    8. Action Panel: Fixed panel at the bottom with quick action buttons
+    
+    The layout is designed to provide comprehensive customer information in an organized manner,
+    allowing the agent to quickly understand the customer's situation and take appropriate actions.
+    
+    Key features include:
+    - Success rate indicators for each phone number
+    - Best time to call indicators
+    - Color-coded loan status
+    - Chronological action history with clear outcome indicators
+    - Quick access buttons for common actions
+    
+    This design supports both the Manual and Auto mode workflows described in the user journeys,
+    with emphasis on providing quick access to critical information needed during customer interactions.
+    -->
+</body>
+</html>

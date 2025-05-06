@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collection Agent Dashboard - Collection CRM</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background-color: #ddd;
+        }
+        .mode-toggle {
+            background-color: white;
+            border-radius: 5px;
+            padding: 5px;
+            margin: 20px 0;
+            display: flex;
+            width: 300px;
+        }
+        .mode-toggle button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        .mode-toggle button.active {
+            background-color: #3498db;
+            color: white;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            color: #2c3e50;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        .stat-card {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-card .number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .stat-card .label {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table th, table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        table th {
+            background-color: #f8f9fa;
+        }
+        .priority-high {
+            color: #e74c3c;
+        }
+        .priority-medium {
+            color: #f39c12;
+        }
+        .priority-low {
+            color: #27ae60;
+        }
+        .action-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .notifications {
+            margin-bottom: 20px;
+        }
+        .notification {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #3498db;
+            background-color: #f8f9fa;
+        }
+        .notification.urgent {
+            border-left-color: #e74c3c;
+        }
+        .notification .time {
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        .nav-menu {
+            background-color: #34495e;
+            padding: 10px 0;
+        }
+        .nav-menu ul {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0 20px;
+        }
+        .nav-menu li {
+            margin-right: 20px;
+        }
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+        }
+        .nav-menu a.active {
+            font-weight: bold;
+            border-bottom: 2px solid white;
+        }
+        .search-bar {
+            padding: 10px;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Collection CRM</div>
+        <div class="user-info">
+            <img src="#" alt="User Avatar">
+            <span>Minh Nguyen</span>
+        </div>
+    </header>
+    
+    <div class="nav-menu">
+        <ul>
+            <li><a href="#" class="active">Dashboard</a></li>
+            <li><a href="#">Customers</a></li>
+            <li><a href="#">Calendar</a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <h1>Agent Dashboard</h1>
+        
+        <!-- Mode Toggle Switch -->
+        <div class="mode-toggle">
+            <button class="active">Manual Mode</button>
+            <button>Auto Mode</button>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="main-content">
+                <!-- Performance Summary Card -->
+                <div class="card">
+                    <h2>Today's Performance</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="number">24</div>
+                            <div class="label">Calls Made</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">18</div>
+                            <div class="label">Successful Contacts</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">5</div>
+                            <div class="label">Promises to Pay</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">₫25M</div>
+                            <div class="label">Amount Promised</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">75%</div>
+                            <div class="label">Contact Rate</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">28%</div>
+                            <div class="label">Promise Rate</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Priority Customers Card -->
+                <div class="card">
+                    <h2>Priority Customers</h2>
+                    <input type="text" class="search-bar" placeholder="Search customers...">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Customer Name</th>
+                                <th>CIF</th>
+                                <th>DPD</th>
+                                <th>Outstanding</th>
+                                <th>Priority</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Nguyen Van A</td>
+                                <td>CIF123456</td>
+                                <td>45</td>
+                                <td>₫150,000,000</td>
+                                <td><span class="priority-high">High</span></td>
+                                <td><button class="action-button">View</button></td>
+                            </tr>
+                            <tr>
+                                <td>Tran Thi B</td>
+                                <td>CIF789012</td>
+                                <td>30</td>
+                                <td>₫85,000,000</td>
+                                <td><span class="priority-medium">Medium</span></td>
+                                <td><button class="action-button">View</button></td>
+                            </tr>
+                            <tr>
+                                <td>Le Van C</td>
+                                <td>CIF345678</td>
+                                <td>15</td>
+                                <td>₫45,000,000</td>
+                                <td><span class="priority-low">Low</span></td>
+                                <td><button class="action-button">View</button></td>
+                            </tr>
+                            <tr>
+                                <td>Pham Thi D</td>
+                                <td>CIF901234</td>
+                                <td>60</td>
+                                <td>₫200,000,000</td>
+                                <td><span class="priority-high">High</span></td>
+                                <td><button class="action-button">View</button></td>
+                            </tr>
+                            <tr>
+                                <td>Hoang Van E</td>
+                                <td>CIF567890</td>
+                                <td>25</td>
+                                <td>₫70,000,000</td>
+                                <td><span class="priority-medium">Medium</span></td>
+                                <td><button class="action-button">View</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Recent Activities Card -->
+                <div class="card">
+                    <h2>Recent Activities</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Customer</th>
+                                <th>Action Type</th>
+                                <th>Result</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>10:45 AM</td>
+                                <td>Nguyen Van A</td>
+                                <td>Call</td>
+                                <td>Promise to Pay</td>
+                                <td>Promised ₫50M by 05/10</td>
+                            </tr>
+                            <tr>
+                                <td>10:30 AM</td>
+                                <td>Tran Thi B</td>
+                                <td>Call</td>
+                                <td>No Answer</td>
+                                <td>Will try again tomorrow</td>
+                            </tr>
+                            <tr>
+                                <td>10:15 AM</td>
+                                <td>Le Van C</td>
+                                <td>SMS</td>
+                                <td>Sent</td>
+                                <td>Payment reminder</td>
+                            </tr>
+                            <tr>
+                                <td>10:00 AM</td>
+                                <td>Pham Thi D</td>
+                                <td>Call</td>
+                                <td>Dispute</td>
+                                <td>Claims payment was made</td>
+                            </tr>
+                            <tr>
+                                <td>09:45 AM</td>
+                                <td>Hoang Van E</td>
+                                <td>Email</td>
+                                <td>Sent</td>
+                                <td>Statement of account</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <!-- Notifications Card -->
+                <div class="card notifications">
+                    <h2>Notifications</h2>
+                    <div class="notification urgent">
+                        <div>Customer Nguyen Van A missed promised payment</div>
+                        <div class="time">30 minutes ago</div>
+                    </div>
+                    <div class="notification">
+                        <div>New customer assigned: Tran Thi B</div>
+                        <div class="time">1 hour ago</div>
+                    </div>
+                    <div class="notification">
+                        <div>Team meeting at 2:00 PM</div>
+                        <div class="time">2 hours ago</div>
+                    </div>
+                    <div class="notification">
+                        <div>Payment received from Le Van C</div>
+                        <div class="time">3 hours ago</div>
+                    </div>
+                </div>
+                
+                <!-- Today's Schedule Card -->
+                <div class="card">
+                    <h2>Today's Schedule</h2>
+                    <div style="padding: 10px; border-bottom: 1px solid #eee;">
+                        <div style="font-weight: bold;">9:00 AM - 11:00 AM</div>
+                        <div>Outbound calls - High priority customers</div>
+                    </div>
+                    <div style="padding: 10px; border-bottom: 1px solid #eee;">
+                        <div style="font-weight: bold;">11:00 AM - 12:00 PM</div>
+                        <div>Team meeting</div>
+                    </div>
+                    <div style="padding: 10px; border-bottom: 1px solid #eee;">
+                        <div style="font-weight: bold;">1:00 PM - 3:00 PM</div>
+                        <div>Auto-dialer campaign</div>
+                    </div>
+                    <div style="padding: 10px;">
+                        <div style="font-weight: bold;">3:00 PM - 5:00 PM</div>
+                        <div>Follow-up on promised payments</div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions Card -->
+                <div class="card">
+                    <h2>Quick Actions</h2>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="action-button" style="padding: 10px;">New Call</button>
+                        <button class="action-button" style="padding: 10px;">Send SMS</button>
+                        <button class="action-button" style="padding: 10px;">Send Email</button>
+                        <button class="action-button" style="padding: 10px;">Record Action</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        Collection CRM System &copy; 2025
+    </footer>
+
+    <!-- Comments explaining the wireframe -->
+    <!--
+    This wireframe represents the Dashboard/Home screen for a Collection Agent with the following key components:
+    
+    1. Header: Contains the system logo and user information
+    2. Navigation Menu: Main navigation for the system
+    3. Mode Toggle: Allows switching between Manual and Auto modes
+    4. Performance Summary: Shows key metrics for the current day
+    5. Priority Customers: Lists customers that need immediate attention
+    6. Recent Activities: Shows recent actions taken by the agent
+    7. Notifications: Displays important alerts and notifications
+    8. Today's Schedule: Shows the agent's schedule for the day
+    9. Quick Actions: Provides buttons for common actions
+    
+    The layout is designed to give the agent a quick overview of their work and priorities,
+    with easy access to the most important information and actions.
+    
+    The mode toggle is prominently placed to allow easy switching between Manual and Auto modes,
+    which changes the agent's workflow as described in the user journeys.
+    -->
+</body>
+</html>

@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Call Interface (Predictive Dialing) - Collection CRM</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background-color: #ddd;
+        }
+        .nav-menu {
+            background-color: #34495e;
+            padding: 10px 0;
+        }
+        .nav-menu ul {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0 20px;
+        }
+        .nav-menu li {
+            margin-right: 20px;
+        }
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+        }
+        .nav-menu a.active {
+            font-weight: bold;
+            border-bottom: 2px solid white;
+        }
+        .auto-dialer-status {
+            background-color: #3498db;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .status-indicator {
+            display: flex;
+            align-items: center;
+        }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #2ecc71;
+            margin-right: 8px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .auto-dialer-controls {
+            display: flex;
+            gap: 10px;
+        }
+        .auto-dialer-button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 3px;
+            background-color: #2c3e50;
+            color: white;
+            cursor: pointer;
+        }
+        .auto-dialer-button.pause {
+            background-color: #f39c12;
+        }
+        .auto-dialer-button.exit {
+            background-color: #e74c3c;
+        }
+        .call-interface {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+        .main-panel {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .card h2 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+        .customer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .customer-info {
+            display: flex;
+            align-items: center;
+        }
+        .customer-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #ddd;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #7f8c8d;
+        }
+        .customer-details h1 {
+            margin: 0 0 5px 0;
+            font-size: 24px;
+        }
+        .customer-details p {
+            margin: 0;
+            color: #7f8c8d;
+        }
+        .call-status {
+            background-color: #2ecc71;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: white;
+        }
+        .call-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .call-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .call-button.mute {
+            background-color: #ecf0f1;
+            color: #7f8c8d;
+        }
+        .call-button.hold {
+            background-color: #f39c12;
+            color: white;
+        }
+        .call-button.transfer {
+            background-color: #3498db;
+            color: white;
+        }
+        .call-button.end {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .call-timer {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .instant-recognition {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+        .greeting-script {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        .key-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .info-item {
+            background-color: #ecf0f1;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .info-item .label {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        .info-item .value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .info-item.alert {
+            background-color: #f8d7da;
+        }
+        .info-item.alert .value {
+            color: #e74c3c;
+        }
+        .quick-reference-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .reference-card {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            border-top: 3px solid #3498db;
+        }
+        .reference-card h3 {
+            margin-top: 0;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+        .reference-card p {
+            margin: 0;
+            font-size: 14px;
+        }
+        .script-guidance {
+            background-color: #eafaf1;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2ecc71;
+        }
+        .script-guidance h3 {
+            margin-top: 0;
+            color: #27ae60;
+        }
+        .script-guidance p {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
+        .objection-handling {
+            background-color: #fef9e7;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #f1c40f;
+        }
+        .objection-handling h3 {
+            margin-top: 0;
+            color: #f39c12;
+        }
+        .objection-handling p {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
+        .real-time-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .action-button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+        }
+        .action-button.success {
+            background-color: #2ecc71;
+        }
+        .action-button.warning {
+            background-color: #f39c12;
+        }
+        .action-button.danger {
+            background-color: #e74c3c;
+        }
+        .action-button.neutral {
+            background-color: #95a5a6;
+        }
+        .loan-item {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+        }
+        .loan-item.overdue {
+            border-left-color: #e74c3c;
+        }
+        .loan-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .loan-title {
+            font-weight: bold;
+        }
+        .loan-status {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 10px;
+        }
+        .loan-status.overdue {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .loan-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 14px;
+        }
+        .loan-detail-item .label {
+            color: #7f8c8d;
+        }
+        .loan-detail-item .value {
+            font-weight: bold;
+        }
+        .timeline {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        .timeline-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .timeline-type {
+            font-weight: bold;
+        }
+        .timeline-date {
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        .timeline-content {
+            color: #2c3e50;
+        }
+        .timeline-result {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        .timeline-result.success {
+            color: #2ecc71;
+        }
+        .timeline-result.failure {
+            color: #e74c3c;
+        }
+        .sentiment-indicators {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .sentiment-item {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+        }
+        .sentiment-item .label {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        .sentiment-item .value {
+            font-weight: bold;
+        }
+        .sentiment-item .value.positive {
+            color: #2ecc71;
+        }
+        .sentiment-item .value.negative {
+            color: #e74c3c;
+        }
+        .sentiment-item .value.neutral {
+            color: #f39c12;
+        }
+        .next-call-countdown {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+            margin-top: 20px;
+            display: none; /* Hidden by default, shown after call ends */
+        }
+        .countdown-timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .countdown-label {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Collection CRM</div>
+        <div class="user-info">
+            <img src="#" alt="User Avatar">
+            <span>Minh Nguyen</span>
+        </div>
+    </header>
+    
+    <div class="nav-menu">
+        <ul>
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#" class="active">Auto Dialer</a></li>
+            <li><a href="#">Calendar</a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <!-- Auto Dialer Status Bar -->
+        <div class="auto-dialer-status">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>Auto Dialer Active: Campaign "30-60 DPD Personal Loans"</span>
+            </div>
+            <div class="auto-dialer-controls">
+                <button class="auto-dialer-button pause">Pause Queue</button>
+                <button class="auto-dialer-button exit">Exit Auto Mode</button>
+            </div>
+        </div>
+        
+        <div class="call-interface">
+            <div class="main-panel">
+                <!-- Customer Header -->
+                <div class="customer-header">
+                    <div class="customer-info">
+                        <div class="customer-avatar">NVA</div>
+                        <div class="customer-details">
+                            <h1>Nguyen Van A</h1>
+                            <p>CIF: 123456789 | Personal Loan #PL12345 | 45 DPD</p>
+                        </div>
+                    </div>
+                    <div class="call-status">CONNECTED</div>
+                </div>
+                
+                <!-- Call Controls -->
+                <div class="call-controls">
+                    <button class="call-button mute">🔇</button>
+                    <button class="call-button hold">⏸️</button>
+                    <button class="call-button transfer">↗️</button>
+                    <button class="call-button end">❌</button>
+                </div>
+                
+                <div class="call-timer">00:15</div>
+                
+                <!-- Instant Recognition Panel -->
+                <div class="instant-recognition">
+                    <div class="greeting-script">
+                        Good morning, am I speaking with Mr. Nguyen Van A?
+                    </div>
+                    <div class="key-info">
+                        <div class="info-item alert">
+                            <div class="label">Days Past Due</div>
+                            <div class="value">45 DPD</div>
+                        </div>
+                        <div class="info-item alert">
+                            <div class="label">Due Amount</div>
+                            <div class="value">₫15,000,000</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="label">Campaign</div>
+                            <div class="value">30-60 DPD Follow-up</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Reference Cards -->
+                <div class="quick-reference-cards">
+                    <div class="reference-card">
+                        <h3>Last Interaction</h3>
+                        <p><strong>Date:</strong> May 5, 2025 (2 days ago)</p>
+                        <p><strong>Type:</strong> Call</p>
+                        <p><strong>Outcome:</strong> Promise to Pay ₫15M by May 10</p>
+                        <p><strong>Agent:</strong> Tran Thi B</p>
+                    </div>
+                    
+                    <div class="reference-card">
+                        <h3>Payment History</h3>
+                        <p><strong>Last Payment:</strong> ₫5M on April 15, 2025</p>
+                        <p><strong>Method:</strong> Bank Transfer</p>
+                        <p><strong>Pattern:</strong> Irregular, often partial payments</p>
+                    </div>
+                </div>
+                
+                <!-- Script Guidance -->
+                <div class="script-guidance">
+                    <h3>Suggested Script</h3>
+                    <p>I'm calling from VPBank regarding your personal loan account ending in 2345. Our records show that your payment of ₫15,000,000 is now 45 days past due. I see that you promised to make a payment by May 10th. I'm calling to confirm if you'll be able to make this payment as promised.</p>
+                </div>
+                
+                <!-- Objection Handling -->
+                <div class="objection-handling">
+                    <h3>Potential Objections</h3>
+                    <p><strong>If customer claims already paid:</strong> "I understand. Let me check our records. Could you tell me when and how you made the payment?"</p>
+                    <p><strong>If customer cannot pay full amount:</strong> "I understand your situation. Would a partial payment of at least ₫7,500,000 be possible at this time?"</p>
+                </div>
+                
+                <!-- Real-time Action Interface -->
+                <div class="real-time-actions">
+                    <button class="action-button success">Promise to Pay</button>
+                    <button class="action-button warning">Partial Payment</button>
+                    <button class="action-button danger">Dispute</button>
+                    <button class="action-button neutral">No Answer</button>
+                    <button class="action-button neutral">Wrong Number</button>
+                    <button class="action-button">Schedule Follow-up</button>
+                </div>
+                
+                <!-- Next Call Countdown (Hidden by default) -->
+                <div class="next-call-countdown">
+                    <div class="countdown-label">Next call in:</div>
+                    <div class="countdown-timer">00:15</div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <!-- Loan Summary Card -->
+                <div class="card">
+                    <h2>Loan Summary</h2>
+                    
+                    <div class="loan-item overdue">
+                        <div class="loan-header">
+                            <div class="loan-title">Personal Loan #PL12345</div>
+                            <div class="loan-status overdue">45 DPD</div>
+                        </div>
+                        <div class="loan-details">
+                            <div class="loan-detail-item">
+                                <div class="label">Outstanding</div>
+                                <div class="value">₫150,000,000</div>
+                            </div>
+                            <div class="loan-detail-item">
+                                <div class="label">Due Amount</div>
+                                <div class="value">₫15,000,000</div>
+                            </div>
+                            <div class="loan-detail-item">
+                                <div class="label">Next Payment</div>
+                                <div class="value">05/15/2025</div>
+                            </div>
+                            <div class="loan-detail-item">
+                                <div class="label">Product Type</div>
+                                <div class="value">Personal Loan</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Customer Sentiment Card -->
+                <div class="card">
+                    <h2>Customer Sentiment</h2>
+                    
+                    <div class="sentiment-indicators">
+                        <div class="sentiment-item">
+                            <div class="label">Cooperation Level</div>
+                            <div class="value neutral">MODERATE</div>
+                        </div>
+                        <div class="sentiment-item">
+                            <div class="label">Payment Reliability</div>
+                            <div class="value negative">LOW</div>
+                        </div>
+                        <div class="sentiment-item">
+                            <div class="label">Communication Preference</div>
+                            <div class="value positive">PHONE</div>
+                        </div>
+                        <div class="sentiment-item">
+                            <div class="label">Hardship Indicators</div>
+                            <div class="value neutral">POSSIBLE</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Actions Card -->
+                <div class="card">
+                    <h2>Recent Actions</h2>
+                    
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-header">
+                                <div class="timeline-type">Call</div>
+                                <div class="timeline-date">May 5, 2025</div>
+                            </div>
+                            <div class="timeline-content">
+                                Discussed overdue payment on Personal Loan.
+                                <div class="timeline-result success">PROMISE TO PAY</div>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-header">
+                                <div class="timeline-type">SMS</div>
+                                <div class="timeline-date">May 4, 2025</div>
+                            </div>
+                            <div class="timeline-content">
+                                Sent payment reminder.
+                                <div class="timeline-result">SENT</div>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-header">
+                                <div class="timeline-type">Call</div>
+                                <div class="timeline-date">May 2, 2025</div>
+                            </div>
+                            <div class="timeline-content">
+                                Called to discuss overdue payments.
+                                <div class="timeline-result failure">NO ANSWER</div>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-header">
+                                <div class="timeline-type">Email</div>
+                                <div class="timeline-date">May 1, 2025</div>
+                            </div>
+                            <div class="timeline-content">
+                                Sent statement of account.
+                                <div class="timeline-result">SENT</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comments explaining the wireframe -->
+    <!--
+    This wireframe represents the Auto Call Interface (Predictive Dialing) for a Collection Agent with the following key components:
+    
+    1. Auto Dialer Status Bar: Shows the current campaign and provides controls to pause or exit auto mode
+    2. Customer Header: Shows basic customer information and call status
+    3. Call Controls: Buttons for managing the call (mute, hold, transfer, end)
+    4. Call Timer: Shows the duration of the current call
+    5. Instant Recognition Panel: Provides immediate context when a call connects, including greeting script and key information
+    6. Quick Reference Cards: Collapsible/expandable cards showing last interaction and payment history
+    7. Script Guidance: Dynamic script suggestions based on customer profile
+    8. Objection Handling: Prompts for handling common objections
+    9. Real-time Action Interface: Quick-select buttons for recording call outcomes
+    10. Loan Summary: Shows details of the customer's loans
+    11. Customer Sentiment: Indicators of customer cooperation level, payment reliability, etc.
+    12. Recent Actions: Shows recent interactions with the customer
+    13. Next Call Countdown: Shows time until next call (displayed after call ends)
+    
+    The layout is designed to provide immediate context and critical information when a call connects in auto-dialer mode,
+    allowing the agent to quickly orient themselves and engage with the customer effectively despite minimal preparation time.
+    
+    Key features include:
+    - Prominent greeting script and key information at the top
+    - Quick reference cards for essential context
+    - Dynamic script suggestions based on customer profile
+    - Single-click action recording options
+    - Customer sentiment indicators
+    
+    This design supports the Auto Mode workflow described in the user journeys,
+    focusing on the need for rapid context acquisition and efficient call handling in a predictive dialing environment.
+    -->
+</body>
+</html>

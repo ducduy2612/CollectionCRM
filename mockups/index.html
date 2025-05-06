@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collection CRM High-Fidelity Mockups</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="assets/design-system.css">
+    <style>
+        .mockup-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .header-logo {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-700);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .header-logo-icon {
+            margin-right: 0.75rem;
+            font-size: 2.5rem;
+        }
+        
+        .header-description {
+            color: var(--neutral-600);
+            max-width: 600px;
+            margin: 0 auto 2rem auto;
+            line-height: 1.6;
+        }
+        
+        .mockup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .mockup-card {
+            background-color: white;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid var(--neutral-200);
+        }
+        
+        .mockup-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .mockup-image {
+            width: 100%;
+            height: 200px;
+            background-color: var(--neutral-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-600);
+            font-size: 3rem;
+            border-bottom: 1px solid var(--neutral-200);
+        }
+        
+        .mockup-content {
+            padding: 1.5rem;
+        }
+        
+        .mockup-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--neutral-800);
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .mockup-description {
+            color: var(--neutral-600);
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+        
+        .mockup-link {
+            display: inline-block;
+            padding: 0.625rem 1rem;
+            background-color: var(--primary-600);
+            color: white;
+            border-radius: 0.375rem;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: background-color 0.2s ease;
+        }
+        
+        .mockup-link:hover {
+            background-color: var(--primary-700);
+        }
+        
+        .design-system-section {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--neutral-200);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--neutral-800);
+            margin-bottom: 1rem;
+        }
+        
+        .section-description {
+            color: var(--neutral-600);
+            margin-bottom: 2rem;
+            max-width: 800px;
+        }
+        
+        .design-card {
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--neutral-200);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .design-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .footer {
+            margin-top: 4rem;
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--neutral-500);
+            font-size: 0.875rem;
+            border-top: 1px solid var(--neutral-200);
+        }
+    </style>
+</head>
+<body>
+    <div class="mockup-container">
+        <header class="header">
+            <div class="header-logo">
+                <i class="bi bi-building-lock header-logo-icon"></i>
+                Collection CRM
+            </div>
+            <p class="header-description">
+                High-fidelity mockups for the Collection CRM system. These mockups demonstrate a modern, professional design approach for a financial/banking application.
+            </p>
+        </header>
+        
+        <div class="mockup-grid">
+            <div class="mockup-card">
+                <div class="mockup-image">
+                    <i class="bi bi-speedometer2"></i>
+                </div>
+                <div class="mockup-content">
+                    <h3 class="mockup-title">Agent Dashboard</h3>
+                    <p class="mockup-description">
+                        The main dashboard for collection agents, providing an overview of performance metrics, priority customers, recent activities, and quick actions.
+                    </p>
+                    <a href="agent-dashboard.html" class="mockup-link">View Mockup</a>
+                </div>
+            </div>
+            
+            <div class="mockup-card">
+                <div class="mockup-image">
+                    <i class="bi bi-person-vcard"></i>
+                </div>
+                <div class="mockup-content">
+                    <h3 class="mockup-title">Customer 360 View</h3>
+                    <p class="mockup-description">
+                        A comprehensive view of customer information, including contact details, loan summary, action history, payment history, and customer status.
+                    </p>
+                    <a href="customer-360.html" class="mockup-link">View Mockup</a>
+                </div>
+            </div>
+            
+            <div class="mockup-card">
+                <div class="mockup-image">
+                    <i class="bi bi-telephone"></i>
+                </div>
+                <div class="mockup-content">
+                    <h3 class="mockup-title">Manual Call Interface</h3>
+                    <p class="mockup-description">
+                        The interface used by collection agents during manual calls, featuring call controls, customer information, loan details, and action recording.
+                    </p>
+                    <a href="manual-call-interface.html" class="mockup-link">View Mockup</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="design-system-section">
+            <h2 class="section-title">Design System</h2>
+            <p class="section-description">
+                The mockups are built using a consistent design system that includes color palettes, typography, spacing, and component styles. This ensures visual consistency across all screens.
+            </p>
+            
+            <div class="design-card">
+                <h3 class="mockup-title">Design Decisions</h3>
+                <ul>
+                    <li><strong>Color Palette:</strong> A professional blue-based color scheme with clear status indicators (success, warning, danger) for financial data</li>
+                    <li><strong>Typography:</strong> Clean, readable Inter font with clear hierarchy for improved readability and scanning</li>
+                    <li><strong>Components:</strong> Consistent card-based layout with proper spacing and shadows for depth</li>
+                    <li><strong>Visual Polish:</strong> Subtle shadows, rounded corners, and visual feedback on interactive elements</li>
+                    <li><strong>Status Indicators:</strong> Color-coded badges and indicators for quick identification of priorities and statuses</li>
+                    <li><strong>Data Visualization:</strong> Clear presentation of financial data with proper alignment and formatting</li>
+                </ul>
+            </div>
+        </div>
+        
+        <footer class="footer">
+            Collection CRM High-Fidelity Mockups &copy; 2025
+        </footer>
+    </div>
+</body>
+</html>

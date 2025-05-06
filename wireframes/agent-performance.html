@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Performance Monitoring - Collection CRM</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background-color: #ddd;
+        }
+        .nav-menu {
+            background-color: #34495e;
+            padding: 10px 0;
+        }
+        .nav-menu ul {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0 20px;
+        }
+        .nav-menu li {
+            margin-right: 20px;
+        }
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+        }
+        .nav-menu a.active {
+            font-weight: bold;
+            border-bottom: 2px solid white;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .page-title {
+            font-size: 24px;
+            color: #2c3e50;
+        }
+        .filter-controls {
+            display: flex;
+            gap: 15px;
+        }
+        .filter-control {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: white;
+        }
+        .card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .card-title {
+            font-size: 18px;
+            color: #2c3e50;
+            margin: 0;
+        }
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .card-action {
+            background: none;
+            border: none;
+            color: #3498db;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+        }
+        .performance-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+        .agent-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .agent-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .agent-item:hover {
+            background-color: #f8f9fa;
+        }
+        .agent-item.active {
+            background-color: #e1f0fa;
+            border-left: 3px solid #3498db;
+        }
+        .agent-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #ddd;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #7f8c8d;
+        }
+        .agent-info {
+            flex: 1;
+        }
+        .agent-name {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        .agent-details {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        .performance-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .performance-indicator.high {
+            background-color: #2ecc71;
+        }
+        .performance-indicator.medium {
+            background-color: #f39c12;
+        }
+        .performance-indicator.low {
+            background-color: #e74c3c;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-card .number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .stat-card .label {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .stat-card .trend {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .trend.up {
+            color: #2ecc71;
+        }
+        .trend.down {
+            color: #e74c3c;
+        }
+        .chart-container {
+            height: 300px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .chart-placeholder {
+            width: 100%;
+            height: 100%;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        .tab.active {
+            border-bottom-color: #3498db;
+            font-weight: bold;
+            color: #3498db;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table th, table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .progress-bar {
+            height: 8px;
+            background-color: #ecf0f1;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #3498db;
+        }
+        .progress-bar-fill.high {
+            background-color: #2ecc71;
+        }
+        .progress-bar-fill.medium {
+            background-color: #f39c12;
+        }
+        .progress-bar-fill.low {
+            background-color: #e74c3c;
+        }
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Collection CRM</div>
+        <div class="user-info">
+            <img src="#" alt="User Avatar">
+            <span>Linh Tran</span>
+        </div>
+    </header>
+    
+    <div class="nav-menu">
+        <ul>
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#" class="active">Teams</a></li>
+            <li><a href="#">Campaigns</a></li>
+            <li><a href="#">Customers</a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <div class="page-header">
+            <div class="page-title">Agent Performance Monitoring</div>
+            <div class="filter-controls">
+                <select class="filter-control">
+                    <option>All Teams</option>
+                    <option selected>Early Stage Team</option>
+                    <option>Mid Stage Team</option>
+                    <option>Late Stage Team</option>
+                </select>
+                <select class="filter-control">
+                    <option>Today</option>
+                    <option>Yesterday</option>
+                    <option selected>Last 7 Days</option>
+                    <option>This Month</option>
+                    <option>Custom Range</option>
+                </select>
+                <button class="btn btn-primary">Apply Filters</button>
+            </div>
+        </div>
+        
+        <div class="performance-grid">
+            <!-- Left Sidebar - Agent List -->
+            <div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Agents</h2>
+                    </div>
+                    
+                    <input type="text" class="search-box" placeholder="Search agents...">
+                    
+                    <ul class="agent-list">
+                        <li class="agent-item active">
+                            <div class="agent-avatar">NVB</div>
+                            <div class="agent-info">
+                                <div class="agent-name">
+                                    <span class="performance-indicator high"></span>
+                                    Nguyen Van B
+                                </div>
+                                <div class="agent-details">Early Stage Team | 3 years</div>
+                            </div>
+                        </li>
+                        <li class="agent-item">
+                            <div class="agent-avatar">TTC</div>
+                            <div class="agent-info">
+                                <div class="agent-name">
+                                    <span class="performance-indicator high"></span>
+                                    Tran Thi C
+                                </div>
+                                <div class="agent-details">Mid Stage Team | 2 years</div>
+                            </div>
+                        </li>
+                        <li class="agent-item">
+                            <div class="agent-avatar">LVD</div>
+                            <div class="agent-info">
+                                <div class="agent-name">
+                                    <span class="performance-indicator high"></span>
+                                    Le Van D
+                                </div>
+                                <div class="agent-details">Early Stage Team | 2.5 years</div>
+                            </div>
+                        </li>
+                        <li class="agent-item">
+                            <div class="agent-avatar">PTE</div>
+                            <div class="agent-info">
+                                <div class="agent-name">
+                                    <span class="performance-indicator medium"></span>
+                                    Pham Thi E
+                                </div>
+                                <div class="agent-details">Mid Stage Team | 1.5 years</div>
+                            </div>
+                        </li>
+                        <li class="agent-item">
+                            <div class="agent-avatar">HVF</div>
+                            <div class="agent-info">
+                                <div class="agent-name">
+                                    <span class="performance-indicator medium"></span>
+                                    Hoang Van F
+                                </div>
+                                <div class="agent-details">Late Stage Team | 3 years</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Main Content - Agent Performance Details -->
+            <div>
+                <!-- Agent Overview Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Nguyen Van B</h2>
+                            <div style="color: #7f8c8d;">Early Stage Team | Employee ID: EMP12345</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn btn-secondary">Message</button>
+                            <button class="btn btn-primary">Schedule Coaching</button>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="number">₫65M</div>
+                            <div class="label">Collections</div>
+                            <div class="trend up">↑ 12% vs. avg</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">78%</div>
+                            <div class="label">Contact Rate</div>
+                            <div class="trend up">↑ 8% vs. avg</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">52%</div>
+                            <div class="label">Promise to Pay Rate</div>
+                            <div class="trend up">↑ 10% vs. avg</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">45%</div>
+                            <div class="label">Promise Fulfillment</div>
+                            <div class="trend up">↑ 7% vs. avg</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">85</div>
+                            <div class="label">Calls Made</div>
+                            <div class="trend up">↑ 5% vs. avg</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">4.2 min</div>
+                            <div class="label">Avg. Call Duration</div>
+                            <div class="trend down">↓ 8% vs. avg</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">92%</div>
+                            <div class="label">Utilization Rate</div>
+                            <div class="trend up">↑ 6% vs. avg</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">4.8/5</div>
+                            <div class="label">Quality Score</div>
+                            <div class="trend up">↑ 12% vs. avg</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Performance Tabs -->
+                <div class="tabs">
+                    <div class="tab active">Performance Metrics</div>
+                    <div class="tab">Call Recordings</div>
+                    <div class="tab">Coaching Notes</div>
+                    <div class="tab">Customer Feedback</div>
+                </div>
+                
+                <!-- Performance Metrics Tab Content -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Performance Trends</h2>
+                        <div class="card-actions">
+                            <button class="card-action">Daily</button>
+                            <button class="card-action">Weekly</button>
+                            <button class="card-action">Monthly</button>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-placeholder">
+                            [Line chart showing collection amounts, contact rates, and PTP rates over time]
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Activity Breakdown Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Activity Breakdown</h2>
+                        <div class="card-actions">
+                            <button class="card-action">Export</button>
+                        </div>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Activity Type</th>
+                                <th>Count</th>
+                                <th>Success Rate</th>
+                                <th>Avg. Duration</th>
+                                <th>% of Total Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Outbound Calls</td>
+                                <td>65</td>
+                                <td>
+                                    78%
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill high" style="width: 78%"></div>
+                                    </div>
+                                </td>
+                                <td>4.5 min</td>
+                                <td>48%</td>
+                            </tr>
+                            <tr>
+                                <td>Auto-dialer Calls</td>
+                                <td>20</td>
+                                <td>
+                                    80%
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill high" style="width: 80%"></div>
+                                    </div>
+                                </td>
+                                <td>3.2 min</td>
+                                <td>12%</td>
+                            </tr>
+                            <tr>
+                                <td>SMS Messages</td>
+                                <td>35</td>
+                                <td>
+                                    65%
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill medium" style="width: 65%"></div>
+                                    </div>
+                                </td>
+                                <td>2.0 min</td>
+                                <td>10%</td>
+                            </tr>
+                            <tr>
+                                <td>Email Communications</td>
+                                <td>15</td>
+                                <td>
+                                    60%
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill medium" style="width: 60%"></div>
+                                    </div>
+                                </td>
+                                <td>5.5 min</td>
+                                <td>15%</td>
+                            </tr>
+                            <tr>
+                                <td>After-call Work</td>
+                                <td>85</td>
+                                <td>N/A</td>
+                                <td>1.2 min</td>
+                                <td>15%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Campaign Performance Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Campaign Performance</h2>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Campaign</th>
+                                <th>Customers</th>
+                                <th>Collections</th>
+                                <th>Contact Rate</th>
+                                <th>PTP Rate</th>
+                                <th>Fulfillment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Personal Loan 30-60 DPD</td>
+                                <td>25</td>
+                                <td>₫35M</td>
+                                <td>
+                                    80%
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill high" style="width: 80%"></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    55%
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill high" style="width: 55%"></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    48%
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill high" style="width: 48%"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Credit Card 15-30 DPD</td>
+                                <td>18</td>
+                                <td>₫22M</td>
+                                <td>
+                                    75%
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill high" style="width: 75%"></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    48%
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill medium" style="width: 48%"></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    42%
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill medium" style="width: 42%"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Auto Loan 60-90 DPD</td>
+                                <td>8</td>
+                                <td>₫8M</td>
+                                <td>
+                                    62%
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill medium" style="width: 62%"></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    38%
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill medium" style="width: 38%"></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    35%
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill low" style="width: 35%"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comments explaining the wireframe -->
+    <!--
+    This wireframe represents the Agent Performance Monitoring Screen for a Supervisor with the following key components:
+    
+    1. Agent List: Shows all agents with performance indicators
+    2. Agent Overview: Displays key performance metrics for the selected agent
+    3. Performance Tabs: Allow switching between different types of performance data
+    4. Performance Trends: Chart showing performance metrics over time
+    5. Activity Breakdown: Detailed breakdown of agent activities
+    6. Campaign Performance: Performance metrics by campaign
+    
+    The layout is designed to provide comprehensive performance monitoring capabilities,
+    with emphasis on key metrics, trends, and detailed breakdowns.
+    
+    Key features include:
+    - Visual performance indicators (color-coded)
+    - Comparative metrics (vs. team average)
+    - Trend visualization
+    - Detailed activity and campaign breakdowns
+    - Multiple data views through tabs
+    
+    This design supports the Agent Performance Monitoring workflow described in the user journeys,
+    focusing on the supervisor's need to monitor team performance, identify issues,
+    and provide targeted coaching.
+    -->
+</body>
+</html>

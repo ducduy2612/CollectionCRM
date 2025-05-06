@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaign Configuration - Collection CRM</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background-color: #ddd;
+        }
+        .nav-menu {
+            background-color: #34495e;
+            padding: 10px 0;
+        }
+        .nav-menu ul {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0 20px;
+        }
+        .nav-menu li {
+            margin-right: 20px;
+        }
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+        }
+        .nav-menu a.active {
+            font-weight: bold;
+            border-bottom: 2px solid white;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .page-title {
+            font-size: 24px;
+            color: #2c3e50;
+        }
+        .page-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+        }
+        .btn-success {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .btn-warning {
+            background-color: #f39c12;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .campaign-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .card-title {
+            font-size: 18px;
+            color: #2c3e50;
+            margin: 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .form-hint {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .checkbox-group {
+            margin-top: 5px;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .checkbox-input {
+            margin-right: 8px;
+        }
+        .range-slider {
+            width: 100%;
+            margin-top: 10px;
+        }
+        .range-values {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        .tab.active {
+            border-bottom-color: #3498db;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .campaign-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .campaign-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+        .campaign-item:hover {
+            background-color: #f8f9fa;
+        }
+        .campaign-item.active {
+            background-color: #e1f0fa;
+            border-left: 3px solid #3498db;
+        }
+        .campaign-name {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        .campaign-details {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-active {
+            background-color: #2ecc71;
+        }
+        .status-draft {
+            background-color: #95a5a6;
+        }
+        .status-scheduled {
+            background-color: #3498db;
+        }
+        .status-paused {
+            background-color: #f39c12;
+        }
+        .status-completed {
+            background-color: #7f8c8d;
+        }
+        .segment-builder {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .segment-condition {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .segment-condition select, .segment-condition input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .segment-actions {
+            margin-top: 15px;
+        }
+        .segment-actions button {
+            background: none;
+            border: none;
+            color: #3498db;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        .day-column {
+            text-align: center;
+        }
+        .day-header {
+            font-weight: bold;
+            margin-bottom: 5px;
+            padding: 5px;
+            background-color: #f8f9fa;
+            border-radius: 3px;
+        }
+        .time-slot {
+            padding: 5px;
+            margin-bottom: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .time-slot.active {
+            background-color: #3498db;
+            color: white;
+        }
+        .time-slot.inactive {
+            background-color: #ecf0f1;
+            color: #7f8c8d;
+        }
+        .preview-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .preview-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .preview-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .stat-card {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        .chart-placeholder {
+            height: 200px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #7f8c8d;
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Collection CRM</div>
+        <div class="user-info">
+            <img src="#" alt="User Avatar">
+            <span>Linh Tran</span>
+        </div>
+    </header>
+    
+    <div class="nav-menu">
+        <ul>
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Teams</a></li>
+            <li><a href="#" class="active">Campaigns</a></li>
+            <li><a href="#">Customers</a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <div class="page-header">
+            <div class="page-title">Campaign Configuration</div>
+            <div class="page-actions">
+                <button class="btn btn-secondary">Cancel</button>
+                <button class="btn btn-primary">Save as Draft</button>
+                <button class="btn btn-success">Activate Campaign</button>
+            </div>
+        </div>
+        
+        <div class="campaign-container">
+            <!-- Left Sidebar - Campaign List -->
+            <div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Campaigns</h2>
+                        <button class="btn btn-primary">New</button>
+                    </div>
+                    
+                    <div class="tabs">
+                        <div class="tab active">All</div>
+                        <div class="tab">Active</div>
+                        <div class="tab">Drafts</div>
+                    </div>
+                    
+                    <ul class="campaign-list">
+                        <li class="campaign-item active">
+                            <div class="campaign-name">
+                                <span class="status-indicator status-active"></span>
+                                Personal Loan 30-60 DPD
+                            </div>
+                            <div class="campaign-details">Active | 245 customers</div>
+                        </li>
+                        <li class="campaign-item">
+                            <div class="campaign-name">
+                                <span class="status-indicator status-active"></span>
+                                Credit Card 15-30 DPD
+                            </div>
+                            <div class="campaign-details">Active | 178 customers</div>
+                        </li>
+                        <li class="campaign-item">
+                            <div class="campaign-name">
+                                <span class="status-indicator status-paused"></span>
+                                Auto Loan 60-90 DPD
+                            </div>
+                            <div class="campaign-details">Paused | 92 customers</div>
+                        </li>
+                        <li class="campaign-item">
+                            <div class="campaign-name">
+                                <span class="status-indicator status-scheduled"></span>
+                                Mortgage 30+ DPD
+                            </div>
+                            <div class="campaign-details">Scheduled | 56 customers</div>
+                        </li>
+                        <li class="campaign-item">
+                            <div class="campaign-name">
+                                <span class="status-indicator status-draft"></span>
+                                Credit Card 30-60 DPD
+                            </div>
+                            <div class="campaign-details">Draft | Est. 120 customers</div>
+                        </li>
+                        <li class="campaign-item">
+                            <div class="campaign-name">
+                                <span class="status-indicator status-completed"></span>
+                                Personal Loan 15-30 DPD (Apr)
+                            </div>
+                            <div class="campaign-details">Completed | 203 customers</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Main Content - Campaign Configuration -->
+            <div>
+                <!-- Basic Information Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Basic Information</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Campaign Name</label>
+                        <input type="text" class="form-control" value="Personal Loan 30-60 DPD">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" class="form-control" value="2025-05-01">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">End Date</label>
+                            <input type="date" class="form-control" value="2025-05-31">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Priority</label>
+                            <select class="form-control">
+                                <option>High</option>
+                                <option selected>Medium</option>
+                                <option>Low</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" rows="3">Campaign targeting personal loan customers with 30-60 days past due. Focus on payment arrangements and partial payments.</textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Assigned Team</label>
+                            <select class="form-control">
+                                <option>All Teams</option>
+                                <option selected>Early Stage Team</option>
+                                <option>Mid Stage Team</option>
+                                <option>Late Stage Team</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Campaign Type</label>
+                            <select class="form-control">
+                                <option selected>Auto-dialer</option>
+                                <option>Manual</option>
+                                <option>Mixed</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Script Template</label>
+                            <select class="form-control">
+                                <option selected>Personal Loan 30-60 DPD Script</option>
+                                <option>General Collection Script</option>
+                                <option>Payment Arrangement Script</option>
+                                <option>Hardship Assessment Script</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Customer Segmentation Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Customer Segmentation</h2>
+                    </div>
+                    
+                    <div class="segment-builder">
+                        <div class="segment-condition">
+                            <select>
+                                <option>Product Type</option>
+                            </select>
+                            <select>
+                                <option>equals</option>
+                            </select>
+                            <select>
+                                <option selected>Personal Loan</option>
+                            </select>
+                            <button>✕</button>
+                        </div>
+                        
+                        <div class="segment-condition">
+                            <select>
+                                <option>DPD</option>
+                            </select>
+                            <select>
+                                <option>between</option>
+                            </select>
+                            <input type="text" value="30">
+                            <span>and</span>
+                            <input type="text" value="60">
+                            <button>✕</button>
+                        </div>
+                        
+                        <div class="segment-condition">
+                            <select>
+                                <option>Outstanding Amount</option>
+                            </select>
+                            <select>
+                                <option>greater than</option>
+                            </select>
+                            <input type="text" value="10,000,000">
+                            <button>✕</button>
+                        </div>
+                        
+                        <div class="segment-actions">
+                            <button>+ Add Condition</button>
+                            <button>+ Add Group</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Exclude Customers</label>
+                            <select class="form-control">
+                                <option>None</option>
+                                <option selected>Contacted in last 3 days</option>
+                                <option>With active promise to pay</option>
+                                <option>In legal proceedings</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Maximum Customers</label>
+                            <input type="number" class="form-control" value="500">
+                            <div class="form-hint">Leave blank for no limit</div>
+                        </div>
+                    </div>
+                    
+                    <div class="preview-section">
+                        <div class="preview-title">Segment Preview</div>
+                        <div class="preview-stats">
+                            <div class="stat-card">
+                                <div class="stat-value">245</div>
+                                <div class="stat-label">Customers</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">₫3.7B</div>
+                                <div class="stat-label">Total Outstanding</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">₫15.1M</div>
+                                <div class="stat-label">Avg. Outstanding</div>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-placeholder">
+                            [Distribution chart showing customer segments by DPD and outstanding amount]
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comments explaining the wireframe -->
+    <!--
+    This wireframe represents the Campaign Configuration Screen for a Supervisor with the following key components:
+    
+    1. Campaign List: Shows all campaigns with their status and customer count
+    2. Basic Information: Fields for campaign name, dates, priority, description, etc.
+    3. Customer Segmentation: Segment builder with conditions and preview of selected customers
+
+    
+    The layout is designed to guide the supervisor through the campaign configuration process in a logical flow:
+    1. Select or create a campaign
+    2. Configure basic campaign information
+    3. Define customer segmentation criteria
+
+    
+    Key features include:
+    - Visual segment builder with preview statistics
+    - Campaign list with status indicators
+    
+    This design supports the Campaign Configuration workflow described in the user journeys,
+    focusing on the supervisor's need to create and manage collection campaigns
+    based on portfolio analysis and resource constraints.
+    -->
+</body>
+</html>

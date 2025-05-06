@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Call Interface - Collection CRM</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background-color: #ddd;
+        }
+        .nav-menu {
+            background-color: #34495e;
+            padding: 10px 0;
+        }
+        .nav-menu ul {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0 20px;
+        }
+        .nav-menu li {
+            margin-right: 20px;
+        }
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+        }
+        .nav-menu a.active {
+            font-weight: bold;
+            border-bottom: 2px solid white;
+        }
+        .call-interface {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+        .main-panel {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .card h2 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+        .customer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .customer-info {
+            display: flex;
+            align-items: center;
+        }
+        .customer-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #ddd;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #7f8c8d;
+        }
+        .customer-details h1 {
+            margin: 0 0 5px 0;
+            font-size: 24px;
+        }
+        .customer-details p {
+            margin: 0;
+            color: #7f8c8d;
+        }
+        .call-status {
+            background-color: #ecf0f1;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #7f8c8d;
+        }
+        .call-status.active {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .call-status.ended {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .call-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .call-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .call-button.answer {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .call-button.end {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .call-button.mute {
+            background-color: #ecf0f1;
+            color: #7f8c8d;
+        }
+        .call-button.hold {
+            background-color: #f39c12;
+            color: white;
+        }
+        .call-button.transfer {
+            background-color: #3498db;
+            color: white;
+        }
+        .call-timer {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        .tab.active {
+            border-bottom-color: #3498db;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .loan-item {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+        }
+        .loan-item.overdue {
+            border-left-color: #e74c3c;
+        }
+        .loan-item.warning {
+            border-left-color: #f39c12;
+        }
+        .loan-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .loan-title {
+            font-weight: bold;
+        }
+        .loan-status {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 10px;
+        }
+        .loan-status.overdue {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .loan-status.warning {
+            background-color: #f39c12;
+            color: white;
+        }
+        .loan-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 14px;
+        }
+        .loan-detail-item .label {
+            color: #7f8c8d;
+        }
+        .loan-detail-item .value {
+            font-weight: bold;
+        }
+        .contact-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+        .contact-item:hover {
+            background-color: #eaeaea;
+        }
+        .contact-item.active {
+            background-color: #3498db;
+            color: white;
+        }
+        .contact-item.active .contact-label {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .contact-icon {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+        .contact-details {
+            flex: 1;
+        }
+        .contact-label {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        .contact-value {
+            font-weight: bold;
+        }
+        .success-rate {
+            width: 50px;
+            height: 6px;
+            background-color: #ecf0f1;
+            border-radius: 3px;
+            margin-left: 10px;
+            position: relative;
+        }
+        .success-rate::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background-color: #2ecc71;
+            border-radius: 3px;
+        }
+        .success-rate.high::after {
+            width: 80%;
+        }
+        .success-rate.medium::after {
+            width: 50%;
+        }
+        .success-rate.low::after {
+            width: 20%;
+            background-color: #e74c3c;
+        }
+        .script-container {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 4px solid #3498db;
+        }
+        .script-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        .script-content {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .script-section {
+            margin-bottom: 15px;
+        }
+        .script-section-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #3498db;
+        }
+        .note-input {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: none;
+            margin-top: 10px;
+            font-family: Arial, sans-serif;
+        }
+        .timeline {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        .timeline-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .timeline-type {
+            font-weight: bold;
+        }
+        .timeline-date {
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        .timeline-content {
+            color: #2c3e50;
+        }
+        .timeline-result {
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        .timeline-result.success {
+            color: #2ecc71;
+        }
+        .timeline-result.failure {
+            color: #e74c3c;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .action-button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            flex: 1;
+        }
+        .primary-action {
+            background-color: #3498db;
+            color: white;
+        }
+        .secondary-action {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Collection CRM</div>
+        <div class="user-info">
+            <img src="#" alt="User Avatar">
+            <span>Minh Nguyen</span>
+        </div>
+    </header>
+    
+    <div class="nav-menu">
+        <ul>
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#" class="active">Customers</a></li>
+            <li><a href="#">Calendar</a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <div class="call-interface">
+            <div class="main-panel">
+                <!-- Customer Header -->
+                <div class="customer-header">
+                    <div class="customer-info">
+                        <div class="customer-avatar">NVA</div>
+                        <div class="customer-details">
+                            <h1>Nguyen Van A</h1>
+                            <p>CIF: 123456789 | Personal Loan #PL12345 | 45 DPD</p>
+                        </div>
+                    </div>
+                    <div class="call-status">PREPARING</div>
+                </div>
+                
+                <!-- Call Controls -->
+                <div class="call-controls">
+                    <button class="call-button answer">📞</button>
+                    <button class="call-button mute">🔇</button>
+                    <button class="call-button hold">⏸️</button>
+                    <button class="call-button transfer">↗️</button>
+                    <button class="call-button end">❌</button>
+                </div>
+                
+                <div class="call-timer">00:00</div>
+                
+                <!-- Tabs -->
+                <div class="tabs">
+                    <div class="tab active">Loan Details</div>
+                    <div class="tab">Payment History</div>
+                    <div class="tab">Call Script</div>
+                    <div class="tab">Notes</div>
+                </div>
+                
+                <!-- Tab Content - Loan Details -->
+                <div>
+                    <div class="loan-item overdue">
+                        <div class="loan-header">
+                            <div class="loan-title">Personal Loan #PL12345</div>
+                            <div class="loan-status overdue">45 DPD</div>
+                        </div>
+                        <div class="loan-details">
+                            <div class="loan-detail-item">
+                                <div class="label">Outstanding</div>
+                                <div class="value">₫150,000,000</div>
+                            </div>
+                            <div class="loan-detail-item">
+                                <div class="label">Due Amount</div>
+                                <div class="value">₫15,000,000</div>
+                            </div>
+                            <div class="loan-detail-item">
+                                <div class="label">Next Payment</div>
+                                <div class="value">05/15/2025</div>
+                            </div>
+                            <div class="loan-detail-item">
+                                <div class="label">Product Type</div>
+                                <div class="value">Personal Loan</div>
+                            </div>
+                            <div class="loan-detail-item">
+                                <div class="label">Interest Rate</div>
+                                <div class="value">12.5%</div>
+                            </div>
+                            <div class="loan-detail-item">
+                                <div class="label">Term</div>
+                                <div class="value">36 months</div>
+                            </div>
+                            <div class="loan-detail-item">
+                                <div class="label">Disbursement Date</div>
+                                <div class="value">06/15/2023</div>
+                            </div>
+                            <div class="loan-detail-item">
+                                <div class="label">Maturity Date</div>
+                                <div class="value">06/15/2026</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="loan-item warning">
+                        <div class="loan-header">
+                            <div class="loan-title">Credit Card #CC67890</div>
+                            <div class="loan-status warning">30 DPD</div>
+                        </div>
+                        <div class="loan-details">
+                            <div class="loan-detail-item">
+                                <div class="label">Outstanding</div>
+                                <div class="value">₫45,000,000</div>
+                            </div>
+                            <div class="loan-detail-item">
+                                <div class="label">Minimum Payment</div>
+                                <div class="value">₫2,250,000</div>
+                            </div>
+                            <div class="loan-detail-item">
+                                <div class="label">Due Date</div>
+                                <div class="value">05/10/2025</div>
+                            </div>
+                            <div class="loan-detail-item">
+                                <div class="label">Credit Limit</div>
+                                <div class="value">₫50,000,000</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Call Script Section (Hidden by default, shown when tab is clicked) -->
+                    <div class="script-container" style="display: none;">
+                        <div class="script-title">Collection Call Script - 30-60 DPD</div>
+                        <div class="script-content">
+                            <div class="script-section">
+                                <div class="script-section-title">Introduction</div>
+                                <p>Good [morning/afternoon/evening], may I speak with Mr./Ms. [Customer Name]? This is [Your Name] calling from [Bank Name] regarding your [Loan Type].</p>
+                            </div>
+                            
+                            <div class="script-section">
+                                <div class="script-section-title">Verification</div>
+                                <p>For security purposes, could you please confirm your date of birth and the last 4 digits of your national ID?</p>
+                            </div>
+                            
+                            <div class="script-section">
+                                <div class="script-section-title">Purpose Statement</div>
+                                <p>I'm calling about your [Loan Type] account ending in [Last 4 Digits], which is currently [X days] past due with an outstanding amount of [Amount Due].</p>
+                            </div>
+                            
+                            <div class="script-section">
+                                <div class="script-section-title">Payment Discussion</div>
+                                <p>May I know when you will be able to make a payment to bring your account current? We have several payment options available to help you.</p>
+                            </div>
+                            
+                            <div class="script-section">
+                                <div class="script-section-title">Objection Handling</div>
+                                <p><strong>If customer claims financial hardship:</strong> I understand your situation. Let's discuss a payment plan that might work better for you right now.</p>
+                                <p><strong>If customer disputes the debt:</strong> I appreciate your concern. Let me verify the details with you and explain the breakdown of the amount due.</p>
+                            </div>
+                            
+                            <div class="script-section">
+                                <div class="script-section-title">Closing</div>
+                                <p>Thank you for your time today. To summarize, [recap of agreement]. Is there anything else I can help you with?</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notes Section (Hidden by default, shown when tab is clicked) -->
+                    <div style="display: none;">
+                        <textarea class="note-input" placeholder="Enter call notes here..."></textarea>
+                        
+                        <div class="action-buttons">
+                            <button class="action-button secondary-action">Save Draft</button>
+                            <button class="action-button primary-action">Submit Notes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <!-- Contact Options Card -->
+                <div class="card">
+                    <h2>Contact Options</h2>
+                    
+                    <div class="contact-item active">
+                        <div class="contact-icon">📱</div>
+                        <div class="contact-details">
+                            <div class="contact-label">MOBILE (Primary)</div>
+                            <div class="contact-value">+84 90 123 4567</div>
+                        </div>
+                        <div class="success-rate high"></div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">☎️</div>
+                        <div class="contact-details">
+                            <div class="contact-label">HOME</div>
+                            <div class="contact-value">+84 28 1234 5678</div>
+                        </div>
+                        <div class="success-rate medium"></div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">🏢</div>
+                        <div class="contact-details">
+                            <div class="contact-label">WORK</div>
+                            <div class="contact-value">+84 28 9876 5432</div>
+                        </div>
+                        <div class="success-rate low"></div>
+                    </div>
+                </div>
+                
+                <!-- Recent Actions Card -->
+                <div class="card">
+                    <h2>Recent Actions</h2>
+                    
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-header">
+                                <div class="timeline-type">Call</div>
+                                <div class="timeline-date">May 5, 2025</div>
+                            </div>
+                            <div class="timeline-content">
+                                Discussed overdue payment on Personal Loan.
+                                <div class="timeline-result success">PROMISE TO PAY</div>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-header">
+                                <div class="timeline-type">SMS</div>
+                                <div class="timeline-date">May 4, 2025</div>
+                            </div>
+                            <div class="timeline-content">
+                                Sent payment reminder.
+                                <div class="timeline-result">SENT</div>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-header">
+                                <div class="timeline-type">Call</div>
+                                <div class="timeline-date">May 2, 2025</div>
+                            </div>
+                            <div class="timeline-content">
+                                Called to discuss overdue payments.
+                                <div class="timeline-result failure">NO ANSWER</div>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-header">
+                                <div class="timeline-type">Email</div>
+                                <div class="timeline-date">May 1, 2025</div>
+                            </div>
+                            <div class="timeline-content">
+                                Sent statement of account.
+                                <div class="timeline-result">SENT</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions Card -->
+                <div class="card">
+                    <h2>Quick Actions</h2>
+                    
+                    <div class="action-buttons">
+                        <button class="action-button primary-action">Record Promise</button>
+                        <button class="action-button secondary-action">Schedule Follow-up</button>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="action-button secondary-action">Send SMS</button>
+                        <button class="action-button secondary-action">Send Email</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comments explaining the wireframe -->
+    <!--
+    This wireframe represents the Manual Call Interface for a Collection Agent with the following key components:
+    
+    1. Customer Header: Shows basic customer information and call status
+    2. Call Controls: Buttons for managing the call (answer, mute, hold, transfer, end)
+    3. Call Timer: Shows the duration of the current call
+    4. Tabs: Allow navigation between different sections of information during the call
+    5. Loan Details: Shows detailed information about the customer's loans
+    6. Contact Options: Displays available phone numbers with success rates
+    7. Recent Actions: Shows recent interactions with the customer
+    8. Quick Actions: Provides buttons for common actions during or after the call
+    9. Call Script: Provides guidance for the agent during the call (shown when tab is clicked)
+    10. Notes: Allows the agent to record notes about the call (shown when tab is clicked)
+    
+    The layout is designed to provide all necessary information and tools for the agent during a manual outbound call,
+    with emphasis on efficiency and quick access to critical information.
+    
+    Key features include:
+    - Clear call status indicators
+    - Easy access to multiple contact options with success rates
+    - Comprehensive loan information for reference during the call
+    - Structured call script to guide the conversation
+    - Quick access to recent actions for context
+    - Ability to record notes and outcomes directly from the interface
+    
+    This design supports the Manual Mode workflow described in the user journeys,
+    focusing on the call handling aspect of the collection process.
+    -->
+</body>
+</html>

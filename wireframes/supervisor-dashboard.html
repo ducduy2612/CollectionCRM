@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supervisor Dashboard - Collection CRM</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background-color: #ddd;
+        }
+        .nav-menu {
+            background-color: #34495e;
+            padding: 10px 0;
+        }
+        .nav-menu ul {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0 20px;
+        }
+        .nav-menu li {
+            margin-right: 20px;
+        }
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+        }
+        .nav-menu a.active {
+            font-weight: bold;
+            border-bottom: 2px solid white;
+        }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .page-title {
+            font-size: 24px;
+            color: #2c3e50;
+        }
+        .filter-controls {
+            display: flex;
+            gap: 15px;
+        }
+        .filter-control {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: white;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .card-title {
+            font-size: 18px;
+            color: #2c3e50;
+            margin: 0;
+        }
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .card-action {
+            background: none;
+            border: none;
+            color: #3498db;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+            border-left: 4px solid #3498db;
+        }
+        .stat-card.positive {
+            border-left-color: #2ecc71;
+        }
+        .stat-card.warning {
+            border-left-color: #f39c12;
+        }
+        .stat-card.negative {
+            border-left-color: #e74c3c;
+        }
+        .stat-card .number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .stat-card .label {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .stat-card .trend {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .trend.up {
+            color: #2ecc71;
+        }
+        .trend.down {
+            color: #e74c3c;
+        }
+        .chart-container {
+            height: 300px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .chart-placeholder {
+            width: 100%;
+            height: 100%;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table th, table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .performance-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .performance-indicator.high {
+            background-color: #2ecc71;
+        }
+        .performance-indicator.medium {
+            background-color: #f39c12;
+        }
+        .performance-indicator.low {
+            background-color: #e74c3c;
+        }
+        .progress-bar {
+            height: 8px;
+            background-color: #ecf0f1;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #3498db;
+        }
+        .progress-bar-fill.high {
+            background-color: #2ecc71;
+        }
+        .progress-bar-fill.medium {
+            background-color: #f39c12;
+        }
+        .progress-bar-fill.low {
+            background-color: #e74c3c;
+        }
+        .action-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .notifications {
+            margin-bottom: 20px;
+        }
+        .notification {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #3498db;
+            background-color: #f8f9fa;
+        }
+        .notification.urgent {
+            border-left-color: #e74c3c;
+        }
+        .notification .time {
+            color: #7f8c8d;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .notification .actions {
+            margin-top: 10px;
+        }
+        .campaign-status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .status-dot.active {
+            background-color: #2ecc71;
+        }
+        .status-dot.paused {
+            background-color: #f39c12;
+        }
+        .status-dot.scheduled {
+            background-color: #3498db;
+        }
+        .status-dot.ended {
+            background-color: #7f8c8d;
+        }
+        .campaign-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .campaign-metric {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .campaign-metric .value {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .campaign-metric .label {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        .sidebar-section {
+            margin-bottom: 20px;
+        }
+        .sidebar-title {
+            font-size: 16px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Collection CRM</div>
+        <div class="user-info">
+            <img src="#" alt="User Avatar">
+            <span>Linh Tran</span>
+        </div>
+    </header>
+    
+    <div class="nav-menu">
+        <ul>
+            <li><a href="#" class="active">Dashboard</a></li>
+            <li><a href="#">Teams</a></li>
+            <li><a href="#">Campaigns</a></li>
+            <li><a href="#">Customers</a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <div class="dashboard-header">
+            <div class="page-title">Supervisor Dashboard</div>
+            <div class="filter-controls">
+                <select class="filter-control">
+                    <option>All Teams</option>
+                    <option>Early Stage Team</option>
+                    <option>Mid Stage Team</option>
+                    <option>Late Stage Team</option>
+                </select>
+                <select class="filter-control">
+                    <option>Today</option>
+                    <option>Yesterday</option>
+                    <option>Last 7 Days</option>
+                    <option>This Month</option>
+                    <option>Custom Range</option>
+                </select>
+                <button class="filter-control">Apply Filters</button>
+            </div>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="main-content">
+                <!-- Key Performance Metrics -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Key Performance Metrics</h2>
+                        <div class="card-actions">
+                            <button class="card-action">Export</button>
+                            <button class="card-action">Refresh</button>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card positive">
+                            <div class="number">₫1.2B</div>
+                            <div class="label">Total Collections</div>
+                            <div class="trend up">↑ 12% vs. last period</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">68%</div>
+                            <div class="label">Contact Rate</div>
+                            <div class="trend up">↑ 5% vs. last period</div>
+                        </div>
+                        <div class="stat-card warning">
+                            <div class="number">42%</div>
+                            <div class="label">Promise to Pay Rate</div>
+                            <div class="trend down">↓ 3% vs. last period</div>
+                        </div>
+                        <div class="stat-card negative">
+                            <div class="number">35%</div>
+                            <div class="label">Promise Fulfillment</div>
+                            <div class="trend down">↓ 7% vs. last period</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">2,450</div>
+                            <div class="label">Total Calls</div>
+                            <div class="trend up">↑ 8% vs. last period</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">18 min</div>
+                            <div class="label">Avg. Call Duration</div>
+                            <div class="trend">= No change</div>
+                        </div>
+                        <div class="stat-card positive">
+                            <div class="number">85%</div>
+                            <div class="label">Agent Utilization</div>
+                            <div class="trend up">↑ 4% vs. last period</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number">₫490K</div>
+                            <div class="label">Avg. Collection per Agent</div>
+                            <div class="trend up">↑ 6% vs. last period</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Collection Performance Chart -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Collection Performance Trend</h2>
+                        <div class="card-actions">
+                            <button class="card-action">Daily</button>
+                            <button class="card-action">Weekly</button>
+                            <button class="card-action">Monthly</button>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-placeholder">
+                            [Line chart showing collection amounts and targets over time]
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Team Performance Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Team Performance</h2>
+                        <div class="card-actions">
+                            <button class="card-action">Export</button>
+                            <button class="card-action">View Details</button>
+                        </div>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Team</th>
+                                <th>Agents</th>
+                                <th>Collections</th>
+                                <th>Target</th>
+                                <th>Achievement</th>
+                                <th>Contact Rate</th>
+                                <th>PTP Rate</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <span class="performance-indicator high"></span>
+                                    Early Stage Team
+                                </td>
+                                <td>12</td>
+                                <td>₫520M</td>
+                                <td>₫500M</td>
+                                <td>
+                                    104%
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill high" style="width: 104%"></div>
+                                    </div>
+                                </td>
+                                <td>72%</td>
+                                <td>48%</td>
+                                <td>
+                                    <button class="action-button">View</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span class="performance-indicator medium"></span>
+                                    Mid Stage Team
+                                </td>
+                                <td>10</td>
+                                <td>₫380M</td>
+                                <td>₫400M</td>
+                                <td>
+                                    95%
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill medium" style="width: 95%"></div>
+                                    </div>
+                                </td>
+                                <td>65%</td>
+                                <td>40%</td>
+                                <td>
+                                    <button class="action-button">View</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span class="performance-indicator low"></span>
+                                    Late Stage Team
+                                </td>
+                                <td>8</td>
+                                <td>₫300M</td>
+                                <td>₫350M</td>
+                                <td>
+                                    86%
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill low" style="width: 86%"></div>
+                                    </div>
+                                </td>
+                                <td>58%</td>
+                                <td>32%</td>
+                                <td>
+                                    <button class="action-button">View</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Top Performing Agents -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Top Performing Agents</h2>
+                        <div class="card-actions">
+                            <button class="card-action">View All Agents</button>
+                        </div>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Agent</th>
+                                <th>Team</th>
+                                <th>Collections</th>
+                                <th>Calls</th>
+                                <th>Contact Rate</th>
+                                <th>PTP Rate</th>
+                                <th>Fulfillment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Nguyen Van B</td>
+                                <td>Early Stage</td>
+                                <td>₫65M</td>
+                                <td>85</td>
+                                <td>78%</td>
+                                <td>52%</td>
+                                <td>45%</td>
+                                <td>
+                                    <button class="action-button">View</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Tran Thi C</td>
+                                <td>Mid Stage</td>
+                                <td>₫58M</td>
+                                <td>72</td>
+                                <td>75%</td>
+                                <td>48%</td>
+                                <td>42%</td>
+                                <td>
+                                    <button class="action-button">View</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Le Van D</td>
+                                <td>Early Stage</td>
+                                <td>₫52M</td>
+                                <td>90</td>
+                                <td>70%</td>
+                                <td>45%</td>
+                                <td>40%</td>
+                                <td>
+                                    <button class="action-button">View</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Pham Thi E</td>
+                                <td>Mid Stage</td>
+                                <td>₫48M</td>
+                                <td>68</td>
+                                <td>72%</td>
+                                <td>46%</td>
+                                <td>38%</td>
+                                <td>
+                                    <button class="action-button">View</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Hoang Van F</td>
+                                <td>Late Stage</td>
+                                <td>₫45M</td>
+                                <td>65</td>
+                                <td>68%</td>
+                                <td>42%</td>
+                                <td>35%</td>
+                                <td>
+                                    <button class="action-button">View</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <!-- Alerts and Notifications -->
+                <div class="card notifications">
+                    <div class="card-header">
+                        <h2 class="card-title">Alerts & Notifications</h2>
+                        <div class="card-actions">
+                            <button class="card-action">View All</button>
+                        </div>
+                    </div>
+                    
+                    <div class="notification urgent">
+                        <div>Late Stage Team is 14% below collection target for the month</div>
+                        <div class="time">1 hour ago</div>
+                        <div class="actions">
+                            <button class="action-button">View Details</button>
+                        </div>
+                    </div>
+                    
+                    <div class="notification">
+                        <div>5 agents have utilization rates below 70%</div>
+                        <div class="time">3 hours ago</div>
+                        <div class="actions">
+                            <button class="action-button">View Agents</button>
+                        </div>
+                    </div>
+                    
+                    <div class="notification">
+                        <div>Promise fulfillment rate dropped by 7% compared to last week</div>
+                        <div class="time">5 hours ago</div>
+                        <div class="actions">
+                            <button class="action-button">Analyze</button>
+                        </div>
+                    </div>
+                    
+                    <div class="notification">
+                        <div>New campaign "Credit Card 30+ DPD" is ready for review</div>
+                        <div class="time">Yesterday</div>
+                        <div class="actions">
+                            <button class="action-button">Review</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Active Campaigns -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Active Campaigns</h2>
+                        <div class="card-actions">
+                            <button class="card-action">Manage</button>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <div class="campaign-status">
+                            <div class="status-dot active"></div>
+                            <div>Personal Loan 30-60 DPD</div>
+                        </div>
+                        <div class="campaign-metrics">
+                            <div class="campaign-metric">
+                                <div class="value">68%</div>
+                                <div class="label">Contact Rate</div>
+                            </div>
+                            <div class="campaign-metric">
+                                <div class="value">45%</div>
+                                <div class="label">PTP Rate</div>
+                            </div>
+                            <div class="campaign-metric">
+                                <div class="value">₫180M</div>
+                                <div class="label">Collected</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <div class="campaign-status">
+                            <div class="status-dot active"></div>
+                            <div>Credit Card 15-30 DPD</div>
+                        </div>
+                        <div class="campaign-metrics">
+                            <div class="campaign-metric">
+                                <div class="value">72%</div>
+                                <div class="label">Contact Rate</div>
+                            </div>
+                            <div class="campaign-metric">
+                                <div class="value">50%</div>
+                                <div class="label">PTP Rate</div>
+                            </div>
+                            <div class="campaign-metric">
+                                <div class="value">₫150M</div>
+                                <div class="label">Collected</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <div class="campaign-status">
+                            <div class="status-dot paused"></div>
+                            <div>Auto Loan 60-90 DPD</div>
+                        </div>
+                        <div class="campaign-metrics">
+                            <div class="campaign-metric">
+                                <div class="value">55%</div>
+                                <div class="label">Contact Rate</div>
+                            </div>
+                            <div class="campaign-metric">
+                                <div class="value">32%</div>
+                                <div class="label">PTP Rate</div>
+                            </div>
+                            <div class="campaign-metric">
+                                <div class="value">₫95M</div>
+                                <div class="label">Collected</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="campaign-status">
+                            <div class="status-dot scheduled"></div>
+                            <div>Mortgage 30+ DPD</div>
+                        </div>
+                        <div class="campaign-metrics">
+                            <div class="campaign-metric">
+                                <div class="value">--</div>
+                                <div class="label">Contact Rate</div>
+                            </div>
+                            <div class="campaign-metric">
+                                <div class="value">--</div>
+                                <div class="label">PTP Rate</div>
+                            </div>
+                            <div class="campaign-metric">
+                                <div class="value">--</div>
+                                <div class="label">Collected</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Resource Allocation -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Resource Allocation</h2>
+                        <div class="card-actions">
+                            <button class="card-action">Adjust</button>
+                        </div>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Agent Distribution</div>
+                        <div class="chart-container" style="height: 150px;">
+                            <div class="chart-placeholder">
+                                [Pie chart showing agent distribution across teams]
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Workload Distribution</div>
+                        <div class="chart-container" style="height: 150px;">
+                            <div class="chart-placeholder">
+                                [Bar chart showing case distribution across teams]
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Quick Actions</h2>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="action-button" style="padding: 10px;">Reassign Customers</button>
+                        <button class="action-button" style="padding: 10px;">Configure Campaign</button>
+                        <button class="action-button" style="padding: 10px;">Schedule Meeting</button>
+                        <button class="action-button" style="padding: 10px;">Generate Reports</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comments explaining the wireframe -->
+    <!--
+    This wireframe represents the Supervisor Dashboard with the following key components:
+    
+    1. Key Performance Metrics: Shows critical metrics like total collections, contact rate, promise to pay rate, etc.
+    2. Collection Performance Trend: Chart showing collection performance over time
+    3. Team Performance: Table showing performance metrics for each team
+    4. Top Performing Agents: Table showing the best-performing agents
+    5. Alerts & Notifications: Important alerts requiring supervisor attention
+    6. Active Campaigns: Overview of currently running collection campaigns
+    7. Resource Allocation: Charts showing agent and workload distribution
+    8. Quick Actions: Buttons for common supervisor tasks
+    
+    The layout is designed to provide a comprehensive overview of department performance,
+    with emphasis on key metrics, team performance, and resource allocation.
+    
+    Key features include:
+    - Comparative metrics with trends (up/down vs. previous period)
+    - Visual indicators of performance (color-coded, progress bars)
+    - Drill-down capabilities from department to team to individual agent level
+    - Alert system for performance issues requiring attention
+    - Campaign monitoring with real-time metrics
+    - Resource allocation visualization
+    
+    This design supports the Supervisor persona (Linh Tran) described in the user personas document,
+    focusing on her need for department-wide visibility and performance management.
+    -->
+</body>
+</html>

@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Action Recording Form - Collection CRM</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background-color: #ddd;
+        }
+        .nav-menu {
+            background-color: #34495e;
+            padding: 10px 0;
+        }
+        .nav-menu ul {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0 20px;
+        }
+        .nav-menu li {
+            margin-right: 20px;
+        }
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+        }
+        .nav-menu a.active {
+            font-weight: bold;
+            border-bottom: 2px solid white;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .page-title {
+            font-size: 24px;
+            color: #2c3e50;
+        }
+        .customer-info {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .customer-details {
+            display: flex;
+            align-items: center;
+        }
+        .customer-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #ddd;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #7f8c8d;
+        }
+        .customer-text h2 {
+            margin: 0 0 5px 0;
+            font-size: 20px;
+        }
+        .customer-text p {
+            margin: 0;
+            color: #7f8c8d;
+        }
+        .loan-summary {
+            text-align: right;
+        }
+        .loan-summary .label {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .loan-summary .value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .form-container {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+        .form-section-title {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            flex: 1;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+        select.form-control {
+            height: 40px;
+        }
+        textarea.form-control {
+            height: 100px;
+            resize: vertical;
+        }
+        .form-hint {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        .form-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+        }
+        .btn-success {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .quick-templates {
+            margin-bottom: 10px;
+        }
+        .template-btn {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            padding: 5px 10px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .template-btn:hover {
+            background-color: #e9ecef;
+        }
+        .checkbox-group {
+            margin-bottom: 15px;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        .checkbox-input {
+            margin-right: 10px;
+        }
+        .date-time-picker {
+            display: flex;
+            gap: 10px;
+        }
+        .date-time-picker .form-control {
+            flex: 1;
+        }
+        .status-indicators {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .status-group {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        .status-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        .status-options {
+            display: flex;
+            flex-direction: column;
+        }
+        .radio-label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        .radio-input {
+            margin-right: 10px;
+        }
+        .collapsible-section {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .collapsible-header {
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .collapsible-content {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+        }
+        .toggle-icon {
+            font-size: 18px;
+        }
+        .required-field::after {
+            content: "*";
+            color: #e74c3c;
+            margin-left: 3px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Collection CRM</div>
+        <div class="user-info">
+            <img src="#" alt="User Avatar">
+            <span>Minh Nguyen</span>
+        </div>
+    </header>
+    
+    <div class="nav-menu">
+        <ul>
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#" class="active">Customers</a></li>
+            <li><a href="#">Calendar</a></li>
+            <li><a href="#">Reports</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <div class="page-header">
+            <div class="page-title">Record Action</div>
+            <div>
+                <button class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+        
+        <!-- Customer Information -->
+        <div class="customer-info">
+            <div class="customer-details">
+                <div class="customer-avatar">NVA</div>
+                <div class="customer-text">
+                    <h2>Nguyen Van A</h2>
+                    <p>CIF: 123456789 | Individual | Segment: Premium</p>
+                </div>
+            </div>
+            <div class="loan-summary">
+                <div class="label">Total Outstanding</div>
+                <div class="value">₫195,000,000</div>
+                <div class="label">Highest DPD</div>
+                <div class="value">45 days</div>
+            </div>
+        </div>
+        
+        <!-- Action Recording Form -->
+        <div class="form-container">
+            <!-- Action Type Section -->
+            <div class="form-section">
+                <div class="form-section-title">Action Details</div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required-field">Action Type</label>
+                        <select class="form-control">
+                            <option value="call">Call</option>
+                            <option value="sms">SMS</option>
+                            <option value="email">Email</option>
+                            <option value="visit">Visit</option>
+                            <option value="letter">Letter</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label required-field">Action Subtype</label>
+                        <select class="form-control">
+                            <option value="outbound">Outbound Call</option>
+                            <option value="inbound">Inbound Call</option>
+                            <option value="missed">Missed Call</option>
+                            <option value="voicemail">Voicemail</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label required-field">Action Result</label>
+                        <select class="form-control">
+                            <option value="promise">Promise to Pay</option>
+                            <option value="partial">Partial Payment Promised</option>
+                            <option value="dispute">Payment Disputed</option>
+                            <option value="no_answer">No Answer</option>
+                            <option value="wrong_number">Wrong Number</option>
+                            <option value="callback">Call Back Later</option>
+                            <option value="refused">Refused to Pay</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required-field">Action Date</label>
+                        <input type="date" class="form-control" value="2025-05-07">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label required-field">Action Time</label>
+                        <input type="time" class="form-control" value="10:30">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Duration (minutes)</label>
+                        <input type="number" class="form-control" value="5">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Contact Method</label>
+                        <select class="form-control">
+                            <option value="mobile">Mobile: +84 90 123 4567</option>
+                            <option value="home">Home: +84 28 1234 5678</option>
+                            <option value="work">Work: +84 28 9876 5432</option>
+                            <option value="email">Email: nguyenvana@email.com</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Related Loan</label>
+                        <select class="form-control">
+                            <option value="all">All Loans</option>
+                            <option value="pl12345">Personal Loan #PL12345</option>
+                            <option value="cc67890">Credit Card #CC67890</option>
+                            <option value="al54321">Auto Loan #AL54321</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Notes Section -->
+            <div class="form-section">
+                <div class="form-section-title">Notes</div>
+                
+                <div class="quick-templates">
+                    <span class="template-btn">Customer promised to pay</span>
+                    <span class="template-btn">Customer requested payment extension</span>
+                    <span class="template-btn">Customer disputed the amount</span>
+                    <span class="template-btn">Left voicemail</span>
+                    <span class="template-btn">Wrong number</span>
+                    <span class="template-btn">Customer experiencing financial hardship</span>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label required-field">Action Notes</label>
+                    <textarea class="form-control" placeholder="Enter detailed notes about the interaction...">Customer confirmed receipt of previous SMS reminder. Promised to make full payment of ₫15,000,000 by May 10th via bank transfer. Customer mentioned temporary cash flow issues due to delayed salary payment but assured that funds will be available by the promised date.</textarea>
+                    <div class="form-hint">Be specific about what was discussed and any commitments made.</div>
+                </div>
+            </div>
+            
+            <!-- Promise to Pay Section -->
+            <div class="form-section">
+                <div class="form-section-title">Promise to Pay</div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Promise Amount</label>
+                        <input type="text" class="form-control" value="15,000,000">
+                        <div class="form-hint">Enter amount in VND</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Promise Date</label>
+                        <input type="date" class="form-control" value="2025-05-10">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Payment Method</label>
+                        <select class="form-control">
+                            <option value="bank_transfer">Bank Transfer</option>
+                            <option value="cash">Cash</option>
+                            <option value="card">Credit/Debit Card</option>
+                            <option value="mobile">Mobile Payment</option>
+                            <option value="check">Check</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" class="checkbox-input" checked>
+                        Send payment reminder 1 day before due date
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" class="checkbox-input" checked>
+                        Create follow-up task if payment not received
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Follow-up Section -->
+            <div class="form-section">
+                <div class="form-section-title">Follow-up Actions</div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Schedule Follow-up</label>
+                        <select class="form-control">
+                            <option value="none">No follow-up needed</option>
+                            <option value="call" selected>Schedule follow-up call</option>
+                            <option value="sms">Schedule SMS reminder</option>
+                            <option value="email">Schedule email reminder</option>
+                            <option value="visit">Schedule field visit</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Follow-up Date & Time</label>
+                        <div class="date-time-picker">
+                            <input type="date" class="form-control" value="2025-05-11">
+                            <input type="time" class="form-control" value="10:00">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Follow-up Notes</label>
+                    <textarea class="form-control" placeholder="Enter notes for the follow-up action...">Follow up to confirm payment was made as promised. If not received, discuss reason for missed payment and negotiate new payment date.</textarea>
+                </div>
+            </div>
+            
+            <!-- Customer Status Update Section -->
+            <div class="form-section">
+                <div class="form-section-title">Customer Status Update</div>
+                
+                <div class="status-indicators">
+                    <div class="status-group">
+                        <div class="status-title">Customer Status</div>
+                        <div class="status-options">
+                            <label class="radio-label">
+                                <input type="radio" name="customer_status" class="radio-input">
+                                Cooperative
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="customer_status" class="radio-input" checked>
+                                Partially Cooperative
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="customer_status" class="radio-input">
+                                Uncooperative
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="customer_status" class="radio-input">
+                                Unreachable
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="status-group">
+                        <div class="status-title">Recovery Ability</div>
+                        <div class="status-options">
+                            <label class="radio-label">
+                                <input type="radio" name="recovery_ability" class="radio-input">
+                                Full
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="recovery_ability" class="radio-input" checked>
+                                Partial
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="recovery_ability" class="radio-input">
+                                Unlikely
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="recovery_ability" class="radio-input">
+                                Unknown
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="status-group">
+                        <div class="status-title">Processing State</div>
+                        <div class="status-options">
+                            <label class="radio-label">
+                                <input type="radio" name="processing_state" class="radio-input">
+                                Initial Contact
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="processing_state" class="radio-input" checked>
+                                Follow Up
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="processing_state" class="radio-input">
+                                Payment Arrangement
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="processing_state" class="radio-input">
+                                Escalated
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Status Information (Collapsible) -->
+                <div class="collapsible-section">
+                    <div class="collapsible-header">
+                        <span>Additional Status Information</span>
+                        <span class="toggle-icon">+</span>
+                    </div>
+                    <div class="collapsible-content" style="display: none;">
+                        <div class="status-indicators">
+                            <div class="status-group">
+                                <div class="status-title">Collateral Status</div>
+                                <div class="status-options">
+                                    <label class="radio-label">
+                                        <input type="radio" name="collateral_status" class="radio-input" checked>
+                                        Secured
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="collateral_status" class="radio-input">
+                                        At Risk
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="collateral_status" class="radio-input">
+                                        Damaged
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="collateral_status" class="radio-input">
+                                        Missing
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="status-group">
+                                <div class="status-title">Lending Violation</div>
+                                <div class="status-options">
+                                    <label class="radio-label">
+                                        <input type="radio" name="lending_violation" class="radio-input" checked>
+                                        None
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="lending_violation" class="radio-input">
+                                        Minor
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="lending_violation" class="radio-input">
+                                        Major
+                                    </label>
+                                    <label class="radio-label">
+                                        <input type="radio" name="lending_violation" class="radio-input">
+                                        Critical
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Information Update Section -->
+            <div class="form-section">
+                <div class="form-section-title">Contact Information Update</div>
+                
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" class="checkbox-input">
+                        Update customer contact information
+                    </label>
+                </div>
+                
+                <div class="form-row" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input type="text" class="form-control" placeholder="Enter new phone number">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Phone Type</label>
+                        <select class="form-control">
+                            <option value="mobile">Mobile</option>
+                            <option value="home">Home</option>
+                            <option value="work">Work</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Verification Status</label>
+                        <select class="form-control">
+                            <option value="verified">Verified</option>
+                            <option value="unverified">Unverified</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Form Buttons -->
+            <div class="form-buttons">
+                <button class="btn btn-secondary">Save as Draft</button>
+                <button class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comments explaining the wireframe -->
+    <!--
+    This wireframe represents the Action Recording Form for a Collection Agent with the following key components:
+    
+    1. Customer Information: Shows basic customer information and loan summary
+    2. Action Details: Fields for recording the type, subtype, result, date, time, and duration of the action
+    3. Notes: Text area for detailed notes about the interaction with quick template buttons
+    4. Promise to Pay: Fields for recording payment promises including amount, date, and method
+    5. Follow-up Actions: Options for scheduling follow-up actions
+    6. Customer Status Update: Radio buttons for updating various customer status indicators
+    7. Contact Information Update: Fields for updating customer contact information
+    
+    The layout is designed to provide a comprehensive form for documenting all aspects of customer interactions,
+    with emphasis on capturing structured data for reporting and analysis.
+    
+    Key features include:
+    - Quick template buttons for common note patterns
+    - Structured fields for recording promises to pay
+    - Options for scheduling follow-up actions
+    - Customer status update indicators aligned with the data model
+    - Collapsible sections for additional information
+    - Clear indication of required fields
+    
+    This design supports both the Manual and Auto mode workflows described in the user journeys,
+    providing a consistent way to document customer interactions regardless of the contact method.
+    -->
+</body>
+</html>

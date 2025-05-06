@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer 360 View - Collection CRM</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="assets/design-system.css">
+    <link rel="stylesheet" href="assets/common.css">
+    <style>
+        /* Customer 360 specific styles */
+        .tab-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .contact-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .contact-section-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--neutral-600);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .contact-section-title i {
+            margin-right: 0.5rem;
+            color: var(--primary-500);
+        }
+        
+        .contact-item-360 {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            margin-bottom: 0.75rem;
+            background-color: var(--neutral-50);
+            border: 1px solid var(--neutral-200);
+        }
+        
+        .contact-icon-360 {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background-color: var(--primary-100);
+            color: var(--primary-700);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+            font-size: 1rem;
+        }
+        
+        .contact-details-360 {
+            flex: 1;
+        }
+        
+        .contact-label-360 {
+            font-size: 0.75rem;
+            color: var(--neutral-500);
+            margin-bottom: 0.25rem;
+        }
+        
+        .contact-value-360 {
+            font-weight: 600;
+            color: var(--neutral-800);
+        }
+        
+        .contact-actions-360 {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .best-time {
+            font-size: 0.75rem;
+            color: var(--neutral-600);
+            background-color: var(--neutral-100);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            margin-left: 0.5rem;
+            white-space: nowrap;
+        }
+        
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--neutral-200);
+        }
+        
+        .payment-item:last-child {
+            border-bottom: none;
+        }
+        
+        .payment-date {
+            font-weight: 600;
+            color: var(--neutral-800);
+        }
+        
+        .payment-method {
+            font-size: 0.75rem;
+            color: var(--neutral-500);
+            margin-top: 0.25rem;
+        }
+        
+        .payment-amount {
+            font-weight: 700;
+            color: var(--success-600);
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+        }
+        
+        .status-box {
+            background-color: var(--neutral-50);
+            border-radius: 0.375rem;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid var(--neutral-200);
+        }
+        
+        .status-box-title {
+            font-size: 0.75rem;
+            color: var(--neutral-600);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .status-box-value {
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+        
+        .status-uncooperative {
+            color: var(--danger-600);
+        }
+        
+        .status-secured {
+            color: var(--success-600);
+        }
+        
+        .status-followup {
+            color: var(--warning-600);
+        }
+        
+        .status-none {
+            color: var(--primary-600);
+        }
+        
+        .status-partial {
+            color: var(--warning-600);
+        }
+        
+        .action-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .action-panel-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .action-panel-avatar {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background-color: var(--primary-100);
+            color: var(--primary-700);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .action-panel-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .action-panel-name {
+            font-weight: 600;
+            color: var(--neutral-800);
+        }
+        
+        .action-panel-contact {
+            font-size: 0.75rem;
+            color: var(--neutral-500);
+        }
+        
+        .action-panel-buttons {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        body {
+            padding-bottom: 5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <a href="#" class="header-logo">
+            <i class="bi bi-building-lock header-logo-icon"></i>
+            Collection CRM
+        </a>
+        <div class="user-profile">
+            <div class="user-avatar">
+                <span class="user-avatar-initials">MN</span>
+            </div>
+            <div class="user-info">
+                <span class="user-name">Minh Nguyen</span>
+                <span class="user-role">Collection Agent</span>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Navigation -->
+    <nav class="main-nav">
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="#" class="nav-link">Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link active">Customers</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">Calendar</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">Reports</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">Settings</a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="page-container">
+        <!-- Customer Header -->
+        <div class="customer-header">
+            <div class="customer-info">
+                <div class="customer-avatar">NVA</div>
+                <div class="customer-details">
+                    <h1>Nguyen Van A</h1>
+                    <p>CIF: 123456789 | Individual | Segment: Premium</p>
+                    <p>Case Status: Active Collection</p>
+                </div>
+            </div>
+            <div class="customer-status">
+                <div class="status-badge status-active">ACTIVE</div>
+                <div class="status-badge status-risk">HIGH RISK</div>
+            </div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active">Overview</div>
+            <div class="tab">Loans</div>
+            <div class="tab">Actions</div>
+            <div class="tab">Payments</div>
+            <div class="tab">Documents</div>
+            <div class="tab">References</div>
+        </div>
+        
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Contact Information Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Contact Information</h2>
+                    <button class="btn btn-sm btn-secondary">
+                        <i class="bi bi-pencil"></i>
+                        Edit
+                    </button>
+                </div>
+                
+                <!-- Phone Numbers -->
+                <div class="contact-section">
+                    <div class="contact-section-title">
+                        <i class="bi bi-telephone"></i>
+                        Phone Numbers
+                    </div>
+                    
+                    <div class="contact-item-360">
+                        <div class="contact-icon-360">
+                            <i class="bi bi-phone"></i>
+                        </div>
+                        <div class="contact-details-360">
+                            <div class="contact-label-360">MOBILE (Primary, Verified)</div>
+                            <div class="contact-value-360">+84 90 123 4567</div>
+                        </div>
+                        <div class="success-rate success-rate-high"></div>
+                        <div class="best-time">
+                            <i class="bi bi-clock"></i>
+                            Best: 9-11 AM
+                        </div>
+                        <div class="contact-actions-360">
+                            <button class="btn btn-sm btn-primary">
+                                <i class="bi bi-telephone"></i>
+                                Call
+                            </button>
+                            <button class="btn btn-sm btn-secondary">
+                                <i class="bi bi-chat"></i>
+                                SMS
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item-360">
+                        <div class="contact-icon-360">
+                            <i class="bi bi-telephone"></i>
+                        </div>
+                        <div class="contact-details-360">
+                            <div class="contact-label-360">HOME</div>
+                            <div class="contact-value-360">+84 28 1234 5678</div>
+                        </div>
+                        <div class="success-rate success-rate-medium"></div>
+                        <div class="best-time">
+                            <i class="bi bi-clock"></i>
+                            Best: 6-8 PM
+                        </div>
+                        <div class="contact-actions-360">
+                            <button class="btn btn-sm btn-primary">
+                                <i class="bi bi-telephone"></i>
+                                Call
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item-360">
+                        <div class="contact-icon-360">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <div class="contact-details-360">
+                            <div class="contact-label-360">WORK</div>
+                            <div class="contact-value-360">+84 28 9876 5432</div>
+                        </div>
+                        <div class="success-rate success-rate-low"></div>
+                        <div class="contact-actions-360">
+                            <button class="btn btn-sm btn-primary">
+                                <i class="bi bi-telephone"></i>
+                                Call
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Email Addresses -->
+                <div class="contact-section">
+                    <div class="contact-section-title">
+                        <i class="bi bi-envelope"></i>
+                        Email Addresses
+                    </div>
+                    
+                    <div class="contact-item-360">
+                        <div class="contact-icon-360">
+                            <i class="bi bi-envelope"></i>
+                        </div>
+                        <div class="contact-details-360">
+                            <div class="contact-label-360">EMAIL (Primary, Verified)</div>
+                            <div class="contact-value-360">nguyenvana@email.com</div>
+                        </div>
+                        <div class="contact-actions-360">
+                            <button class="btn btn-sm btn-primary">
+                                <i class="bi bi-envelope"></i>
+                                Email
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Physical Addresses -->
+                <div class="contact-section">
+                    <div class="contact-section-title">
+                        <i class="bi bi-geo-alt"></i>
+                        Addresses
+                    </div>
+                    
+                    <div class="contact-item-360">
+                        <div class="contact-icon-360">
+                            <i class="bi bi-house"></i>
+                        </div>
+                        <div class="contact-details-360">
+                            <div class="contact-label-360">HOME ADDRESS (Primary, Verified)</div>
+                            <div class="contact-value-360">123 Nguyen Hue Street, District 1, Ho Chi Minh City</div>
+                        </div>
+                        <div class="contact-actions-360">
+                            <button class="btn btn-sm btn-secondary">
+                                <i class="bi bi-map"></i>
+                                Map
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item-360">
+                        <div class="contact-icon-360">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <div class="contact-details-360">
+                            <div class="contact-label-360">WORK ADDRESS</div>
+                            <div class="contact-value-360">456 Le Loi Street, District 1, Ho Chi Minh City</div>
+                        </div>
+                        <div class="contact-actions-360">
+                            <button class="btn btn-sm btn-secondary">
+                                <i class="bi bi-map"></i>
+                                Map
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Loan Summary Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Loan Summary</h2>
+                    <button class="btn btn-sm btn-secondary">
+                        <i class="bi bi-graph-up"></i>
+                        Analytics
+                    </button>
+                </div>
+                
+                <div class="loan-item loan-item-overdue">
+                    <div class="loan-header">
+                        <div class="loan-title">Personal Loan #PL12345</div>
+                        <div class="loan-status loan-status-overdue">45 DPD</div>
+                    </div>
+                    <div class="loan-details">
+                        <div class="loan-detail-item">
+                            <div class="label">Outstanding</div>
+                            <div class="value">₫150,000,000</div>
+                        </div>
+                        <div class="loan-detail-item">
+                            <div class="label">Due Amount</div>
+                            <div class="value">₫15,000,000</div>
+                        </div>
+                        <div class="loan-detail-item">
+                            <div class="label">Next Payment</div>
+                            <div class="value">05/15/2025</div>
+                        </div>
+                        <div class="loan-detail-item">
+                            <div class="label">Product Type</div>
+                            <div class="value">Personal Loan</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="loan-item loan-item-warning">
+                    <div class="loan-header">
+                        <div class="loan-title">Credit Card #CC67890</div>
+                        <div class="loan-status loan-status-warning">30 DPD</div>
+                    </div>
+                    <div class="loan-details">
+                        <div class="loan-detail-item">
+                            <div class="label">Outstanding</div>
+                            <div class="value">₫45,000,000</div>
+                        </div>
+                        <div class="loan-detail-item">
+                            <div class="label">Minimum Payment</div>
+                            <div class="value">₫2,250,000</div>
+                        </div>
+                        <div class="loan-detail-item">
+                            <div class="label">Due Date</div>
+                            <div class="value">05/10/2025</div>
+                        </div>
+                        <div class="loan-detail-item">
+                            <div class="label">Credit Limit</div>
+                            <div class="value">₫50,000,000</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="loan-item loan-item-good">
+                    <div class="loan-header">
+                        <div class="loan-title">Auto Loan #AL54321</div>
+                        <div class="loan-status loan-status-good">Current</div>
+                    </div>
+                    <div class="loan-details">
+                        <div class="loan-detail-item">
+                            <div class="label">Outstanding</div>
+                            <div class="value">₫200,000,000</div>
+                        </div>
+                        <div class="loan-detail-item">
+                            <div class="label">Monthly Payment</div>
+                            <div class="value">₫8,500,000</div>
+                        </div>
+                        <div class="loan-detail-item">
+                            <div class="label">Next Payment</div>
+                            <div class="value">05/20/2025</div>
+                        </div>
+                        <div class="loan-detail-item">
+                            <div class="label">Collateral</div>
+                            <div class="value">Toyota Camry (2023)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action History Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Action History</h2>
+                    <button class="btn btn-sm btn-secondary">
+                        <i class="bi bi-filter"></i>
+                        Filter
+                    </button>
+                </div>
+                
+                <div class="timeline">
+                    <div class="timeline-item timeline-item-call">
+                        <div class="timeline-header">
+                            <div class="timeline-type">Call</div>
+                            <div class="timeline-date">May 5, 2025 - 10:30 AM</div>
+                        </div>
+                        <div class="timeline-content">
+                            Discussed overdue payment on Personal Loan. Customer promised to pay ₫15M by May 10.
+                            <div class="timeline-result timeline-result-success">PROMISE TO PAY</div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item timeline-item-sms">
+                        <div class="timeline-header">
+                            <div class="timeline-type">SMS</div>
+                            <div class="timeline-date">May 4, 2025 - 2:15 PM</div>
+                        </div>
+                        <div class="timeline-content">
+                            Sent payment reminder for Personal Loan and Credit Card.
+                            <div class="timeline-result">SENT</div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item timeline-item-call">
+                        <div class="timeline-header">
+                            <div class="timeline-type">Call</div>
+                            <div class="timeline-date">May 2, 2025 - 11:45 AM</div>
+                        </div>
+                        <div class="timeline-content">
+                            Called to discuss overdue payments. No answer.
+                            <div class="timeline-result timeline-result-failure">NO ANSWER</div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item timeline-item-email">
+                        <div class="timeline-header">
+                            <div class="timeline-type">Email</div>
+                            <div class="timeline-date">May 1, 2025 - 9:00 AM</div>
+                        </div>
+                        <div class="timeline-content">
+                            Sent statement of account and payment reminder.
+                            <div class="timeline-result">SENT</div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item timeline-item-payment">
+                        <div class="timeline-header">
+                            <div class="timeline-type">Payment</div>
+                            <div class="timeline-date">April 15, 2025 - 3:30 PM</div>
+                        </div>
+                        <div class="timeline-content">
+                            Received partial payment of ₫5M for Personal Loan.
+                            <div class="timeline-result timeline-result-success">COMPLETED</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment History Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Payment History</h2>
+                    <button class="btn btn-sm btn-secondary">
+                        <i class="bi bi-download"></i>
+                        Export
+                    </button>
+                </div>
+                
+                <div class="payment-item">
+                    <div>
+                        <div class="payment-date">April 15, 2025</div>
+                        <div class="payment-method">Bank Transfer</div>
+                    </div>
+                    <div class="payment-amount">₫5,000,000</div>
+                </div>
+                
+                <div class="payment-item">
+                    <div>
+                        <div class="payment-date">March 20, 2025</div>
+                        <div class="payment-method">Cash</div>
+                    </div>
+                    <div class="payment-amount">₫15,000,000</div>
+                </div>
+                
+                <div class="payment-item">
+                    <div>
+                        <div class="payment-date">February 18, 2025</div>
+                        <div class="payment-method">Bank Transfer</div>
+                    </div>
+                    <div class="payment-amount">₫15,000,000</div>
+                </div>
+                
+                <div class="payment-item">
+                    <div>
+                        <div class="payment-date">January 15, 2025</div>
+                        <div class="payment-method">Bank Transfer</div>
+                    </div>
+                    <div class="payment-amount">₫15,000,000</div>
+                </div>
+                
+                <div class="payment-item">
+                    <div>
+                        <div class="payment-date">December 18, 2024</div>
+                        <div class="payment-method">Cash</div>
+                    </div>
+                    <div class="payment-amount">₫15,000,000</div>
+                </div>
+            </div>
+            
+            <!-- Customer Status Card -->
+            <div class="card full-width">
+                <div class="card-header">
+                    <h2 class="card-title">Customer Status</h2>
+                    <button class="btn btn-sm btn-secondary">
+                        <i class="bi bi-pencil"></i>
+                        Update
+                    </button>
+                </div>
+                
+                <div class="status-grid">
+                    <div class="status-box">
+                        <div class="status-box-title">Customer Status</div>
+                        <div class="status-box-value status-uncooperative">UNCOOPERATIVE</div>
+                    </div>
+                    
+                    <div class="status-box">
+                        <div class="status-box-title">Collateral Status</div>
+                        <div class="status-box-value status-secured">SECURED</div>
+                    </div>
+                    
+                    <div class="status-box">
+                        <div class="status-box-title">Processing State</div>
+                        <div class="status-box-value status-followup">FOLLOW_UP</div>
+                    </div>
+                    
+                    <div class="status-box">
+                        <div class="status-box-title">Lending Violation</div>
+                        <div class="status-box-value status-none">NONE</div>
+                    </div>
+                    
+                    <div class="status-box">
+                        <div class="status-box-title">Recovery Ability</div>
+                        <div class="status-box-value status-partial">PARTIAL</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Panel -->
+        <div class="action-panel">
+            <div class="action-panel-info">
+                <div class="action-panel-avatar">NVA</div>
+                <div class="action-panel-details">
+                    <span class="action-panel-name">Nguyen Van A</span>
+                    <span class="action-panel-contact">Last contacted: May 5, 2025 (2 days ago)</span>
+                </div>
+            </div>
+            <div class="action-panel-buttons">
+                <button class="btn btn-secondary">
+                    <i class="bi bi-chat"></i>
+                    Send SMS
+                </button>
+                <button class="btn btn-secondary">
+                    <i class="bi bi-envelope"></i>
+                    Send Email
+                </button>
+                <button class="btn btn-primary">
+                    <i class="bi bi-telephone"></i>
+                    Call Now
+                </button>
+                <button class="btn btn-primary">
+                    <i class="bi bi-journal-text"></i>
+                    Record Action
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
