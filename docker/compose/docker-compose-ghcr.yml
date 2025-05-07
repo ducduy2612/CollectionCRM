@@ -1,0 +1,173 @@
+version: '3.8'
+
+services:
+  # API Gateway
+  api-gateway:
+    image: ghcr.io/${GITHUB_ORG}/collectioncrm/api-gateway:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - auth-service
+      - bank-sync-service
+      - payment-service
+      - workflow-service
+      - redis
+
+  # Authentication Service
+  auth-service:
+    image: ghcr.io/${GITHUB_ORG}/collectioncrm/auth-service:latest
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=postgres
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+
+  # Bank Synchronization Service
+  bank-sync-service:
+    image: ghcr.io/${GITHUB_ORG}/collectioncrm/bank-sync-service:latest
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=postgres
+    depends_on:
+      - postgres
+      - kafka
+      - elasticsearch
+
+  # Payment Processing Service
+  payment-service:
+    image: ghcr.io/${GITHUB_ORG}/collectioncrm/payment-service:latest
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=postgres
+    depends_on:
+      - postgres
+      - kafka
+      - redis
+
+  # Collection Workflow Service
+  workflow-service:
+    image: ghcr.io/${GITHUB_ORG}/collectioncrm/workflow-service:latest
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=postgres
+    depends_on:
+      - postgres
+      - kafka
+      - elasticsearch
+      - redis
+
+  # Frontend
+  frontend:
+    image: ghcr.io/${GITHUB_ORG}/collectioncrm/frontend:latest
+    ports:
+      - "8080:80"
+    depends_on:
+      - api-gateway
+
+  # PostgreSQL
+  postgres:
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=collectioncrm
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=collectioncrm
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+  # Kibana
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.0
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+
+  # Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.0.1
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+
+  kafka:
+    image: confluentinc/cp-kafka:7.0.1
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+
+  # Kafka UI
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+    ports:
+      - "8090:8080"
+    depends_on:
+      - kafka
+
+  # Redis
+  redis:
+    image: redis:7
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:v2.33.0
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:8.4.3
+    volumes:
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres-data:
+  elasticsearch-data:
+  zookeeper-data:
+  kafka-data:
+  redis-data:
+  prometheus-data:
+  grafana-data:

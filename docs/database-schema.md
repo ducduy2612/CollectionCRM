@@ -2,6 +2,25 @@
 
 This document outlines the physical database schema for the Collection CRM system, mapping the logical data model to database tables with appropriate optimizations.
 
+## Schema Organization for Microservices Architecture
+
+The database schema is organized into separate schemas that align with the microservices architecture of the Collection CRM system. This organization provides several benefits:
+
+1. **Clear Domain Boundaries**: Each schema corresponds to a specific microservice domain, making it easier to understand which tables belong to which service.
+
+2. **Improved Security**: Schema-level permissions can be applied to restrict access to specific domains.
+
+3. **Future Isolation**: This organization supports future isolation into separate databases per microservice. As the system grows, each schema can be migrated to its own database instance without changing the application logic.
+
+4. **Independent Evolution**: Each microservice team can manage their schema independently, reducing coordination overhead.
+
+The following schemas are defined:
+
+- **auth_service**: Authentication and authorization related tables (not detailed in this document)
+- **bank_sync_service**: Customer and loan-related tables synchronized from external systems
+- **payment_service**: Payment-related tables
+- **workflow_service**: Collection workflow-related tables including agents, actions, and cases
+
 ## Table Definitions
 
 ### SynchronizedEntity Base Fields
@@ -19,7 +38,7 @@ These fields are included in all tables that represent synchronized entities:
 | is_editable | BOOLEAN | Whether record can be modified |
 | last_synced_at | TIMESTAMP | Last synchronization timestamp |
 
-### customers
+### bank_sync_service.customers
 
 Stores information about individual and organizational customers.
 
@@ -54,7 +73,7 @@ Stores information about individual and organizational customers.
 - Index: `status`
 - Index: `type`
 
-### phones
+### bank_sync_service.phones
 
 Stores phone numbers associated with customers.
 
@@ -79,9 +98,9 @@ Stores phone numbers associated with customers.
 - Primary Key: `id`
 - Unique Index: `(cif, type)`
 - Index: `number`
-- Foreign Key: `cif` references `customers(cif)`
+- Foreign Key: `cif` references `bank_sync_service.customers(cif)`
 
-### addresses
+### bank_sync_service.addresses
 
 Stores physical addresses associated with customers.
 
@@ -113,9 +132,9 @@ Stores physical addresses associated with customers.
 - Index: `city`
 - Index: `state`
 - Index: `country`
-- Foreign Key: `cif` references `customers(cif)`
+- Foreign Key: `cif` references `bank_sync_service.customers(cif)`
 
-### emails
+### bank_sync_service.emails
 
 Stores email addresses associated with customers.
 
@@ -139,9 +158,9 @@ Stores email addresses associated with customers.
 - Primary Key: `id`
 - Unique Index: `(cif, address)`
 - Index: `address`
-- Foreign Key: `cif` references `customers(cif)`
+- Foreign Key: `cif` references `bank_sync_service.customers(cif)`
 
-### loans
+### bank_sync_service.loans
 
 Stores information about loans issued to customers.
 
@@ -187,9 +206,9 @@ Stores information about loans issued to customers.
 - Index: `dpd`
 - Index: `delinquency_status`
 - Index: `next_payment_date`
-- Foreign Key: `cif` references `customers(cif)`
+- Foreign Key: `cif` references `bank_sync_service.customers(cif)`
 
-### collaterals
+### bank_sync_service.collaterals
 
 Stores information about assets used as collateral for loans.
 
@@ -227,9 +246,9 @@ Stores information about assets used as collateral for loans.
 - Index: `vin`
 - Index: `license_plate`
 - Index: `title_number`
-- Foreign Key: `cif` references `customers(cif)`
+- Foreign Key: `cif` references `bank_sync_service.customers(cif)`
 
-### action_records
+### workflow_service.action_records
 
 Stores actions taken by collection agents.
 
@@ -261,11 +280,11 @@ Stores actions taken by collection agents.
 - Index: `type`
 - Index: `action_date`
 - Index: `action_result`
-- Foreign Key: `cif` references `customers(cif)`
-- Foreign Key: `loan_account_number` references `loans(account_number)`
-- Foreign Key: `agent_id` references `agents(id)`
+- Foreign Key: `cif` references `bank_sync_service.customers(cif)`
+- Foreign Key: `loan_account_number` references `bank_sync_service.loans(account_number)`
+- Foreign Key: `agent_id` references `workflow_service.agents(id)`
 
-### agents
+### workflow_service.agents
 
 Stores information about collection agents and their teams.
 
@@ -290,7 +309,7 @@ Stores information about collection agents and their teams.
 - Index: `type`
 - Index: `is_active`
 
-### payments
+### payment_service.payments
 
 Stores payments made toward loans.
 
@@ -321,10 +340,10 @@ Stores payments made toward loans.
 - Index: `cif`
 - Index: `payment_date`
 - Index: `status`
-- Foreign Key: `loan_account_number` references `loans(account_number)`
-- Foreign Key: `cif` references `customers(cif)`
+- Foreign Key: `loan_account_number` references `bank_sync_service.loans(account_number)`
+- Foreign Key: `cif` references `bank_sync_service.customers(cif)`
 
-### due_segmentations
+### bank_sync_service.due_segmentations
 
 Stores due segmentation amounts for different due dates for loans.
 
@@ -349,9 +368,9 @@ Stores due segmentation amounts for different due dates for loans.
 - Primary Key: `id`
 - Unique Index: `(loan_account_number, due_date)`
 - Index: `due_date`
-- Foreign Key: `loan_account_number` references `loans(account_number)`
+- Foreign Key: `loan_account_number` references `bank_sync_service.loans(account_number)`
 
-### loan_collaterals
+### bank_sync_service.loan_collaterals
 
 Junction table for the many-to-many relationship between loans and collaterals.
 
@@ -367,10 +386,10 @@ Junction table for the many-to-many relationship between loans and collaterals.
 **Indexes:**
 - Primary Key: `id`
 - Unique Index: `(loan_account_number, collateral_number)`
-- Foreign Key: `loan_account_number` references `loans(account_number)`
-- Foreign Key: `collateral_number` references `collaterals(collateral_number)`
+- Foreign Key: `loan_account_number` references `bank_sync_service.loans(account_number)`
+- Foreign Key: `collateral_number` references `bank_sync_service.collaterals(collateral_number)`
 
-### customer_agents
+### workflow_service.customer_agents
 
 Stores the assignment of customers to agents with historical tracking (SCD Type 2).
 
@@ -392,11 +411,11 @@ Stores the assignment of customers to agents with historical tracking (SCD Type 
 - Index: `assigned_call_agent_id`
 - Index: `assigned_field_agent_id`
 - Index: `is_current`
-- Foreign Key: `cif` references `customers(cif)`
-- Foreign Key: `assigned_call_agent_id` references `agents(id)`
-- Foreign Key: `assigned_field_agent_id` references `agents(id)`
+- Foreign Key: `cif` references `bank_sync_service.customers(cif)`
+- Foreign Key: `assigned_call_agent_id` references `workflow_service.agents(id)`
+- Foreign Key: `assigned_field_agent_id` references `workflow_service.agents(id)`
 
-### customer_cases
+### workflow_service.customer_cases
 
 Stores the current status of customers for strategy allocation.
 
@@ -424,11 +443,11 @@ Stores the current status of customers for strategy allocation.
 - Index: `customer_status`
 - Index: `processing_state_status`
 - Index: `recovery_ability_status`
-- Foreign Key: `cif` references `customers(cif)`
-- Foreign Key: `assigned_call_agent_id` references `agents(id)`
-- Foreign Key: `assigned_field_agent_id` references `agents(id)`
+- Foreign Key: `cif` references `bank_sync_service.customers(cif)`
+- Foreign Key: `assigned_call_agent_id` references `workflow_service.agents(id)`
+- Foreign Key: `assigned_field_agent_id` references `workflow_service.agents(id)`
 
-### customer_case_actions
+### workflow_service.customer_case_actions
 
 Stores actions and status inputs from agents at the customer level.
 
@@ -454,10 +473,10 @@ Stores actions and status inputs from agents at the customer level.
 - Index: `cif`
 - Index: `agent_id`
 - Index: `action_date`
-- Foreign Key: `cif` references `customers(cif)`
-- Foreign Key: `agent_id` references `agents(id)`
+- Foreign Key: `cif` references `bank_sync_service.customers(cif)`
+- Foreign Key: `agent_id` references `workflow_service.agents(id)`
 
-### reference_customers
+### bank_sync_service.reference_customers
 
 Stores related contacts to customers (such as guarantors, spouses, or other related parties).
 
@@ -490,7 +509,7 @@ Stores related contacts to customers (such as guarantors, spouses, or other rela
 - Index: `relationship_type`
 - Index: `national_id`
 - Index: `registration_number`
-- Foreign Key: `primary_cif` references `customers(cif)`
+- Foreign Key: `primary_cif` references `bank_sync_service.customers(cif)`
 
 ## Database Optimization Strategies
 
@@ -509,9 +528,9 @@ Based on the access patterns identified in the logical data model, the following
 
 For tables expected to grow significantly over time, consider the following partitioning strategies:
 
-1. **action_records**: Partition by action_date (monthly or quarterly) to improve query performance for date-range queries and facilitate data archiving.
-2. **payments**: Partition by payment_date (monthly) to optimize payment history queries and reporting.
-3. **customer_agents**: Partition by start_date (quarterly) to efficiently manage historical assignment data.
+1. **workflow_service.action_records**: Partition by action_date (monthly or quarterly) to improve query performance for date-range queries and facilitate data archiving.
+2. **payment_service.payments**: Partition by payment_date (monthly) to optimize payment history queries and reporting.
+3. **workflow_service.customer_agents**: Partition by start_date (quarterly) to efficiently manage historical assignment data.
 
 ### 3. Query Optimization for Access Patterns
 
@@ -519,52 +538,52 @@ For tables expected to grow significantly over time, consider the following part
 
 ```sql
 -- Optimize for retrieving customer by ID
-CREATE INDEX idx_customers_cif ON customers(cif);
+CREATE INDEX idx_customers_cif ON bank_sync_service.customers(cif);
 
 -- Optimize for searching customers by name, national ID, or company registration
-CREATE INDEX idx_customers_name ON customers(name);
-CREATE INDEX idx_customers_national_id ON customers(national_id);
-CREATE INDEX idx_customers_registration_number ON customers(registration_number);
+CREATE INDEX idx_customers_name ON bank_sync_service.customers(name);
+CREATE INDEX idx_customers_national_id ON bank_sync_service.customers(national_id);
+CREATE INDEX idx_customers_registration_number ON bank_sync_service.customers(registration_number);
 
 -- Optimize for listing customers by segment or risk category
-CREATE INDEX idx_customers_segment ON customers(segment);
+CREATE INDEX idx_customers_segment ON bank_sync_service.customers(segment);
 ```
 
 #### Loan Management Access Pattern
 
 ```sql
 -- Optimize for retrieving loan by ID or account number
-CREATE INDEX idx_loans_account_number ON loans(account_number);
+CREATE INDEX idx_loans_account_number ON bank_sync_service.loans(account_number);
 
 -- Optimize for listing loans by customer
-CREATE INDEX idx_loans_cif ON loans(cif);
+CREATE INDEX idx_loans_cif ON bank_sync_service.loans(cif);
 
 -- Optimize for listing loans by delinquency status
-CREATE INDEX idx_loans_delinquency_status ON loans(delinquency_status);
-CREATE INDEX idx_loans_dpd ON loans(dpd);
+CREATE INDEX idx_loans_delinquency_status ON bank_sync_service.loans(delinquency_status);
+CREATE INDEX idx_loans_dpd ON bank_sync_service.loans(dpd);
 ```
 
 #### Collection Workflow Access Pattern
 
 ```sql
 -- Optimize for assigning customers to agents
-CREATE INDEX idx_customer_agents_is_current ON customer_agents(is_current);
-CREATE INDEX idx_customer_agents_cif_is_current ON customer_agents(cif, is_current);
+CREATE INDEX idx_customer_agents_is_current ON workflow_service.customer_agents(is_current);
+CREATE INDEX idx_customer_agents_cif_is_current ON workflow_service.customer_agents(cif, is_current);
 
 -- Optimize for recording collection actions and outcomes
-CREATE INDEX idx_action_records_cif_action_date ON action_records(cif, action_date);
-CREATE INDEX idx_action_records_loan_account_number_action_date ON action_records(loan_account_number, action_date);
+CREATE INDEX idx_action_records_cif_action_date ON workflow_service.action_records(cif, action_date);
+CREATE INDEX idx_action_records_loan_account_number_action_date ON workflow_service.action_records(loan_account_number, action_date);
 
 -- Optimize for tracking customer-level collection status
-CREATE INDEX idx_customer_cases_status_composite ON customer_cases(customer_status, processing_state_status, recovery_ability_status);
+CREATE INDEX idx_customer_cases_status_composite ON workflow_service.customer_cases(customer_status, processing_state_status, recovery_ability_status);
 ```
 
 #### Payment Tracking Access Pattern
 
 ```sql
 -- Optimize for viewing payment history by loan or customer
-CREATE INDEX idx_payments_loan_account_number_payment_date ON payments(loan_account_number, payment_date);
-CREATE INDEX idx_payments_cif_payment_date ON payments(cif, payment_date);
+CREATE INDEX idx_payments_loan_account_number_payment_date ON payment_service.payments(loan_account_number, payment_date);
+CREATE INDEX idx_payments_cif_payment_date ON payment_service.payments(cif, payment_date);
 ```
 
 ### 4. Data Volume and Growth Considerations
@@ -621,23 +640,23 @@ CREATE INDEX idx_payments_cif_payment_date ON payments(cif, payment_date);
 ## Database Schema Diagram
 
 ```
-customers 1 --- * phones
-customers 1 --- * addresses
-customers 1 --- * emails
-customers 1 --- * loans
-customers 1 --- * collaterals
-customers 1 --- * reference_customers
-customers 1 --- * customer_case_actions
-customers 1 --- 1 customer_cases
-customers * --- * agents (via customer_agents)
+bank_sync_service.customers 1 --- * bank_sync_service.phones
+bank_sync_service.customers 1 --- * bank_sync_service.addresses
+bank_sync_service.customers 1 --- * bank_sync_service.emails
+bank_sync_service.customers 1 --- * bank_sync_service.loans
+bank_sync_service.customers 1 --- * bank_sync_service.collaterals
+bank_sync_service.customers 1 --- * bank_sync_service.reference_customers
+bank_sync_service.customers 1 --- * workflow_service.customer_case_actions
+bank_sync_service.customers 1 --- 1 workflow_service.customer_cases
+bank_sync_service.customers * --- * workflow_service.agents (via workflow_service.customer_agents)
 
-loans 1 --- * due_segmentations
-loans 1 --- * action_records
-loans 1 --- * payments
-loans * --- * collaterals (via loan_collaterals)
+bank_sync_service.loans 1 --- * bank_sync_service.due_segmentations
+bank_sync_service.loans 1 --- * workflow_service.action_records
+bank_sync_service.loans 1 --- * payment_service.payments
+bank_sync_service.loans * --- * bank_sync_service.collaterals (via bank_sync_service.loan_collaterals)
 
-agents 1 --- * action_records
-agents 1 --- * customer_case_actions
+workflow_service.agents 1 --- * workflow_service.action_records
+workflow_service.agents 1 --- * workflow_service.customer_case_actions
 ```
 
 ## Conclusion
