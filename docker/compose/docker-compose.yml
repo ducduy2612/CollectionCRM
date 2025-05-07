@@ -84,13 +84,34 @@ services:
   postgres:
     image: postgres:14
     environment:
-      - POSTGRES_USER=collectioncrm
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_ADMIN_PASSWORD:-admin_password}
       - POSTGRES_DB=collectioncrm
+    env_file:
+      - ../config/postgres.env
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ../../infrastructure/database:/docker-entrypoint-initdb.d
+      - ../../infrastructure/database/backup:/backup
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    
+  # PostgreSQL Exporter for Prometheus
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.10.1
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:${POSTGRES_ADMIN_PASSWORD:-admin_password}@postgres:5432/collectioncrm?sslmode=disable
+    ports:
+      - "9187:9187"
+    depends_on:
+      - postgres
+    restart: unless-stopped
 
   # Elasticsearch
   elasticsearch:
@@ -170,10 +191,24 @@ services:
     image: grafana/grafana:8.4.3
     volumes:
       - grafana-data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/dashboards
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_SECURITY_DISABLE_GRAVATAR=true
+      - GF_SECURITY_COOKIE_SAMESITE=none
     ports:
       - "3001:3000"
     depends_on:
       - prometheus
+      - postgres-exporter
 
 volumes:
   postgres-data:
