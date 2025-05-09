@@ -12,8 +12,14 @@ services:
       - NODE_ENV=development
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - JWT_SECRET=${JWT_SECRET:-dev_jwt_secret}
+      - AUTH_SERVICE_URL=http://auth-service:3000
+      - AUTH_SERVICE_TIMEOUT=30000
+      - RATE_LIMIT_MAX_REQUESTS=100
+      - RATE_LIMIT_WINDOW_MS=900000
+      - CORS_ORIGIN=http://localhost:8080
     depends_on:
-      # - auth-service
+      - auth-service
       # - bank-sync-service
       # - payment-service
       # - workflow-service
@@ -22,22 +28,32 @@ services:
   # Authentication Service
   auth-service:
     build:
-      context: ../../src
-      dockerfile: ../docker/base-images/node.Dockerfile
-      args:
-        - SERVICE_DIR=services/auth-service
+      context: ../../
+      dockerfile: docker/base-images/auth-service.Dockerfile
+    ports:
+      - "3001:3000"
     environment:
       - NODE_ENV=development
       - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=collectioncrm
+      - DB_USER=postgres
+      - DB_PASSWORD=${POSTGRES_ADMIN_PASSWORD:-admin_password}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - JWT_SECRET=${JWT_SECRET:-dev_jwt_secret}
+      - JWT_EXPIRATION=1h
+      - SESSION_TTL=86400
+      - LOG_LEVEL=debug
+      - CORS_ORIGIN=http://localhost:8080
     volumes:
       - ../../src/services/auth-service/src:/app/src
       - ../../src/common:/app/common
     depends_on:
       - postgres
       - redis
-      - kafka
+      # - kafka
+    restart: unless-stopped
 
   # Bank Synchronization Service
   bank-sync-service:

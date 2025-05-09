@@ -18,7 +18,7 @@ export interface CacheOptions {
  * Used for caching frequently accessed data
  */
 export class CacheService {
-  private client: RedisClientType;
+  private client!: RedisClientType;
   private options: Required<CacheOptions>;
   private ready: boolean = false;
   private initPromise: Promise<void>;

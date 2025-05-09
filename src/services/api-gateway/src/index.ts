@@ -2,14 +2,15 @@ import express from 'express';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
-import { redisRateLimiter } from './middleware/rate-limiter';
+import { redisRateLimiter, routeRateLimiter } from './middleware/rate-limiter';
 import { getRedisClient } from 'collection-crm-common';
 import { createServiceProxy } from './utils/proxy.utils';
-import { serviceRoutes } from './config/routes.config';
+import { serviceRoutes, rateLimitConfigs } from './config/routes.config';
 import { logger, requestLogger } from './utils/logger.utils';
 import { errorHandler, notFoundHandler } from './middleware/error-handler.middleware';
 import { getCorsOptions } from './config/cors.config';
 import { createSwaggerSpec } from './config/swagger.config';
+import { jwtAuth } from './middleware/jwt-auth.middleware';
 
 // Load environment variables
 dotenv.config();
@@ -26,6 +27,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Request logging
 app.use(requestLogger());
+
+// JWT authentication middleware
+app.use(jwtAuth);
 
 // Redis-based rate limiting
 app.use(redisRateLimiter({
@@ -96,6 +100,20 @@ app.get('/health/redis', async (req, res) => {
 // Service proxies using the enhanced proxy utility
 Object.entries(serviceRoutes).forEach(([name, config]) => {
   logger.info(`Setting up proxy for ${config.serviceName} at ${config.path}`);
+  
+  // Add specific rate limiting for auth endpoints
+  if (name === 'auth' && config.routes) {
+    // Login rate limiting
+    app.use(`${config.path}/login`, routeRateLimiter(rateLimitConfigs.auth.login));
+    
+    // Token refresh rate limiting
+    app.use(`${config.path}/token/refresh`, routeRateLimiter(rateLimitConfigs.auth.tokenRefresh));
+    
+    // Password reset rate limiting
+    app.use(`${config.path}/password/reset`, routeRateLimiter(rateLimitConfigs.auth.passwordReset));
+  }
+  
+  // Set up the proxy
   app.use(config.path, createServiceProxy(config));
 });
 

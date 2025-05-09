@@ -282,4 +282,3 @@ exports.SessionStore = SessionStore;
 function createSessionStore(options) {
     return new SessionStore(options);
 }
-//# sourceMappingURL=session.js.map

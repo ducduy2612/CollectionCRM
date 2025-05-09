@@ -1,5 +1,5 @@
-import { createSessionStore, SessionStore, SessionData } from '../../../../common/redis/session';
-import jwt from 'jsonwebtoken';
+import { createSessionStore, SessionStore, SessionData } from 'collection-crm-common/redis/session';
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -8,6 +8,7 @@ dotenv.config();
 // JWT configuration
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_here';
 const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '1h';
+
 
 /**
  * User session interface
@@ -46,7 +47,9 @@ export interface AuthResult {
   user?: {
     id: string;
     username: string;
+    email: string;
     roles: string[];
+    permissions: string[];
   };
   token?: string;
   refreshToken?: string;
@@ -116,7 +119,7 @@ export class SessionService {
       sessionId
     };
 
-    const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: JWT_EXPIRATION });
+    const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: JWT_EXPIRATION } as SignOptions);
     const refreshToken = this.generateRefreshToken(sessionId);
     const expiresAt = this.getTokenExpirationDate(JWT_EXPIRATION);
 
@@ -215,7 +218,7 @@ export class SessionService {
         sessionId
       };
 
-      const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: JWT_EXPIRATION });
+      const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: JWT_EXPIRATION } as SignOptions);
       const newRefreshToken = this.generateRefreshToken(sessionId);
       const expiresAt = this.getTokenExpirationDate(JWT_EXPIRATION);
 
@@ -232,7 +235,9 @@ export class SessionService {
         user: {
           id: sessionData.userId,
           username: sessionData.username,
-          roles: sessionData.roles
+          email: sessionData.email || '',
+          roles: sessionData.roles,
+          permissions: sessionData.permissions || []
         },
         token,
         refreshToken: newRefreshToken,
@@ -269,6 +274,14 @@ export class SessionService {
   }
 
   /**
+   * Get session data
+   * @param sessionId - Session ID
+   */
+  public async getSessionData(sessionId: string): Promise<SessionData | null> {
+    return await this.sessionStore.getSession(sessionId, false);
+  }
+
+  /**
    * Generate a refresh token
    * @param sessionId - Session ID
    */
@@ -285,12 +298,35 @@ export class SessionService {
    */
   private extractSessionIdFromRefreshToken(refreshToken: string): string | null {
     try {
+      // Check if the refresh token is valid base64
+      if (!this.isValidBase64(refreshToken)) {
+        throw new Error('Invalid base64 format');
+      }
+      
       const data = Buffer.from(refreshToken, 'base64').toString();
+      
+      // Check if the data has the expected format (sessionId:timestamp)
+      if (!data.includes(':')) {
+        throw new Error('Invalid token format');
+      }
+      
       const [sessionId] = data.split(':');
       return sessionId;
     } catch (error) {
       console.error('Error extracting session ID from refresh token:', error);
       return null;
+    }
+  }
+  
+  /**
+   * Check if a string is valid base64
+   * @param str - String to check
+   */
+  private isValidBase64(str: string): boolean {
+    try {
+      return Buffer.from(str, 'base64').toString('base64') === str;
+    } catch {
+      return false;
     }
   }
 

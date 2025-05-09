@@ -13,6 +13,11 @@ export interface ProxyConfig {
   pathRewrite?: Record<string, string>;
   timeout?: number;
   serviceName: string;
+  routes?: Record<string, string>;
+  requiresAuth?: {
+    all: boolean;
+    except?: string[];
+  };
 }
 
 /**
@@ -21,6 +26,7 @@ export interface ProxyConfig {
  * @returns Express request handler
  */
 export function createServiceProxy(config: ProxyConfig): RequestHandler {
+  // Create proxy options
   const options: Options = {
     target: config.target,
     changeOrigin: true,
@@ -58,6 +64,11 @@ export function createServiceProxy(config: ProxyConfig): RequestHandler {
       if (request.ip) {
         proxyReq.setHeader('x-forwarded-for', request.ip);
       }
+
+      // Add user ID if authenticated
+      if ((req as any).user?.id) {
+        proxyReq.setHeader('x-user-id', (req as any).user.id);
+      }
     },
     onProxyRes: (proxyRes: IncomingMessage, req: IncomingMessage, res: ServerResponse) => {
       const response = res as Response;
@@ -67,5 +78,27 @@ export function createServiceProxy(config: ProxyConfig): RequestHandler {
     }
   };
 
-  return createProxyMiddleware(options);
+  // Create the proxy middleware
+  const proxyMiddleware = createProxyMiddleware(options);
+
+  // Return a wrapper middleware that checks authentication before proxying
+  return (req: Request, res: Response, next: NextFunction) => {
+    // Check if authentication is required for this route
+    if (config.requiresAuth?.all && 
+        (!config.requiresAuth.except || 
+         !config.requiresAuth.except.some(path => req.path.endsWith(path)))) {
+      // Authentication required
+      if (!req.user) {
+        return res.status(401).json({
+          error: 'Unauthorized',
+          message: 'Authentication required',
+          service: config.serviceName,
+          requestId: req.headers['x-request-id'] || 'unknown'
+        });
+      }
+    }
+    
+    // Proceed with proxy
+    proxyMiddleware(req, res, next);
+  };
 }

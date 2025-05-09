@@ -38,7 +38,7 @@ export interface RateLimitResult {
  * Uses a sliding window algorithm with Redis
  */
 export class RateLimiter {
-  private client: RedisClientType;
+  private client!: RedisClientType;
   private options: Required<RateLimitOptions>;
   private ready: boolean = false;
   private initPromise: Promise<void>;

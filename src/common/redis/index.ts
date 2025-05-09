@@ -93,9 +93,10 @@ export class RedisConnectionManager {
     await client.connect();
     
     // Store client in the pool
-    this.clients.set(clientName, client);
+    // Use type assertion to avoid type conflicts
+    this.clients.set(clientName, client as any);
     
-    return client;
+    return client as any;
   }
 
   /**

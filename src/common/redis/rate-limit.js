@@ -174,4 +174,3 @@ exports.RateLimiter = RateLimiter;
 function createRateLimiter(options) {
     return new RateLimiter(options);
 }
-//# sourceMappingURL=rate-limit.js.map

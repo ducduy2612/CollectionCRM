@@ -86,6 +86,7 @@ class RedisConnectionManager {
         // Connect to Redis
         await client.connect();
         // Store client in the pool
+        // Use type assertion to avoid type conflicts
         this.clients.set(clientName, client);
         return client;
     }
@@ -137,4 +138,3 @@ async function closeRedisClient(clientName = 'default') {
 async function closeAllRedisClients() {
     return RedisConnectionManager.getInstance().closeAllClients();
 }
-//# sourceMappingURL=index.js.map

@@ -3,8 +3,13 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
-import { sessionService } from './services/session-service';
-import { getRedisClient, closeAllRedisClients } from '../../../common/redis';
+import { getRedisClient, closeAllRedisClients } from 'collection-crm-common/redis';
+import db from './config/database';
+
+// Import routes
+import authRoutes from './routes/auth.routes';
+import userRoutes from './routes/user.routes';
+import roleRoutes from './routes/role.routes';
 
 // Load environment variables
 dotenv.config();
@@ -19,134 +24,98 @@ app.use(morgan('combined'));
 app.use(express.json());
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
-});
-
-// Routes will be added here
-// Example authentication routes
-app.post('/login', async (req, res) => {
-  // This is a placeholder - actual implementation would validate credentials
-  // against a database and Active Directory
-  const { username, password } = req.body;
-  
-  if (!username || !password) {
-    return res.status(400).json({ error: 'Username and password are required' });
-  }
-  
-  // Mock user for demonstration
-  const mockUser = {
-    id: '123',
-    username,
-    roles: ['USER'],
-    permissions: ['READ_PROFILE', 'UPDATE_PROFILE']
-  };
-  
-  // Create session with device info
-  const deviceInfo = {
-    userAgent: req.headers['user-agent'] || '',
-    ip: req.ip || req.connection.remoteAddress || ''
-  };
-  
+app.get('/health', async (req: express.Request, res: express.Response) => {
   try {
-    const session = await sessionService.createSession(mockUser, deviceInfo);
+    // Check database connection
+    await db.raw('SELECT 1');
+    
+    // Check Redis connection
+    const redisClient = await getRedisClient('health-check');
+    await redisClient.ping();
     
     res.status(200).json({
-      success: true,
-      user: {
-        id: session.userId,
-        username: session.username,
-        roles: session.roles
-      },
-      token: session.token,
-      refreshToken: session.refreshToken,
-      expiresAt: session.expiresAt
+      status: 'ok',
+      database: 'connected',
+      redis: 'connected',
+      timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'Authentication failed' });
+    console.error('Health check failed:', error);
+    res.status(500).json({
+      status: 'error',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
-app.post('/token/validate', async (req, res) => {
-  const { token } = req.body;
-  
-  if (!token) {
-    return res.status(400).json({ error: 'Token is required' });
-  }
-  
-  try {
-    const result = await sessionService.validateToken(token);
-    res.status(200).json(result);
-  } catch (error) {
-    console.error('Token validation error:', error);
-    res.status(500).json({ error: 'Token validation failed' });
-  }
-});
+// API routes
+const apiBasePath = '/api/v1/auth';
+app.use(`${apiBasePath}`, authRoutes);
+app.use(`${apiBasePath}/users`, userRoutes);
+app.use(`${apiBasePath}/roles`, roleRoutes);
 
-app.post('/token/refresh', async (req, res) => {
-  const { refreshToken } = req.body;
-  
-  if (!refreshToken) {
-    return res.status(400).json({ error: 'Refresh token is required' });
-  }
-  
-  try {
-    const result = await sessionService.refreshToken(refreshToken);
-    
-    if (result.success) {
-      res.status(200).json(result);
-    } else {
-      res.status(401).json({ error: result.reason || 'Token refresh failed' });
-    }
-  } catch (error) {
-    console.error('Token refresh error:', error);
-    res.status(500).json({ error: 'Token refresh failed' });
-  }
-});
-
-app.post('/logout', async (req, res) => {
-  const { sessionId } = req.body;
-  
-  if (!sessionId) {
-    return res.status(400).json({ error: 'Session ID is required' });
-  }
-  
-  try {
-    await sessionService.revokeSession(sessionId);
-    res.status(200).json({ success: true });
-  } catch (error) {
-    console.error('Logout error:', error);
-    res.status(500).json({ error: 'Logout failed' });
-  }
+// 404 handler
+app.use((req: express.Request, res: express.Response) => {
+  res.status(404).json({
+    success: false,
+    data: null,
+    message: 'Not Found',
+    errors: [{ code: 'NOT_FOUND', message: 'The requested resource was not found' }]
+  });
 });
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
+  console.error('Unhandled error:', err);
   res.status(500).json({
-    error: 'Internal Server Error',
-    message: process.env.NODE_ENV === 'production' ? 'Something went wrong' : err.message,
+    success: false,
+    data: null,
+    message: 'Internal Server Error',
+    errors: [{
+      code: 'SERVER_ERROR',
+      message: process.env.NODE_ENV === 'production' ? 'Something went wrong' : err.message
+    }]
   });
 });
 
-// Start the server
-const server = app.listen(PORT, () => {
-  console.log(`Authentication Service running on port ${PORT}`);
-});
+// Initialize database and start server
+const initializeApp = async () => {
+  try {
+    // Test database connection
+    await db.raw('SELECT 1');
+    console.log('Database connection established');
+    
+    // Start the server
+    const server = app.listen(PORT, () => {
+      console.log(`Authentication Service running on port ${PORT}`);
+      console.log(`API base path: ${apiBasePath}`);
+    });
 
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM signal received: closing HTTP server');
-  server.close(async () => {
-    console.log('HTTP server closed');
-    
-    // Close all Redis connections
-    await closeAllRedisClients();
-    console.log('Redis connections closed');
-    
-    process.exit(0);
-  });
-});
+    // Graceful shutdown
+    process.on('SIGTERM', async () => {
+      console.log('SIGTERM signal received: closing HTTP server');
+      server.close(async () => {
+        console.log('HTTP server closed');
+        
+        // Close database connection
+        await db.destroy();
+        console.log('Database connection closed');
+        
+        // Close all Redis connections
+        await closeAllRedisClients();
+        console.log('Redis connections closed');
+        
+        process.exit(0);
+      });
+    });
+  } catch (error) {
+    console.error('Failed to initialize application:', error);
+    process.exit(1);
+  }
+};
+
+// Initialize the application
+initializeApp();
 
 export default app;

@@ -8,6 +8,7 @@ import crypto from 'crypto';
 export interface SessionData {
   userId: string;
   username: string;
+  email?: string;
   roles: string[];
   permissions?: string[];
   [key: string]: any;
@@ -31,7 +32,7 @@ export interface SessionOptions {
  * Session store implementation for authentication service
  */
 export class SessionStore {
-  private client: RedisClientType;
+  private client!: RedisClientType;
   private options: Required<SessionOptions>;
   private ready: boolean = false;
   private initPromise: Promise<void>;
