@@ -1,118 +1,115 @@
 import express from 'express';
-import cors from 'cors';
 import helmet from 'helmet';
-import morgan from 'morgan';
-import { createProxyMiddleware } from 'http-proxy-middleware';
-import rateLimit from 'express-rate-limit';
-import swaggerJSDoc from 'swagger-jsdoc';
-import swaggerUi from 'swagger-ui-express';
 import dotenv from 'dotenv';
+import swaggerUi from 'swagger-ui-express';
+import { redisRateLimiter } from './middleware/rate-limiter';
+import { getRedisClient } from 'collection-crm-common';
+import { createServiceProxy } from './utils/proxy.utils';
+import { serviceRoutes } from './config/routes.config';
+import { logger, requestLogger } from './utils/logger.utils';
+import { errorHandler, notFoundHandler } from './middleware/error-handler.middleware';
+import { getCorsOptions } from './config/cors.config';
+import { createSwaggerSpec } from './config/swagger.config';
 
 // Load environment variables
 dotenv.config();
 
+// Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
+// Basic middleware
+app.use(getCorsOptions());
 app.use(helmet());
-app.use(morgan('combined'));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use(limiter);
+// Request logging
+app.use(requestLogger());
+
+// Redis-based rate limiting
+app.use(redisRateLimiter({
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10),
+  windowSizeInSeconds: Math.floor(parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10) / 1000),
+  includeUserId: true,
+  includeRoute: true
+}));
 
 // Swagger documentation
-const swaggerOptions = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Collection CRM API',
-      version: '1.0.0',
-      description: 'Collection CRM API Documentation',
-    },
-    servers: [
-      {
-        url: `http://localhost:${PORT}`,
-        description: 'Development server',
-      },
-    ],
-  },
-  apis: ['./src/routes/*.ts'],
-};
-
-const swaggerSpec = swaggerJSDoc(swaggerOptions);
+const swaggerSpec = createSwaggerSpec(`http://localhost:${PORT}`);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
-});
-
-// Service proxies
-app.use(
-  '/api/auth',
-  createProxyMiddleware({
-    target: process.env.AUTH_SERVICE_URL || 'http://auth-service:3000',
-    changeOrigin: true,
-    pathRewrite: {
-      '^/api/auth': '',
-    },
-  })
-);
-
-app.use(
-  '/api/bank',
-  createProxyMiddleware({
-    target: process.env.BANK_SERVICE_URL || 'http://bank-sync-service:3000',
-    changeOrigin: true,
-    pathRewrite: {
-      '^/api/bank': '',
-    },
-  })
-);
-
-app.use(
-  '/api/payment',
-  createProxyMiddleware({
-    target: process.env.PAYMENT_SERVICE_URL || 'http://payment-service:3000',
-    changeOrigin: true,
-    pathRewrite: {
-      '^/api/payment': '',
-    },
-  })
-);
-
-app.use(
-  '/api/workflow',
-  createProxyMiddleware({
-    target: process.env.WORKFLOW_SERVICE_URL || 'http://workflow-service:3000',
-    changeOrigin: true,
-    pathRewrite: {
-      '^/api/workflow': '',
-    },
-  })
-);
-
-// Error handling middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({
-    error: 'Internal Server Error',
-    message: process.env.NODE_ENV === 'production' ? 'Something went wrong' : err.message,
+  res.status(200).json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    version: process.env.npm_package_version || '1.0.0'
   });
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`API Gateway running on port ${PORT}`);
+// Redis health check endpoint
+app.get('/health/redis', async (req, res) => {
+  try {
+    // Get a Redis client from the common module
+    const redisClient = await getRedisClient('health-check');
+    
+    // Ping Redis to check connectivity
+    const pingResult = await redisClient.ping();
+    
+    if (pingResult === 'PONG') {
+      // Redis is responding correctly
+      res.status(200).json({
+        status: 'ok',
+        redis: {
+          connected: true,
+          message: 'Redis connection successful'
+        },
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      // Redis responded but with unexpected result
+      res.status(500).json({
+        status: 'error',
+        redis: {
+          connected: false,
+          message: 'Redis connection error: Unexpected response'
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+  } catch (error) {
+    // Redis connection failed
+    logger.error('Redis health check failed:', error);
+    res.status(503).json({
+      status: 'error',
+      redis: {
+        connected: false,
+        message: 'Redis connection failed',
+        error: process.env.NODE_ENV === 'production' ? 'Service unavailable' : (error as Error).message
+      },
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
+// Service proxies using the enhanced proxy utility
+Object.entries(serviceRoutes).forEach(([name, config]) => {
+  logger.info(`Setting up proxy for ${config.serviceName} at ${config.path}`);
+  app.use(config.path, createServiceProxy(config));
+});
+
+// Add 404 handler for undefined routes
+app.use(notFoundHandler);
+
+// Global error handling middleware
+app.use(errorHandler);
+
+// Start the server
+app.listen(PORT, () => {
+  logger.info(`API Gateway running on port ${PORT}`);
+  logger.info(`API Documentation available at http://localhost:${PORT}/api-docs`);
+});
+
+// Export app for testing
 export default app;

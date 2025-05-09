@@ -1,49 +1,70 @@
-# Common Code Directory
+# Collection CRM Common Modules
 
-This directory contains shared code and utilities used across multiple services in the Collection CRM system.
+This package contains common modules and utilities used across the Collection CRM microservices.
 
-## Purpose
+## Redis Module
 
-The common code provides:
-- Consistent implementations of cross-cutting concerns
-- Shared data models and types
-- Utility functions used by multiple services
-- Common middleware and plugins
+The Redis module provides a connection pooling mechanism with error handling and retry logic for Redis operations.
 
-## Components
+### Installation
 
-### Shared Models
+```bash
+npm install
+```
 
-Common data models that are used across multiple services, ensuring consistency in data representation.
+### Usage
 
-### Error Handling
+```typescript
+import { getRedisClient, closeRedisClient, closeAllRedisClients } from './redis';
 
-Standardized error handling, including error classes, error codes, and error response formatting.
+// Example: Get a Redis client with default configuration
+async function example() {
+  // Get a Redis client (creates a new connection or returns an existing one)
+  const redis = await getRedisClient();
+  
+  // Use the Redis client
+  await redis.set('key', 'value');
+  const value = await redis.get('key');
+  console.log(value); // 'value'
+  
+  // Close a specific client when done
+  await closeRedisClient();
+  
+  // Or close all clients when shutting down the application
+  await closeAllRedisClients();
+}
 
-### Logging
+// Example: Get a Redis client with custom configuration
+async function customExample() {
+  const redis = await getRedisClient('custom', {
+    host: 'custom-redis-host',
+    port: 6380,
+    password: 'password',
+    maxRetriesPerRequest: 5
+  });
+  
+  // Use the client...
+}
 
-Common logging utilities to ensure consistent log formats and levels across services.
+// Example: Get a named client for different purposes
+async function multipleClientsExample() {
+  // Get a client for caching
+  const cacheClient = await getRedisClient('cache');
+  
+  // Get a client for session management
+  const sessionClient = await getRedisClient('session');
+  
+  // Get a client for rate limiting
+  const rateLimitClient = await getRedisClient('rateLimit');
+  
+  // Each client can be configured and managed separately
+}
+```
 
-### Validation
+### Features
 
-Shared validation utilities and schemas for data validation.
-
-### Authentication
-
-Common authentication utilities and middleware.
-
-### Messaging
-
-Shared Kafka producers and consumers, message schemas, and event handling utilities.
-
-### Database
-
-Common database utilities, connection management, and migration tools.
-
-### Testing
-
-Shared testing utilities and fixtures.
-
-## Usage
-
-Services should import these common utilities as needed, rather than reimplementing the same functionality in each service.
+- Connection pooling: Reuse Redis connections across your application
+- Automatic reconnection with exponential backoff
+- Error handling and logging
+- Support for multiple named clients with different configurations
+- Graceful connection termination

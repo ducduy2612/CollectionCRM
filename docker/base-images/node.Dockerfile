@@ -1,77 +1,39 @@
-# Base Node.js image for microservices
-# Updated: May 2025
-# Purpose: Provides a secure, optimized base image for Node.js microservices
-
-# --- Build Stage ---
-FROM node:20-alpine AS builder
+# Use Node.js 18 Alpine as base image
+FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Install build dependencies
-RUN apk add --no-cache --virtual .build-deps python3 make g++
+# Set build arguments
+ARG SERVICE_DIR
 
-# Copy package files for dependency installation
-COPY package*.json ./
+# Copy package files first for better caching
+COPY ${SERVICE_DIR}/package.json ./
+COPY ${SERVICE_DIR}/package-lock.json ./
 
-# Install dependencies with clean cache and production only
-RUN npm ci --only=production && \
-    npm cache clean --force
+# Copy common module
+COPY common ./common/
 
 # Copy source code
-COPY --chown=node:node . .
+COPY ${SERVICE_DIR}/src ./src
+COPY ${SERVICE_DIR}/tsconfig.json ./
 
-# Build TypeScript code
-RUN npm run build
+# Install dependencies and build
+RUN npm install && \
+    cd common && npm install && cd .. && \
+    npm run build
 
-# --- Production Stage ---
-FROM node:20-alpine
+# Copy environment variables example file
+COPY ${SERVICE_DIR}/.env.example ./.env
 
-# Add labels for better maintainability
-LABEL maintainer="CollectionCRM Team"
-LABEL description="Base image for Node.js microservices"
-LABEL version="2.0"
-
-# Install production dependencies
-RUN apk add --no-cache \
-    curl \
-    bash \
-    ca-certificates \
-    tzdata \
-    dumb-init
-
-# Create non-root user if it doesn't already exist
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S -u 1001 -G nodejs node || true
-
-# Set working directory
-WORKDIR /app
-
-# Copy built artifacts from builder stage
-COPY --from=builder --chown=node:node /app/package*.json ./
-COPY --from=builder --chown=node:node /app/node_modules ./node_modules
-COPY --from=builder --chown=node:node /app/dist ./dist
-
-# Set proper ownership
-RUN chown -R node:node /app
-
-# Expose default port
+# Expose the port the app runs on
 EXPOSE 3000
 
-# Set environment variables
-ENV NODE_ENV=production
-ENV NODE_OPTIONS="--max-old-space-size=2048"
-ENV NPM_CONFIG_LOGLEVEL=warn
+# Command to run the application
+CMD ["node", "dist/index.js"]
 
-# Use dumb-init as PID 1 to handle signals properly
-ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+# Expose the port the app runs on
+EXPOSE 3000
 
-# Switch to non-root user
-USER node
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/health || exit 1
-
-# Start the application
+# Command to run the application
 CMD ["node", "dist/index.js"]
