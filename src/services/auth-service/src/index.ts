@@ -3,7 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
-import { getRedisClient, closeAllRedisClients } from 'collection-crm-common/redis';
+import { getRedisClient, closeAllRedisClients } from 'collection-crm-common';
 import db from './config/database';
 
 // Import routes
@@ -35,7 +35,7 @@ app.get('/health', async (req: express.Request, res: express.Response) => {
     
     res.status(200).json({
       status: 'ok',
-      database: 'connected',
+      database: 'connected test',
       redis: 'connected',
       timestamp: new Date().toISOString()
     });

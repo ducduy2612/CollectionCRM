@@ -4,25 +4,23 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy all files
-COPY src/services/api-gateway ./api-gateway
+# Build common module
 COPY src/common ./common
-
-# # Install and link common module
 WORKDIR /app/common
-RUN npm install
-RUN npm link
+RUN npm install && npm run build
 
 # Install API Gateway dependencies and link common module
-WORKDIR /app/api-gateway
+WORKDIR /app
+COPY src/services/api-gateway ./services/api-gateway
+WORKDIR /app/services/api-gateway
+
 RUN npm install
-RUN npm link collection-crm-common
 
 # Build the API Gateway
 RUN npm run build
 
 # Copy environment variables example file and rename to .env
-COPY src/services/api-gateway/.env.example ./api-gateway/.env
+COPY src/services/api-gateway/.env.example ./services/api-gateway/.env
 
 # Environment variables
 ENV NODE_ENV=production

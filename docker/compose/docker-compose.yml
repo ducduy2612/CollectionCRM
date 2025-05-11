@@ -46,9 +46,11 @@ services:
       - SESSION_TTL=86400
       - LOG_LEVEL=debug
       - CORS_ORIGIN=http://localhost:8080
+      # - WDS_SOCKET_HOST=127.0.0.1 
+      - CHOKIDAR_USEPOLLING=true
+      # - WATCHPACK_POLLING=true 
     volumes:
-      - ../../src/services/auth-service/src:/app/src
-      - ../../src/common:/app/common
+      - ../../src/services/auth-service/src:/app/services/auth-service/src
     depends_on:
       - postgres
       - redis

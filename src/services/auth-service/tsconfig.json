@@ -11,10 +11,7 @@
     "resolveJsonModule": true,
     "lib": ["es2020", "dom"],
     "typeRoots": ["./node_modules/@types", "../../../node_modules/@types"],
-    "baseUrl": ".",
-    "paths": {
-      "collection-crm-common/*": ["../../../src/common/dist/*"]
-    }
+    "baseUrl": "."
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist", "**/*.test.ts"]
