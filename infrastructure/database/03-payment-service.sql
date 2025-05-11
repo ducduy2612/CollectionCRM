@@ -9,8 +9,10 @@
 
 -- Payments table with partitioning
 CREATE TABLE payment_service.payments (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    reference_number VARCHAR(20) NOT NULL UNIQUE,
+    id UUID DEFAULT uuid_generate_v4(),
+    PRIMARY KEY (id, payment_date),
+    reference_number VARCHAR(20) NOT NULL,
+    UNIQUE (reference_number, payment_date),
     loan_account_number VARCHAR(20) NOT NULL,
     cif VARCHAR(20) NOT NULL,
     amount DECIMAL(18,2) NOT NULL,

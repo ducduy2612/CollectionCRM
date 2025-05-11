@@ -25,7 +25,8 @@ COMMENT ON TABLE workflow_service.agents IS 'Stores information about collection
 
 -- Action Records table with partitioning
 CREATE TABLE workflow_service.action_records (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID DEFAULT uuid_generate_v4(),
+    PRIMARY KEY (id, action_date),
     cif VARCHAR(20) NOT NULL,
     loan_account_number VARCHAR(20) NOT NULL,
     agent_id UUID NOT NULL,
@@ -86,7 +87,8 @@ CREATE TABLE workflow_service.action_records_future PARTITION OF workflow_servic
 
 -- Customer Agents table (SCD Type 2) with partitioning
 CREATE TABLE workflow_service.customer_agents (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID DEFAULT uuid_generate_v4(),
+    PRIMARY KEY (id, start_date),
     cif VARCHAR(20) NOT NULL,
     assigned_call_agent_id UUID,
     assigned_field_agent_id UUID,
