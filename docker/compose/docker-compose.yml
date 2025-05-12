@@ -14,10 +14,12 @@ services:
       - REDIS_PORT=6379
       - JWT_SECRET=${JWT_SECRET:-dev_jwt_secret}
       - AUTH_SERVICE_URL=http://auth-service:3000
-      - AUTH_SERVICE_TIMEOUT=30000
+      - AUTH_SERVICE_TIMEOUT=60000
       - RATE_LIMIT_MAX_REQUESTS=100
       - RATE_LIMIT_WINDOW_MS=900000
       - CORS_ORIGIN=http://localhost:8080
+    volumes:
+      - ../../src/services/api-gateway/src:/app/services/api-gateway/src
     depends_on:
       - auth-service
       # - bank-sync-service

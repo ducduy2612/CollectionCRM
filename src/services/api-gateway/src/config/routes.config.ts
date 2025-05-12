@@ -30,8 +30,8 @@ export const serviceRoutes: Record<string, ProxyConfig> = {
   auth: {
     path: '/api/auth',
     target: process.env.AUTH_SERVICE_URL || 'http://auth-service:3000',
-    pathRewrite: { '^/api/auth': '' },
-    timeout: parseInt(process.env.AUTH_SERVICE_TIMEOUT || '30000', 10),
+    pathRewrite: { '^/api/auth': '/api/v1/auth' },
+    timeout: parseInt(process.env.AUTH_SERVICE_TIMEOUT || '60000', 10),
     serviceName: 'Authentication Service',
     routes: {
       login: '/login',
@@ -41,11 +41,12 @@ export const serviceRoutes: Record<string, ProxyConfig> = {
       passwordReset: '/password/reset',
       passwordChange: '/password/change',
       users: '/users',
-      roles: '/roles'
+      roles: '/roles',
+      health: '/health'
     },
     requiresAuth: {
       all: true,
-      except: ['/login', '/token/refresh', '/token/validate', '/password/reset']
+      except: ['/login', '/token/refresh', '/token/validate', '/password/reset', '/health']
     }
   },
   bank: {

@@ -1,5 +1,5 @@
 # Use Node.js 18 Alpine as base image
-FROM node:18-alpine
+FROM node:20.19.0
 
 # Set working directory
 WORKDIR /app
@@ -16,8 +16,6 @@ WORKDIR /app/services/api-gateway
 
 RUN npm install
 
-# Build the API Gateway
-RUN npm run build
 
 # Copy environment variables example file and rename to .env
 COPY src/services/api-gateway/.env.example ./services/api-gateway/.env
@@ -40,4 +38,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD wget -qO- http://localhost:3000/health || exit 1
 
 # Command to run the application
-CMD ["node", "dist/index.js"]
+CMD ["npm", "run", "dev"]
