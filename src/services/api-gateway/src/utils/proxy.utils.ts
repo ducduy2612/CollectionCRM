@@ -116,11 +116,11 @@ class RequestHeadersMiddleware implements RequestMiddleware {
     // Forward other important headers
     const headersToForward = [
       'content-type',
-      'content-length',
       'accept',
       'accept-encoding',
       'accept-language',
-      'user-agent'
+      'user-agent',
+      'authorization'
     ];
     
     headersToForward.forEach(header => {
@@ -138,7 +138,7 @@ class RequestHeadersMiddleware implements RequestMiddleware {
  */
 class PathRewriteMiddleware implements RequestMiddleware {
   async process(req: Request, axiosConfig: AxiosRequestConfig, proxyConfig: ProxyConfig): Promise<AxiosRequestConfig> {
-    let path = req.url;
+    let path = req.originalUrl;
     
     // Apply path rewrite rules if defined
     if (proxyConfig.pathRewrite) {
@@ -149,7 +149,6 @@ class PathRewriteMiddleware implements RequestMiddleware {
     }
     
     // Update the URL in the axios config
-    const targetUrl = new URL(proxyConfig.target);
     axiosConfig.url = path;
     
     return axiosConfig;

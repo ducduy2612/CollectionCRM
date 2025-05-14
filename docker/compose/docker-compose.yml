@@ -18,6 +18,7 @@ services:
       - RATE_LIMIT_MAX_REQUESTS=100
       - RATE_LIMIT_WINDOW_MS=900000
       - CORS_ORIGIN=http://localhost:8080
+      - CHOKIDAR_USEPOLLING=true
     volumes:
       - ../../src/services/api-gateway/src:/app/services/api-gateway/src
     depends_on:
