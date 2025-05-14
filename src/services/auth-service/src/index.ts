@@ -23,8 +23,10 @@ app.use(helmet());
 app.use(morgan('combined'));
 app.use(express.json());
 
+const apiBasePath = '/api/v1/auth';
+
 // Health check endpoint
-app.get('/health', async (req: express.Request, res: express.Response) => {
+app.get(`${apiBasePath}/health`, async (req: express.Request, res: express.Response) => {
   try {
     // Check database connection
     await db.raw('SELECT 1');
@@ -50,7 +52,6 @@ app.get('/health', async (req: express.Request, res: express.Response) => {
 });
 
 // API routes
-const apiBasePath = '/api/v1/auth';
 app.use(`${apiBasePath}`, authRoutes);
 app.use(`${apiBasePath}/users`, userRoutes);
 app.use(`${apiBasePath}/roles`, roleRoutes);

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import axios from 'axios';
 import { logger } from '../utils/logger.utils';
 import { ApiError } from './error-handler.middleware';
+import { serviceRoutes } from '../config/routes.config';
 
 /**
  * JWT authentication middleware
@@ -28,8 +29,20 @@ export const jwtAuth = async (req: Request, res: Response, next: NextFunction) =
     
     // Validate token with auth service
     try {
-      const authServiceUrl = process.env.AUTH_SERVICE_URL || 'http://auth-service:3000';
-      const response = await axios.post(`${authServiceUrl}/token/validate`, { token });
+      // Get auth service configuration
+      const authConfig = serviceRoutes.auth;
+      const authServiceUrl = authConfig.target;
+      const validatePath = authConfig.routes?.validateToken || '/token/validate';
+      
+      // Apply path rewrite if configured
+      let fullPath = validatePath;
+      if (authConfig.pathRewrite) {
+        const basePath = Object.keys(authConfig.pathRewrite)[0];
+        const rewriteTo = authConfig.pathRewrite[basePath];
+        fullPath = `${rewriteTo}${validatePath}`;
+      }
+      console.log(fullPath)
+      const response = await axios.post(`${authServiceUrl}${fullPath}`, { token });
       
       if (response.data.success && response.data.data.valid) {
         // Add user to request object
