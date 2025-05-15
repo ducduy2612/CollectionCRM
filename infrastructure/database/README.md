@@ -89,4 +89,4 @@ SELECT workflow_service.refresh_workflow_materialized_views();
 
 ## Schema Diagram
 
-For a visual representation of the database schema, refer to the entity-relationship diagram in `docs/database-schema-implementation.md`.
+For a visual representation of the database schema, refer to the entity-relationship diagram in `docs/database/database-schema-implementation.md`.

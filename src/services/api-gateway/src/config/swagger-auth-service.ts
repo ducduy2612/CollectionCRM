@@ -57,14 +57,34 @@ export const authServiceSchemas = {
     properties: {
       name: { type: 'string' },
       description: { type: 'string' },
-      permissions: { type: 'array', items: { type: 'string' } }
+      permissions: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            resource: { type: 'string' },
+            action: { type: 'string' }
+          },
+          required: ['resource', 'action']
+        }
+      }
     }
   },
   RoleUpdate: {
     type: 'object',
     properties: {
       description: { type: 'string' },
-      permissions: { type: 'array', items: { type: 'string' } }
+      permissions: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            resource: { type: 'string' },
+            action: { type: 'string' }
+          },
+          required: ['resource', 'action']
+        }
+      }
     }
   },
   Session: {
@@ -504,7 +524,7 @@ export const authServicePaths = {
 };
 // User management paths
 export const userManagementPaths = {
-  '/api/users': {
+  '/api/auth/users': {
     get: {
       tags: ['Users'],
       summary: 'List users',
@@ -679,7 +699,7 @@ export const userManagementPaths = {
       }
     }
   },
-  '/api/users/{id}': {
+  '/api/auth/users/{id}': {
     get: {
       tags: ['Users'],
       summary: 'Get user by ID',
@@ -837,7 +857,7 @@ export const userManagementPaths = {
       }
     }
   },
-  '/api/users/{id}/activate': {
+  '/api/auth/users/{id}/activate': {
     put: {
       tags: ['Users'],
       summary: 'Activate user',
@@ -910,7 +930,7 @@ export const userManagementPaths = {
       }
     }
   },
-  '/api/users/{id}/deactivate': {
+  '/api/auth/users/{id}/deactivate': {
     put: {
       tags: ['Users'],
       summary: 'Deactivate user',
@@ -983,7 +1003,7 @@ export const userManagementPaths = {
       }
     }
   },
-  '/api/users/{id}/sessions': {
+  '/api/auth/users/{id}/sessions': {
     get: {
       tags: ['Users'],
       summary: 'Get user sessions',
@@ -1127,7 +1147,7 @@ export const userManagementPaths = {
 };
 // Role management paths
 export const roleManagementPaths = {
-  '/api/roles': {
+  '/api/auth/roles': {
     get: {
       tags: ['Roles'],
       summary: 'List roles',
@@ -1255,7 +1275,7 @@ export const roleManagementPaths = {
       }
     }
   },
-  '/api/roles/{id}': {
+  '/api/auth/roles/{id}': {
     get: {
       tags: ['Roles'],
       summary: 'Get role by ID',
@@ -1482,7 +1502,7 @@ export const roleManagementPaths = {
       }
     }
   },
-  '/api/roles/{id}/users': {
+  '/api/auth/roles/{id}/users': {
     get: {
       tags: ['Roles'],
       summary: 'Get users with role',
