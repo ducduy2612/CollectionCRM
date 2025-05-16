@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { getCustomRepository } from 'typeorm';
 import { CollateralRepository } from '../repositories/collateral.repository';
-import { ApiError } from '../middleware/error-handler.middleware';
+import { Errors, OperationType, SourceSystemType, ValidationErrorCodes } from '../errors';
 
 /**
  * Collateral controller
@@ -16,14 +16,24 @@ export class CollateralController {
       const { collateralNumber } = req.params;
       
       if (!collateralNumber) {
-        throw new ApiError(400, 'Collateral number is required');
+        throw Errors.create(
+          ValidationErrorCodes.REQUIRED_FIELD_MISSING,
+          'Collateral number is required',
+          OperationType.VALIDATION,
+          SourceSystemType.OTHER
+        );
       }
       
       const collateralRepository = getCustomRepository(CollateralRepository);
       const collateral = await collateralRepository.getCollateralWithDetails(collateralNumber);
       
       if (!collateral) {
-        throw new ApiError(404, `Collateral with number ${collateralNumber} not found`);
+        throw Errors.create(
+          Errors.Database.RECORD_NOT_FOUND,
+          `Collateral with number ${collateralNumber} not found`,
+          OperationType.DATABASE,
+          SourceSystemType.OTHER
+        );
       }
       
       return res.status(200).json({

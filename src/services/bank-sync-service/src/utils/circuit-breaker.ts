@@ -3,7 +3,13 @@
  * Prevents cascading failures by temporarily disabling operations after repeated failures
  */
 
-import { Errors, ErrorType } from '../errors';
+import {
+  Errors,
+  ErrorType,
+  AppError,
+  OperationType,
+  SourceSystemType
+} from '../errors';
 
 /**
  * Circuit breaker states
@@ -70,9 +76,18 @@ export const DEFAULT_CIRCUIT_BREAKER_OPTIONS: CircuitBreakerOptions = {
 /**
  * Error thrown when the circuit is open
  */
-export class CircuitOpenError extends Error {
+export class CircuitOpenError extends AppError {
   constructor(circuitName: string) {
-    super(`Circuit ${circuitName} is open`);
+    const details = {
+      code: Errors.ExternalService.SERVICE_UNAVAILABLE,
+      message: `Circuit ${circuitName} is open`,
+      timestamp: new Date(),
+      operationType: OperationType.API_CALL,
+      sourceSystem: SourceSystemType.OTHER,
+      retryable: false,
+      context: { circuitName }
+    };
+    super(ErrorType.EXTERNAL_SERVICE, details);
     this.name = 'CircuitOpenError';
   }
 }

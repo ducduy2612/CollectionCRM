@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { getCustomRepository } from 'typeorm';
 import { LoanRepository } from '../repositories/loan.repository';
-import { ApiError } from '../middleware/error-handler.middleware';
+import { Errors, OperationType, SourceSystemType, ValidationErrorCodes } from '../errors';
 
 /**
  * Loan controller
@@ -16,14 +16,24 @@ export class LoanController {
       const { accountNumber } = req.params;
       
       if (!accountNumber) {
-        throw new ApiError(400, 'Account number is required');
+        throw Errors.create(
+          ValidationErrorCodes.REQUIRED_FIELD_MISSING,
+          'Account number is required',
+          OperationType.VALIDATION,
+          SourceSystemType.OTHER
+        );
       }
       
       const loanRepository = getCustomRepository(LoanRepository);
       const loan = await loanRepository.getLoanWithDetails(accountNumber);
       
       if (!loan) {
-        throw new ApiError(404, `Loan with account number ${accountNumber} not found`);
+        throw Errors.create(
+          Errors.Database.RECORD_NOT_FOUND,
+          `Loan with account number ${accountNumber} not found`,
+          OperationType.DATABASE,
+          SourceSystemType.OTHER
+        );
       }
       
       return res.status(200).json({

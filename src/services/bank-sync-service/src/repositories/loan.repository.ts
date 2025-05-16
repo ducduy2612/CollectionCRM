@@ -1,7 +1,8 @@
 import { EntityRepository } from 'typeorm';
 import { Loan, LoanStatus, DelinquencyStatus } from '../models/loan.entity';
 import { BaseSyncRepository, PaginatedResult, PaginationOptions } from './sync-entity.repository';
-import { SourceSystemType } from '../models/sync-status.entity';
+import { SourceSystemType as ModelSourceSystemType } from '../models/sync-status.entity';
+import { Errors, OperationType, SourceSystemType } from '../errors';
 
 /**
  * Search criteria for loans
@@ -29,7 +30,12 @@ export class LoanRepository extends BaseSyncRepository<Loan> {
       return await this.findOne({ where: { accountNumber } });
     } catch (error) {
       console.error(`Error finding loan by account number ${accountNumber}:`, error);
-      throw new Error(`Failed to find loan by account number: ${error.message}`);
+      throw Errors.wrap(
+        error,
+        OperationType.DATABASE,
+        SourceSystemType.OTHER,
+        { accountNumber, operation: 'findByNaturalKey' }
+      );
     }
   }
 
@@ -52,7 +58,12 @@ export class LoanRepository extends BaseSyncRepository<Loan> {
       }
     } catch (error) {
       console.error(`Error upserting loan with account number ${loan.accountNumber}:`, error);
-      throw new Error(`Failed to upsert loan: ${error.message}`);
+      throw Errors.wrap(
+        error,
+        OperationType.DATABASE,
+        SourceSystemType.OTHER,
+        { accountNumber: loan.accountNumber, operation: 'upsertByNaturalKey' }
+      );
     }
   }
 
@@ -100,7 +111,12 @@ export class LoanRepository extends BaseSyncRepository<Loan> {
       return this.createPaginatedResult(loans, total, criteria || {});
     } catch (error) {
       console.error(`Error finding loans by CIF ${cif}:`, error);
-      throw new Error(`Failed to find loans by CIF: ${error.message}`);
+      throw Errors.wrap(
+        error,
+        OperationType.DATABASE,
+        SourceSystemType.OTHER,
+        { cif, criteria, operation: 'findByCif' }
+      );
     }
   }
 
@@ -118,7 +134,12 @@ export class LoanRepository extends BaseSyncRepository<Loan> {
         .getOne();
     } catch (error) {
       console.error(`Error getting loan details for account number ${accountNumber}:`, error);
-      throw new Error(`Failed to get loan details: ${error.message}`);
+      throw Errors.wrap(
+        error,
+        OperationType.DATABASE,
+        SourceSystemType.OTHER,
+        { accountNumber, operation: 'getLoanWithDetails' }
+      );
     }
   }
 
@@ -158,7 +179,12 @@ export class LoanRepository extends BaseSyncRepository<Loan> {
       return this.createPaginatedResult(loans, total, criteria || {});
     } catch (error) {
       console.error('Error finding delinquent loans:', error);
-      throw new Error(`Failed to find delinquent loans: ${error.message}`);
+      throw Errors.wrap(
+        error,
+        OperationType.DATABASE,
+        SourceSystemType.OTHER,
+        { criteria, operation: 'findDelinquentLoans' }
+      );
     }
   }
 
@@ -196,7 +222,12 @@ export class LoanRepository extends BaseSyncRepository<Loan> {
       return this.createPaginatedResult(loans, total, criteria || {});
     } catch (error) {
       console.error('Error finding loans with upcoming payments:', error);
-      throw new Error(`Failed to find loans with upcoming payments: ${error.message}`);
+      throw Errors.wrap(
+        error,
+        OperationType.DATABASE,
+        SourceSystemType.OTHER,
+        { startDate, endDate, criteria, operation: 'findLoansWithUpcomingPayments' }
+      );
     }
   }
 }

@@ -1,7 +1,8 @@
 import { EntityRepository, Repository, getRepository } from 'typeorm';
 import { Customer, CustomerStatus } from '../models/customer.entity';
 import { BaseSyncRepository, PaginatedResult, PaginationOptions } from './sync-entity.repository';
-import { SourceSystemType } from '../models/sync-status.entity';
+import { SourceSystemType as ModelSourceSystemType } from '../models/sync-status.entity';
+import { Errors, OperationType, SourceSystemType } from '../errors';
 
 /**
  * Search criteria for customers
@@ -30,7 +31,12 @@ export class CustomerRepository extends BaseSyncRepository<Customer> {
       return await this.findOne({ where: { cif } });
     } catch (error) {
       console.error(`Error finding customer by CIF ${cif}:`, error);
-      throw new Error(`Failed to find customer by CIF: ${error.message}`);
+      throw Errors.wrap(
+        error,
+        OperationType.DATABASE,
+        SourceSystemType.OTHER,
+        { cif, operation: 'findByNaturalKey' }
+      );
     }
   }
 
@@ -53,7 +59,12 @@ export class CustomerRepository extends BaseSyncRepository<Customer> {
       }
     } catch (error) {
       console.error(`Error upserting customer with CIF ${customer.cif}:`, error);
-      throw new Error(`Failed to upsert customer: ${error.message}`);
+      throw Errors.wrap(
+        error,
+        OperationType.DATABASE,
+        SourceSystemType.OTHER,
+        { cif: customer.cif, operation: 'upsertByNaturalKey' }
+      );
     }
   }
 
@@ -103,7 +114,12 @@ export class CustomerRepository extends BaseSyncRepository<Customer> {
       return this.createPaginatedResult(customers, total, criteria);
     } catch (error) {
       console.error('Error searching customers:', error);
-      throw new Error(`Failed to search customers: ${error.message}`);
+      throw Errors.wrap(
+        error,
+        OperationType.DATABASE,
+        SourceSystemType.OTHER,
+        { criteria, operation: 'searchCustomers' }
+      );
     }
   }
 
@@ -112,7 +128,7 @@ export class CustomerRepository extends BaseSyncRepository<Customer> {
    * @param source The source system
    * @returns Array of customers with related entities
    */
-  async findBySourceSystemWithRelations(source: SourceSystemType): Promise<Customer[]> {
+  async findBySourceSystemWithRelations(source: ModelSourceSystemType): Promise<Customer[]> {
     try {
       return await this.createQueryBuilder('customer')
         .leftJoinAndSelect('customer.phones', 'phones')
@@ -122,7 +138,12 @@ export class CustomerRepository extends BaseSyncRepository<Customer> {
         .getMany();
     } catch (error) {
       console.error(`Error finding customers by source system ${source}:`, error);
-      throw new Error(`Failed to find customers by source system: ${error.message}`);
+      throw Errors.wrap(
+        error,
+        OperationType.DATABASE,
+        SourceSystemType.OTHER,
+        { source, operation: 'findBySourceSystemWithRelations' }
+      );
     }
   }
 
@@ -144,7 +165,12 @@ export class CustomerRepository extends BaseSyncRepository<Customer> {
         .getOne();
     } catch (error) {
       console.error(`Error getting customer details for CIF ${cif}:`, error);
-      throw new Error(`Failed to get customer details: ${error.message}`);
+      throw Errors.wrap(
+        error,
+        OperationType.DATABASE,
+        SourceSystemType.OTHER,
+        { cif, operation: 'getCustomerWithDetails' }
+      );
     }
   }
 }

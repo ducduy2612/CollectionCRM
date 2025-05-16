@@ -1,23 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
-
-/**
- * Custom API error class
- */
-export class ApiError extends Error {
-  statusCode: number;
-  details?: any;
-
-  constructor(statusCode: number, message: string, details?: any) {
-    super(message);
-    this.statusCode = statusCode;
-    this.details = details;
-    this.name = 'ApiError';
-  }
-}
+import {
+  AppError,
+  ErrorType,
+  Errors,
+  GeneralErrorCodes,
+  DatabaseErrorCodes,
+  ValidationErrorCodes,
+  AuthErrorCodes
+} from '../errors';
 
 /**
  * Error handler middleware
- * Handles all errors thrown in the application
+ * Handles all errors thrown in the application using the new error system
  */
 export const errorHandler = (
   err: Error,
@@ -27,83 +21,61 @@ export const errorHandler = (
 ) => {
   console.error('Error:', err);
 
-  // Handle ApiError instances
-  if (err instanceof ApiError) {
-    return res.status(err.statusCode).json({
-      success: false,
-      data: null,
-      message: err.message,
-      errors: [
-        {
-          code: err.name,
-          message: err.message,
-          details: err.details
-        }
-      ]
-    });
-  }
-
-  // Handle TypeORM errors
-  if (err.name === 'QueryFailedError') {
-    return res.status(400).json({
-      success: false,
-      data: null,
-      message: 'Database query failed',
-      errors: [
-        {
-          code: 'DATABASE_ERROR',
-          message: 'An error occurred while executing the database query',
-          details: process.env.NODE_ENV === 'development' ? err.message : undefined
-        }
-      ]
-    });
-  }
-
-  // Handle validation errors
-  if (err.name === 'ValidationError') {
-    return res.status(400).json({
-      success: false,
-      data: null,
-      message: 'Validation failed',
-      errors: [
-        {
-          code: 'VALIDATION_ERROR',
-          message: err.message
-        }
-      ]
-    });
-  }
-
-  // Handle JWT errors
-  if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
-    return res.status(401).json({
-      success: false,
-      data: null,
-      message: 'Authentication failed',
-      errors: [
-        {
-          code: 'AUTH_ERROR',
-          message: err.message
-        }
-      ]
-    });
-  }
-
-  // Handle all other errors
-  const statusCode = 500;
-  const message = 'Internal server error';
+  // Convert to AppError if it's not already
+  const appError = err instanceof AppError
+    ? err
+    : Errors.wrap(err);
   
-  return res.status(statusCode).json({
+  // Get HTTP status code based on error code or type
+  let statusCode = 500;
+  
+  if (appError instanceof AppError && appError.details.code) {
+    statusCode = Errors.getHttpStatus(appError.details.code);
+  } else {
+    // Fallback status codes based on error type
+    switch (appError.type) {
+      case ErrorType.VALIDATION:
+        statusCode = 400;
+        break;
+      case ErrorType.AUTH:
+        statusCode = 401;
+        break;
+      case ErrorType.NOT_FOUND:
+        statusCode = 404;
+        break;
+      case ErrorType.DATABASE:
+        statusCode = 500;
+        break;
+      case ErrorType.EXTERNAL_SERVICE:
+        statusCode = 502;
+        break;
+      default:
+        statusCode = 500;
+    }
+  }
+
+  // Prepare error response
+  const errorResponse = {
     success: false,
     data: null,
-    message,
+    message: appError.message,
     errors: [
       {
-        code: 'INTERNAL_ERROR',
-        message: process.env.NODE_ENV === 'development' ? err.message : message
+        code: appError.details.code || `ERR_${appError.type}`,
+        message: appError.message,
+        type: appError.type,
+        details: process.env.NODE_ENV === 'development' ? {
+          timestamp: appError.details.timestamp,
+          operationType: appError.details.operationType,
+          sourceSystem: appError.details.sourceSystem,
+          retryable: appError.details.retryable,
+          context: appError.details.context
+        } : undefined
       }
     ]
-  });
+  };
+
+  return res.status(statusCode).json(errorResponse);
 };
 
 /**
@@ -111,14 +83,20 @@ export const errorHandler = (
  * Handles 404 errors for routes that don't exist
  */
 export const notFoundHandler = (req: Request, res: Response) => {
+  const notFoundError = Errors.create(
+    Errors.General.UNKNOWN_ERROR,
+    `The requested resource at ${req.originalUrl} was not found`
+  );
+  
   return res.status(404).json({
     success: false,
     data: null,
-    message: 'Resource not found',
+    message: notFoundError.message,
     errors: [
       {
         code: 'NOT_FOUND',
-        message: `The requested resource at ${req.originalUrl} was not found`
+        message: notFoundError.message,
+        type: ErrorType.NOT_FOUND
       }
     ]
   });

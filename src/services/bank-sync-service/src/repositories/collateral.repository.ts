@@ -1,7 +1,8 @@
 import { EntityRepository } from 'typeorm';
 import { Collateral, CollateralType } from '../models/collateral.entity';
 import { BaseSyncRepository, PaginatedResult, PaginationOptions } from './sync-entity.repository';
-import { SourceSystemType } from '../models/sync-status.entity';
+import { SourceSystemType as ModelSourceSystemType } from '../models/sync-status.entity';
+import { Errors, OperationType, SourceSystemType } from '../errors';
 
 /**
  * Search criteria for collaterals
@@ -27,7 +28,12 @@ export class CollateralRepository extends BaseSyncRepository<Collateral> {
       return await this.findOne({ where: { collateralNumber } });
     } catch (error) {
       console.error(`Error finding collateral by number ${collateralNumber}:`, error);
-      throw new Error(`Failed to find collateral by number: ${error.message}`);
+      throw Errors.wrap(
+        error,
+        OperationType.DATABASE,
+        SourceSystemType.OTHER,
+        { collateralNumber, operation: 'findByNaturalKey' }
+      );
     }
   }
 
@@ -50,7 +56,12 @@ export class CollateralRepository extends BaseSyncRepository<Collateral> {
       }
     } catch (error) {
       console.error(`Error upserting collateral with number ${collateral.collateralNumber}:`, error);
-      throw new Error(`Failed to upsert collateral: ${error.message}`);
+      throw Errors.wrap(
+        error,
+        OperationType.DATABASE,
+        SourceSystemType.OTHER,
+        { collateralNumber: collateral.collateralNumber, operation: 'upsertByNaturalKey' }
+      );
     }
   }
 
@@ -90,7 +101,12 @@ export class CollateralRepository extends BaseSyncRepository<Collateral> {
       return this.createPaginatedResult(collaterals, total, criteria || {});
     } catch (error) {
       console.error(`Error finding collaterals by CIF ${cif}:`, error);
-      throw new Error(`Failed to find collaterals by CIF: ${error.message}`);
+      throw Errors.wrap(
+        error,
+        OperationType.DATABASE,
+        SourceSystemType.OTHER,
+        { cif, criteria, operation: 'findByCif' }
+      );
     }
   }
 
@@ -108,7 +124,12 @@ export class CollateralRepository extends BaseSyncRepository<Collateral> {
         .getOne();
     } catch (error) {
       console.error(`Error getting collateral details for number ${collateralNumber}:`, error);
-      throw new Error(`Failed to get collateral details: ${error.message}`);
+      throw Errors.wrap(
+        error,
+        OperationType.DATABASE,
+        SourceSystemType.OTHER,
+        { collateralNumber, operation: 'getCollateralWithDetails' }
+      );
     }
   }
 
@@ -125,7 +146,12 @@ export class CollateralRepository extends BaseSyncRepository<Collateral> {
         .getMany();
     } catch (error) {
       console.error(`Error finding collaterals by loan account number ${accountNumber}:`, error);
-      throw new Error(`Failed to find collaterals by loan account number: ${error.message}`);
+      throw Errors.wrap(
+        error,
+        OperationType.DATABASE,
+        SourceSystemType.OTHER,
+        { accountNumber, operation: 'findByLoanAccountNumber' }
+      );
     }
   }
 
@@ -152,7 +178,12 @@ export class CollateralRepository extends BaseSyncRepository<Collateral> {
       return this.createPaginatedResult(collaterals, total, criteria || {});
     } catch (error) {
       console.error(`Error finding collaterals by type ${type}:`, error);
-      throw new Error(`Failed to find collaterals by type: ${error.message}`);
+      throw Errors.wrap(
+        error,
+        OperationType.DATABASE,
+        SourceSystemType.OTHER,
+        { type, criteria, operation: 'findByType' }
+      );
     }
   }
 }

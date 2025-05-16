@@ -4,7 +4,7 @@ import { CustomerRepository } from '../repositories/customer.repository';
 import { LoanRepository } from '../repositories/loan.repository';
 import { CollateralRepository } from '../repositories/collateral.repository';
 import { ReferenceCustomerRepository } from '../repositories/reference-customer.repository';
-import { ApiError } from '../middleware/error-handler.middleware';
+import { Errors, OperationType, SourceSystemType, ValidationErrorCodes } from '../errors';
 
 /**
  * Customer controller
@@ -19,14 +19,24 @@ export class CustomerController {
       const { cif } = req.params;
       
       if (!cif) {
-        throw new ApiError(400, 'CIF is required');
+        throw Errors.create(
+          ValidationErrorCodes.REQUIRED_FIELD_MISSING,
+          'CIF is required',
+          OperationType.VALIDATION,
+          SourceSystemType.OTHER
+        );
       }
       
       const customerRepository = getCustomRepository(CustomerRepository);
       const customer = await customerRepository.getCustomerWithDetails(cif);
       
       if (!customer) {
-        throw new ApiError(404, `Customer with CIF ${cif} not found`);
+        throw Errors.create(
+          Errors.Database.RECORD_NOT_FOUND,
+          `Customer with CIF ${cif} not found`,
+          OperationType.DATABASE,
+          SourceSystemType.OTHER
+        );
       }
       
       return res.status(200).json({
@@ -99,14 +109,24 @@ export class CustomerController {
       const { status, productType, page = 1, pageSize = 10 } = req.query;
       
       if (!cif) {
-        throw new ApiError(400, 'CIF is required');
+        throw Errors.create(
+          ValidationErrorCodes.REQUIRED_FIELD_MISSING,
+          'CIF is required',
+          OperationType.VALIDATION,
+          SourceSystemType.OTHER
+        );
       }
       
       const customerRepository = getCustomRepository(CustomerRepository);
       const customer = await customerRepository.findByNaturalKey(cif);
       
       if (!customer) {
-        throw new ApiError(404, `Customer with CIF ${cif} not found`);
+        throw Errors.create(
+          Errors.Database.RECORD_NOT_FOUND,
+          `Customer with CIF ${cif} not found`,
+          OperationType.DATABASE,
+          SourceSystemType.OTHER
+        );
       }
       
       const loanRepository = getCustomRepository(LoanRepository);
@@ -146,14 +166,24 @@ export class CustomerController {
       const { type, page = 1, pageSize = 10 } = req.query;
       
       if (!cif) {
-        throw new ApiError(400, 'CIF is required');
+        throw Errors.create(
+          ValidationErrorCodes.REQUIRED_FIELD_MISSING,
+          'CIF is required',
+          OperationType.VALIDATION,
+          SourceSystemType.OTHER
+        );
       }
       
       const customerRepository = getCustomRepository(CustomerRepository);
       const customer = await customerRepository.findByNaturalKey(cif);
       
       if (!customer) {
-        throw new ApiError(404, `Customer with CIF ${cif} not found`);
+        throw Errors.create(
+          Errors.Database.RECORD_NOT_FOUND,
+          `Customer with CIF ${cif} not found`,
+          OperationType.DATABASE,
+          SourceSystemType.OTHER
+        );
       }
       
       const collateralRepository = getCustomRepository(CollateralRepository);
@@ -192,14 +222,24 @@ export class CustomerController {
       const { relationshipType, page = 1, pageSize = 10 } = req.query;
       
       if (!cif) {
-        throw new ApiError(400, 'CIF is required');
+        throw Errors.create(
+          ValidationErrorCodes.REQUIRED_FIELD_MISSING,
+          'CIF is required',
+          OperationType.VALIDATION,
+          SourceSystemType.OTHER
+        );
       }
       
       const customerRepository = getCustomRepository(CustomerRepository);
       const customer = await customerRepository.findByNaturalKey(cif);
       
       if (!customer) {
-        throw new ApiError(404, `Customer with CIF ${cif} not found`);
+        throw Errors.create(
+          Errors.Database.RECORD_NOT_FOUND,
+          `Customer with CIF ${cif} not found`,
+          OperationType.DATABASE,
+          SourceSystemType.OTHER
+        );
       }
       
       const referenceRepository = getCustomRepository(ReferenceCustomerRepository);
