@@ -6,31 +6,7 @@ import { Email } from './email.entity';
 import { Loan } from './loan.entity';
 import { Collateral } from './collateral.entity';
 import { ReferenceCustomer } from './reference-customer.entity';
-
-/**
- * Customer types enum
- */
-export enum CustomerType {
-  INDIVIDUAL = 'INDIVIDUAL',
-  ORGANIZATION = 'ORGANIZATION'
-}
-
-/**
- * Customer status enum
- */
-export enum CustomerStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE'
-}
-
-/**
- * Gender enum
- */
-export enum Gender {
-  MALE = 'MALE',
-  FEMALE = 'FEMALE',
-  OTHER = 'OTHER'
-}
+import { CustomerType, CustomerStatus, Gender } from './customer-types';
 
 /**
  * Customer entity

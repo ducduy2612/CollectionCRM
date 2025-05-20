@@ -33,35 +33,6 @@ export enum DelinquencyStatus {
 }
 
 /**
- * Due segmentation entity for loan payments
- */
-@Entity('due_segmentations')
-export class DueSegmentation extends SynchronizedEntity {
-  @Column({ name: 'due_date', type: 'date' })
-  dueDate: Date;
-
-  @Column({ name: 'principal_amount', type: 'decimal', precision: 18, scale: 2, default: 0 })
-  principalAmount: number;
-
-  @Column({ name: 'interest_amount', type: 'decimal', precision: 18, scale: 2, default: 0 })
-  interestAmount: number;
-
-  @Column({ name: 'fees_amount', type: 'decimal', precision: 18, scale: 2, default: 0 })
-  feesAmount: number;
-
-  @Column({ name: 'penalty_amount', type: 'decimal', precision: 18, scale: 2, default: 0 })
-  penaltyAmount: number;
-
-  @ManyToOne(() => Loan, loan => loan.dueSegmentations, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'loan_id' })
-  @Index()
-  loan: Loan;
-
-  @Column({ name: 'loan_id' })
-  loanId: string;
-}
-
-/**
  * Loan entity
  */
 @Entity('loans')
@@ -159,4 +130,33 @@ export class Loan extends SynchronizedEntity {
   // Relationships
   @OneToMany(() => DueSegmentation, dueSegmentation => dueSegmentation.loan, { cascade: true })
   dueSegmentations: DueSegmentation[];
+}
+
+/**
+ * Due segmentation entity for loan payments
+ */
+@Entity('due_segmentations')
+export class DueSegmentation extends SynchronizedEntity {
+  @Column({ name: 'due_date', type: 'date' })
+  dueDate: Date;
+
+  @Column({ name: 'principal_amount', type: 'decimal', precision: 18, scale: 2, default: 0 })
+  principalAmount: number;
+
+  @Column({ name: 'interest_amount', type: 'decimal', precision: 18, scale: 2, default: 0 })
+  interestAmount: number;
+
+  @Column({ name: 'fees_amount', type: 'decimal', precision: 18, scale: 2, default: 0 })
+  feesAmount: number;
+
+  @Column({ name: 'penalty_amount', type: 'decimal', precision: 18, scale: 2, default: 0 })
+  penaltyAmount: number;
+
+  @ManyToOne(() => Loan, loan => loan.dueSegmentations, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'loan_id' })
+  @Index()
+  loan: Loan;
+
+  @Column({ name: 'loan_id' })
+  loanId: string;
 }

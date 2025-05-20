@@ -1,23 +1,13 @@
 import 'reflect-metadata';
-import { createConnection } from 'typeorm';
 import app from './app';
 import { env } from './config/env.config';
+import { AppDataSource } from './config/data-source';
 
 // Start the server
 const startServer = async () => {
   try {
-    // Connect to database
-    await createConnection({
-      type: 'postgres',
-      host: env.DB_HOST,
-      port: env.DB_PORT,
-      username: env.DB_USERNAME,
-      password: env.DB_PASSWORD,
-      database: env.DB_DATABASE,
-      entities: [__dirname + '/models/**/*.entity{.ts,.js}'],
-      synchronize: env.isDevelopment(), // Auto-create database schema in development
-      logging: env.isDevelopment()
-    });
+    // Initialize database connection
+    await AppDataSource.initialize();
     
     console.log('Connected to database');
     

@@ -1,8 +1,8 @@
-import { EntityRepository } from 'typeorm';
 import { Collateral, CollateralType } from '../models/collateral.entity';
-import { BaseSyncRepository, PaginatedResult, PaginationOptions } from './sync-entity.repository';
+import { PaginatedResult, PaginationOptions, createBaseSyncRepository } from './sync-entity.repository';
 import { SourceSystemType as ModelSourceSystemType } from '../models/sync-status.entity';
 import { Errors, OperationType, SourceSystemType } from '../errors';
+import { AppDataSource } from '../config/data-source';
 
 /**
  * Search criteria for collaterals
@@ -13,11 +13,13 @@ export interface CollateralSearchCriteria extends PaginationOptions {
   maxValue?: number;
 }
 
+// Create base repository functions
+const baseSyncRepository = createBaseSyncRepository(Collateral);
+
 /**
  * Repository for Collateral entity
  */
-@EntityRepository(Collateral)
-export class CollateralRepository extends BaseSyncRepository<Collateral> {
+export const CollateralRepository = AppDataSource.getRepository(Collateral).extend({
   /**
    * Find a collateral by collateral number (natural key)
    * @param collateralNumber Collateral number
@@ -25,17 +27,18 @@ export class CollateralRepository extends BaseSyncRepository<Collateral> {
    */
   async findByNaturalKey(collateralNumber: string): Promise<Collateral | undefined> {
     try {
-      return await this.findOne({ where: { collateralNumber } });
+      const collateral = await this.findOneBy({ collateralNumber });
+      return collateral || undefined;
     } catch (error) {
       console.error(`Error finding collateral by number ${collateralNumber}:`, error);
       throw Errors.wrap(
-        error,
+        error as Error,
         OperationType.DATABASE,
         SourceSystemType.OTHER,
         { collateralNumber, operation: 'findByNaturalKey' }
       );
     }
-  }
+  },
 
   /**
    * Upsert a collateral by collateral number (natural key)
@@ -57,13 +60,13 @@ export class CollateralRepository extends BaseSyncRepository<Collateral> {
     } catch (error) {
       console.error(`Error upserting collateral with number ${collateral.collateralNumber}:`, error);
       throw Errors.wrap(
-        error,
+        error as Error,
         OperationType.DATABASE,
         SourceSystemType.OTHER,
         { collateralNumber: collateral.collateralNumber, operation: 'upsertByNaturalKey' }
       );
     }
-  }
+  },
 
   /**
    * Find collaterals by customer CIF
@@ -93,22 +96,22 @@ export class CollateralRepository extends BaseSyncRepository<Collateral> {
       const total = await queryBuilder.getCount();
       
       // Apply pagination
-      const paginatedQuery = this.applyPagination(queryBuilder, criteria || {});
+      const paginatedQuery = baseSyncRepository.applyPagination(queryBuilder, criteria || {});
       
       // Get paginated results
       const collaterals = await paginatedQuery.getMany();
       
-      return this.createPaginatedResult(collaterals, total, criteria || {});
+      return baseSyncRepository.createPaginatedResult(collaterals, total, criteria || {});
     } catch (error) {
       console.error(`Error finding collaterals by CIF ${cif}:`, error);
       throw Errors.wrap(
-        error,
+        error as Error,
         OperationType.DATABASE,
         SourceSystemType.OTHER,
         { cif, criteria, operation: 'findByCif' }
       );
     }
-  }
+  },
 
   /**
    * Get collateral with all related entities
@@ -117,21 +120,22 @@ export class CollateralRepository extends BaseSyncRepository<Collateral> {
    */
   async getCollateralWithDetails(collateralNumber: string): Promise<Collateral | undefined> {
     try {
-      return await this.createQueryBuilder('collateral')
+      const collateral = await this.createQueryBuilder('collateral')
         .leftJoinAndSelect('collateral.customer', 'customer')
         .leftJoinAndSelect('collateral.associatedLoans', 'associatedLoans')
         .where('collateral.collateral_number = :collateralNumber', { collateralNumber })
         .getOne();
+      return collateral || undefined;
     } catch (error) {
       console.error(`Error getting collateral details for number ${collateralNumber}:`, error);
       throw Errors.wrap(
-        error,
+        error as Error,
         OperationType.DATABASE,
         SourceSystemType.OTHER,
         { collateralNumber, operation: 'getCollateralWithDetails' }
       );
     }
-  }
+  },
 
   /**
    * Find collaterals by loan account number
@@ -147,13 +151,13 @@ export class CollateralRepository extends BaseSyncRepository<Collateral> {
     } catch (error) {
       console.error(`Error finding collaterals by loan account number ${accountNumber}:`, error);
       throw Errors.wrap(
-        error,
+        error as Error,
         OperationType.DATABASE,
         SourceSystemType.OTHER,
         { accountNumber, operation: 'findByLoanAccountNumber' }
       );
     }
-  }
+  },
 
   /**
    * Find collaterals by type
@@ -170,20 +174,24 @@ export class CollateralRepository extends BaseSyncRepository<Collateral> {
       const total = await queryBuilder.getCount();
       
       // Apply pagination
-      const paginatedQuery = this.applyPagination(queryBuilder, criteria || {});
+      const paginatedQuery = baseSyncRepository.applyPagination(queryBuilder, criteria || {});
       
       // Get paginated results
       const collaterals = await paginatedQuery.getMany();
       
-      return this.createPaginatedResult(collaterals, total, criteria || {});
+      return baseSyncRepository.createPaginatedResult(collaterals, total, criteria || {});
     } catch (error) {
       console.error(`Error finding collaterals by type ${type}:`, error);
       throw Errors.wrap(
-        error,
+        error as Error,
         OperationType.DATABASE,
         SourceSystemType.OTHER,
         { type, criteria, operation: 'findByType' }
       );
     }
-  }
-}
+  },
+
+  // Add base repository methods
+  findBySourceSystem: baseSyncRepository.findBySourceSystem,
+  findStaleRecords: baseSyncRepository.findStaleRecords
+});

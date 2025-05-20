@@ -1,8 +1,9 @@
-import { EntityRepository, Repository, getRepository } from 'typeorm';
-import { Customer, CustomerStatus } from '../models/customer.entity';
-import { BaseSyncRepository, PaginatedResult, PaginationOptions } from './sync-entity.repository';
+import { Customer } from '../models/customer.entity';
+import { CustomerStatus } from '../models/customer-types';
+import { PaginatedResult, PaginationOptions, createBaseSyncRepository } from './sync-entity.repository';
 import { SourceSystemType as ModelSourceSystemType } from '../models/sync-status.entity';
 import { Errors, OperationType, SourceSystemType } from '../errors';
+import { AppDataSource } from '../config/data-source';
 
 /**
  * Search criteria for customers
@@ -16,11 +17,13 @@ export interface CustomerSearchCriteria extends PaginationOptions {
   status?: CustomerStatus;
 }
 
+// Create base repository functions
+const baseSyncRepository = createBaseSyncRepository(Customer);
+
 /**
  * Repository for Customer entity
  */
-@EntityRepository(Customer)
-export class CustomerRepository extends BaseSyncRepository<Customer> {
+export const CustomerRepository = AppDataSource.getRepository(Customer).extend({
   /**
    * Find a customer by CIF (natural key)
    * @param cif Customer CIF number
@@ -28,17 +31,18 @@ export class CustomerRepository extends BaseSyncRepository<Customer> {
    */
   async findByNaturalKey(cif: string): Promise<Customer | undefined> {
     try {
-      return await this.findOne({ where: { cif } });
+      const customer = await this.findOneBy({ cif });
+      return customer || undefined;
     } catch (error) {
       console.error(`Error finding customer by CIF ${cif}:`, error);
       throw Errors.wrap(
-        error,
+        error as Error,
         OperationType.DATABASE,
         SourceSystemType.OTHER,
         { cif, operation: 'findByNaturalKey' }
       );
     }
-  }
+  },
 
   /**
    * Upsert a customer by CIF (natural key)
@@ -60,13 +64,13 @@ export class CustomerRepository extends BaseSyncRepository<Customer> {
     } catch (error) {
       console.error(`Error upserting customer with CIF ${customer.cif}:`, error);
       throw Errors.wrap(
-        error,
+        error as Error,
         OperationType.DATABASE,
         SourceSystemType.OTHER,
         { cif: customer.cif, operation: 'upsertByNaturalKey' }
       );
     }
-  }
+  },
 
   /**
    * Search customers based on criteria
@@ -106,22 +110,22 @@ export class CustomerRepository extends BaseSyncRepository<Customer> {
       const total = await queryBuilder.getCount();
       
       // Apply pagination
-      const paginatedQuery = this.applyPagination(queryBuilder, criteria);
+      const paginatedQuery = baseSyncRepository.applyPagination(queryBuilder, criteria);
       
       // Get paginated results
       const customers = await paginatedQuery.getMany();
       
-      return this.createPaginatedResult(customers, total, criteria);
+      return baseSyncRepository.createPaginatedResult(customers, total, criteria);
     } catch (error) {
       console.error('Error searching customers:', error);
       throw Errors.wrap(
-        error,
+        error as Error,
         OperationType.DATABASE,
         SourceSystemType.OTHER,
         { criteria, operation: 'searchCustomers' }
       );
     }
-  }
+  },
 
   /**
    * Find customers by source system with eager loading of related entities
@@ -139,13 +143,13 @@ export class CustomerRepository extends BaseSyncRepository<Customer> {
     } catch (error) {
       console.error(`Error finding customers by source system ${source}:`, error);
       throw Errors.wrap(
-        error,
+        error as Error,
         OperationType.DATABASE,
         SourceSystemType.OTHER,
         { source, operation: 'findBySourceSystemWithRelations' }
       );
     }
-  }
+  },
 
   /**
    * Get customer with all related entities
@@ -154,7 +158,7 @@ export class CustomerRepository extends BaseSyncRepository<Customer> {
    */
   async getCustomerWithDetails(cif: string): Promise<Customer | undefined> {
     try {
-      return await this.createQueryBuilder('customer')
+      const customer = await this.createQueryBuilder('customer')
         .leftJoinAndSelect('customer.phones', 'phones')
         .leftJoinAndSelect('customer.addresses', 'addresses')
         .leftJoinAndSelect('customer.emails', 'emails')
@@ -163,14 +167,19 @@ export class CustomerRepository extends BaseSyncRepository<Customer> {
         .leftJoinAndSelect('customer.referenceCustomers', 'referenceCustomers')
         .where('customer.cif = :cif', { cif })
         .getOne();
+      return customer || undefined;
     } catch (error) {
       console.error(`Error getting customer details for CIF ${cif}:`, error);
       throw Errors.wrap(
-        error,
+        error as Error,
         OperationType.DATABASE,
         SourceSystemType.OTHER,
         { cif, operation: 'getCustomerWithDetails' }
       );
     }
-  }
-}
+  },
+
+  // Add base repository methods
+  findBySourceSystem: baseSyncRepository.findBySourceSystem,
+  findStaleRecords: baseSyncRepository.findStaleRecords
+});

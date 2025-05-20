@@ -1,8 +1,9 @@
-import { EntityRepository } from 'typeorm';
-import { Loan, LoanStatus, DelinquencyStatus } from '../models/loan.entity';
-import { BaseSyncRepository, PaginatedResult, PaginationOptions } from './sync-entity.repository';
+import { Loan } from '../models/loan.entity';
+import { LoanStatus, DelinquencyStatus } from '../models/loan.entity';
+import { PaginatedResult, PaginationOptions, createBaseSyncRepository } from './sync-entity.repository';
 import { SourceSystemType as ModelSourceSystemType } from '../models/sync-status.entity';
 import { Errors, OperationType, SourceSystemType } from '../errors';
+import { AppDataSource } from '../config/data-source';
 
 /**
  * Search criteria for loans
@@ -15,11 +16,13 @@ export interface LoanSearchCriteria extends PaginationOptions {
   maxDpd?: number;
 }
 
+// Create base repository functions
+const baseSyncRepository = createBaseSyncRepository(Loan);
+
 /**
  * Repository for Loan entity
  */
-@EntityRepository(Loan)
-export class LoanRepository extends BaseSyncRepository<Loan> {
+export const LoanRepository = AppDataSource.getRepository(Loan).extend({
   /**
    * Find a loan by account number (natural key)
    * @param accountNumber Loan account number
@@ -27,17 +30,18 @@ export class LoanRepository extends BaseSyncRepository<Loan> {
    */
   async findByNaturalKey(accountNumber: string): Promise<Loan | undefined> {
     try {
-      return await this.findOne({ where: { accountNumber } });
+      const loan = await this.findOneBy({ accountNumber });
+      return loan || undefined;
     } catch (error) {
       console.error(`Error finding loan by account number ${accountNumber}:`, error);
       throw Errors.wrap(
-        error,
+        error as Error,
         OperationType.DATABASE,
         SourceSystemType.OTHER,
         { accountNumber, operation: 'findByNaturalKey' }
       );
     }
-  }
+  },
 
   /**
    * Upsert a loan by account number (natural key)
@@ -59,13 +63,13 @@ export class LoanRepository extends BaseSyncRepository<Loan> {
     } catch (error) {
       console.error(`Error upserting loan with account number ${loan.accountNumber}:`, error);
       throw Errors.wrap(
-        error,
+        error as Error,
         OperationType.DATABASE,
         SourceSystemType.OTHER,
         { accountNumber: loan.accountNumber, operation: 'upsertByNaturalKey' }
       );
     }
-  }
+  },
 
   /**
    * Find loans by customer CIF
@@ -103,22 +107,22 @@ export class LoanRepository extends BaseSyncRepository<Loan> {
       const total = await queryBuilder.getCount();
       
       // Apply pagination
-      const paginatedQuery = this.applyPagination(queryBuilder, criteria || {});
+      const paginatedQuery = baseSyncRepository.applyPagination(queryBuilder, criteria || {});
       
       // Get paginated results
       const loans = await paginatedQuery.getMany();
       
-      return this.createPaginatedResult(loans, total, criteria || {});
+      return baseSyncRepository.createPaginatedResult(loans, total, criteria || {});
     } catch (error) {
       console.error(`Error finding loans by CIF ${cif}:`, error);
       throw Errors.wrap(
-        error,
+        error as Error,
         OperationType.DATABASE,
         SourceSystemType.OTHER,
         { cif, criteria, operation: 'findByCif' }
       );
     }
-  }
+  },
 
   /**
    * Get loan with all related entities
@@ -127,21 +131,22 @@ export class LoanRepository extends BaseSyncRepository<Loan> {
    */
   async getLoanWithDetails(accountNumber: string): Promise<Loan | undefined> {
     try {
-      return await this.createQueryBuilder('loan')
+      const loan = await this.createQueryBuilder('loan')
         .leftJoinAndSelect('loan.customer', 'customer')
         .leftJoinAndSelect('loan.dueSegmentations', 'dueSegmentations')
         .where('loan.account_number = :accountNumber', { accountNumber })
         .getOne();
+      return loan || undefined;
     } catch (error) {
       console.error(`Error getting loan details for account number ${accountNumber}:`, error);
       throw Errors.wrap(
-        error,
+        error as Error,
         OperationType.DATABASE,
         SourceSystemType.OTHER,
         { accountNumber, operation: 'getLoanWithDetails' }
       );
     }
-  }
+  },
 
   /**
    * Find delinquent loans
@@ -171,22 +176,22 @@ export class LoanRepository extends BaseSyncRepository<Loan> {
       const total = await queryBuilder.getCount();
       
       // Apply pagination
-      const paginatedQuery = this.applyPagination(queryBuilder, criteria || {});
+      const paginatedQuery = baseSyncRepository.applyPagination(queryBuilder, criteria || {});
       
       // Get paginated results
       const loans = await paginatedQuery.getMany();
       
-      return this.createPaginatedResult(loans, total, criteria || {});
+      return baseSyncRepository.createPaginatedResult(loans, total, criteria || {});
     } catch (error) {
       console.error('Error finding delinquent loans:', error);
       throw Errors.wrap(
-        error,
+        error as Error,
         OperationType.DATABASE,
         SourceSystemType.OTHER,
         { criteria, operation: 'findDelinquentLoans' }
       );
     }
-  }
+  },
 
   /**
    * Find loans with upcoming payments
@@ -214,20 +219,24 @@ export class LoanRepository extends BaseSyncRepository<Loan> {
       const total = await queryBuilder.getCount();
       
       // Apply pagination
-      const paginatedQuery = this.applyPagination(queryBuilder, criteria || {});
+      const paginatedQuery = baseSyncRepository.applyPagination(queryBuilder, criteria || {});
       
       // Get paginated results
       const loans = await paginatedQuery.getMany();
       
-      return this.createPaginatedResult(loans, total, criteria || {});
+      return baseSyncRepository.createPaginatedResult(loans, total, criteria || {});
     } catch (error) {
       console.error('Error finding loans with upcoming payments:', error);
       throw Errors.wrap(
-        error,
+        error as Error,
         OperationType.DATABASE,
         SourceSystemType.OTHER,
         { startDate, endDate, criteria, operation: 'findLoansWithUpcomingPayments' }
       );
     }
-  }
-}
+  },
+
+  // Add base repository methods
+  findBySourceSystem: baseSyncRepository.findBySourceSystem,
+  findStaleRecords: baseSyncRepository.findStaleRecords
+});

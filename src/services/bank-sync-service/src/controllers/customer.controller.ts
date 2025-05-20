@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
-import { getCustomRepository } from 'typeorm';
 import { CustomerRepository } from '../repositories/customer.repository';
 import { LoanRepository } from '../repositories/loan.repository';
 import { CollateralRepository } from '../repositories/collateral.repository';
 import { ReferenceCustomerRepository } from '../repositories/reference-customer.repository';
 import { Errors, OperationType, SourceSystemType, ValidationErrorCodes } from '../errors';
+import { AppDataSource } from '../config/data-source';
 
 /**
  * Customer controller
@@ -27,8 +27,7 @@ export class CustomerController {
         );
       }
       
-      const customerRepository = getCustomRepository(CustomerRepository);
-      const customer = await customerRepository.getCustomerWithDetails(cif);
+      const customer = await CustomerRepository.getCustomerWithDetails(cif);
       
       if (!customer) {
         throw Errors.create(
@@ -56,20 +55,18 @@ export class CustomerController {
    */
   async searchCustomers(req: Request, res: Response, next: NextFunction) {
     try {
-      const { 
-        name, 
-        nationalId, 
-        companyName, 
-        registrationNumber, 
-        segment, 
+      const {
+        name,
+        nationalId,
+        companyName,
+        registrationNumber,
+        segment,
         status,
         page = 1,
         pageSize = 10
       } = req.query;
       
-      const customerRepository = getCustomRepository(CustomerRepository);
-      
-      const result = await customerRepository.searchCustomers({
+      const result = await CustomerRepository.searchCustomers({
         name: name as string,
         nationalId: nationalId as string,
         companyName: companyName as string,
@@ -117,8 +114,7 @@ export class CustomerController {
         );
       }
       
-      const customerRepository = getCustomRepository(CustomerRepository);
-      const customer = await customerRepository.findByNaturalKey(cif);
+      const customer = await CustomerRepository.findByNaturalKey(cif);
       
       if (!customer) {
         throw Errors.create(
@@ -129,8 +125,7 @@ export class CustomerController {
         );
       }
       
-      const loanRepository = getCustomRepository(LoanRepository);
-      const result = await loanRepository.findByCif(cif, {
+      const result = await LoanRepository.findByCif(cif, {
         status: status as any,
         productType: productType as string,
         page: Number(page),
@@ -174,8 +169,7 @@ export class CustomerController {
         );
       }
       
-      const customerRepository = getCustomRepository(CustomerRepository);
-      const customer = await customerRepository.findByNaturalKey(cif);
+      const customer = await CustomerRepository.findByNaturalKey(cif);
       
       if (!customer) {
         throw Errors.create(
@@ -186,8 +180,7 @@ export class CustomerController {
         );
       }
       
-      const collateralRepository = getCustomRepository(CollateralRepository);
-      const result = await collateralRepository.findByCif(cif, {
+      const result = await CollateralRepository.findByCif(cif, {
         type: type as any,
         page: Number(page),
         pageSize: Math.min(Number(pageSize), 100)
@@ -230,8 +223,7 @@ export class CustomerController {
         );
       }
       
-      const customerRepository = getCustomRepository(CustomerRepository);
-      const customer = await customerRepository.findByNaturalKey(cif);
+      const customer = await CustomerRepository.findByNaturalKey(cif);
       
       if (!customer) {
         throw Errors.create(
@@ -242,8 +234,7 @@ export class CustomerController {
         );
       }
       
-      const referenceRepository = getCustomRepository(ReferenceCustomerRepository);
-      const result = await referenceRepository.findByPrimaryCif(cif, {
+      const result = await ReferenceCustomerRepository.findByPrimaryCif(cif, {
         relationshipType: relationshipType as any,
         page: Number(page),
         pageSize: Math.min(Number(pageSize), 100)

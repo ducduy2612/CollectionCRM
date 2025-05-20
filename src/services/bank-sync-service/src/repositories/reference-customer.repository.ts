@@ -1,7 +1,7 @@
-import { EntityRepository } from 'typeorm';
 import { ReferenceCustomer, RelationshipType } from '../models/reference-customer.entity';
-import { BaseSyncRepository, PaginatedResult, PaginationOptions } from './sync-entity.repository';
+import { PaginatedResult, PaginationOptions, createBaseSyncRepository } from './sync-entity.repository';
 import { SourceSystemType } from '../models/sync-status.entity';
+import { AppDataSource } from '../config/data-source';
 
 /**
  * Search criteria for reference customers
@@ -12,11 +12,13 @@ export interface ReferenceSearchCriteria extends PaginationOptions {
   nationalId?: string;
 }
 
+// Create base repository functions
+const baseSyncRepository = createBaseSyncRepository(ReferenceCustomer);
+
 /**
  * Repository for ReferenceCustomer entity
  */
-@EntityRepository(ReferenceCustomer)
-export class ReferenceCustomerRepository extends BaseSyncRepository<ReferenceCustomer> {
+export const ReferenceCustomerRepository = AppDataSource.getRepository(ReferenceCustomer).extend({
   /**
    * Find a reference customer by reference CIF (natural key)
    * @param refCif Reference CIF number
@@ -24,12 +26,13 @@ export class ReferenceCustomerRepository extends BaseSyncRepository<ReferenceCus
    */
   async findByNaturalKey(refCif: string): Promise<ReferenceCustomer | undefined> {
     try {
-      return await this.findOne({ where: { refCif } });
+      const referenceCustomer = await this.findOneBy({ refCif });
+      return referenceCustomer || undefined;
     } catch (error) {
       console.error(`Error finding reference customer by CIF ${refCif}:`, error);
-      throw new Error(`Failed to find reference customer by CIF: ${error.message}`);
+      throw new Error(`Failed to find reference customer by CIF: ${(error as Error).message}`);
     }
-  }
+  },
 
   /**
    * Upsert a reference customer by reference CIF (natural key)
@@ -50,9 +53,9 @@ export class ReferenceCustomerRepository extends BaseSyncRepository<ReferenceCus
       }
     } catch (error) {
       console.error(`Error upserting reference customer with CIF ${referenceCustomer.refCif}:`, error);
-      throw new Error(`Failed to upsert reference customer: ${error.message}`);
+      throw new Error(`Failed to upsert reference customer: ${(error as Error).message}`);
     }
-  }
+  },
 
   /**
    * Find reference customers by primary customer CIF
@@ -82,17 +85,17 @@ export class ReferenceCustomerRepository extends BaseSyncRepository<ReferenceCus
       const total = await queryBuilder.getCount();
       
       // Apply pagination
-      const paginatedQuery = this.applyPagination(queryBuilder, criteria || {});
+      const paginatedQuery = baseSyncRepository.applyPagination(queryBuilder, criteria || {});
       
       // Get paginated results
       const referenceCustomers = await paginatedQuery.getMany();
       
-      return this.createPaginatedResult(referenceCustomers, total, criteria || {});
+      return baseSyncRepository.createPaginatedResult(referenceCustomers, total, criteria || {});
     } catch (error) {
       console.error(`Error finding reference customers by primary CIF ${primaryCif}:`, error);
-      throw new Error(`Failed to find reference customers by primary CIF: ${error.message}`);
+      throw new Error(`Failed to find reference customers by primary CIF: ${(error as Error).message}`);
     }
-  }
+  },
 
   /**
    * Find reference customers by relationship type
@@ -109,17 +112,17 @@ export class ReferenceCustomerRepository extends BaseSyncRepository<ReferenceCus
       const total = await queryBuilder.getCount();
       
       // Apply pagination
-      const paginatedQuery = this.applyPagination(queryBuilder, criteria || {});
+      const paginatedQuery = baseSyncRepository.applyPagination(queryBuilder, criteria || {});
       
       // Get paginated results
       const referenceCustomers = await paginatedQuery.getMany();
       
-      return this.createPaginatedResult(referenceCustomers, total, criteria || {});
+      return baseSyncRepository.createPaginatedResult(referenceCustomers, total, criteria || {});
     } catch (error) {
       console.error(`Error finding reference customers by relationship type ${relationshipType}:`, error);
-      throw new Error(`Failed to find reference customers by relationship type: ${error.message}`);
+      throw new Error(`Failed to find reference customers by relationship type: ${(error as Error).message}`);
     }
-  }
+  },
 
   /**
    * Get reference customer with primary customer details
@@ -128,15 +131,16 @@ export class ReferenceCustomerRepository extends BaseSyncRepository<ReferenceCus
    */
   async getReferenceCustomerWithDetails(refCif: string): Promise<ReferenceCustomer | undefined> {
     try {
-      return await this.createQueryBuilder('refCustomer')
+      const referenceCustomer = await this.createQueryBuilder('refCustomer')
         .leftJoinAndSelect('refCustomer.primaryCustomer', 'primaryCustomer')
         .where('refCustomer.ref_cif = :refCif', { refCif })
         .getOne();
+      return referenceCustomer || undefined;
     } catch (error) {
       console.error(`Error getting reference customer details for CIF ${refCif}:`, error);
-      throw new Error(`Failed to get reference customer details: ${error.message}`);
+      throw new Error(`Failed to get reference customer details: ${(error as Error).message}`);
     }
-  }
+  },
 
   /**
    * Find guarantors for a specific loan
@@ -153,7 +157,11 @@ export class ReferenceCustomerRepository extends BaseSyncRepository<ReferenceCus
         .getMany();
     } catch (error) {
       console.error(`Error finding guarantors for loan account number ${accountNumber}:`, error);
-      throw new Error(`Failed to find guarantors for loan: ${error.message}`);
+      throw new Error(`Failed to find guarantors for loan: ${(error as Error).message}`);
     }
-  }
-}
+  },
+
+  // Add base repository methods
+  findBySourceSystem: baseSyncRepository.findBySourceSystem,
+  findStaleRecords: baseSyncRepository.findStaleRecords
+});

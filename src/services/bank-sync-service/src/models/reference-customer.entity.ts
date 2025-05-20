@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { SynchronizedEntity } from './base.entity';
 import { Customer } from './customer.entity';
-import { CustomerType, Gender } from './customer.entity';
+import { CustomerType, Gender } from './customer-types';
 
 /**
  * Relationship type enum
