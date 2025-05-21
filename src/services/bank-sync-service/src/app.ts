@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { env } from './config/env.config';
 import routes from './routes';
+import { AppDataSource } from './config/data-source';
 import { errorHandler, notFoundHandler } from './middleware/error-handler.middleware';
 
 // Create Express app
@@ -15,6 +16,18 @@ app.use(cors()); // Enable CORS
 app.use(morgan(env.isDevelopment() ? 'dev' : 'combined')); // Request logging
 app.use(express.json()); // Parse JSON request body
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request body
+
+// Health check route (no auth required)
+app.get(`${env.API_PREFIX}/health`, (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    service: 'Bank Sync Service',
+    timestamp: new Date().toISOString(),
+    database: {
+      connected: AppDataSource.isInitialized
+    }
+  });
+});
 
 // API routes
 app.use(env.API_PREFIX, routes);

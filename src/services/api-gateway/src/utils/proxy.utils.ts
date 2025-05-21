@@ -108,9 +108,10 @@ class RequestHeadersMiddleware implements RequestMiddleware {
       axiosConfig.headers['x-forwarded-for'] = req.ip;
     }
 
-    // Add user ID if authenticated
-    if (req.user?.id) {
+    // Add user information if authenticated
+    if (req.user) {
       axiosConfig.headers['x-user-id'] = req.user.id;
+      axiosConfig.headers['x-user-info'] = JSON.stringify(req.user);
     }
     
     // Forward other important headers

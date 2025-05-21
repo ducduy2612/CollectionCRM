@@ -33,11 +33,32 @@ export class ApiError extends Error {
 }
 
 /**
+ * Helper function to extract user information from headers
+ */
+const extractUserFromHeaders = (req: Request): void => {
+  if (!req.user) {
+    const userInfoHeader = req.headers['x-user-info'];
+    
+    if (userInfoHeader && typeof userInfoHeader === 'string') {
+      try {
+        req.user = JSON.parse(userInfoHeader);
+      } catch (error) {
+        console.error('Failed to parse user info from header:', error);
+      }
+    }
+  }
+};
+
+/**
  * Middleware to check if user is authenticated
  * Assumes the API gateway has already validated the JWT token
- * and attached the user object to the request
+ * and attached the user object to the request or headers
  */
 export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
+  // Try to extract user from headers if not already set
+  extractUserFromHeaders(req);
+  
+  // If no user, return authentication error
   if (!req.user) {
     return res.status(401).json({
       success: false,
@@ -56,6 +77,10 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
  */
 export const requireRoles = (roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
+    // Try to extract user from headers if not already set
+    extractUserFromHeaders(req);
+    
+    // If no user, return authentication error
     if (!req.user) {
       return res.status(401).json({
         success: false,
@@ -94,6 +119,10 @@ export const requireRoles = (roles: string[]) => {
  */
 export const requirePermissions = (permissions: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
+    // Try to extract user from headers if not already set
+    extractUserFromHeaders(req);
+    
+    // If no user, return authentication error
     if (!req.user) {
       return res.status(401).json({
         success: false,

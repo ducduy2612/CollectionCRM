@@ -14,6 +14,7 @@ services:
       - REDIS_PORT=6379
       - JWT_SECRET=${JWT_SECRET:-dev_jwt_secret}
       - AUTH_SERVICE_URL=http://auth-service:3000
+      - BANK_SERVICE_URL=http://bank-sync-service:3002
       - AUTH_SERVICE_TIMEOUT=60000
       - RATE_LIMIT_MAX_REQUESTS=100
       - RATE_LIMIT_WINDOW_MS=900000
@@ -23,7 +24,7 @@ services:
       - ../../src/services/api-gateway/src:/app/services/api-gateway/src
     depends_on:
       - auth-service
-      # - bank-sync-service
+      - bank-sync-service
       # - payment-service
       # - workflow-service
       - redis

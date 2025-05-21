@@ -82,7 +82,7 @@ export const serviceRoutes: Record<string, ProxyConfig> = {
     },
     requiresAuth: {
       all: true,
-      except: ['/health']
+      except: ['/health', '/health/check']
     }
   },
   payment: {
