@@ -39,12 +39,9 @@ export class Collateral extends SynchronizedEntity {
   collateralNumber: string;
 
   @ManyToOne(() => Customer, customer => customer.collaterals)
-  @JoinColumn({ name: 'customer_id' })
+  @JoinColumn({ name: 'cif', referencedColumnName: 'cif' })
   @Index()
   customer: Customer;
-
-  @Column({ name: 'customer_id' })
-  customerId: string;
 
   @Column({ name: 'cif' })
   @Index()
@@ -104,12 +101,12 @@ export class Collateral extends SynchronizedEntity {
   @JoinTable({
     name: 'loan_collaterals',
     joinColumn: {
-      name: 'collateral_id',
-      referencedColumnName: 'id'
+      name: 'collateral_number',
+      referencedColumnName: 'collateralNumber'
     },
     inverseJoinColumn: {
-      name: 'loan_id',
-      referencedColumnName: 'id'
+      name: 'loan_account_number',
+      referencedColumnName: 'accountNumber'
     }
   })
   associatedLoans: Loan[];

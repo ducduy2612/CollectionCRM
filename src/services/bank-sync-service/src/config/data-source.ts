@@ -9,7 +9,8 @@ export const AppDataSource = new DataSource({
   username: env.DB_USERNAME,
   password: env.DB_PASSWORD,
   database: env.DB_DATABASE,
+  schema: 'bank_sync_service', // Specify the schema name
   entities: [__dirname + '/../models/**/*.entity{.ts,.js}'],
-  synchronize: env.isDevelopment(), // Auto-create database schema in development
+  synchronize: false, // Temporarily disabled to prevent schema sync issues
   logging: env.isDevelopment()
 });

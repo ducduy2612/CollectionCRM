@@ -20,6 +20,18 @@ export const rateLimitConfigs = {
       windowSizeInSeconds: 300, // 5 minutes
       prefix: 'auth:password:'
     }
+  },
+  bank: {
+    customerSearch: {
+      max: 30,
+      windowSizeInSeconds: 60, // 1 minute
+      prefix: 'bank:customer:search:'
+    },
+    syncRun: {
+      max: 5,
+      windowSizeInSeconds: 300, // 5 minutes
+      prefix: 'bank:sync:run:'
+    }
   }
 };
 
@@ -52,9 +64,26 @@ export const serviceRoutes: Record<string, ProxyConfig> = {
   bank: {
     path: '/api/bank',
     target: process.env.BANK_SERVICE_URL || 'http://bank-sync-service:3000',
-    pathRewrite: { '^/api/bank': '' },
+    pathRewrite: { '^/api/bank': '/api/v1/bank-sync' },
     timeout: parseInt(process.env.BANK_SERVICE_TIMEOUT || '30000', 10),
-    serviceName: 'Bank Sync Service'
+    serviceName: 'Bank Sync Service',
+    routes: {
+      customers: '/customers',
+      customerById: '/customers/:cif',
+      customerLoans: '/customers/:cif/loans',
+      customerCollaterals: '/customers/:cif/collaterals',
+      loans: '/loans',
+      loanById: '/loans/:accountNumber',
+      collaterals: '/collaterals',
+      collateralById: '/collaterals/:collateralNumber',
+      syncStatus: '/sync/status',
+      syncRun: '/sync/run',
+      health: '/health'
+    },
+    requiresAuth: {
+      all: true,
+      except: ['/health']
+    }
   },
   payment: {
     path: '/api/payment',

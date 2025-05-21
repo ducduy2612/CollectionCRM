@@ -63,20 +63,29 @@ services:
   # Bank Synchronization Service
   bank-sync-service:
     build:
-      context: ../../src
-      dockerfile: ../docker/base-images/node.Dockerfile
-      args:
-        - SERVICE_DIR=services/bank-sync-service
+      context: ../../
+      dockerfile: docker/base-images/bank-sync-service.Dockerfile
+    ports:
+      - "3002:3002"
     environment:
       - NODE_ENV=development
       - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=${POSTGRES_ADMIN_PASSWORD:-admin_password}
+      - DB_DATABASE=collectioncrm
+      - PORT=3002
+      - API_PREFIX=/api/v1/bank-sync
+      - LOG_LEVEL=debug
+      - CORS_ORIGIN=http://localhost:8080
+      - CHOKIDAR_USEPOLLING=true
     volumes:
-      - ../../src/services/bank-sync-service/src:/app/src
-      - ../../src/common:/app/common
+      - ../../src/services/bank-sync-service:/app/services/bank-sync-service
     depends_on:
       - postgres
-      - kafka
-      - elasticsearch
+      # - kafka
+      # - elasticsearch
+    restart: unless-stopped
 
   # Payment Processing Service
   payment-service:

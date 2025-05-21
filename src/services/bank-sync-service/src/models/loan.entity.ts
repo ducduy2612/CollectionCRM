@@ -42,12 +42,9 @@ export class Loan extends SynchronizedEntity {
   accountNumber: string;
 
   @ManyToOne(() => Customer, customer => customer.loans)
-  @JoinColumn({ name: 'customer_id' })
+  @JoinColumn({ name: 'cif', referencedColumnName: 'cif' })
   @Index()
   customer: Customer;
-
-  @Column({ name: 'customer_id' })
-  customerId: string;
 
   @Column({ name: 'cif' })
   @Index()
@@ -82,8 +79,8 @@ export class Loan extends SynchronizedEntity {
   })
   paymentFrequency: PaymentFrequency;
 
-  @Column({ type: 'decimal', precision: 18, scale: 2, default: 0 })
-  limit: number;
+  @Column({ name: 'limit_amount', type: 'decimal', precision: 18, scale: 2, default: 0 })
+  limitAmount: number;
 
   @Column({ type: 'decimal', precision: 18, scale: 2 })
   outstanding: number;
@@ -153,10 +150,10 @@ export class DueSegmentation extends SynchronizedEntity {
   penaltyAmount: number;
 
   @ManyToOne(() => Loan, loan => loan.dueSegmentations, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'loan_id' })
+  @JoinColumn({ name: 'loan_account_number', referencedColumnName: 'accountNumber' })
   @Index()
   loan: Loan;
 
-  @Column({ name: 'loan_id' })
-  loanId: string;
+  @Column({ name: 'loan_account_number' })
+  loanAccountNumber: string;
 }

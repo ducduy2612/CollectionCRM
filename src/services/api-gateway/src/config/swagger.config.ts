@@ -7,6 +7,11 @@ import {
   userManagementPaths,
   roleManagementPaths
 } from './swagger-auth-service';
+import {
+  bankServiceSchemas,
+  bankServiceTags,
+  bankServicePaths
+} from './swagger-bank-service';
 
 /**
  * Swagger/OpenAPI configuration
@@ -48,15 +53,13 @@ export function getSwaggerOptions(serverUrl: string) {
           },
         },
         schemas: {
-          ...authServiceSchemas
+          ...authServiceSchemas,
+          ...bankServiceSchemas
         },
       },
       tags: [
         ...authServiceTags,
-        {
-          name: 'Bank',
-          description: 'Bank synchronization endpoints',
-        },
+        ...bankServiceTags,
         {
           name: 'Payment',
           description: 'Payment processing endpoints',
@@ -69,7 +72,8 @@ export function getSwaggerOptions(serverUrl: string) {
       paths: {
         ...authServicePaths,
         ...userManagementPaths,
-        ...roleManagementPaths
+        ...roleManagementPaths,
+        ...bankServicePaths
       },
     },
     apis: ['./src/routes/*.ts', './src/middleware/*.ts'],

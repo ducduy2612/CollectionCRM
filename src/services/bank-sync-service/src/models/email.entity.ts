@@ -20,10 +20,10 @@ export class Email extends BaseEntity {
   verificationDate: Date;
 
   @ManyToOne(() => Customer, customer => customer.emails, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'customer_id' })
+  @JoinColumn({ name: 'cif', referencedColumnName: 'cif' })
   @Index()
   customer: Customer;
 
-  @Column({ name: 'customer_id' })
-  customerId: string;
+  @Column({ name: 'cif' })
+  cif: string;
 }

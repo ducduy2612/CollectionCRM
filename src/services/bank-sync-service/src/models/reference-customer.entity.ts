@@ -29,12 +29,9 @@ export class ReferenceCustomer extends SynchronizedEntity {
   refCif: string;
 
   @ManyToOne(() => Customer, customer => customer.referenceCustomers)
-  @JoinColumn({ name: 'primary_customer_id' })
+  @JoinColumn({ name: 'primary_cif', referencedColumnName: 'cif' })
   @Index()
   primaryCustomer: Customer;
-
-  @Column({ name: 'primary_customer_id' })
-  primaryCustomerId: string;
 
   @Column({ name: 'primary_cif' })
   @Index()

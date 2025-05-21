@@ -10,10 +10,10 @@ export class Address extends BaseEntity {
   @Column({ type: 'varchar', length: 20 })
   type: string;
 
-  @Column({ name: 'address_line_1', type: 'varchar', length: 255 })
+  @Column({ name: 'address_line1', type: 'varchar', length: 255 })
   addressLine1: string;
 
-  @Column({ name: 'address_line_2', type: 'varchar', length: 255, nullable: true })
+  @Column({ name: 'address_line2', type: 'varchar', length: 255, nullable: true })
   addressLine2: string;
 
   @Column({ type: 'varchar', length: 100 })
@@ -38,10 +38,10 @@ export class Address extends BaseEntity {
   verificationDate: Date;
 
   @ManyToOne(() => Customer, customer => customer.addresses, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'customer_id' })
+  @JoinColumn({ name: 'cif', referencedColumnName: 'cif' })
   @Index()
   customer: Customer;
 
-  @Column({ name: 'customer_id' })
-  customerId: string;
+  @Column({ name: 'cif' })
+  cif: string;
 }

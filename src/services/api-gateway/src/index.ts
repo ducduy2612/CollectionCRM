@@ -113,6 +113,15 @@ Object.entries(serviceRoutes).forEach(([name, config]) => {
     app.use(`${config.path}/password/reset`, routeRateLimiter(rateLimitConfigs.auth.passwordReset));
   }
   
+  // Add specific rate limiting for bank-sync endpoints
+  if (name === 'bank' && config.routes) {
+    // Customer search rate limiting
+    app.use(`${config.path}/customers`, routeRateLimiter(rateLimitConfigs.bank.customerSearch));
+    
+    // Sync run rate limiting
+    app.use(`${config.path}/sync/run`, routeRateLimiter(rateLimitConfigs.bank.syncRun));
+  }
+  
   // Set up the proxy
   app.use(config.path, createServiceProxy(config));
 });
