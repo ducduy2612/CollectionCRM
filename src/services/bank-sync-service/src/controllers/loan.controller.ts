@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { getCustomRepository } from 'typeorm';
 import { LoanRepository } from '../repositories/loan.repository';
 import { Errors, OperationType, SourceSystemType, ValidationErrorCodes } from '../errors';
+import { AppDataSource } from '../config/data-source';
 
 /**
  * Loan controller
@@ -24,8 +24,7 @@ export class LoanController {
         );
       }
       
-      const loanRepository = getCustomRepository(LoanRepository);
-      const loan = await loanRepository.getLoanWithDetails(accountNumber);
+      const loan = await LoanRepository.getLoanWithDetails(accountNumber);
       
       if (!loan) {
         throw Errors.create(

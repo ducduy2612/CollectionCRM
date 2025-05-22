@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { getCustomRepository } from 'typeorm';
 import { CollateralRepository } from '../repositories/collateral.repository';
 import { Errors, OperationType, SourceSystemType, ValidationErrorCodes } from '../errors';
+import { AppDataSource } from '../config/data-source';
 
 /**
  * Collateral controller
@@ -24,8 +24,7 @@ export class CollateralController {
         );
       }
       
-      const collateralRepository = getCustomRepository(CollateralRepository);
-      const collateral = await collateralRepository.getCollateralWithDetails(collateralNumber);
+      const collateral = await CollateralRepository.getCollateralWithDetails(collateralNumber);
       
       if (!collateral) {
         throw Errors.create(
