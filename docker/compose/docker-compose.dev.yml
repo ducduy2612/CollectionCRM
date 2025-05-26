@@ -4,20 +4,18 @@ services:
   # Frontend Development Service
   frontend-dev:
     build:
-      context: ../../src/frontend
-      dockerfile: ../../docker/base-images/frontend-dev.Dockerfile
+      context: ../../
+      dockerfile: docker/base-images/frontend-dev.Dockerfile
     ports:
       - "5173:5173"  # Vite default development port
     environment:
       # Environment variables for the frontend
       - NODE_ENV=development
-      - VITE_API_URL=http://api-gateway:3000  # API Gateway URL
+      - VITE_API_BASE_URL=http://localhost:3000/api  # API Gateway URL
       - CHOKIDAR_USEPOLLING=true  # Enable polling for file changes in Docker
     volumes:
       # Mount source code for hot-reloading
-      - ../../src/frontend:/app
-      # Use named volume for node_modules to improve performance
-      - frontend-node-modules:/app/node_modules
+      - ../../src/frontend/src:/app/src
     depends_on:
       - api-gateway
     networks:
