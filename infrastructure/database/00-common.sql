@@ -36,3 +36,16 @@ CREATE TYPE payment_status AS ENUM ('PENDING', 'COMPLETED', 'FAILED', 'REVERSED'
 
 -- Agent type
 CREATE TYPE agent_type AS ENUM ('AGENT', 'SUPERVISOR', 'ADMIN');
+
+-- Collection workflow specific types
+-- Action types and subtypes
+CREATE TYPE action_type AS ENUM ('CALL', 'VISIT', 'EMAIL', 'SMS', 'LETTER');
+CREATE TYPE action_subtype AS ENUM ('REMINDER_CALL', 'FOLLOW_UP_CALL', 'FIELD_VISIT', 'COURTESY_CALL', 'PAYMENT_REMINDER', 'DISPUTE_RESOLUTION');
+CREATE TYPE action_result AS ENUM ('PROMISE_TO_PAY', 'PAYMENT_MADE', 'NO_CONTACT', 'REFUSED_TO_PAY', 'DISPUTE', 'PARTIAL_PAYMENT', 'RESCHEDULED');
+
+-- Customer status types
+CREATE TYPE customer_status AS ENUM ('ACTIVE', 'INACTIVE', 'COOPERATIVE', 'UNCOOPERATIVE', 'DISPUTED');
+CREATE TYPE collateral_status AS ENUM ('SECURED', 'UNSECURED', 'PARTIAL', 'UNDER_REVIEW');
+CREATE TYPE processing_state_status AS ENUM ('IN_PROCESS', 'COMPLETED', 'PENDING', 'ESCALATED', 'ON_HOLD');
+CREATE TYPE lending_violation_status AS ENUM ('NONE', 'MINOR', 'MAJOR', 'CRITICAL');
+CREATE TYPE recovery_ability_status AS ENUM ('HIGH', 'MEDIUM', 'LOW', 'NONE', 'UNKNOWN');

@@ -71,12 +71,18 @@ services:
       - SESSION_TTL=86400
       - LOG_LEVEL=debug
       - CORS_ORIGIN=http://localhost:5173  # Updated for Vite dev server
+      # Kafka configuration
+      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_CLIENT_ID=auth-service
+      - KAFKA_RETRY_ATTEMPTS=8
+      - KAFKA_RETRY_INITIAL_TIME=100
       - CHOKIDAR_USEPOLLING=true
     volumes:
       - ../../src/services/auth-service/src:/app/services/auth-service/src
     depends_on:
       - postgres
       - redis
+      - kafka
     networks:
       - collectioncrm-network
     restart: unless-stopped
@@ -104,6 +110,7 @@ services:
       - ../../src/services/bank-sync-service:/app/services/bank-sync-service
     depends_on:
       - postgres
+      - kafka
     networks:
       - collectioncrm-network
     restart: unless-stopped
@@ -149,10 +156,51 @@ services:
       - collectioncrm-network
     restart: unless-stopped
 
+  # Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.0.1
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+    networks:
+      - collectioncrm-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.0.1
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    networks:
+      - collectioncrm-network
+
+  # Kafka UI
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+    ports:
+      - "8090:8080"
+    depends_on:
+      - kafka
+    networks:
+      - collectioncrm-network
+
 volumes:
   postgres-data:
   redis-data:
-  frontend-node-modules:  # Named volume for better performance
+  zookeeper-data:
+  kafka-data:
 
 networks:
   collectioncrm-network:

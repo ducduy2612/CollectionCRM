@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { getRedisClient, closeAllRedisClients } from 'collection-crm-common';
 import db from './config/database';
+import { initializeKafka, shutdownKafka } from './kafka';
 
 // Import routes
 import authRoutes from './routes/auth.routes';
@@ -87,6 +88,9 @@ const initializeApp = async () => {
     await db.raw('SELECT 1');
     console.log('Database connection established');
     
+    // Initialize Kafka
+    await initializeKafka();
+    
     // Start the server
     const server = app.listen(PORT, () => {
       console.log(`Authentication Service running on port ${PORT}`);
@@ -106,6 +110,9 @@ const initializeApp = async () => {
         // Close all Redis connections
         await closeAllRedisClients();
         console.log('Redis connections closed');
+        
+        // Close Kafka connections
+        await shutdownKafka();
         
         process.exit(0);
       });

@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import { userRepository } from '../repositories/user.repository';
 import { User, UserCreateData, UserUpdateData, UserResponse } from '../models/user.model';
 import { roleRepository } from '../repositories/role.repository';
+import { publishUserCreatedEvent, publishUserUpdatedEvent, publishUserDeactivatedEvent } from '../kafka';
 
 /**
  * User service for user management operations
@@ -58,11 +59,26 @@ export class UserService {
     // Create user data object without the password field
     const { password, ...userDataWithoutPassword } = userData;
     
-    return userRepository.create({
+    const user = await userRepository.create({
       ...userDataWithoutPassword,
       password_hash,
       is_active: userData.is_active !== undefined ? userData.is_active : true,
     });
+
+    // Publish user created event
+    try {
+      await publishUserCreatedEvent(
+        user.id,
+        user.username,
+        user.email,
+        user.role
+      );
+    } catch (error) {
+      console.error('Failed to publish user created event', error);
+      // Don't throw error here, as the user was created successfully
+    }
+
+    return user;
   }
 
   /**
@@ -77,13 +93,13 @@ export class UserService {
     password?: string
   ): Promise<User | null> {
     // Check if user exists
-    const user = await userRepository.findById(id);
-    if (!user) {
+    const existingUser = await userRepository.findById(id);
+    if (!existingUser) {
       throw new Error('User not found');
     }
 
     // Check if email already exists (if changing email)
-    if (userData.email && userData.email !== user.email) {
+    if (userData.email && userData.email !== existingUser.email) {
       const existingEmail = await userRepository.findByEmail(userData.email);
       if (existingEmail) {
         throw new Error('Email already exists');
@@ -91,7 +107,7 @@ export class UserService {
     }
 
     // Check if role exists (if changing role)
-    if (userData.role && userData.role !== user.role) {
+    if (userData.role && userData.role !== existingUser.role) {
       const role = await roleRepository.findByName(userData.role);
       if (!role) {
         throw new Error('Role does not exist');
@@ -107,7 +123,22 @@ export class UserService {
     }
 
     // Update user
-    return userRepository.update(id, updateData);
+    const user = await userRepository.update(id, updateData);
+
+    if (user) {
+      // Publish user updated event
+      try {
+        await publishUserUpdatedEvent(id, {
+          email: updateData.email,
+          role: updateData.role
+        });
+      } catch (error) {
+        console.error('Failed to publish user updated event', error);
+        // Don't throw error here, as the user was updated successfully
+      }
+    }
+
+    return user;
   }
 
   /**
@@ -178,6 +209,16 @@ export class UserService {
       return null;
     }
     
+    // Publish user updated event
+    try {
+      await publishUserUpdatedEvent(id, {
+        isActive: true
+      });
+    } catch (error) {
+      console.error('Failed to publish user updated event', error);
+      // Don't throw error here, as the user was activated successfully
+    }
+    
     return {
       id: user.id,
       username: user.username,
@@ -200,6 +241,14 @@ export class UserService {
     
     if (!user) {
       return null;
+    }
+    
+    // Publish user deactivated event
+    try {
+      await publishUserDeactivatedEvent(id);
+    } catch (error) {
+      console.error('Failed to publish user deactivated event', error);
+      // Don't throw error here, as the user was deactivated successfully
     }
     
     return {

@@ -50,15 +50,20 @@ services:
       - SESSION_TTL=86400
       - LOG_LEVEL=debug
       - CORS_ORIGIN=http://localhost:8080
-      # - WDS_SOCKET_HOST=127.0.0.1 
+      # Kafka configuration
+      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_CLIENT_ID=auth-service
+      - KAFKA_RETRY_ATTEMPTS=8
+      - KAFKA_RETRY_INITIAL_TIME=100
+      # - WDS_SOCKET_HOST=127.0.0.1
       - CHOKIDAR_USEPOLLING=true
-      # - WATCHPACK_POLLING=true 
+      # - WATCHPACK_POLLING=true
     volumes:
       - ../../src/services/auth-service/src:/app/services/auth-service/src
     depends_on:
       - postgres
       - redis
-      # - kafka
+      - kafka
     restart: unless-stopped
 
   # Bank Synchronization Service
@@ -84,7 +89,7 @@ services:
       - ../../src/services/bank-sync-service:/app/services/bank-sync-service
     depends_on:
       - postgres
-      # - kafka
+      - kafka
       # - elasticsearch
     restart: unless-stopped
 
@@ -120,6 +125,12 @@ services:
       - DB_HOST=postgres
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      # Kafka configuration
+      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_CLIENT_ID=workflow-service
+      - KAFKA_GROUP_ID=workflow-service-group
+      - KAFKA_RETRY_ATTEMPTS=8
+      - KAFKA_RETRY_INITIAL_TIME=100
     volumes:
       - ../../src/services/workflow-service/src:/app/src
       - ../../src/common:/app/common
@@ -212,7 +223,7 @@ services:
     volumes:
       - kafka-data:/var/lib/kafka/data
     depends_on:
-      - zookeeper
+      - f
     ports:
       - "9092:9092"
 
