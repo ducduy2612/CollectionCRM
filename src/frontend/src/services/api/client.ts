@@ -46,25 +46,31 @@ apiClient.interceptors.response.use(
             refreshToken,
           });
 
-          const { token, refreshToken: newRefreshToken } = response.data.data;
+          if (response.data.success) {
+            const { token, refreshToken: newRefreshToken } = response.data.data;
 
-          // Update stored tokens
-          localStorage.setItem('accessToken', token);
-          if (newRefreshToken) {
-            localStorage.setItem('refreshToken', newRefreshToken);
+            // Update stored tokens
+            localStorage.setItem('accessToken', token);
+            if (newRefreshToken) {
+              localStorage.setItem('refreshToken', newRefreshToken);
+            }
+
+            // Update the authorization header and retry the original request
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return apiClient(originalRequest);
+          } else {
+            throw new Error('Token refresh failed');
           }
-
-          // Update the authorization header and retry the original request
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return apiClient(originalRequest);
         }
       } catch (refreshError) {
         // Refresh failed, clear tokens and redirect to login
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         
-        // Redirect to login page
-        window.location.href = '/login';
+        // Only redirect if we're not already on the login page
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+        }
         
         return Promise.reject(refreshError);
       }

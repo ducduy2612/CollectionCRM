@@ -81,7 +81,7 @@ const Sidebar: React.FC<SidebarProps> = ({ items, collapsed = false, onToggle })
             </button>
             {!collapsed && isExpanded && (
               <ul className="mt-1 space-y-1">
-                {item.children.map(child => renderSidebarItem(child, depth + 1))}
+                {item.children?.map(child => renderSidebarItem(child, depth + 1))}
               </ul>
             )}
           </>

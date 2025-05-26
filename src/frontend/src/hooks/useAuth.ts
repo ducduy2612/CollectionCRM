@@ -15,7 +15,7 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (username: string, password: string, rememberMe?: boolean) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshToken: () => Promise<void>;
 }
 
@@ -55,6 +55,9 @@ export const useAuthState = () => {
         initials: response.user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()
       };
       
+      // Store user data in localStorage for faster restoration
+      localStorage.setItem('userData', JSON.stringify(userData));
+      
       // Set user data
       setUser(userData);
     } catch (error) {
@@ -65,16 +68,22 @@ export const useAuthState = () => {
     }
   };
 
-  const logout = () => {
-    // Clear tokens
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    
-    // Clear user data
-    setUser(null);
-    
-    // Call logout API
-    authApi.logout().catch(console.error);
+  const logout = async () => {
+    try {
+      // Call logout API first while token is still valid
+      await authApi.logout();
+    } catch (error) {
+      // Log the error but continue with local cleanup
+      console.warn('Logout API call failed:', error);
+    } finally {
+      // Always clear local storage and user state, regardless of API success
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('userData');
+      
+      // Clear user data
+      setUser(null);
+    }
   };
 
   const refreshToken = async () => {
@@ -93,7 +102,7 @@ export const useAuthState = () => {
       }
     } catch (error) {
       console.error('Token refresh failed:', error);
-      logout();
+      logout().catch(console.error);
       throw error;
     }
   };
@@ -103,16 +112,81 @@ export const useAuthState = () => {
     const initializeAuth = async () => {
       try {
         const token = localStorage.getItem('accessToken');
+        const cachedUserData = localStorage.getItem('userData');
+        
         if (token) {
-          // Verify token and get user data
-          const userData = await authApi.getCurrentUser();
-          setUser(userData);
+          // First, try to use cached user data for immediate UI update
+          if (cachedUserData) {
+            try {
+              const parsedUserData = JSON.parse(cachedUserData) as User;
+              setUser(parsedUserData);
+              setIsLoading(false); // Set loading to false immediately for better UX
+            } catch (parseError) {
+              console.error('Failed to parse cached user data:', parseError);
+              localStorage.removeItem('userData');
+            }
+          }
+          
+          // Then verify token and get fresh user data in the background
+          try {
+            const userData = await authApi.getCurrentUser();
+            
+            // Convert API user data to our User interface if needed
+            const userInfo: User = {
+              id: userData.id,
+              name: userData.name,
+              email: userData.email,
+              role: userData.role,
+              initials: userData.initials || userData.name.split(' ').map((n: string) => n[0]).join('').toUpperCase(),
+              avatar: userData.avatar
+            };
+            
+            // Update cached user data
+            localStorage.setItem('userData', JSON.stringify(userInfo));
+            setUser(userInfo);
+          } catch (apiError) {
+            console.error('Auth verification failed:', apiError);
+            // Try to refresh token if we have a refresh token
+            const refreshTokenValue = localStorage.getItem('refreshToken');
+            if (refreshTokenValue) {
+              try {
+                await refreshToken();
+                // Try to get user data again after refresh
+                const userData = await authApi.getCurrentUser();
+                const userInfo: User = {
+                  id: userData.id,
+                  name: userData.name,
+                  email: userData.email,
+                  role: userData.role,
+                  initials: userData.initials || userData.name.split(' ').map((n: string) => n[0]).join('').toUpperCase(),
+                  avatar: userData.avatar
+                };
+                localStorage.setItem('userData', JSON.stringify(userInfo));
+                setUser(userInfo);
+              } catch (refreshError) {
+                console.error('Token refresh during initialization failed:', refreshError);
+                // Clear all auth data on refresh failure
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                localStorage.removeItem('userData');
+                setUser(null);
+              }
+            } else {
+              // Clear all auth data if no refresh token available
+              localStorage.removeItem('accessToken');
+              localStorage.removeItem('refreshToken');
+              localStorage.removeItem('userData');
+              setUser(null);
+            }
+          }
         }
       } catch (error) {
-        console.error('Auth initialization failed:', error);
-        // Clear invalid tokens
+        console.error('Auth initialization error:', error);
+        // Clear all auth data on any unexpected error
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
+        localStorage.removeItem('userData');
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -120,6 +194,29 @@ export const useAuthState = () => {
 
     initializeAuth();
   }, []);
+
+  // Set up automatic token refresh
+  useEffect(() => {
+    let refreshInterval: NodeJS.Timeout;
+
+    if (user && localStorage.getItem('refreshToken')) {
+      // Refresh token every 14 minutes (assuming 15-minute token expiry)
+      refreshInterval = setInterval(async () => {
+        try {
+          await refreshToken();
+        } catch (error) {
+          console.error('Automatic token refresh failed:', error);
+          // If automatic refresh fails, user will be logged out on next API call
+        }
+      }, 14 * 60 * 1000); // 14 minutes
+    }
+
+    return () => {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+    };
+  }, [user]);
 
   return {
     user,

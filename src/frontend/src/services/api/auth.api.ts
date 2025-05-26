@@ -87,12 +87,8 @@ export const authApi = {
   },
 
   logout: async (): Promise<void> => {
-    try {
-      await apiClient.post('/auth/logout');
-    } catch (error) {
-      // Don't throw on logout errors, just log them
-      console.warn('Logout API call failed:', error);
-    }
+    // Call logout API while token is still valid
+    await apiClient.post('/auth/logout');
   },
 
   refreshToken: async (refreshToken: string): Promise<RefreshTokenResponseData> => {
@@ -117,12 +113,19 @@ export const authApi = {
     }
     
     const userData = response.data.data.user;
+    
+    // Ensure name exists and is a string before calling split
+    const userName = userData.name || userData.username || 'User';
+    const userInitials = typeof userName === 'string'
+      ? userName.split(' ').map((n: string) => n[0]).join('').toUpperCase()
+      : 'U';
+    
     return {
       id: userData.id,
-      name: userData.name,
+      name: userName,
       email: userData.email,
       role: userData.roles[0] || 'USER', // Take first role as primary
-      initials: userData.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()
+      initials: userInitials
     };
   },
 

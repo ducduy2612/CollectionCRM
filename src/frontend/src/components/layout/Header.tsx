@@ -11,7 +11,7 @@ interface HeaderProps {
     initials: string;
     avatar?: string;
   };
-  onLogout?: () => void;
+  onLogout?: () => Promise<void>;
 }
 
 const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
@@ -67,7 +67,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={onLogout}
+                  onClick={() => onLogout().catch(console.error)}
                   className="text-white hover:bg-primary-800"
                 >
                   <svg
