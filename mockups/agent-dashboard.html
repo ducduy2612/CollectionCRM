@@ -12,7 +12,7 @@
         /* Dashboard specific styles */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 1fr;
             gap: 1.5rem;
         }
         
@@ -86,39 +86,6 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         
-        .schedule-item {
-            display: flex;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid var(--neutral-200);
-        }
-        
-        .schedule-item:last-child {
-            border-bottom: none;
-        }
-        
-        .schedule-time {
-            font-weight: 600;
-            width: 8rem;
-            color: var(--neutral-800);
-        }
-        
-        .schedule-description {
-            flex: 1;
-            color: var(--neutral-700);
-        }
-        
-        .quick-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-        }
-        
-        .action-button-grid {
-            padding: 0.75rem;
-            text-align: center;
-            font-weight: 500;
-        }
-        
         .table-actions {
             display: flex;
             gap: 0.5rem;
@@ -171,9 +138,6 @@
                 <a href="#" class="nav-link">Customers</a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link">Calendar</a>
-            </li>
-            <li class="nav-item">
                 <a href="#" class="nav-link">Reports</a>
             </li>
             <li class="nav-item">
@@ -185,22 +149,6 @@
     <div class="page-container">
         <div class="page-header">
             <h1 class="page-title">Agent Dashboard</h1>
-            <div class="page-actions">
-                <button class="btn btn-secondary">
-                    <i class="bi bi-calendar3 btn-icon"></i>
-                    Calendar
-                </button>
-                <button class="btn btn-primary">
-                    <i class="bi bi-telephone-outbound btn-icon"></i>
-                    New Call
-                </button>
-            </div>
-        </div>
-        
-        <!-- Mode Toggle Switch -->
-        <div class="mode-toggle">
-            <button class="mode-toggle-btn active">Manual Mode</button>
-            <button class="mode-toggle-btn">Auto Mode</button>
         </div>
         
         <div class="dashboard-grid">
@@ -483,94 +431,6 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="sidebar">
-                <!-- Notifications Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Notifications</h2>
-                        <button class="btn btn-sm btn-secondary">
-                            <i class="bi bi-check2-all"></i>
-                            Mark All Read
-                        </button>
-                    </div>
-                    <div class="notification notification-urgent">
-                        <div class="notification-content">
-                            <strong>Customer Nguyen Van A</strong> missed promised payment
-                        </div>
-                        <div class="notification-time">30 minutes ago</div>
-                    </div>
-                    <div class="notification">
-                        <div class="notification-content">
-                            <strong>New customer assigned:</strong> Tran Thi B
-                        </div>
-                        <div class="notification-time">1 hour ago</div>
-                    </div>
-                    <div class="notification">
-                        <div class="notification-content">
-                            <strong>Team meeting</strong> at 2:00 PM
-                        </div>
-                        <div class="notification-time">2 hours ago</div>
-                    </div>
-                    <div class="notification">
-                        <div class="notification-content">
-                            <strong>Payment received</strong> from Le Van C
-                        </div>
-                        <div class="notification-time">3 hours ago</div>
-                    </div>
-                </div>
-                
-                <!-- Today's Schedule Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Today's Schedule</h2>
-                        <button class="btn btn-sm btn-secondary">
-                            <i class="bi bi-calendar-plus"></i>
-                        </button>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="schedule-time">9:00 - 11:00</div>
-                        <div class="schedule-description">Outbound calls - High priority customers</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="schedule-time">11:00 - 12:00</div>
-                        <div class="schedule-description">Team meeting</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="schedule-time">13:00 - 15:00</div>
-                        <div class="schedule-description">Auto-dialer campaign</div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="schedule-time">15:00 - 17:00</div>
-                        <div class="schedule-description">Follow-up on promised payments</div>
-                    </div>
-                </div>
-                
-                <!-- Quick Actions Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Quick Actions</h2>
-                    </div>
-                    <div class="quick-actions">
-                        <button class="btn btn-primary action-button-grid">
-                            <i class="bi bi-telephone-outbound"></i><br>
-                            New Call
-                        </button>
-                        <button class="btn btn-secondary action-button-grid">
-                            <i class="bi bi-chat-text"></i><br>
-                            Send SMS
-                        </button>
-                        <button class="btn btn-secondary action-button-grid">
-                            <i class="bi bi-envelope"></i><br>
-                            Send Email
-                        </button>
-                        <button class="btn btn-secondary action-button-grid">
-                            <i class="bi bi-journal-text"></i><br>
-                            Record Action
-                        </button>
                     </div>
                 </div>
             </div>

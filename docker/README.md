@@ -6,14 +6,15 @@ This directory contains all Docker-related files for containerizing the Collecti
 
 - `base-images/`: Base Docker images for different services
   - Node.js base image for microservices
-  - Frontend development image
-  - Database images (PostgreSQL)
-  - Search engine image (Elasticsearch)
-  - Message broker image (Kafka)
-  - Caching image (Redis)
+  - Frontend production image (`frontend.Dockerfile`)
+  - Frontend development image (`frontend-dev.Dockerfile`)
+  - API Gateway image
+  - Auth Service image
+  - Bank Sync Service image
 - `compose/`: Docker Compose configurations
   - Main docker-compose.yml file
-  - Development vs. production configurations
+  - Development configuration (`docker-compose.dev.yml`)
+  - Production configurations
 - `ghcr/`: GitHub Container Registry configuration and scripts
   - Documentation for using GHCR
   - Helper scripts for pushing images to GHCR
@@ -45,3 +46,28 @@ To run the application using GHCR images:
 ```bash
 ./ghcr/run-with-ghcr.sh YOUR_GITHUB_ORG
 ```
+
+## Development Environment
+
+### Frontend Development
+
+The project includes a dedicated Docker setup for frontend development with hot-reloading:
+
+```bash
+# Using the convenience script from project root
+./docker-dev.sh up          # Start all services
+./docker-dev.sh frontend    # Start only frontend
+./docker-dev.sh down        # Stop services
+
+# Or using docker-compose directly
+docker-compose -f docker/compose/docker-compose.dev.yml up frontend-dev
+```
+
+The frontend development environment features:
+- Node.js 20 LTS with Vite dev server
+- Hot-reloading for React components
+- Volume mounts for source code
+- Optimized node_modules handling
+- Non-root user for security
+
+For detailed frontend Docker documentation, see [Frontend Docker README](../src/frontend/README.Docker.md).
