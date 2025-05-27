@@ -4,12 +4,15 @@ FROM node:18-alpine as build
 # Set working directory
 WORKDIR /app
 
-# Install dependencies
-COPY package*.json ./
+# Copy package files
+COPY src/frontend/package*.json ./
 RUN npm ci
 
+# Copy environment variables example file and rename to .env
+COPY src/frontend/.env.example ./.env
+
 # Copy source code
-COPY . .
+COPY src/frontend/ .
 
 # Build the application
 RUN npm run build

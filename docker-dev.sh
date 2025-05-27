@@ -66,7 +66,7 @@ case "$1" in
         read -p "Are you sure? (y/N) " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
-            docker-compose -f $COMPOSE_FILE down -v
+            docker compose -f $COMPOSE_FILE down -v
             echo -e "${GREEN}Cleanup complete${NC}"
         else
             echo -e "${YELLOW}Cleanup cancelled${NC}"

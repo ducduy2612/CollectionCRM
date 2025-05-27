@@ -5,16 +5,14 @@ This directory contains all Docker-related files for containerizing the Collecti
 ## Structure
 
 - `base-images/`: Base Docker images for different services
-  - Node.js base image for microservices
-  - Frontend production image (`frontend.Dockerfile`)
+  - Frontend production image (`frontend-prod.Dockerfile`)
   - Frontend development image (`frontend-dev.Dockerfile`)
-  - API Gateway image
-  - Auth Service image
-  - Bank Sync Service image
+  - API Gateway image (`api-gateway.Dockerfile`)
+  - Auth Service image (`auth-service.Dockerfile`)
+  - Bank Sync Service image (`bank-sync-service.Dockerfile`)
 - `compose/`: Docker Compose configurations
-  - Main docker-compose.yml file
   - Development configuration (`docker-compose.dev.yml`)
-  - Production configurations
+  - Production configurations (to be added)
 - `ghcr/`: GitHub Container Registry configuration and scripts
   - Documentation for using GHCR
   - Helper scripts for pushing images to GHCR
@@ -49,9 +47,9 @@ To run the application using GHCR images:
 
 ## Development Environment
 
-### Frontend Development
+### Development with hot-reloading
 
-The project includes a dedicated Docker setup for frontend development with hot-reloading:
+The project includes a dedicated Docker setup for development with hot-reloading:
 
 ```bash
 # Using the convenience script from project root
@@ -59,15 +57,11 @@ The project includes a dedicated Docker setup for frontend development with hot-
 ./docker-dev.sh frontend    # Start only frontend
 ./docker-dev.sh down        # Stop services
 
-# Or using docker-compose directly
-docker-compose -f docker/compose/docker-compose.dev.yml up frontend-dev
+# Or using docker compose directly
+docker compose -f docker/compose/docker-compose.dev.yml up frontend-dev
 ```
 
-The frontend development environment features:
-- Node.js 20 LTS with Vite dev server
+The development environment features:
+- Node.js 20 Alpine 
 - Hot-reloading for React components
 - Volume mounts for source code
-- Optimized node_modules handling
-- Non-root user for security
-
-For detailed frontend Docker documentation, see [Frontend Docker README](../src/frontend/README.Docker.md).

@@ -51,7 +51,25 @@ The system follows a microservices architecture with the following components:
 
 ## Getting Started
 
-(To be added: Instructions for setting up the development environment, running the application, and contributing to the project)
+### Development with hot-reloading
+
+The project includes a dedicated Docker setup for development with hot-reloading:
+
+```bash
+# Using the convenience script from project root
+./docker-dev.sh up          # Start all services
+./docker-dev.sh frontend    # Start only frontend
+./docker-dev.sh down        # Stop services
+
+# Or using docker compose directly
+docker compose -f docker/compose/docker-compose.dev.yml up frontend-dev
+```
+The development environment features:
+- Node.js 20 Alpine 
+- Hot-reloading for React components
+- Volume mounts for source code
+
+For detailed documentation of docker setup, check [DOCKER README](docker/README.md)
 
 ## Implementation Roadmap
 
@@ -63,7 +81,7 @@ Additional documentation can be found in the `docs/` directory:
 
 - [System Architecture](docs/system-architecture.md)
 - [Data Model](docs/data-model.md)
-- [Database Schema](docs/database-schema.md)
+- [Database Schema](docs/database/database-schema.md)
 - [Microservices](docs/microservices.md)
 - [Technology Stack](docs/technology-stack.md)
 - [User Personas](docs/user-personas.md)

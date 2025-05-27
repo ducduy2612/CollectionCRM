@@ -13,6 +13,8 @@ yarn-error.log
 .env.development.local
 .env.test.local
 .env.production.local
+# But allow .env.example files
+!.env.example
 
 # Build output
 dist

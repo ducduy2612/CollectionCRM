@@ -24,6 +24,7 @@ Backup configuration is controlled through environment variables in `docker/conf
 
 - `BACKUP_RETENTION_DAYS`: Number of days to retain daily backups (default: 30)
 - `BACKUP_COMPRESSION_LEVEL`: Compression level for backups (default: 9, max compression)
+- `AUTO_RESTORE_ON_INIT`: Controls whether automatic restore happens on first run (default: true)
 
 ## Backup Directory Structure
 
@@ -46,6 +47,8 @@ docker exec -it collectioncrm_postgres /backup/pg_backup.sh
 
 ## Restoring from Backup
 
+### Manual Restore
+
 To restore from the latest backup:
 
 ```bash
@@ -57,6 +60,22 @@ To restore from a specific backup file:
 ```bash
 docker exec -it collectioncrm_postgres /backup/pg_restore.sh --file /backup/daily/collectioncrm_daily_20250505_120000.pgdump
 ```
+
+### Automatic Restore on Container Start
+
+The PostgreSQL container is configured to automatically restore from the latest backup when it's first initialized. This feature works as follows:
+
+1. When the PostgreSQL container starts for the first time, it checks for the existence of a latest backup file (`/backup/latest_backup.pgdump`)
+2. If the backup file exists and the database hasn't been initialized yet, it automatically restores from this backup
+3. If no backup file is found or the database is already initialized, it proceeds with normal initialization
+
+This ensures that development and testing environments can be quickly populated with real data without manual intervention.
+
+You can control this feature using the `AUTO_RESTORE_ON_INIT` environment variable:
+- Set to `true` (default): Enables automatic restore on first run
+- Set to `false`: Disables automatic restore
+
+You can also disable this feature by removing or renaming the `00-restore-latest-backup.sh` script in the `infrastructure/database` directory.
 
 ## Monitoring Backups
 

@@ -1,5 +1,5 @@
 # Use Node.js 20.19.0 as base image
-FROM node:20.19.0
+FROM node:20-alpine
 
 
 # Set working directory
@@ -17,6 +17,9 @@ WORKDIR /app/services/auth-service
 
 RUN npm install
 # RUN npm run build
+
+# Copy environment variables example file and rename to .env
+COPY src/services/auth-service/.env.example ./services/auth-service/.env
 
 # Expose the port the app runs on
 EXPOSE 3000

@@ -1,5 +1,5 @@
-# Use Node.js 18 Alpine as base image
-FROM node:20.19.0
+# Use Node.js 20.19.0 as base image
+FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
@@ -20,15 +20,7 @@ RUN npm install
 # Copy environment variables example file and rename to .env
 COPY src/services/api-gateway/.env.example ./services/api-gateway/.env
 
-# Environment variables
-ENV NODE_ENV=production
-ENV PORT=3000
-ENV REDIS_HOST=redis
-ENV REDIS_PORT=6379
-ENV AUTH_SERVICE_URL=http://auth-service:3000
-ENV BANK_SERVICE_URL=http://bank-sync-service:3000
-ENV PAYMENT_SERVICE_URL=http://payment-service:3000
-ENV WORKFLOW_SERVICE_URL=http://workflow-service:3000
+# Load environment from .env file
 
 # Expose the port the app runs on
 EXPOSE 3000

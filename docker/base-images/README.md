@@ -2,12 +2,8 @@
 
 This directory contains Dockerfiles for building the various services in the CollectionCRM system.
 
-## API Gateway Dockerfile
-
-The `api-gateway.Dockerfile` builds a containerized version of the API Gateway service. It uses a multi-stage build process:
-
 1. **Build Stage**:
-   - Uses Node.js 18 Alpine as the base image
+   - Uses Node.js 20 Alpine as the base image
    - Installs all dependencies (including dev dependencies)
    - Builds the TypeScript code into JavaScript
 
@@ -21,27 +17,18 @@ The `api-gateway.Dockerfile` builds a containerized version of the API Gateway s
 
 ### Environment Variables
 
-The following environment variables are set by default:
+Environment variables are loaded from `.env` files, which are copied from `.env.example` files during the Docker build process. This standardized approach ensures:
 
-- `NODE_ENV=production`
-- `PORT=3000`
-- `REDIS_HOST=redis`
-- `REDIS_PORT=6379`
-- `AUTH_SERVICE_URL=http://auth-service:3000`
-- `BANK_SERVICE_URL=http://bank-sync-service:3000`
-- `PAYMENT_SERVICE_URL=http://payment-service:3000`
-- `WORKFLOW_SERVICE_URL=http://workflow-service:3000`
+1. **Consistency**: All services use the same method for environment configuration
+2. **Flexibility**: Environment variables can be easily customized by modifying the `.env.example` files
+3. **Security**: Sensitive values can be overridden at runtime without modifying the Dockerfiles
 
-These can be overridden when running the container.
+In the docker-compose files, we:
+- Use `env_file` to load the base environment from the `.env` files
+- Override specific variables as needed for the Docker environment
+
+This approach allows for easy configuration management across different environments (development, staging, production).
 
 ### Health Check
 
-The container includes a health check that pings the `/health` endpoint every 30 seconds to ensure the service is running properly.
-
-## Node.js Base Dockerfile
-
-The `node.Dockerfile` is a generic base image for Node.js microservices. It accepts a `SERVICE_DIR` build argument to specify which service to build.
-
-## Frontend Dockerfile
-
-The `frontend.Dockerfile` builds the frontend application and serves it using Nginx.
+The api-gateway container includes a health check that pings the `/health` endpoint every 30 seconds to ensure the service is running properly. Health check configurations can be customized through environment variables if needed.

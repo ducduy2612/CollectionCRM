@@ -14,36 +14,54 @@
 -- psql -U postgres -d collectioncrm -f init-db.sql
 
 -- =============================================
+-- Check if database was restored from backup
+-- =============================================
+
+\echo 'Checking if database was restored from backup...'
+
+-- Check if the flag file exists indicating a successful restore
+DO $$
+BEGIN
+    -- If the temporary flag file exists, it means the database was restored from backup
+    -- and we can skip the initialization scripts
+    IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'auth_service') THEN
+        RAISE NOTICE 'Database appears to be already initialized. Skipping initialization scripts.';
+        -- Exit the script early
+        RETURN;
+    END IF;
+END $$;
+
+-- =============================================
 -- Run initialization scripts in order
 -- =============================================
 
 -- 1. Common setup (extensions, schemas, types)
-\echo 'Running 00-common.sql...'
-\i 00-common.sql
+\echo 'Running scripts/00-common.sql...'
+\i scripts/00-common.sql
 
 -- 2. Auth Service Schema
-\echo 'Running 01-auth-service.sql...'
-\i 01-auth-service.sql
+\echo 'Running scripts/01-auth-service.sql...'
+\i scripts/01-auth-service.sql
 
 -- 3. Bank Sync Service Schema
-\echo 'Running 02-bank-sync-service.sql...'
-\i 02-bank-sync-service.sql
+\echo 'Running scripts/02-bank-sync-service.sql...'
+\i scripts/02-bank-sync-service.sql
 
 -- 4. Payment Service Schema
-\echo 'Running 03-payment-service.sql...'
-\i 03-payment-service.sql
+\echo 'Running scripts/03-payment-service.sql...'
+\i scripts/03-payment-service.sql
 
 -- 5. Workflow Service Schema
-\echo 'Running 04-workflow-service.sql...'
-\i 04-workflow-service.sql
+\echo 'Running scripts/04-workflow-service.sql...'
+\i scripts/04-workflow-service.sql
 
 -- 6. Functions and Triggers
-\echo 'Running 05-functions-triggers.sql...'
-\i 05-functions-triggers.sql
+\echo 'Running scripts/05-functions-triggers.sql...'
+\i scripts/05-functions-triggers.sql
 
 -- 7. Users and Permissions
-\echo 'Running 06-users-permissions.sql...'
-\i 06-users-permissions.sql
+\echo 'Running scripts/06-users-permissions.sql...'
+\i scripts/06-users-permissions.sql
 
 -- =============================================
 -- Verify installation

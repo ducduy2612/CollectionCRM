@@ -13,6 +13,9 @@ COPY src/frontend/ ./
 # Install dependencies
 RUN npm install
 
+# Copy environment variables example file and rename to .env
+COPY src/frontend/.env.example ./.env
+
 # Expose Vite development server port
 EXPOSE 5173
 

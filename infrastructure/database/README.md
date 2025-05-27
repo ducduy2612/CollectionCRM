@@ -7,17 +7,22 @@ This directory contains SQL scripts for initializing the CollectionCRM database 
 3. `payment_service` - Payment-related tables
 4. `workflow_service` - Collection workflow-related tables including agents, actions, and cases
 
-## Script Organization
+## Directory Structure
 
-The initialization scripts are organized as follows:
+The database files are organized as follows:
 
-- `00-common.sql` - Extensions, schemas, and common types
-- `01-auth-service.sql` - Auth service schema tables and indexes
-- `02-bank-sync-service.sql` - Bank sync service schema tables and indexes
-- `03-payment-service.sql` - Payment service schema tables, indexes, partitions, and materialized views
-- `04-workflow-service.sql` - Workflow service schema tables, indexes, partitions, and materialized views
-- `05-functions-triggers.sql` - Additional functions and triggers for database maintenance and automation
-- `init-db.sql` - Main initialization script that runs all the above scripts in the correct order
+- `init/` - Contains all SQL initialization scripts
+  - `00-init-db.sql` - Main initialization script that runs all the SQL scripts in the correct order
+  - `scripts/` - Directory containing the actual SQL scripts
+    - `00-common.sql` - Extensions, schemas, and common types
+    - `01-auth-service.sql` - Auth service schema tables and indexes
+    - `02-bank-sync-service.sql` - Bank sync service schema tables and indexes
+    - `03-payment-service.sql` - Payment service schema tables, indexes, partitions, and materialized views
+    - `04-workflow-service.sql` - Workflow service schema tables, indexes, partitions, and materialized views
+    - `05-functions-triggers.sql` - Additional functions and triggers for database maintenance and automation
+    - `06-users-permissions.sql` - Users and permissions
+- `backup/` - Contains backup scripts and backup files
+- `00-restore-latest-backup.sh` - Script to restore from the latest backup when PostgreSQL container starts
 
 ## Key Features
 
@@ -51,9 +56,21 @@ To initialize the database schema, follow these steps:
 
 2. Run the main initialization script:
    ```bash
-   cd infrastructure/database
-   psql -U postgres -d collectioncrm -f init-db.sql
+   cd infrastructure/database/init
+   psql -U postgres -d collectioncrm -f 00-init-db.sql
    ```
+
+## Automatic Restore from Backup
+
+When using Docker, the database can be automatically restored from the latest backup when first initialized:
+
+1. The `00-restore-latest-backup.sh` script runs first and checks for a backup at `/backup/latest_backup.pgdump`
+2. If a backup is found, it restores the database and skips the regular initialization scripts
+3. If no backup is found or the restore fails, the regular initialization scripts run
+
+You can control this behavior using the `AUTO_RESTORE_ON_INIT` environment variable in `docker/config/postgres.env`:
+- Set to `true` (default): Enables automatic restore on first run
+- Set to `false`: Disables automatic restore
 
 ## Maintenance Tasks
 

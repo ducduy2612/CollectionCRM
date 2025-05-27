@@ -8,11 +8,10 @@ services:
       dockerfile: docker/base-images/frontend-dev.Dockerfile
     ports:
       - "5173:5173"  # Vite default development port
+    env_file:
+      - ../../src/frontend/.env
     environment:
-      # Environment variables for the frontend
-      - NODE_ENV=development
-      - VITE_API_BASE_URL=http://localhost:3000/api  # API Gateway URL
-      - CHOKIDAR_USEPOLLING=true  # Enable polling for file changes in Docker
+      - CHOKIDAR_USEPOLLING=true  # For Docker file watching
     volumes:
       # Mount source code for hot-reloading
       - ../../src/frontend/src:/app/src
@@ -29,18 +28,10 @@ services:
       dockerfile: docker/base-images/api-gateway.Dockerfile
     ports:
       - "3000:3000"
+    env_file:
+      - ../../src/services/api-gateway/.env
     environment:
-      - NODE_ENV=development
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - JWT_SECRET=${JWT_SECRET:-dev_jwt_secret}
-      - AUTH_SERVICE_URL=http://auth-service:3000
-      - BANK_SERVICE_URL=http://bank-sync-service:3002
-      - AUTH_SERVICE_TIMEOUT=60000
-      - RATE_LIMIT_MAX_REQUESTS=100
-      - RATE_LIMIT_WINDOW_MS=900000
-      - CORS_ORIGIN=http://localhost:5173  # Updated for Vite dev server
-      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_USEPOLLING=true  # For Docker file watching
     volumes:
       - ../../src/services/api-gateway/src:/app/services/api-gateway/src
     depends_on:
@@ -57,26 +48,10 @@ services:
       dockerfile: docker/base-images/auth-service.Dockerfile
     ports:
       - "3001:3000"
+    env_file:
+      - ../../src/services/auth-service/.env
     environment:
-      - NODE_ENV=development
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=collectioncrm
-      - DB_USER=postgres
-      - DB_PASSWORD=${POSTGRES_ADMIN_PASSWORD:-admin_password}
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - JWT_SECRET=${JWT_SECRET:-dev_jwt_secret}
-      - JWT_EXPIRATION=1h
-      - SESSION_TTL=86400
-      - LOG_LEVEL=debug
-      - CORS_ORIGIN=http://localhost:5173  # Updated for Vite dev server
-      # Kafka configuration
-      - KAFKA_BROKERS=kafka:9092
-      - KAFKA_CLIENT_ID=auth-service
-      - KAFKA_RETRY_ATTEMPTS=8
-      - KAFKA_RETRY_INITIAL_TIME=100
-      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_USEPOLLING=true  # For Docker file watching
     volumes:
       - ../../src/services/auth-service/src:/app/services/auth-service/src
     depends_on:
@@ -94,18 +69,10 @@ services:
       dockerfile: docker/base-images/bank-sync-service.Dockerfile
     ports:
       - "3002:3002"
+    env_file:
+      - ../../src/services/bank-sync-service/.env
     environment:
-      - NODE_ENV=development
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USERNAME=postgres
-      - DB_PASSWORD=${POSTGRES_ADMIN_PASSWORD:-admin_password}
-      - DB_DATABASE=collectioncrm
-      - PORT=3002
-      - API_PREFIX=/api/v1/bank-sync
-      - LOG_LEVEL=debug
-      - CORS_ORIGIN=http://localhost:5173  # Updated for Vite dev server
-      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_USEPOLLING=true  # For Docker file watching
     volumes:
       - ../../src/services/bank-sync-service:/app/services/bank-sync-service
     depends_on:
@@ -122,12 +89,14 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=${POSTGRES_ADMIN_PASSWORD:-admin_password}
       - POSTGRES_DB=collectioncrm
+      - AUTO_RESTORE_ON_INIT=${AUTO_RESTORE_ON_INIT:-true}
     env_file:
       - ../../docker/config/postgres.env
     volumes:
       - postgres-data:/var/lib/postgresql/data
-      - ../../infrastructure/database:/docker-entrypoint-initdb.d
+      - ../../infrastructure/database/00-restore-latest-backup.sh:/docker-entrypoint-initdb.d/00-restore-latest-backup.sh
       - ../../infrastructure/database/backup:/backup
+      - ../../infrastructure/database/init:/docker-entrypoint-initdb.d/init
     ports:
       - "5432:5432"
     healthcheck:
