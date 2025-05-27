@@ -51,6 +51,20 @@ The system follows a microservices architecture with the following components:
 
 ## Getting Started
 
+### Prerequisites
+
+Before running the development environment, you need to set up environment files for each service:
+
+```bash
+# Copy environment templates to create actual .env files
+cp src/frontend/.env.example src/frontend/.env
+cp src/services/auth-service/.env.example src/services/auth-service/.env
+cp src/services/api-gateway/.env.example src/services/api-gateway/.env
+cp src/services/bank-sync-service/.env.example src/services/bank-sync-service/.env
+```
+
+**Note**: The `.env` files contain environment-specific configurations and should be customized for your development setup. These files are gitignored to prevent sensitive information from being committed.
+
 ### Development with hot-reloading
 
 The project includes a dedicated Docker setup for development with hot-reloading:
@@ -65,9 +79,10 @@ The project includes a dedicated Docker setup for development with hot-reloading
 docker compose -f docker/compose/docker-compose.dev.yml up frontend-dev
 ```
 The development environment features:
-- Node.js 20 Alpine 
+- Node.js 20 Alpine
 - Hot-reloading for React components
 - Volume mounts for source code
+- Environment-specific configuration via .env files
 
 For detailed documentation of docker setup, check [DOCKER README](docker/README.md)
 
