@@ -27,6 +27,9 @@ export async function initializeKafka(): Promise<void> {
       KAFKA_TOPICS.USER_DEACTIVATED,
       userEventHandler.processMessage.bind(userEventHandler)
     );
+    
+    // Start consuming after subscribing to all topics
+    await userEventsConsumer.startConsumingAll();
   } catch (error) {
     logger.error({ message: 'Failed to initialize Kafka', error });
     throw error;

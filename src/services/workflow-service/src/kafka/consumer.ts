@@ -76,13 +76,20 @@ export class KafkaConsumer {
       await this.consumer.subscribe({ topic, fromBeginning: false });
       logger.info(`Subscribed to Kafka topic ${topic} in group ${this.groupId}`);
 
-      // Start consuming if this is the first subscription
-      if (this.handlers.size === 1) {
-        await this.startConsuming();
-      }
+      // Note: We no longer start consuming here
+      // This will be done after all topics are subscribed
     } catch (error) {
       logger.error({ message: `Failed to subscribe to Kafka topic ${topic}`, error });
       throw error;
+    }
+  }
+
+  /**
+   * Start consuming messages from all subscribed topics
+   */
+  async startConsumingAll(): Promise<void> {
+    if (this.handlers.size > 0) {
+      await this.startConsuming();
     }
   }
 
