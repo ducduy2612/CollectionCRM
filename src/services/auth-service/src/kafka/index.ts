@@ -3,16 +3,31 @@ import { kafkaProducer } from './producer';
 import { UserCreatedEvent, UserUpdatedEvent, UserDeactivatedEvent } from './types/events';
 
 /**
- * Initialize Kafka producer
+ * Initialize Kafka producer with retry logic
  */
 export async function initializeKafka(): Promise<void> {
-  try {
-    // Connect to Kafka producer
-    await kafkaProducer.connect();
-    console.log('Kafka initialized successfully');
-  } catch (error) {
-    console.error('Failed to initialize Kafka', error);
-    throw error;
+  const maxRetries = 5;
+  const retryDelay = 5000; // 5 seconds
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`Attempting to initialize Kafka (attempt ${attempt}/${maxRetries})`);
+      
+      // Connect to Kafka producer
+      await kafkaProducer.connect();
+      console.log('Kafka initialized successfully');
+      return;
+    } catch (error) {
+      console.error(`Failed to initialize Kafka (attempt ${attempt}/${maxRetries}):`, error);
+      
+      if (attempt === maxRetries) {
+        console.error('Max retries reached. Kafka initialization failed.');
+        throw error;
+      }
+      
+      console.log(`Retrying in ${retryDelay / 1000} seconds...`);
+      await new Promise(resolve => setTimeout(resolve, retryDelay));
+    }
   }
 }
 

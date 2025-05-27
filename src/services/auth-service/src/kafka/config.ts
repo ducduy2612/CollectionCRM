@@ -20,9 +20,17 @@ export const KAFKA_TOPICS = {
 const kafkaConfig: KafkaConfig = {
   clientId: process.env.KAFKA_CLIENT_ID || 'auth-service',
   brokers: (process.env.KAFKA_BROKERS || 'kafka:9092').split(','),
+  connectionTimeout: 10000, // 10 seconds
+  requestTimeout: 30000, // 30 seconds
   retry: {
     initialRetryTime: parseInt(process.env.KAFKA_RETRY_INITIAL_TIME || '100', 10),
-    retries: parseInt(process.env.KAFKA_RETRY_ATTEMPTS || '8', 10)
+    retries: parseInt(process.env.KAFKA_RETRY_ATTEMPTS || '8', 10),
+    maxRetryTime: 30000, // 30 seconds max retry time
+    multiplier: 2,
+    restartOnFailure: async (e: Error) => {
+      console.error('Kafka connection failed, restarting...', e);
+      return true;
+    }
   },
 };
 
