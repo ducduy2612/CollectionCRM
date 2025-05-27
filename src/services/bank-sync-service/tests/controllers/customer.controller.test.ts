@@ -45,7 +45,7 @@ describe('CustomerController', () => {
   describe('getCustomerByCif', () => {
     it('should return customer when valid CIF is provided', async () => {
       // Arrange
-      const testCif = '1001';
+      const testCif = 'CIF10000001';
       const mockCustomer = { 
         id: '123', 
         cif: testCif, 
@@ -58,7 +58,7 @@ describe('CustomerController', () => {
       mockRequest.params = { cif: testCif };
       
       // Mock repository method
-      (CustomerRepository.getCustomerWithDetails as jest.Mock).mockResolvedValue(mockCustomer);
+      (CustomerRepository.getCustomerWithDetails as jest.Mock<any>).mockResolvedValue(mockCustomer);
       
       // Act
       await customerController.getCustomerByCif(
@@ -103,7 +103,7 @@ describe('CustomerController', () => {
       mockRequest.params = { cif: testCif };
       
       // Mock repository method to return undefined (customer not found)
-      (CustomerRepository.getCustomerWithDetails as jest.Mock).mockResolvedValue(undefined);
+      (CustomerRepository.getCustomerWithDetails as jest.Mock<any>).mockResolvedValue(undefined);
       
       // Act
       await customerController.getCustomerByCif(
@@ -143,7 +143,7 @@ describe('CustomerController', () => {
       };
       
       // Mock repository method
-      (CustomerRepository.searchCustomers as jest.Mock).mockResolvedValue(mockSearchResult);
+      (CustomerRepository.searchCustomers as jest.Mock<any>).mockResolvedValue(mockSearchResult);
       
       // Act
       await customerController.searchCustomers(

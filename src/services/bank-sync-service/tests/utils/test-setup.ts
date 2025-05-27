@@ -1,6 +1,5 @@
 import * as path from 'path';
 import * as dotenv from 'dotenv';
-import { AppDataSource } from '../../src/config/data-source';
 import { DataSource } from 'typeorm';
 
 // Load environment variables from .env.test file
@@ -8,6 +7,9 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env.test') });
 
 // Force NODE_ENV to be 'test'
 process.env.NODE_ENV = 'test';
+
+// Import AppDataSource after environment variables are loaded
+import { AppDataSource } from '../../src/config/data-source';
 
 // Import all entity classes directly
 import { Customer } from '../../src/models/customer.entity';
