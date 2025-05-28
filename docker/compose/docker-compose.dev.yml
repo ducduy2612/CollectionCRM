@@ -77,7 +77,7 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true  # For Docker file watching
     volumes:
-      - ../../src/services/bank-sync-service:/app/services/bank-sync-service
+      - ../../src/services/bank-sync-service/src:/app/services/bank-sync-service/src
     depends_on:
       postgres:
         condition: service_healthy
