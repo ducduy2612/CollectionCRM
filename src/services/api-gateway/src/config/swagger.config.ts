@@ -12,6 +12,11 @@ import {
   bankServiceTags,
   bankServicePaths
 } from './swagger-bank-service';
+import {
+  workflowServiceSchemas,
+  workflowServiceTags,
+  workflowServicePaths
+} from './swagger-workflow-service';
 
 /**
  * Swagger/OpenAPI configuration
@@ -54,26 +59,25 @@ export function getSwaggerOptions(serverUrl: string) {
         },
         schemas: {
           ...authServiceSchemas,
-          ...bankServiceSchemas
+          ...bankServiceSchemas,
+          ...workflowServiceSchemas
         },
       },
       tags: [
         ...authServiceTags,
         ...bankServiceTags,
+        ...workflowServiceTags,
         {
           name: 'Payment',
           description: 'Payment processing endpoints',
-        },
-        {
-          name: 'Workflow',
-          description: 'Collection workflow endpoints',
         },
       ],
       paths: {
         ...authServicePaths,
         ...userManagementPaths,
         ...roleManagementPaths,
-        ...bankServicePaths
+        ...bankServicePaths,
+        ...workflowServicePaths
       },
     },
     apis: ['./src/routes/*.ts', './src/middleware/*.ts'],

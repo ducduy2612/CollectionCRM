@@ -32,6 +32,18 @@ export const rateLimitConfigs = {
       windowSizeInSeconds: 300, // 5 minutes
       prefix: 'bank:sync:run:'
     }
+  },
+  workflow: {
+    caseCreate: {
+      max: 20,
+      windowSizeInSeconds: 60, // 1 minute
+      prefix: 'workflow:case:create:'
+    },
+    actionRecord: {
+      max: 30,
+      windowSizeInSeconds: 60, // 1 minute
+      prefix: 'workflow:action:record:'
+    }
   }
 };
 
@@ -94,10 +106,26 @@ export const serviceRoutes: Record<string, ProxyConfig> = {
   },
   workflow: {
     path: '/api/workflow',
-    target: process.env.WORKFLOW_SERVICE_URL || 'http://workflow-service:3000',
-    pathRewrite: { '^/api/workflow': '' },
+    target: process.env.WORKFLOW_SERVICE_URL || 'http://workflow-service:3003',
+    pathRewrite: { '^/api/workflow': '/api/v1/collection' },
     timeout: parseInt(process.env.WORKFLOW_SERVICE_TIMEOUT || '30000', 10),
-    serviceName: 'Workflow Service'
+    serviceName: 'Workflow Service',
+    routes: {
+      agents: '/agents',
+      agentById: '/agents/:id',
+      cases: '/cases',
+      customerCases: '/cases/customer/:cif',
+      customerCaseStatus: '/cases/status/:cif',
+      actions: '/actions',
+      actionById: '/actions/:id',
+      assignments: '/assignments',
+      assignmentById: '/assignments/:id',
+      health: '/health'
+    },
+    requiresAuth: {
+      all: true,
+      except: ['/health']
+    }
   }
 };
 

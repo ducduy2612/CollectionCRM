@@ -122,6 +122,15 @@ Object.entries(serviceRoutes).forEach(([name, config]) => {
     app.use(`${config.path}/sync/run`, routeRateLimiter(rateLimitConfigs.bank.syncRun));
   }
   
+  // Add specific rate limiting for workflow endpoints
+  if (name === 'workflow' && config.routes) {
+    // Case creation rate limiting
+    app.use(`${config.path}/cases`, routeRateLimiter(rateLimitConfigs.workflow.caseCreate));
+    
+    // Action recording rate limiting
+    app.use(`${config.path}/actions`, routeRateLimiter(rateLimitConfigs.workflow.actionRecord));
+  }
+  
   // Set up the proxy
   app.use(config.path, createServiceProxy(config));
 });

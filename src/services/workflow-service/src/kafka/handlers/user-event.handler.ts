@@ -1,6 +1,6 @@
 import { EachMessagePayload } from 'kafkajs';
 import { AppDataSource } from '../../config/data-source';
-import { Agent } from '../../entities/agent.entity';
+import { Agent, AgentType } from '../../entities/agent.entity';
 import { logger } from '../../utils/logger';
 import { KAFKA_TOPICS } from '../config';
 import { UserCreatedEvent, UserUpdatedEvent, UserDeactivatedEvent } from '../types/events';
@@ -59,19 +59,45 @@ export class UserEventHandler {
       });
 
       if (existingAgent) {
-        logger.info({ 
-          message: 'User already linked to an agent', 
-          userId: event.userId, 
-          agentId: existingAgent.id 
+        logger.info({
+          message: 'User already linked to an agent',
+          userId: event.userId,
+          agentId: existingAgent.id
         });
         return;
       }
 
-      // For now, we're not automatically creating agents for new users
-      // This would typically be done through a separate API call or admin interface
-      logger.info({ 
-        message: 'User created but not automatically linked to an agent', 
-        userId: event.userId 
+      // Automatically create a new agent for the user
+      const newAgent = new Agent();
+      
+      // Generate an employee ID based on the user ID (e.g., EMP-{first 8 chars of userId})
+      newAgent.employeeId = `EMP-${event.userId.substring(0, 8)}`;
+      
+      // Set agent properties from the user event
+      newAgent.name = event.username;
+      newAgent.email = event.email;
+      newAgent.userId = event.userId;
+      
+      // Default values
+      newAgent.team = 'Default Team'; // This could be determined based on user role or other logic
+      
+      // If the role is 'admin' or 'supervisor', set the agent type accordingly
+      if (event.role.toLowerCase().includes('admin')) {
+        newAgent.type = AgentType.ADMIN;
+      } else if (event.role.toLowerCase().includes('supervisor')) {
+        newAgent.type = AgentType.SUPERVISOR;
+      } else {
+        newAgent.type = AgentType.AGENT;
+      }
+      
+      // Save the new agent
+      const savedAgent = await this.agentRepository.save(newAgent);
+      
+      logger.info({
+        message: 'New agent created and linked to user',
+        userId: event.userId,
+        agentId: savedAgent.id,
+        employeeId: savedAgent.employeeId
       });
     } catch (error) {
       logger.error({ message: 'Error handling user created event', userId: event.userId, error });

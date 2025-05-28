@@ -37,6 +37,7 @@ services:
     depends_on:
       - auth-service
       - bank-sync-service
+      - workflow-service
       - redis
     networks:
       - collectioncrm-network
@@ -78,6 +79,28 @@ services:
       - CHOKIDAR_USEPOLLING=true  # For Docker file watching
     volumes:
       - ../../src/services/bank-sync-service/src:/app/services/bank-sync-service/src
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - collectioncrm-network
+    restart: unless-stopped
+
+  # Workflow Service
+  workflow-service:
+    build:
+      context: ../../
+      dockerfile: docker/base-images/workflow-service.Dockerfile
+    ports:
+      - "3003:3003"
+    env_file:
+      - ../../src/services/workflow-service/.env
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # For Docker file watching
+    volumes:
+      - ../../src/services/workflow-service/src:/app/services/workflow-service/src
     depends_on:
       postgres:
         condition: service_healthy
