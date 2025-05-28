@@ -62,10 +62,10 @@ export const CustomerCaseRepository = AppDataSource.getRepository(CustomerCase).
       }
       
       // Get the latest action record
-      const latestAction = await AppDataSource.getRepository('action_records')
+      const latestAction = await AppDataSource.getRepository(CustomerCaseAction)
         .createQueryBuilder('action')
         .where('action.cif = :cif', { cif })
-        .orderBy('action.action_date', 'DESC')
+        .orderBy('action.actionDate', 'DESC')
         .getOne();
       
       // Return combined status
@@ -159,6 +159,7 @@ export const CustomerCaseActionRepository = AppDataSource.getRepository(Customer
    */
   async findByCif(cif: string, criteria: Omit<CustomerCaseActionSearchCriteria, 'cif'>): Promise<PaginatedResponse<CustomerCaseAction>> {
     try {
+      // Ensure we're using the correct repository and entity
       const queryBuilder = this.createQueryBuilder('action')
         .leftJoinAndSelect('action.agent', 'agent')
         .where('action.cif = :cif', { cif });
@@ -183,10 +184,11 @@ export const CustomerCaseActionRepository = AppDataSource.getRepository(Customer
       const page = criteria.page || 1;
       const pageSize = criteria.pageSize || 10;
       
+      // Fix the orderBy clause - use the actual column name instead of the property name
       queryBuilder
         .skip((page - 1) * pageSize)
         .take(pageSize)
-        .orderBy('action.action_date', 'DESC');
+        .orderBy('action.actionDate', 'DESC'); // Changed from 'action.action_date' to 'action.actionDate'
       
       // Get paginated results
       const actions = await queryBuilder.getMany();

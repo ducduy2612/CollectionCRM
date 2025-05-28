@@ -87,7 +87,7 @@ export const ActionRecordRepository = AppDataSource.getRepository(ActionRecord).
       queryBuilder
         .skip((page - 1) * pageSize)
         .take(pageSize)
-        .orderBy('action.action_date', 'DESC');
+        .orderBy('action.actionDate', 'DESC');
       
       // Get paginated results
       const actions = await queryBuilder.getMany();
@@ -150,7 +150,7 @@ export const ActionRecordRepository = AppDataSource.getRepository(ActionRecord).
       queryBuilder
         .skip((page - 1) * pageSize)
         .take(pageSize)
-        .orderBy('action.action_date', 'DESC');
+        .orderBy('action.actionDate', 'DESC');
       
       // Get paginated results
       const actions = await queryBuilder.getMany();

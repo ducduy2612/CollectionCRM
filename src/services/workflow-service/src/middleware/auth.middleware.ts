@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Errors, OperationType, SourceSystemType } from '../utils/errors';
+import { AgentRepository } from '../repositories/agent.repository';
 
 /**
  * Extend Express Request interface to include user information
@@ -44,7 +45,7 @@ const extractUserFromHeaders = (req: Request): void => {
 export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
   // Try to extract user from headers if not already set
   extractUserFromHeaders(req);
-  
+  console.log('Im here 1')
   // If no user, return authentication error
   if (!req.user) {
     return res.status(401).json({
@@ -150,15 +151,26 @@ export const requirePermissions = (permissions: string[]) => {
  */
 export const agentContextMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (req.user && req.user.userId) {
-      // Here we would normally fetch the agent by user ID from the database
-      // For now, we'll just add a placeholder
-      // In a real implementation, this would be:
-      // const agent = await agentService.getAgentByUserId(req.user.userId);
-      // req.user.agentId = agent?.id;
+    if (req.user && req.user.id) {
+      // Fetch the agent by user ID from the database
+      const agent = await AgentRepository.findByUserId(req.user.id);
+      if (!agent) {
+        return res.status(403).json({
+          success: false,
+          data: null,
+          message: 'Agent not found',
+          errors: [{
+            code: 'AGENT_NOT_FOUND',
+            message: 'No agent associated with this user',
+            details: {
+              userId: req.user.id
+            }
+          }]
+        });
+      }
       
-      // Placeholder for now
-      req.user.agentId = req.user.userId;
+      // Set the agent ID in the user object
+      req.user.agentId = agent.id;
     }
     next();
   } catch (error) {

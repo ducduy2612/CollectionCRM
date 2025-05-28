@@ -205,6 +205,30 @@ export const bankServiceSchemas = {
   }
 };
 
+// Define ReferenceCustomer schema
+export const referenceCustomerSchema = {
+  ReferenceCustomer: {
+    type: 'object',
+    properties: {
+      id: { type: 'string' },
+      cif: { type: 'string' },
+      referenceCif: { type: 'string' },
+      relationshipType: { type: 'string' },
+      name: { type: 'string' },
+      contactInfo: {
+        type: 'object',
+        properties: {
+          phone: { type: 'string' },
+          email: { type: 'string', format: 'email' },
+          address: { type: 'string' }
+        }
+      },
+      createdAt: { type: 'string', format: 'date-time' },
+      updatedAt: { type: 'string', format: 'date-time' }
+    }
+  }
+};
+
 // Bank service tags
 export const bankServiceTags = [
   {
@@ -817,6 +841,97 @@ export const bankServicePaths = {
         },
         '400': {
           description: 'Invalid request',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/ErrorResponse'
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  '/api/bank/customers/{cif}/references': {
+    get: {
+      tags: ['Customers'],
+      summary: 'Get customer references',
+      description: 'Retrieves reference customers associated with a customer',
+      security: [{ bearerAuth: [] }],
+      parameters: [
+        {
+          name: 'cif',
+          in: 'path',
+          required: true,
+          schema: {
+            type: 'string'
+          },
+          description: 'Customer CIF number'
+        },
+        {
+          name: 'page',
+          in: 'query',
+          schema: {
+            type: 'integer',
+            default: 1
+          },
+          description: 'Page number'
+        },
+        {
+          name: 'pageSize',
+          in: 'query',
+          schema: {
+            type: 'integer',
+            default: 10,
+            maximum: 100
+          },
+          description: 'Page size'
+        }
+      ],
+      responses: {
+        '200': {
+          description: 'Customer references retrieved successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      references: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            id: { type: 'string' },
+                            referenceCif: { type: 'string' },
+                            relationshipType: { type: 'string' },
+                            name: { type: 'string' },
+                            contactInfo: {
+                              type: 'object',
+                              properties: {
+                                phone: { type: 'string' },
+                                email: { type: 'string' },
+                                address: { type: 'string' }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      pagination: { $ref: '#/components/schemas/Pagination' }
+                    }
+                  },
+                  message: { type: 'string', example: 'Customer references retrieved successfully' },
+                  errors: { type: 'array', items: { type: 'object' }, example: [] }
+                }
+              }
+            }
+          }
+        },
+        '404': {
+          description: 'Customer not found',
           content: {
             'application/json': {
               schema: {

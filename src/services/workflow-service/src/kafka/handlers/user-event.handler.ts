@@ -84,10 +84,25 @@ export class UserEventHandler {
       // If the role is 'admin' or 'supervisor', set the agent type accordingly
       if (event.role.toLowerCase().includes('admin')) {
         newAgent.type = AgentType.ADMIN;
+        logger.info({
+          message: 'Setting agent type to ADMIN based on role',
+          userId: event.userId,
+          role: event.role
+        });
       } else if (event.role.toLowerCase().includes('supervisor')) {
         newAgent.type = AgentType.SUPERVISOR;
+        logger.info({
+          message: 'Setting agent type to SUPERVISOR based on role',
+          userId: event.userId,
+          role: event.role
+        });
       } else {
         newAgent.type = AgentType.AGENT;
+        logger.info({
+          message: 'Setting agent type to AGENT based on role',
+          userId: event.userId,
+          role: event.role
+        });
       }
       
       // Save the new agent
@@ -130,6 +145,32 @@ export class UserEventHandler {
       if (event.email && agent.email !== event.email) {
         agent.email = event.email;
         updated = true;
+      }
+
+      // Update agent type if role has changed
+      if (event.role) {
+        let newAgentType: AgentType;
+        
+        if (event.role.toLowerCase().includes('admin')) {
+          newAgentType = AgentType.ADMIN;
+        } else if (event.role.toLowerCase().includes('supervisor')) {
+          newAgentType = AgentType.SUPERVISOR;
+        } else {
+          newAgentType = AgentType.AGENT;
+        }
+        
+        if (agent.type !== newAgentType) {
+          agent.type = newAgentType;
+          updated = true;
+          logger.info({
+            message: 'Agent type updated based on role change',
+            userId: event.userId,
+            agentId: agent.id,
+            previousAgentType: agent.type,
+            newAgentType: newAgentType,
+            userRole: event.role
+          });
+        }
       }
 
       // Handle user deactivation if isActive is set to false
