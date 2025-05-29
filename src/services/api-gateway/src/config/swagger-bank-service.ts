@@ -7,68 +7,97 @@ export const bankServiceSchemas = {
   Customer: {
     type: 'object',
     properties: {
+      id: { type: 'string' },
+      createdAt: { type: 'string', format: 'date-time' },
+      updatedAt: { type: 'string', format: 'date-time' },
+      createdBy: { type: 'string' },
+      updatedBy: { type: 'string' },
+      sourceSystem: { type: 'string' },
+      lastSyncedAt: { type: 'string', format: 'date-time', nullable: true },
+      isEditable: { type: 'boolean' },
       cif: { type: 'string' },
       type: { type: 'string', enum: ['INDIVIDUAL', 'CORPORATE'] },
       name: { type: 'string' },
       dateOfBirth: { type: 'string', format: 'date' },
       nationalId: { type: 'string' },
       gender: { type: 'string', enum: ['MALE', 'FEMALE', 'OTHER'] },
+      companyName: { type: 'string', nullable: true },
+      registrationNumber: { type: 'string', nullable: true },
+      taxId: { type: 'string', nullable: true },
       segment: { type: 'string' },
       status: { type: 'string', enum: ['ACTIVE', 'INACTIVE'] },
-      sourceSystem: { type: 'string' },
-      createdBy: { type: 'string' },
-      updatedBy: { type: 'string' },
-      createdAt: { type: 'string', format: 'date-time' },
-      updatedAt: { type: 'string', format: 'date-time' },
-      isEditable: { type: 'boolean' },
-      lastSyncedAt: { type: 'string', format: 'date-time' },
-      contactInfo: {
-        type: 'object',
-        properties: {
-          phones: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                type: { type: 'string', enum: ['MOBILE', 'HOME', 'WORK', 'OTHER'] },
-                number: { type: 'string' },
-                isPrimary: { type: 'boolean' },
-                isVerified: { type: 'boolean' },
-                verificationDate: { type: 'string', format: 'date-time' }
-              }
-            }
-          },
-          addresses: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                type: { type: 'string', enum: ['HOME', 'WORK', 'OTHER'] },
-                addressLine1: { type: 'string' },
-                addressLine2: { type: 'string' },
-                city: { type: 'string' },
-                state: { type: 'string' },
-                district: { type: 'string' },
-                country: { type: 'string' },
-                isPrimary: { type: 'boolean' },
-                isVerified: { type: 'boolean' },
-                verificationDate: { type: 'string', format: 'date-time' }
-              }
-            }
-          },
-          emails: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                address: { type: 'string', format: 'email' },
-                isPrimary: { type: 'boolean' },
-                isVerified: { type: 'boolean' },
-                verificationDate: { type: 'string', format: 'date-time' }
-              }
-            }
+      phones: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+            createdBy: { type: 'string' },
+            updatedBy: { type: 'string' },
+            number: { type: 'string' },
+            type: { type: 'string', enum: ['MOBILE', 'HOME', 'WORK', 'OTHER'] },
+            isPrimary: { type: 'boolean' },
+            isVerified: { type: 'boolean' },
+            verificationDate: { type: 'string', format: 'date-time', nullable: true },
+            cif: { type: 'string' }
           }
         }
+      },
+      addresses: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+            createdBy: { type: 'string' },
+            updatedBy: { type: 'string' },
+            type: { type: 'string', enum: ['HOME', 'WORK', 'OTHER'] },
+            addressLine1: { type: 'string' },
+            addressLine2: { type: 'string' },
+            city: { type: 'string' },
+            state: { type: 'string' },
+            district: { type: 'string' },
+            country: { type: 'string' },
+            isPrimary: { type: 'boolean' },
+            isVerified: { type: 'boolean' },
+            verificationDate: { type: 'string', format: 'date-time', nullable: true },
+            cif: { type: 'string' }
+          }
+        }
+      },
+      emails: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+            createdBy: { type: 'string' },
+            updatedBy: { type: 'string' },
+            address: { type: 'string', format: 'email' },
+            isPrimary: { type: 'boolean' },
+            isVerified: { type: 'boolean' },
+            verificationDate: { type: 'string', format: 'date-time', nullable: true },
+            cif: { type: 'string' }
+          }
+        }
+      },
+      loans: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/Loan' }
+      },
+      collaterals: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/Collateral' }
+      },
+      referenceCustomers: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/ReferenceCustomer' }
       }
     }
   },
@@ -202,11 +231,7 @@ export const bankServiceSchemas = {
         }
       }
     }
-  }
-};
-
-// Define ReferenceCustomer schema
-export const referenceCustomerSchema = {
+  },
   ReferenceCustomer: {
     type: 'object',
     properties: {
@@ -227,6 +252,11 @@ export const referenceCustomerSchema = {
       updatedAt: { type: 'string', format: 'date-time' }
     }
   }
+};
+
+// Define ReferenceCustomer schema (keeping for backward compatibility)
+export const referenceCustomerSchema = {
+  ReferenceCustomer: bankServiceSchemas.ReferenceCustomer
 };
 
 // Bank service tags

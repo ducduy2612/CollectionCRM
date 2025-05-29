@@ -45,6 +45,7 @@ function App() {
               <Route path="/dashboard" element={<DashboardPage />} />
               
               <Route path="/customers" element={<CustomersPage />} />
+              <Route path="/customers/:cif" element={<CustomersPage />} />
             </Route>
 
             {/* Redirect root to dashboard */}

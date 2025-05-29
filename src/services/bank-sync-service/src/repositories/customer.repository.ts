@@ -9,6 +9,7 @@ import { AppDataSource } from '../config/data-source';
  * Search criteria for customers
  */
 export interface CustomerSearchCriteria extends PaginationOptions {
+  cif?: string;
   name?: string;
   nationalId?: string;
   companyName?: string;
@@ -82,6 +83,10 @@ export const CustomerRepository = AppDataSource.getRepository(Customer).extend({
       const queryBuilder = this.createQueryBuilder('customer');
       
       // Apply filters
+      if (criteria.cif) {
+        queryBuilder.andWhere('customer.cif ILIKE :cif', { cif: `%${criteria.cif}%` });
+      }
+      
       if (criteria.name) {
         queryBuilder.andWhere('customer.name ILIKE :name', { name: `%${criteria.name}%` });
       }

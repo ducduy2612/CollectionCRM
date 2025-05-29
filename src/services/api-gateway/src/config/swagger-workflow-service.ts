@@ -13,7 +13,7 @@ export const workflowServiceSchemas = {
       email: { type: 'string', format: 'email' },
       status: { type: 'string', enum: ['ACTIVE', 'INACTIVE', 'ON_LEAVE'] },
       role: { type: 'string' },
-      skills: { 
+      skills: {
         type: 'array',
         items: { type: 'string' }
       },
@@ -21,6 +21,24 @@ export const workflowServiceSchemas = {
       currentCaseLoad: { type: 'integer' },
       createdAt: { type: 'string', format: 'date-time' },
       updatedAt: { type: 'string', format: 'date-time' }
+    }
+  },
+  AgentDetail: {
+    type: 'object',
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+      createdAt: { type: 'string', format: 'date-time' },
+      updatedAt: { type: 'string', format: 'date-time' },
+      createdBy: { type: 'string', nullable: true },
+      updatedBy: { type: 'string', nullable: true },
+      employeeId: { type: 'string' },
+      name: { type: 'string' },
+      email: { type: 'string', format: 'email' },
+      phone: { type: 'string', nullable: true },
+      type: { type: 'string' },
+      team: { type: 'string' },
+      isActive: { type: 'boolean' },
+      userId: { type: 'string', format: 'uuid' }
     }
   },
   Case: {
@@ -54,6 +72,30 @@ export const workflowServiceSchemas = {
       outcome: { type: 'string' },
       notes: { type: 'string' },
       createdAt: { type: 'string', format: 'date-time' }
+    }
+  },
+  CustomerAction: {
+    type: 'object',
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+      createdAt: { type: 'string', format: 'date-time' },
+      updatedAt: { type: 'string', format: 'date-time' },
+      createdBy: { type: 'string' },
+      updatedBy: { type: 'string' },
+      cif: { type: 'string' },
+      loanAccountNumber: { type: 'string' },
+      agentId: { type: 'string', format: 'uuid' },
+      type: { type: 'string', enum: ['CALL', 'SMS', 'EMAIL', 'VISIT', 'PAYMENT', 'NOTE'] },
+      subtype: { type: 'string' },
+      actionResult: { type: 'string' },
+      actionDate: { type: 'string', format: 'date-time' },
+      fUpdate: { type: 'string', format: 'date-time' },
+      notes: { type: 'string' },
+      callTraceId: { type: 'string' },
+      visitLatitude: { type: 'string' },
+      visitLongitude: { type: 'string' },
+      visitAddress: { type: 'string' },
+      agent: { $ref: '#/components/schemas/AgentDetail' }
     }
   },
   Assignment: {
@@ -743,13 +785,20 @@ export const workflowServicePaths = {
                       actions: {
                         type: 'array',
                         items: {
-                          $ref: '#/components/schemas/CaseAction'
+                          $ref: '#/components/schemas/CustomerAction'
                         }
                       },
                       pagination: { $ref: '#/components/schemas/Pagination' }
                     }
                   },
-                  message: { type: 'string', example: 'Customer actions retrieved successfully' }
+                  message: { type: 'string', example: 'Customer actions retrieved successfully' },
+                  errors: {
+                    type: 'array',
+                    items: {
+                      type: 'string'
+                    },
+                    example: []
+                  }
                 }
               }
             }

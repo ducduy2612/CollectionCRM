@@ -56,6 +56,7 @@ export class CustomerController {
   async searchCustomers(req: Request, res: Response, next: NextFunction) {
     try {
       const {
+        cif,
         name,
         nationalId,
         companyName,
@@ -67,6 +68,7 @@ export class CustomerController {
       } = req.query;
       
       const result = await CustomerRepository.searchCustomers({
+        cif: cif as string,
         name: name as string,
         nationalId: nationalId as string,
         companyName: companyName as string,
