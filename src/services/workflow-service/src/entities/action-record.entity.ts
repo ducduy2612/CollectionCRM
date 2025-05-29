@@ -89,6 +89,10 @@ export class ActionRecord extends BaseEntity {
   @Index()
   actionDate: Date;
 
+  @Column({ name: 'f_update', type: 'timestamp', nullable: true })
+  @Index()
+  fUpdate: Date | null;
+
   @Column({ type: 'text', nullable: true })
   notes: string;
 

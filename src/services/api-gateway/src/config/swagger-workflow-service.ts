@@ -630,6 +630,7 @@ export const workflowServicePaths = {
                   enum: ['SUCCESS', 'PARTIAL_SUCCESS', 'FAILURE', 'NO_RESPONSE', 'RESCHEDULED']
                 },
                 actionDate: { type: 'string', format: 'date-time' },
+                fUpdate: { type: 'string', format: 'date-time' },
                 notes: { type: 'string' },
                 callTraceId: { type: 'string' },
                 visitLocation: {

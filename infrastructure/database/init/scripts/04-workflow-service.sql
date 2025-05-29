@@ -210,6 +210,7 @@ CREATE INDEX idx_action_records_action_date ON workflow_service.action_records(a
 CREATE INDEX idx_action_records_action_result ON workflow_service.action_records(action_result);
 CREATE INDEX idx_action_records_cif_action_date ON workflow_service.action_records(cif, action_date);
 CREATE INDEX idx_action_records_loan_account_number_action_date ON workflow_service.action_records(loan_account_number, action_date);
+CREATE INDEX idx_action_records_f_update ON workflow_service.action_records(f_update);
 
 -- Customer Agent indexes
 -- Note: For partitioned tables, indexes should be created on each partition

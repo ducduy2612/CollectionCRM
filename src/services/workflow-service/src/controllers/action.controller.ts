@@ -22,6 +22,7 @@ export class ActionController {
         subtype,
         actionResult,
         actionDate,
+        fUpdate,
         notes,
         callTraceId,
         visitLocation
@@ -46,6 +47,7 @@ export class ActionController {
         subtype,
         actionResult,
         actionDate: actionDate ? new Date(actionDate) : new Date(),
+        fUpdate: fUpdate ? new Date(fUpdate) : new Date(), // Set fUpdate to current timestamp for now, in future needs more fUpdate logic handling
         notes,
         callTraceId,
         createdBy: req.user?.userId || 'system',

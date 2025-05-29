@@ -213,6 +213,9 @@ export const ActionRecordRepository = AppDataSource.getRepository(ActionRecord).
         action.notes = notes;
       }
       
+      // Set f_update to current timestamp for now, in future needs more fUpdate logic handling
+      action.fUpdate = new Date();
+      
       action.updatedBy = updatedBy;
       
       return await this.save(action);
