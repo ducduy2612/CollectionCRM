@@ -132,7 +132,6 @@ export const LoanRepository = AppDataSource.getRepository(Loan).extend({
   async getLoanWithDetails(accountNumber: string): Promise<Loan | undefined> {
     try {
       const loan = await this.createQueryBuilder('loan')
-        .leftJoinAndSelect('loan.customer', 'customer')
         .leftJoinAndSelect('loan.dueSegmentations', 'dueSegmentations')
         .where('loan.account_number = :accountNumber', { accountNumber })
         .getOne();
@@ -144,94 +143,6 @@ export const LoanRepository = AppDataSource.getRepository(Loan).extend({
         OperationType.DATABASE,
         SourceSystemType.OTHER,
         { accountNumber, operation: 'getLoanWithDetails' }
-      );
-    }
-  },
-
-  /**
-   * Find delinquent loans
-   * @param criteria Search criteria
-   * @returns Paginated result of delinquent loans
-   */
-  async findDelinquentLoans(criteria?: LoanSearchCriteria): Promise<PaginatedResult<Loan>> {
-    try {
-      const queryBuilder = this.createQueryBuilder('loan')
-        .where('loan.delinquency_status = :delinquencyStatus', { delinquencyStatus: DelinquencyStatus.DELINQUENT })
-        .orWhere('loan.delinquency_status = :defaultStatus', { defaultStatus: DelinquencyStatus.DEFAULT });
-      
-      // Apply additional filters
-      if (criteria?.productType) {
-        queryBuilder.andWhere('loan.product_type = :productType', { productType: criteria.productType });
-      }
-      
-      if (criteria?.minDpd !== undefined) {
-        queryBuilder.andWhere('loan.dpd >= :minDpd', { minDpd: criteria.minDpd });
-      }
-      
-      if (criteria?.maxDpd !== undefined) {
-        queryBuilder.andWhere('loan.dpd <= :maxDpd', { maxDpd: criteria.maxDpd });
-      }
-      
-      // Get total count
-      const total = await queryBuilder.getCount();
-      
-      // Apply pagination
-      const paginatedQuery = baseSyncRepository.applyPagination(queryBuilder, criteria || {});
-      
-      // Get paginated results
-      const loans = await paginatedQuery.getMany();
-      
-      return baseSyncRepository.createPaginatedResult(loans, total, criteria || {});
-    } catch (error) {
-      console.error('Error finding delinquent loans:', error);
-      throw Errors.wrap(
-        error as Error,
-        OperationType.DATABASE,
-        SourceSystemType.OTHER,
-        { criteria, operation: 'findDelinquentLoans' }
-      );
-    }
-  },
-
-  /**
-   * Find loans with upcoming payments
-   * @param startDate Start date for payment range
-   * @param endDate End date for payment range
-   * @param criteria Search criteria
-   * @returns Paginated result of loans with upcoming payments
-   */
-  async findLoansWithUpcomingPayments(
-    startDate: Date,
-    endDate: Date,
-    criteria?: LoanSearchCriteria
-  ): Promise<PaginatedResult<Loan>> {
-    try {
-      const queryBuilder = this.createQueryBuilder('loan')
-        .where('loan.next_payment_date BETWEEN :startDate AND :endDate', { startDate, endDate })
-        .andWhere('loan.status = :status', { status: LoanStatus.OPEN });
-      
-      // Apply additional filters
-      if (criteria?.productType) {
-        queryBuilder.andWhere('loan.product_type = :productType', { productType: criteria.productType });
-      }
-      
-      // Get total count
-      const total = await queryBuilder.getCount();
-      
-      // Apply pagination
-      const paginatedQuery = baseSyncRepository.applyPagination(queryBuilder, criteria || {});
-      
-      // Get paginated results
-      const loans = await paginatedQuery.getMany();
-      
-      return baseSyncRepository.createPaginatedResult(loans, total, criteria || {});
-    } catch (error) {
-      console.error('Error finding loans with upcoming payments:', error);
-      throw Errors.wrap(
-        error as Error,
-        OperationType.DATABASE,
-        SourceSystemType.OTHER,
-        { startDate, endDate, criteria, operation: 'findLoansWithUpcomingPayments' }
       );
     }
   },

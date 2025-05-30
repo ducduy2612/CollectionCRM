@@ -52,8 +52,8 @@ export interface Customer {
   phones: Phone[];
   addresses: Address[];
   emails: Email[];
-  loans?: Loan[];
-  collaterals?: any[];
+  loans: Loan[];
+  collaterals: any[];
   referenceCustomers?: ReferenceCustomer[];
 }
 
@@ -93,17 +93,57 @@ export interface ReferenceCustomer {
   updatedAt?: string;
 }
 
+export interface DueSegmentation {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+  sourceSystem: string;
+  lastSyncedAt: string | null;
+  isEditable: boolean;
+  dueDate: string;
+  principalAmount: string;
+  interestAmount: string;
+  feesAmount: string;
+  penaltyAmount: string;
+  loanAccountNumber: string;
+}
+
 export interface Loan {
+  id?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  sourceSystem?: string;
+  lastSyncedAt?: string | null;
+  isEditable?: boolean;
   accountNumber: string;
+  cif?: string;
   productType: string;
-  originalAmount: number;
-  outstanding: number;
-  dueAmount: number;
+  originalAmount: number | string;
+  currency?: string;
+  disbursementDate?: string;
+  maturityDate?: string;
+  interestRate?: string;
+  term?: number;
+  paymentFrequency?: string;
+  limitAmount?: number | string | null;
+  outstanding: number | string;
+  remainingAmount?: number | string;
+  dueAmount: number | string;
+  minPay?: number | string | null;
   nextPaymentDate: string;
   dpd: number;
   delinquencyStatus: 'CURRENT' | 'DELINQUENT' | 'DEFAULT';
+  status?: string;
+  closeDate?: string | null;
+  resolutionCode?: string | null;
+  resolutionNotes?: string | null;
   limit?: number;
   collaterals?: any[];
+  dueSegmentations?: DueSegmentation[];
 }
 
 export interface CustomerAction {

@@ -139,6 +139,83 @@ INSERT INTO bank_sync_service.loans (id, account_number, cif, product_type, orig
 INSERT INTO bank_sync_service.loans (id, account_number, cif, product_type, original_amount, currency, disbursement_date, maturity_date, interest_rate, term, payment_frequency, limit_amount, outstanding, remaining_amount, due_amount, min_pay, next_payment_date, dpd, delinquency_status, status, close_date, resolution_code, resolution_notes, source_system, created_by, updated_by, created_at, updated_at, is_editable, last_synced_at) VALUES ('586d9ad6-904a-4a61-ac84-4a79ee6732d8', 'LOAN20000024', 'CIF20000001', 'BUSINESS', 200000.00, 'USD', '2022-04-01', '2027-04-01', 6.5000, 60, 'MONTHLY', NULL, 170000.00, 170000.00, 4000.00, NULL, '2023-06-01', 0, 'CURRENT', 'OPEN', NULL, NULL, NULL, 'T24', 'system', 'system', '2025-05-20 08:15:33.665966', '2025-05-20 08:15:33.665966', false, NULL);
 INSERT INTO bank_sync_service.loans (id, account_number, cif, product_type, original_amount, currency, disbursement_date, maturity_date, interest_rate, term, payment_frequency, limit_amount, outstanding, remaining_amount, due_amount, min_pay, next_payment_date, dpd, delinquency_status, status, close_date, resolution_code, resolution_notes, source_system, created_by, updated_by, created_at, updated_at, is_editable, last_synced_at) VALUES ('4cbe529c-7ae3-43b1-89a5-2a0eade37c8c', 'LOAN20000025', 'CIF20000005', 'BUSINESS', 180000.00, 'USD', '2022-10-15', '2027-10-15', 6.2500, 60, 'MONTHLY', NULL, 160000.00, 160000.00, 3600.00, NULL, '2023-06-15', 0, 'CURRENT', 'OPEN', NULL, NULL, NULL, 'T24', 'system', 'system', '2025-05-20 08:15:33.665966', '2025-05-20 08:15:33.665966', false, NULL);
 
+-- =============================================
+-- ADDITIONAL TEST DATA FOR CIF10000001
+-- =============================================
+
+-- Additional loans for CIF10000001 with various DPD values for testing
+INSERT INTO bank_sync_service.loans (
+    id, account_number, cif, product_type, original_amount, currency, 
+    disbursement_date, maturity_date, interest_rate, term, payment_frequency, 
+    limit_amount, outstanding, remaining_amount, due_amount, min_pay, 
+    next_payment_date, dpd, delinquency_status, status, close_date, 
+    resolution_code, resolution_notes, source_system, created_by, updated_by, 
+    created_at, updated_at, is_editable, last_synced_at
+) VALUES 
+-- Loan with 5 DPD (Early delinquency)
+(
+    uuid_generate_v4(), 'LOAN10000026', 'CIF10000001', 'PERSONAL', 
+    12000.00, 'USD', '2023-03-01', '2025-03-01', 6.2500, 24, 'MONTHLY', 
+    NULL, 8500.00, 8500.00, 625.00, NULL, '2025-05-25', 5, 'DELINQUENT', 
+    'OPEN', NULL, NULL, NULL, 'T24', 'system', 'system', 
+    NOW(), NOW(), false, NULL
+),
+-- Loan with 15 DPD (Moderate delinquency)
+(
+    uuid_generate_v4(), 'LOAN10000027', 'CIF10000001', 'AUTO', 
+    18000.00, 'USD', '2022-09-15', '2027-09-15', 5.7500, 60, 'MONTHLY', 
+    NULL, 14200.00, 14200.00, 385.00, NULL, '2025-05-15', 15, 'DELINQUENT', 
+    'OPEN', NULL, NULL, NULL, 'T24', 'system', 'system', 
+    NOW(), NOW(), false, NULL
+),
+-- Loan with 30 DPD (High delinquency)
+(
+    uuid_generate_v4(), 'LOAN10000028', 'CIF10000001', 'CREDIT_CARD', 
+    3000.00, 'USD', '2022-12-01', '2027-12-01', 22.9900, 60, 'MONTHLY', 
+    NULL, 2100.00, 2100.00, 95.00, NULL, '2025-04-30', 30, 'DELINQUENT', 
+    'OPEN', NULL, NULL, NULL, 'T24', 'system', 'system', 
+    NOW(), NOW(), false, NULL
+),
+-- Loan with 45 DPD (Severe delinquency)
+(
+    uuid_generate_v4(), 'LOAN10000029', 'CIF10000001', 'PERSONAL', 
+    8000.00, 'USD', '2023-01-10', '2024-01-10', 8.5000, 12, 'MONTHLY', 
+    NULL, 4800.00, 4800.00, 750.00, NULL, '2025-04-15', 45, 'DELINQUENT', 
+    'OPEN', NULL, NULL, NULL, 'T24', 'system', 'system', 
+    NOW(), NOW(), false, NULL
+),
+-- Loan with 60 DPD (Critical delinquency)
+(
+    uuid_generate_v4(), 'LOAN10000030', 'CIF10000001', 'BUSINESS', 
+    25000.00, 'USD', '2022-06-01', '2025-06-01', 7.2500, 36, 'MONTHLY', 
+    NULL, 18500.00, 18500.00, 850.00, NULL, '2025-03-31', 60, 'DEFAULT', 
+    'OPEN', NULL, NULL, NULL, 'T24', 'system', 'system', 
+    NOW(), NOW(), false, NULL
+),
+-- Loan with 90 DPD (Default status)
+(
+    uuid_generate_v4(), 'LOAN10000031', 'CIF10000001', 'MORTGAGE', 
+    150000.00, 'USD', '2021-01-15', '2041-01-15', 4.2500, 240, 'MONTHLY', 
+    NULL, 135000.00, 135000.00, 1250.00, NULL, '2025-02-28', 90, 'DEFAULT', 
+    'OPEN', NULL, NULL, NULL, 'T24', 'system', 'system', 
+    NOW(), NOW(), false, NULL
+),
+-- Current loan with large amounts for testing totals
+(
+    uuid_generate_v4(), 'LOAN10000032', 'CIF10000001', 'BUSINESS', 
+    50000.00, 'USD', '2023-04-01', '2028-04-01', 6.7500, 60, 'MONTHLY', 
+    NULL, 42000.00, 42000.00, 950.00, NULL, '2025-06-01', 0, 'CURRENT', 
+    'OPEN', NULL, NULL, NULL, 'T24', 'system', 'system', 
+    NOW(), NOW(), false, NULL
+),
+-- Another current loan
+(
+    uuid_generate_v4(), 'LOAN10000033', 'CIF10000001', 'EQUIPMENT', 
+    15000.00, 'USD', '2023-05-15', '2026-05-15', 5.9900, 36, 'MONTHLY', 
+    NULL, 11500.00, 11500.00, 475.00, NULL, '2025-06-15', 0, 'CURRENT', 
+    'OPEN', NULL, NULL, NULL, 'T24', 'system', 'system', 
+    NOW(), NOW(), false, NULL
+);
 
 --
 -- Data for Name: due_segmentations; Type: TABLE DATA; Schema: bank_sync_service; Owner: -

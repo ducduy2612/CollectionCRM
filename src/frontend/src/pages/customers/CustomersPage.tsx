@@ -48,13 +48,13 @@ const CustomersPage: React.FC = () => {
         const customerData = await bankApi.getCustomer(cif);
         setCustomer(customerData);
 
-        // Fetch customer loans
-        const loansData = await bankApi.getCustomerLoans(cif);
-        setLoans(loansData.loans);
+        // Set loans from customer data
+        if (customerData.loans) {
+          setLoans(customerData.loans);
+        }
 
         // Fetch customer actions
         const actionsData = await workflowApi.getCustomerActions(cif);
-        console.log(actionsData.actions);
         setActions(actionsData.actions);
         
         // Set last contact date from the most recent action
