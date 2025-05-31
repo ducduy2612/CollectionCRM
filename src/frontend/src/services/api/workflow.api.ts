@@ -56,11 +56,11 @@ export const workflowApi = {
     page?: number;
     pageSize?: number;
   }): Promise<ActionsResponse> => {
+    console.log('calling workflowApi - getCustomerActions');
     const response = await apiClient.get<WorkflowApiResponse<ActionsResponse>>(
       `/workflow/actions/customer/${cif}`,
       { params }
     );
-    
     if (!response.data.success) {
       throw new Error(response.data.message || 'Failed to fetch customer actions');
     }

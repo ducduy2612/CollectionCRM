@@ -48,8 +48,8 @@ export interface ReferencesResponse {
 export const bankApi = {
   // Get customer by CIF
   getCustomer: async (cif: string): Promise<Customer> => {
+    console.log('calling getCustomer');
     const response = await apiClient.get<BankApiResponse<Customer>>(`/bank/customers/${cif}`);
-    
     if (!response.data.success) {
       throw new Error(response.data.message || 'Failed to fetch customer data');
     }
@@ -68,6 +68,7 @@ export const bankApi = {
     page?: number;
     pageSize?: number;
   }) => {
+    console.log('calling searchCustomers');
     const response = await apiClient.get<BankApiResponse<{
       customers: Partial<Customer>[];
       pagination: {
@@ -92,6 +93,7 @@ export const bankApi = {
     page?: number;
     pageSize?: number;
   }): Promise<LoansResponse> => {
+    console.log('calling getCustomerLoans');
     const response = await apiClient.get<BankApiResponse<LoansResponse>>(
       `/bank/customers/${cif}/loans`,
       { params }
@@ -110,6 +112,7 @@ export const bankApi = {
     page?: number;
     pageSize?: number;
   }): Promise<CollateralsResponse> => {
+    console.log('calling getCustomerCollaterals');
     const response = await apiClient.get<BankApiResponse<CollateralsResponse>>(
       `/bank/customers/${cif}/collaterals`,
       { params }
@@ -127,6 +130,7 @@ export const bankApi = {
     page?: number;
     pageSize?: number;
   }): Promise<ReferencesResponse> => {
+    console.log('calling getCustomerReferences');
     const response = await apiClient.get<BankApiResponse<ReferencesResponse>>(
       `/bank/customers/${cif}/references`,
       { params }
@@ -141,6 +145,7 @@ export const bankApi = {
 
   // Get loan by account number
   getLoan: async (accountNumber: string): Promise<Loan> => {
+    console.log('calling getLoan');
     const response = await apiClient.get<BankApiResponse<Loan>>(`/bank/loans/${accountNumber}`);
     
     if (!response.data.success) {

@@ -146,6 +146,45 @@ export interface Loan {
   dueSegmentations?: DueSegmentation[];
 }
 
+export interface ActionType {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+  code: string;
+  name: string;
+  description: string;
+  isActive: boolean;
+  displayOrder: number;
+}
+
+export interface ActionSubtype {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+  code: string;
+  name: string;
+  description: string;
+  isActive: boolean;
+  displayOrder: number;
+}
+
+export interface ActionResult {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+  code: string;
+  name: string;
+  description: string;
+  isActive: boolean;
+  displayOrder: number;
+}
+
 export interface CustomerAction {
   id: string;
   createdAt: string;
@@ -155,9 +194,9 @@ export interface CustomerAction {
   cif: string;
   loanAccountNumber: string;
   agentId: string;
-  type: 'CALL' | 'SMS' | 'EMAIL' | 'VISIT' | 'PAYMENT' | 'NOTE';
-  subtype: string;
-  actionResult: string;
+  actionTypeId: string;
+  actionSubtypeId: string;
+  actionResultId: string;
   actionDate: string;
   fUpdate: string;
   notes: string;
@@ -166,18 +205,21 @@ export interface CustomerAction {
   visitLongitude?: string;
   visitAddress?: string;
   agent?: AgentDetail;
+  actionType?: ActionType;
+  actionSubtype?: ActionSubtype;
+  actionResult?: ActionResult;
 }
 
 export interface AgentDetail {
   id: string;
   createdAt: string;
   updatedAt: string;
-  createdBy?: string;
-  updatedBy?: string;
+  createdBy?: string | null;
+  updatedBy?: string | null;
   employeeId: string;
   name: string;
   email: string;
-  phone?: string;
+  phone?: string | null;
   type: string;
   team: string;
   isActive: boolean;

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Collection CRM</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="assets/design-system.css">
+    <link rel="stylesheet" href="assets/common.css">
+    <style>
+        /* Settings specific styles */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .settings-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--neutral-200);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .settings-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .settings-card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .settings-card-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.75rem;
+            background-color: var(--primary-100);
+            color: var(--primary-600);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+        
+        .settings-card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--neutral-800);
+            margin: 0;
+        }
+        
+        .settings-card-description {
+            color: var(--neutral-600);
+            font-size: 0.875rem;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+        
+        .settings-card-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid var(--neutral-200);
+        }
+        
+        .settings-card-stat {
+            text-align: center;
+        }
+        
+        .settings-card-stat-value {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--neutral-800);
+            margin-bottom: 0.25rem;
+        }
+        
+        .settings-card-stat-label {
+            font-size: 0.75rem;
+            color: var(--neutral-500);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .settings-card-action {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+        
+        .settings-card-link {
+            color: var(--primary-600);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .settings-card-link:hover {
+            color: var(--primary-700);
+        }
+        
+        .settings-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        .status-dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+        }
+        
+        .status-active .status-dot {
+            background-color: var(--success-500);
+        }
+        
+        .status-inactive .status-dot {
+            background-color: var(--neutral-400);
+        }
+        
+        .status-warning .status-dot {
+            background-color: var(--warning-500);
+        }
+        
+        .quick-actions {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--neutral-200);
+            margin-bottom: 2rem;
+        }
+        
+        .quick-actions-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--neutral-800);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .quick-action-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background-color: var(--neutral-50);
+            border: 1px solid var(--neutral-200);
+            border-radius: 0.5rem;
+            color: var(--neutral-700);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .quick-action-btn:hover {
+            background-color: var(--primary-50);
+            border-color: var(--primary-200);
+            color: var(--primary-700);
+        }
+        
+        .quick-action-icon {
+            font-size: 1.125rem;
+        }
+        
+        @media (max-width: 768px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <a href="index.html" class="header-logo">
+            <i class="bi bi-building-lock header-logo-icon"></i>
+            Collection CRM
+        </a>
+        <div class="user-profile">
+            <div class="user-avatar">
+                <span class="user-avatar-initials">JD</span>
+            </div>
+            <div class="user-info">
+                <div class="user-name">John Doe</div>
+                <div class="user-role">Administrator</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="agent-dashboard.html" class="nav-link">Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a href="customer-360.html" class="nav-link">Customers</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">Collections</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">Reports</a>
+            </li>
+            <li class="nav-item">
+                <a href="settings.html" class="nav-link active">Settings</a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Page Container -->
+    <div class="page-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="bi bi-gear" style="margin-right: 0.5rem; color: var(--primary-600);"></i>
+                System Settings
+            </h1>
+            <div class="page-actions">
+                <button class="btn btn-secondary">
+                    <i class="bi bi-arrow-clockwise btn-icon"></i>
+                    Refresh
+                </button>
+                <button class="btn btn-primary">
+                    <i class="bi bi-check-lg btn-icon"></i>
+                    Save All Changes
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h2 class="quick-actions-title">
+                <i class="bi bi-lightning"></i>
+                Quick Actions
+            </h2>
+            <div class="quick-actions-grid">
+                <a href="#" class="quick-action-btn">
+                    <i class="bi bi-plus-circle quick-action-icon"></i>
+                    Add New User
+                </a>
+                <a href="#" class="quick-action-btn">
+                    <i class="bi bi-upload quick-action-icon"></i>
+                    Import Data
+                </a>
+                <a href="#" class="quick-action-btn">
+                    <i class="bi bi-download quick-action-icon"></i>
+                    Export Settings
+                </a>
+                <a href="#" class="quick-action-btn">
+                    <i class="bi bi-shield-check quick-action-icon"></i>
+                    Security Audit
+                </a>
+            </div>
+        </div>
+
+        <!-- Settings Grid -->
+        <div class="settings-grid">
+            <!-- User Management -->
+            <div class="settings-card" onclick="window.location.href='settings-user-management.html'">
+                <div class="settings-card-header">
+                    <div class="settings-card-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <h3 class="settings-card-title">User Management</h3>
+                </div>
+                <p class="settings-card-description">
+                    Manage user accounts, roles, and permissions. Control access levels and monitor user activity across the system.
+                </p>
+                <div class="settings-card-stats">
+                    <div class="settings-card-stat">
+                        <div class="settings-card-stat-value">24</div>
+                        <div class="settings-card-stat-label">Active Users</div>
+                    </div>
+                    <div class="settings-card-stat">
+                        <div class="settings-card-stat-value">4</div>
+                        <div class="settings-card-stat-label">Roles</div>
+                    </div>
+                    <div class="settings-card-stat">
+                        <div class="settings-card-stat-value">2</div>
+                        <div class="settings-card-stat-label">Pending</div>
+                    </div>
+                </div>
+                <div class="settings-card-action">
+                    <a href="settings-user-management.html" class="settings-card-link">
+                        Manage Users
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                    <div class="settings-status status-active">
+                        <span class="status-dot"></span>
+                        Active
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions Config -->
+            <div class="settings-card" onclick="window.location.href='settings-actions-config.html'">
+                <div class="settings-card-header">
+                    <div class="settings-card-icon">
+                        <i class="bi bi-lightning"></i>
+                    </div>
+                    <h3 class="settings-card-title">Actions Config</h3>
+                </div>
+                <p class="settings-card-description">
+                    Configure automated actions and workflows for collection processes. Set up triggers, conditions, and responses.
+                </p>
+                <div class="settings-card-stats">
+                    <div class="settings-card-stat">
+                        <div class="settings-card-stat-value">12</div>
+                        <div class="settings-card-stat-label">Active Rules</div>
+                    </div>
+                    <div class="settings-card-stat">
+                        <div class="settings-card-stat-value">3</div>
+                        <div class="settings-card-stat-label">Categories</div>
+                    </div>
+                    <div class="settings-card-stat">
+                        <div class="settings-card-stat-value">98%</div>
+                        <div class="settings-card-stat-label">Success Rate</div>
+                    </div>
+                </div>
+                <div class="settings-card-action">
+                    <a href="settings-actions-config.html" class="settings-card-link">
+                        Configure Actions
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                    <div class="settings-status status-active">
+                        <span class="status-dot"></span>
+                        Running
+                    </div>
+                </div>
+            </div>
+
+            <!-- FUD Auto Config -->
+            <div class="settings-card" onclick="window.location.href='settings-fud-auto-config.html'">
+                <div class="settings-card-header">
+                    <div class="settings-card-icon">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <h3 class="settings-card-title">FUD Auto Config</h3>
+                </div>
+                <p class="settings-card-description">
+                    Configure automated Follow-Up and Dunning processes. Set up intelligent scheduling and escalation rules.
+                </p>
+                <div class="settings-card-stats">
+                    <div class="settings-card-stat">
+                        <div class="settings-card-stat-value">8</div>
+                        <div class="settings-card-stat-label">Auto Rules</div>
+                    </div>
+                    <div class="settings-card-stat">
+                        <div class="settings-card-stat-value">156</div>
+                        <div class="settings-card-stat-label">Daily Actions</div>
+                    </div>
+                    <div class="settings-card-stat">
+                        <div class="settings-card-stat-value">85%</div>
+                        <div class="settings-card-stat-label">Efficiency</div>
+                    </div>
+                </div>
+                <div class="settings-card-action">
+                    <a href="settings-fud-auto-config.html" class="settings-card-link">
+                        Configure FUD
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                    <div class="settings-status status-active">
+                        <span class="status-dot"></span>
+                        Automated
+                    </div>
+                </div>
+            </div>
+
+            <!-- Queue Campaign Config -->
+            <div class="settings-card" onclick="window.location.href='settings-queue-campaign.html'">
+                <div class="settings-card-header">
+                    <div class="settings-card-icon">
+                        <i class="bi bi-list-task"></i>
+                    </div>
+                    <h3 class="settings-card-title">Queue Campaign Config</h3>
+                </div>
+                <p class="settings-card-description">
+                    Manage collection queues and campaign configurations. Set up prioritization rules and agent assignments.
+                </p>
+                <div class="settings-card-stats">
+                    <div class="settings-card-stat">
+                        <div class="settings-card-stat-value">6</div>
+                        <div class="settings-card-stat-label">Active Queues</div>
+                    </div>
+                    <div class="settings-card-stat">
+                        <div class="settings-card-stat-value">1,247</div>
+                        <div class="settings-card-stat-label">Total Cases</div>
+                    </div>
+                    <div class="settings-card-stat">
+                        <div class="settings-card-stat-value">92%</div>
+                        <div class="settings-card-stat-label">Processing</div>
+                    </div>
+                </div>
+                <div class="settings-card-action">
+                    <a href="settings-queue-campaign.html" class="settings-card-link">
+                        Manage Queues
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                    <div class="settings-status status-active">
+                        <span class="status-dot"></span>
+                        Processing
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Assignment Upload -->
+            <div class="settings-card" onclick="window.location.href='settings-customer-assignment.html'">
+                <div class="settings-card-header">
+                    <div class="settings-card-icon">
+                        <i class="bi bi-upload"></i>
+                    </div>
+                    <h3 class="settings-card-title">Customer Assignment Upload</h3>
+                </div>
+                <p class="settings-card-description">
+                    Upload and manage customer assignment files. Configure bulk import settings and validation rules.
+                </p>
+                <div class="settings-card-stats">
+                    <div class="settings-card-stat">
+                        <div class="settings-card-stat-value">3</div>
+                        <div class="settings-card-stat-label">Recent Uploads</div>
+                    </div>
+                    <div class="settings-card-stat">
+                        <div class="settings-card-stat-value">2,456</div>
+                        <div class="settings-card-stat-label">Records</div>
+                    </div>
+                    <div class="settings-card-stat">
+                        <div class="settings-card-stat-value">99.2%</div>
+                        <div class="settings-card-stat-label">Success Rate</div>
+                    </div>
+                </div>
+                <div class="settings-card-action">
+                    <a href="settings-customer-assignment.html" class="settings-card-link">
+                        Upload Data
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                    <div class="settings-status status-active">
+                        <span class="status-dot"></span>
+                        Ready
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Configuration -->
+            <div class="settings-card">
+                <div class="settings-card-header">
+                    <div class="settings-card-icon">
+                        <i class="bi bi-gear-wide-connected"></i>
+                    </div>
+                    <h3 class="settings-card-title">System Configuration</h3>
+                </div>
+                <p class="settings-card-description">
+                    Configure system-wide settings including database connections, API endpoints, and security policies.
+                </p>
+                <div class="settings-card-stats">
+                    <div class="settings-card-stat">
+                        <div class="settings-card-stat-value">15</div>
+                        <div class="settings-card-stat-label">Config Items</div>
+                    </div>
+                    <div class="settings-card-stat">
+                        <div class="settings-card-stat-value">99.9%</div>
+                        <div class="settings-card-stat-label">Uptime</div>
+                    </div>
+                    <div class="settings-card-stat">
+                        <div class="settings-card-stat-value">5</div>
+                        <div class="settings-card-stat-label">Services</div>
+                    </div>
+                </div>
+                <div class="settings-card-action">
+                    <a href="#" class="settings-card-link">
+                        System Config
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                    <div class="settings-status status-active">
+                        <span class="status-dot"></span>
+                        Healthy
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        Collection CRM Settings &copy; 2025 - Manage your system configuration
+    </footer>
+</body>
+</html>

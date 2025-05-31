@@ -1,6 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import { ActionRecordRepository } from '../repositories/action-record.repository';
-import { ActionRecord, ActionType, ActionSubtype, ActionResult, VisitLocation } from '../entities/action-record.entity';
+import {
+  ActionRecord,
+  VisitLocation,
+  ActionType,
+  ActionSubtype,
+  ActionResult
+} from '../entities';
 import { Errors, OperationType, SourceSystemType } from '../utils/errors';
 import { ResponseUtil } from '../utils/response';
 import { logger } from '../utils/logger';
@@ -18,9 +24,9 @@ export class ActionController {
       const {
         cif,
         loanAccountNumber,
-        type,
-        subtype,
-        actionResult,
+        actionTypeId,
+        actionSubtypeId,
+        actionResultId,
         actionDate,
         fUpdate,
         notes,
@@ -29,7 +35,7 @@ export class ActionController {
       } = req.body;
       
       // Validate required fields
-      if (!cif || !loanAccountNumber || !type || !subtype || !actionResult) {
+      if (!cif || !loanAccountNumber || !actionTypeId || !actionSubtypeId || !actionResultId) {
         throw Errors.create(
           Errors.Validation.REQUIRED_FIELD_MISSING,
           'Missing required fields',
@@ -43,15 +49,15 @@ export class ActionController {
         cif,
         loanAccountNumber,
         agentId: req.user?.agentId,
-        type,
-        subtype,
-        actionResult,
+        actionTypeId: actionTypeId,
+        actionSubtypeId: actionSubtypeId,
+        actionResultId: actionResultId,
         actionDate: actionDate ? new Date(actionDate) : new Date(),
         fUpdate: fUpdate ? new Date(fUpdate) : new Date(), // Set fUpdate to current timestamp for now, in future needs more fUpdate logic handling
         notes,
         callTraceId,
-        createdBy: req.user?.userId || 'system',
-        updatedBy: req.user?.userId || 'system'
+        createdBy: req.user?.username || 'system',
+        updatedBy: req.user?.username || 'system'
       });
       
       // Set visit location if provided
@@ -81,10 +87,12 @@ export class ActionController {
   async getCustomerActions(req: Request, res: Response, next: NextFunction) {
     try {
       const { cif } = req.params;
-      const { type, startDate, endDate, page = 1, pageSize = 10 } = req.query;
+      const { actionType, actionSubtype, actionResult ,startDate, endDate, page = 1, pageSize = 10 } = req.query;
       
       const result = await ActionRecordRepository.findByCif(cif, {
-        type: type as ActionType,
+        actionType: actionType as string,
+        actionSubtype: actionSubtype as string,
+        actionResult: actionResult as string,
         startDate: startDate ? new Date(startDate as string) : undefined,
         endDate: endDate ? new Date(endDate as string) : undefined,
         page: Number(page),
@@ -112,10 +120,12 @@ export class ActionController {
   async getLoanActions(req: Request, res: Response, next: NextFunction) {
     try {
       const { accountNumber } = req.params;
-      const { type, startDate, endDate, page = 1, pageSize = 10 } = req.query;
+      const { actionType, actionSubtype, actionResult ,startDate, endDate, page = 1, pageSize = 10 } = req.query;
       
       const result = await ActionRecordRepository.findByLoanAccountNumber(accountNumber, {
-        type: type as ActionType,
+        actionType: actionType as string,
+        actionSubtype: actionSubtype as string,
+        actionResult: actionResult as string,
         startDate: startDate ? new Date(startDate as string) : undefined,
         endDate: endDate ? new Date(endDate as string) : undefined,
         page: Number(page),
@@ -156,7 +166,7 @@ export class ActionController {
       
       const action = await ActionRecordRepository.updateActionResult(
         id,
-        actionResult as ActionResult,
+        actionResult as string,
         notes,
         req.user?.userId || 'system'
       );

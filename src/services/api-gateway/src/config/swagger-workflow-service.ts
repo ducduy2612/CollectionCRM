@@ -724,7 +724,7 @@ export const workflowServicePaths = {
           description: 'Customer CIF number'
         },
         {
-          name: 'type',
+          name: 'actionType',
           in: 'query',
           schema: {
             type: 'string',

@@ -1,38 +1,9 @@
 import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Agent } from './agent.entity';
-
-/**
- * Action types enum
- */
-export enum ActionType {
-  CALL = 'CALL',
-  VISIT = 'VISIT',
-  EMAIL = 'EMAIL',
-  SMS = 'SMS',
-  LETTER = 'LETTER'
-}
-
-/**
- * Action subtypes enum
- */
-export enum ActionSubtype {
-  REMINDER_CALL = 'REMINDER_CALL',
-  FOLLOW_UP_CALL = 'FOLLOW_UP_CALL',
-  FIELD_VISIT = 'FIELD_VISIT',
-  COURTESY_CALL = 'COURTESY_CALL'
-}
-
-/**
- * Action result enum
- */
-export enum ActionResult {
-  PROMISE_TO_PAY = 'PROMISE_TO_PAY',
-  PAYMENT_MADE = 'PAYMENT_MADE',
-  NO_CONTACT = 'NO_CONTACT',
-  REFUSED_TO_PAY = 'REFUSED_TO_PAY',
-  DISPUTE = 'DISPUTE'
-}
+import { ActionType } from './action-type.entity';
+import { ActionSubtype } from './action-subtype.entity';
+import { ActionResult } from './action-result.entity';
 
 /**
  * Visit location interface
@@ -64,25 +35,28 @@ export class ActionRecord extends BaseEntity {
   @JoinColumn({ name: 'agent_id' })
   agent: Agent;
 
-  @Column({
-    type: 'enum',
-    enum: ActionType
-  })
+  @Column({ name: 'action_type_id' })
   @Index()
-  type: ActionType;
+  actionTypeId: string;
 
-  @Column({
-    type: 'enum',
-    enum: ActionSubtype
-  })
-  subtype: ActionSubtype;
-
-  @Column({
-    name: 'action_result',
-    type: 'enum',
-    enum: ActionResult
-  })
+  @Column({ name: 'action_subtype_id' })
   @Index()
+  actionSubtypeId: string;
+
+  @Column({ name: 'action_result_id' })
+  @Index()
+  actionResultId: string;
+
+  @ManyToOne(() => ActionType)
+  @JoinColumn({ name: 'action_type_id' })
+  actionType: ActionType;
+
+  @ManyToOne(() => ActionSubtype)
+  @JoinColumn({ name: 'action_subtype_id' })
+  actionSubtype: ActionSubtype;
+
+  @ManyToOne(() => ActionResult)
+  @JoinColumn({ name: 'action_result_id' })
   actionResult: ActionResult;
 
   @Column({ name: 'action_date', type: 'timestamp' })

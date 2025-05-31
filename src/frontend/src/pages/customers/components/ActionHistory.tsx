@@ -4,63 +4,37 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui
 import { Button } from '../../../components/ui/Button';
 import { Badge } from '../../../components/ui/Badge';
 import { Spinner } from '../../../components/ui/Spinner';
-import { workflowApi } from '../../../services/api/workflow.api';
 
 interface ActionHistoryProps {
   actions?: CustomerAction[];
   cif?: string;
   limit?: number;
+  pagination?: {
+    page: number;
+    pageSize: number;
+    totalPages?: number;
+    totalItems?: number;
+  };
+  onPageChange?: (page: number, actionType?: string) => Promise<void>;
 }
 
-const ActionHistory: React.FC<ActionHistoryProps> = ({ actions: initialActions, cif, limit = 5 }) => {
-  const [actions, setActions] = useState<CustomerAction[]>(initialActions || []);
-  const [loading, setLoading] = useState<boolean>(!initialActions && !!cif);
-  const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState<number>(1);
-  const [hasMore, setHasMore] = useState<boolean>(false);
+const ActionHistory: React.FC<ActionHistoryProps> = ({ 
+  actions = [], 
+  cif, 
+  limit = 10, 
+  pagination,
+  onPageChange 
+}) => {
+  const [currentPage, setCurrentPage] = useState<number>(pagination?.page || 1);
   const [actionType, setActionType] = useState<string | undefined>(undefined);
+  const [loading, setLoading] = useState<boolean>(false);
 
+  // Update current page when pagination prop changes
   useEffect(() => {
-    // If actions are provided directly, use them
-    if (initialActions) {
-      setActions(initialActions);
-      setLoading(false);
-      return;
+    if (pagination?.page) {
+      setCurrentPage(pagination.page);
     }
-
-    // Otherwise, fetch actions if cif is provided
-    if (cif) {
-      fetchActions();
-    }
-  }, [cif, initialActions, page, actionType]);
-
-  const fetchActions = async () => {
-    if (!cif) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const params: any = {
-        page,
-        pageSize: limit
-      };
-      
-      if (actionType) {
-        params.type = actionType;
-      }
-      
-      const response = await workflowApi.getCustomerActions(cif, params);
-      
-      setActions(response.actions);
-      setHasMore(response.pagination.page < response.pagination.totalPages);
-    } catch (err) {
-      console.error('Error fetching customer actions:', err);
-      setError('Failed to load action history');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [pagination?.page]);
 
   // Helper function to get action type icon
   const getActionTypeIcon = (type: string) => {
@@ -115,20 +89,67 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({ actions: initialActions, 
     });
   };
 
-  const handleLoadMore = () => {
-    setPage(prevPage => prevPage + 1);
+  const handlePageChange = async (newPage: number) => {
+    if (onPageChange && newPage !== currentPage) {
+      setLoading(true);
+      try {
+        await onPageChange(newPage, actionType);
+        setCurrentPage(newPage);
+      } catch (error) {
+        console.error('Error changing page:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
-  const handleFilterClick = () => {
-    // Toggle between showing all actions and filtering by type
-    setActionType(actionType ? undefined : 'CALL');
+  const handleFilterClick = async () => {
+    const newActionType = actionType ? undefined : 'CALL';
+    setActionType(newActionType);
+    
+    if (onPageChange) {
+      setLoading(true);
+      try {
+        await onPageChange(1, newActionType); // Reset to first page when filter changes
+        setCurrentPage(1);
+      } catch (error) {
+        console.error('Error applying filter:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
   };
+
+  // Generate page numbers for pagination
+  const generatePageNumbers = () => {
+    const totalPages = pagination?.totalPages || 1;
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      const startPage = Math.max(1, currentPage - 2);
+      const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+    }
+    
+    return pages;
+  };
+
+  const totalPages = pagination?.totalPages || 1;
+  const totalItems = pagination?.totalItems || 0;
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Action History</CardTitle>
-        <Button variant="secondary" size="sm" onClick={handleFilterClick}>
+        <Button variant="secondary" size="sm" onClick={handleFilterClick} disabled={loading}>
           <i className="bi bi-filter mr-2"></i>
           {actionType ? `Filtering: ${actionType}` : 'Filter'}
         </Button>
@@ -141,54 +162,87 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({ actions: initialActions, 
           </div>
         )}
         
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md">
-            <p>{error}</p>
-          </div>
-        )}
-        
-        {!loading && !error && actions.length === 0 && (
+        {!loading && actions.length === 0 && (
           <div className="text-center py-8 text-neutral-500">
-            No actions found
+            {actionType ? `No ${actionType} actions found` : 'No actions found'}
           </div>
         )}
         
-        {!loading && !error && actions.length > 0 && (
+        {!loading && actions.length > 0 && (
           <div className="space-y-4">
-            {actions.slice(0, limit).map((action, index) => (
-              <div key={action.id || index} className="p-3 border-l-4 border-primary-500 bg-neutral-50 rounded-r-md">
-                <div className="flex justify-between mb-2">
-                  <div className="font-semibold flex items-center">
-                    <i className={`bi ${getActionTypeIcon(action.type)} mr-2 text-primary-600`}></i>
-                    <Badge variant={getActionBadgeVariant(action.type)}>
-                      {action.type}
-                    </Badge>
-                    {action.subtype && (
-                      <span className="ml-2 text-sm text-neutral-600">
-                        {action.subtype}
-                      </span>
+            <div className="max-h-96 overflow-y-auto space-y-4 pr-2">
+              {actions.map((action, index) => (
+                <div key={action.id || index} className="p-3 border-l-4 border-primary-500 bg-neutral-50 rounded-r-md">
+                  <div className="flex justify-between mb-2">
+                    <div className="font-semibold flex items-center">
+                      <i className={`bi ${getActionTypeIcon(action.actionType?.code || '')} mr-2 text-primary-600`}></i>
+                      <Badge variant={getActionBadgeVariant(action.actionType?.code || '')}>
+                        {action.actionType?.name || action.actionType?.code || 'Unknown'}
+                      </Badge>
+                      {action.actionSubtype && (
+                        <span className="ml-2 text-sm text-neutral-600">
+                          {action.actionSubtype.name || action.actionSubtype.code}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-sm text-neutral-500">
+                      {formatDate(action.actionDate || action.createdAt)}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-neutral-700 mb-2">{action.notes || 'No notes provided'}</p>
+                    {action.actionResult && (
+                      <Badge variant={getResultBadgeVariant(action.actionResult.code)}>
+                        {action.actionResult.name || action.actionResult.code}
+                      </Badge>
                     )}
                   </div>
-                  <div className="text-sm text-neutral-500">
-                    {formatDate(action.actionDate || action.createdAt)}
-                  </div>
                 </div>
-                <div>
-                  <p className="text-neutral-700 mb-2">{action.notes || 'No notes provided'}</p>
-                  {action.actionResult && (
-                    <Badge variant={getResultBadgeVariant(action.actionResult)}>
-                      {action.actionResult}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
             
-            {hasMore && (
-              <div className="text-center pt-2">
-                <Button variant="secondary" size="sm" onClick={handleLoadMore}>
-                  Load More
-                </Button>
+            {totalPages > 1 && (
+              <div className="flex flex-col items-center space-y-2 pt-4 border-t">
+                <div className="text-sm text-neutral-600">
+                  Showing {actions.length} of {totalItems} actions
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1 || loading}
+                  >
+                    <i className="bi bi-chevron-left mr-1"></i>
+                    Previous
+                  </Button>
+                  
+                  {generatePageNumbers().map((pageNum) => (
+                    <Button
+                      key={pageNum}
+                      variant={pageNum === currentPage ? "primary" : "secondary"}
+                      size="sm"
+                      onClick={() => handlePageChange(pageNum)}
+                      disabled={loading}
+                      className="min-w-[2rem]"
+                    >
+                      {pageNum}
+                    </Button>
+                  ))}
+                  
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages || loading}
+                  >
+                    Next
+                    <i className="bi bi-chevron-right ml-1"></i>
+                  </Button>
+                </div>
+                <div className="text-xs text-neutral-500">
+                  Page {currentPage} of {totalPages}
+                </div>
               </div>
             )}
           </div>

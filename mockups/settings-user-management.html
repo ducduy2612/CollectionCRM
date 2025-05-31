@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Collection CRM</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="assets/design-system.css">
+    <link rel="stylesheet" href="assets/common.css">
+    <style>
+        /* User Management specific styles */
+        .settings-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+        
+        .settings-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--neutral-200);
+        }
+        
+        .settings-title {
+            display: flex;
+            align-items: center;
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--neutral-800);
+            margin: 0;
+        }
+        
+        .settings-title-icon {
+            margin-right: 0.75rem;
+            font-size: 2rem;
+            color: var(--primary-600);
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            color: var(--neutral-500);
+        }
+        
+        .breadcrumb a {
+            color: var(--primary-600);
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .user-management-section {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--neutral-200);
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--neutral-200);
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--neutral-800);
+            margin: 0;
+        }
+        
+        .section-icon {
+            margin-right: 0.75rem;
+            font-size: 1.5rem;
+            color: var(--primary-600);
+        }
+        
+        .section-description {
+            color: var(--neutral-600);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            line-height: 1.5;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .user-table th,
+        .user-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--neutral-200);
+        }
+        
+        .user-table th {
+            background-color: var(--neutral-100);
+            font-weight: 600;
+            color: var(--neutral-700);
+        }
+        
+        .user-table tbody tr:hover {
+            background-color: var(--neutral-50);
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--primary-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-600);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--neutral-200);
+        }
+        
+        .user-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--neutral-200);
+        }
+        
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--neutral-800);
+            margin: 0;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--neutral-500);
+            cursor: pointer;
+            padding: 0;
+        }
+        
+        .close-btn:hover {
+            color: var(--neutral-700);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .form-group-full {
+            grid-column: 1 / -1;
+        }
+        
+        .role-permissions {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: var(--neutral-50);
+            border-radius: 0.5rem;
+            border: 1px solid var(--neutral-200);
+        }
+        
+        .permission-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--neutral-200);
+        }
+        
+        .permission-item:last-child {
+            border-bottom: none;
+        }
+        
+        .permission-label {
+            font-weight: 500;
+            color: var(--neutral-700);
+        }
+        
+        .permission-description {
+            font-size: 0.875rem;
+            color: var(--neutral-600);
+            margin-top: 0.25rem;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--neutral-300);
+            transition: 0.4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--primary-600);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        @media (max-width: 768px) {
+            .settings-container {
+                padding: 1rem;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .settings-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="index.html"><i class="bi bi-house"></i> Home</a>
+            <i class="bi bi-chevron-right"></i>
+            <a href="settings.html">Settings</a>
+            <i class="bi bi-chevron-right"></i>
+            <span>User Management</span>
+        </nav>
+
+        <!-- Header -->
+        <header class="settings-header">
+            <h1 class="settings-title">
+                <i class="bi bi-people settings-title-icon"></i>
+                User Management
+            </h1>
+            <div class="flex gap-2">
+                <button class="btn btn-secondary btn-sm">
+                    <i class="bi bi-arrow-clockwise btn-icon"></i>
+                    Refresh
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="openUserModal()">
+                    <i class="bi bi-plus-lg btn-icon"></i>
+                    Add User
+                </button>
+            </div>
+        </header>
+
+        <!-- User Management Section -->
+        <section class="user-management-section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">
+                        <i class="bi bi-people section-icon"></i>
+                        System Users
+                    </h2>
+                    <p class="section-description">
+                        Manage user accounts, roles, and permissions for the Collection CRM system. Control access levels and monitor user activity.
+                    </p>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Search Users</label>
+                    <input type="text" class="form-control" placeholder="Search by name, email, or role...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Filter by Role</label>
+                    <select class="form-control">
+                        <option value="">All Roles</option>
+                        <option value="admin">Administrator</option>
+                        <option value="agent">Collection Agent</option>
+                        <option value="supervisor">Supervisor</option>
+                        <option value="viewer">Viewer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Filter by Status</label>
+                    <select class="form-control">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="suspended">Suspended</option>
+                    </select>
+                </div>
+            </div>
+
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Last Login</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <div class="user-avatar">JD</div>
+                                <span class="font-medium">John Doe</span>
+                            </div>
+                        </td>
+                        <td>john.doe@company.com</td>
+                        <td><span class="badge badge-primary">Administrator</span></td>
+                        <td><span class="status-indicator status-success">Active</span></td>
+                        <td>2 hours ago</td>
+                        <td>Jan 15, 2024</td>
+                        <td>
+                            <div class="flex gap-1">
+                                <button class="btn btn-secondary btn-sm" onclick="editUser('john.doe')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-warning btn-sm">
+                                    <i class="bi bi-lock"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <div class="user-avatar">SM</div>
+                                <span class="font-medium">Sarah Miller</span>
+                            </div>
+                        </td>
+                        <td>sarah.miller@company.com</td>
+                        <td><span class="badge badge-success">Supervisor</span></td>
+                        <td><span class="status-indicator status-success">Active</span></td>
+                        <td>1 day ago</td>
+                        <td>Feb 3, 2024</td>
+                        <td>
+                            <div class="flex gap-1">
+                                <button class="btn btn-secondary btn-sm" onclick="editUser('sarah.miller')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-warning btn-sm">
+                                    <i class="bi bi-lock"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <div class="user-avatar">MJ</div>
+                                <span class="font-medium">Mike Johnson</span>
+                            </div>
+                        </td>
+                        <td>mike.johnson@company.com</td>
+                        <td><span class="badge badge-warning">Collection Agent</span></td>
+                        <td><span class="status-indicator status-success">Active</span></td>
+                        <td>3 hours ago</td>
+                        <td>Mar 10, 2024</td>
+                        <td>
+                            <div class="flex gap-1">
+                                <button class="btn btn-secondary btn-sm" onclick="editUser('mike.johnson')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-warning btn-sm">
+                                    <i class="bi bi-lock"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <div class="user-avatar">LW</div>
+                                <span class="font-medium">Lisa Wilson</span>
+                            </div>
+                        </td>
+                        <td>lisa.wilson@company.com</td>
+                        <td><span class="badge badge-warning">Collection Agent</span></td>
+                        <td><span class="status-indicator status-warning">Inactive</span></td>
+                        <td>2 weeks ago</td>
+                        <td>Jan 28, 2024</td>
+                        <td>
+                            <div class="flex gap-1">
+                                <button class="btn btn-secondary btn-sm" onclick="editUser('lisa.wilson')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-success btn-sm">
+                                    <i class="bi bi-unlock"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <div class="user-avatar">RB</div>
+                                <span class="font-medium">Robert Brown</span>
+                            </div>
+                        </td>
+                        <td>robert.brown@company.com</td>
+                        <td><span class="badge badge-neutral">Viewer</span></td>
+                        <td><span class="status-indicator status-success">Active</span></td>
+                        <td>5 hours ago</td>
+                        <td>Apr 5, 2024</td>
+                        <td>
+                            <div class="flex gap-1">
+                                <button class="btn btn-secondary btn-sm" onclick="editUser('robert.brown')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-warning btn-sm">
+                                    <i class="bi bi-lock"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="action-buttons">
+                <button class="btn btn-secondary">
+                    <i class="bi bi-download btn-icon"></i>
+                    Export Users
+                </button>
+                <button class="btn btn-primary">
+                    <i class="bi bi-check-lg btn-icon"></i>
+                    Save Changes
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- User Modal -->
+    <div id="userModal" class="user-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New User</h3>
+                <button class="close-btn" onclick="closeUserModal()">&times;</button>
+            </div>
+            
+            <form>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        <input type="text" class="form-control" placeholder="Enter first name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" class="form-control" placeholder="Enter last name">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-control" placeholder="Enter email address">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" placeholder="Enter phone number">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Role</label>
+                        <select class="form-control">
+                            <option value="">Select Role</option>
+                            <option value="admin">Administrator</option>
+                            <option value="supervisor">Supervisor</option>
+                            <option value="agent">Collection Agent</option>
+                            <option value="viewer">Viewer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Department</label>
+                        <select class="form-control">
+                            <option value="">Select Department</option>
+                            <option value="collections">Collections</option>
+                            <option value="management">Management</option>
+                            <option value="it">IT Support</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group-full">
+                    <label class="form-label">Temporary Password</label>
+                    <input type="password" class="form-control" placeholder="Enter temporary password">
+                    <small class="text-muted">User will be required to change password on first login</small>
+                </div>
+                
+                <div class="role-permissions">
+                    <h4 class="font-semibold mb-2">Role Permissions</h4>
+                    <div class="permission-item">
+                        <div>
+                            <div class="permission-label">View Customer Data</div>
+                            <div class="permission-description">Access to view customer information and loan details</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="permission-item">
+                        <div>
+                            <div class="permission-label">Edit Customer Data</div>
+                            <div class="permission-description">Ability to modify customer information</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="permission-item">
+                        <div>
+                            <div class="permission-label">Process Payments</div>
+                            <div class="permission-description">Handle payment processing and recording</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="permission-item">
+                        <div>
+                            <div class="permission-label">System Administration</div>
+                            <div class="permission-description">Full system access and configuration</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeUserModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openUserModal() {
+            document.getElementById('userModal').style.display = 'block';
+        }
+        
+        function closeUserModal() {
+            document.getElementById('userModal').style.display = 'none';
+        }
+        
+        function editUser(userId) {
+            // Open edit modal with user data
+            console.log('Edit user:', userId);
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('userModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

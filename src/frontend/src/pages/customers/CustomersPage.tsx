@@ -20,6 +20,10 @@ const CustomersPage: React.FC = () => {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loans, setLoans] = useState<Loan[]>([]);
   const [actions, setActions] = useState<CustomerAction[]>([]);
+  const [actionsPagination, setActionsPagination] = useState({
+    page: 1,
+    pageSize: 10
+  });
   const [payments, setPayments] = useState<Payment[]>([]);
   const [customerStatus, setCustomerStatus] = useState<CustomerStatus>({
     customerStatus: 'UNCOOPERATIVE',
@@ -53,9 +57,13 @@ const CustomersPage: React.FC = () => {
           setLoans(customerData.loans);
         }
 
-        // Fetch customer actions
-        const actionsData = await workflowApi.getCustomerActions(cif);
+        // Fetch customer actions with pagination
+        const actionsData = await workflowApi.getCustomerActions(cif, {
+          page: 1,
+          pageSize: 10
+        });
         setActions(actionsData.actions);
+        setActionsPagination(actionsData.pagination);
         
         // Set last contact date from the most recent action
         if (actionsData.actions && actionsData.actions.length > 0) {
@@ -66,7 +74,7 @@ const CustomersPage: React.FC = () => {
         }
 
         // Fetch customer case status
-        const statusData = await workflowApi.getCustomerCaseStatus(cif);
+        // const statusData = await workflowApi.getCustomerCaseStatus(cif);
         
         // For payments, we would typically have an endpoint like /api/bank/customers/{cif}/payments
         // Since we don't have that in the swagger, we'll use mock data for now
@@ -96,6 +104,22 @@ const CustomersPage: React.FC = () => {
 
   const handleCustomerSelect = (selectedCif: string) => {
     navigate(`/customers/${selectedCif}`);
+  };
+
+  const handleActionPageChange = async (page: number, actionType?: string) => {
+    if (!cif) return;
+    
+    try {
+      const actionsData = await workflowApi.getCustomerActions(cif, {
+        page,
+        pageSize: 10,
+        type: actionType as any
+      });
+      setActions(actionsData.actions);
+      setActionsPagination(actionsData.pagination);
+    } catch (err) {
+      console.error('Error fetching actions page:', err);
+    }
   };
 
   // If no CIF is provided, show the customer list
@@ -148,7 +172,12 @@ const CustomersPage: React.FC = () => {
         <div className="grid grid-cols-2 gap-6">
           {customer && <ContactInformation phones={customer.phones} emails={customer.emails} addresses={customer.addresses} />}
           {loans && loans.length > 0 && <LoanSummary loans={loans} />}
-          {actions && actions.length > 0 && <ActionHistory actions={actions} />}
+          {<ActionHistory
+            actions={actions}
+            cif={cif}
+            pagination={actionsPagination}
+            onPageChange={handleActionPageChange}
+          />}
           {payments && payments.length > 0 && <PaymentHistory payments={payments} />}
           <CustomerStatusComponent status={customerStatus} />
         </div>
@@ -162,7 +191,12 @@ const CustomersPage: React.FC = () => {
 
       {activeTab === 'actions' && (
         <div className="space-y-6">
-          {actions && actions.length > 0 && <ActionHistory actions={actions} />}
+          <ActionHistory
+            actions={actions}
+            cif={cif}
+            pagination={actionsPagination}
+            onPageChange={handleActionPageChange}
+          />
         </div>
       )}
 

@@ -1,4 +1,4 @@
-import { ActionRecord, ActionType, ActionResult } from '../entities/action-record.entity';
+import { ActionRecord, ActionType, ActionResult } from '../entities';
 import { AppDataSource } from '../config/data-source';
 import { Errors, OperationType, SourceSystemType } from '../utils/errors';
 import { ResponseUtil, PaginatedResponse } from '../utils/response';
@@ -9,9 +9,10 @@ import { ResponseUtil, PaginatedResponse } from '../utils/response';
 export interface ActionRecordSearchCriteria {
   cif?: string;
   loanAccountNumber?: string;
-  agentId?: string;
-  type?: ActionType;
-  actionResult?: ActionResult;
+  agent?: string;
+  actionType?: string;
+  actionSubtype?: string;
+  actionResult?: string;
   startDate?: Date;
   endDate?: Date;
   page?: number;
@@ -48,8 +49,12 @@ export const ActionRecordRepository = AppDataSource.getRepository(ActionRecord).
    */
   async findByCif(cif: string, criteria: Omit<ActionRecordSearchCriteria, 'cif'>): Promise<PaginatedResponse<ActionRecord>> {
     try {
+      console.log(criteria);
       const queryBuilder = this.createQueryBuilder('action')
         .leftJoinAndSelect('action.agent', 'agent')
+        .leftJoinAndSelect('action.actionType', 'actionType')
+        .leftJoinAndSelect('action.actionSubtype', 'actionSubtype')
+        .leftJoinAndSelect('action.actionResult', 'actionResult')
         .where('action.cif = :cif', { cif });
       
       // Apply filters
@@ -57,16 +62,20 @@ export const ActionRecordRepository = AppDataSource.getRepository(ActionRecord).
         queryBuilder.andWhere('action.loan_account_number = :loanAccountNumber', { loanAccountNumber: criteria.loanAccountNumber });
       }
       
-      if (criteria.agentId) {
-        queryBuilder.andWhere('action.agent_id = :agentId', { agentId: criteria.agentId });
+      if (criteria.agent) {
+        queryBuilder.andWhere('action.agent_id = :agentId', { agentId: criteria.agent });
       }
       
-      if (criteria.type) {
-        queryBuilder.andWhere('action.type = :type', { type: criteria.type });
+      if (criteria.actionType) {
+        queryBuilder.andWhere('actionType.code = :actionType', { actionType: criteria.actionType });
+      }
+      
+      if (criteria.actionSubtype) {
+        queryBuilder.andWhere('action.action_subtype_id = :actionSubtypeId', { actionSubtypeId: criteria.actionSubtypeId });
       }
       
       if (criteria.actionResult) {
-        queryBuilder.andWhere('action.action_result = :actionResult', { actionResult: criteria.actionResult });
+        queryBuilder.andWhere('action.action_result_id = :actionResultId', { actionResultId: criteria.actionResultId });
       }
       
       if (criteria.startDate) {
@@ -113,6 +122,9 @@ export const ActionRecordRepository = AppDataSource.getRepository(ActionRecord).
     try {
       const queryBuilder = this.createQueryBuilder('action')
         .leftJoinAndSelect('action.agent', 'agent')
+        .leftJoinAndSelect('action.actionType', 'actionType')
+        .leftJoinAndSelect('action.actionSubtype', 'actionSubtype')
+        .leftJoinAndSelect('action.actionResult', 'actionResult')
         .where('action.loan_account_number = :loanAccountNumber', { loanAccountNumber });
       
       // Apply filters
@@ -120,16 +132,20 @@ export const ActionRecordRepository = AppDataSource.getRepository(ActionRecord).
         queryBuilder.andWhere('action.cif = :cif', { cif: criteria.cif });
       }
       
-      if (criteria.agentId) {
+      if (criteria.agent) {
         queryBuilder.andWhere('action.agent_id = :agentId', { agentId: criteria.agentId });
       }
       
-      if (criteria.type) {
-        queryBuilder.andWhere('action.type = :type', { type: criteria.type });
+      if (criteria.actionType) {
+        queryBuilder.andWhere('action.action_type_id = :actionTypeId', { actionTypeId: criteria.actionTypeId });
+      }
+      
+      if (criteria.actionSubtype) {
+        queryBuilder.andWhere('action.action_subtype_id = :actionSubtypeId', { actionSubtypeId: criteria.actionSubtypeId });
       }
       
       if (criteria.actionResult) {
-        queryBuilder.andWhere('action.action_result = :actionResult', { actionResult: criteria.actionResult });
+        queryBuilder.andWhere('action.action_result_id = :actionResultId', { actionResultId: criteria.actionResultId });
       }
       
       if (criteria.startDate) {
@@ -193,7 +209,7 @@ export const ActionRecordRepository = AppDataSource.getRepository(ActionRecord).
    * @param updatedBy User who updated the record
    * @returns The updated action record
    */
-  async updateActionResult(id: string, actionResult: ActionResult, notes: string | null, updatedBy: string): Promise<ActionRecord> {
+  async updateActionResult(id: string, actionResultId: string, notes: string | null, updatedBy: string): Promise<ActionRecord> {
     try {
       const action = await this.findById(id);
       
@@ -207,7 +223,7 @@ export const ActionRecordRepository = AppDataSource.getRepository(ActionRecord).
       }
       
       // Update action properties
-      action.actionResult = actionResult;
+      action.actionResultId = actionResultId;
       
       if (notes) {
         action.notes = notes;
@@ -224,7 +240,7 @@ export const ActionRecordRepository = AppDataSource.getRepository(ActionRecord).
         error as Error,
         OperationType.DATABASE,
         SourceSystemType.WORKFLOW_SERVICE,
-        { id, actionResult, notes, updatedBy, operation: 'updateActionResult' }
+        { id, actionResultId, notes, updatedBy, operation: 'updateActionResult' }
       );
     }
   }

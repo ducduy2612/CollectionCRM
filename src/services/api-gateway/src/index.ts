@@ -129,6 +129,7 @@ Object.entries(serviceRoutes).forEach(([name, config]) => {
     
     // Action recording rate limiting
     app.use(`${config.path}/actions`, routeRateLimiter(rateLimitConfigs.workflow.actionRecord));
+    
   }
   
   // Set up the proxy
