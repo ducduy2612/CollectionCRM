@@ -121,6 +121,17 @@ router.post(
 );
 
 /**
+ * @route GET /action-config/action-types
+ * @desc get all active action type
+ * @access Private - Requires authentication
+ */
+router.get(
+  '/action-config/action-types',
+  requireAuth,
+  actionConfigController.getAllActionTypes
+);
+
+/**
  * @route GET /action-config/types/:typeCode/subtypes
  * @desc Get available subtypes for a type
  * @access Private - Requires authentication
@@ -128,7 +139,6 @@ router.post(
 router.get(
   '/action-config/types/:typeCode/subtypes',
   requireAuth,
-  requireRoles(['ADMIN']),
   actionConfigController.getSubtypesForType
 );
 
@@ -140,7 +150,6 @@ router.get(
 router.get(
   '/action-config/subtypes/:subtypeCode/results',
   requireAuth,
-  requireRoles(['ADMIN']),
   actionConfigController.getResultsForSubtype
 );
 

@@ -1,5 +1,6 @@
 import { apiClient } from './client';
 import { CustomerAction, CustomerStatus } from '../../pages/customers/types';
+import { ActionType, ActionSubtype, ActionResult } from '../../types/action-config';
 
 export interface WorkflowApiResponse<T> {
   success: boolean;
@@ -50,7 +51,11 @@ export interface AssignmentsResponse {
 export const workflowApi = {
   // Get customer actions
   getCustomerActions: async (cif: string, params?: {
-    type?: 'CALL' | 'SMS' | 'EMAIL' | 'VISIT' | 'PAYMENT' | 'NOTE';
+    loanAccountNumber?: string;
+    agentName?: string;
+    actionType?: string;
+    actionSubtype?: string;
+    actionResult?: string;
     startDate?: string;
     endDate?: string;
     page?: number;
@@ -65,6 +70,42 @@ export const workflowApi = {
       throw new Error(response.data.message || 'Failed to fetch customer actions');
     }
     
+    return response.data.data;
+  },
+
+  // Get action types
+  getActionTypes: async (): Promise<ActionType[]> => {
+    console.log('calling workflowApi - getActionTypes');
+    const response = await apiClient.get<WorkflowApiResponse<ActionType[]>>(
+      '/workflow/actions/action-config/action-types'
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch action types');
+    }
+    return response.data.data;
+  },
+
+  // Get action subtypes for a type
+  getActionSubtypes: async (typeCode: string): Promise<ActionSubtype[]> => {
+    console.log('calling workflowApi - getActionSubtypes');
+    const response = await apiClient.get<WorkflowApiResponse<ActionSubtype[]>>(
+      `/workflow/actions/action-config/types/${typeCode}/subtypes`
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch action subtypes');
+    }
+    return response.data.data;
+  },
+
+  // Get action results for a subtype
+  getActionResults: async (subtypeCode: string): Promise<ActionResult[]> => {
+    console.log('calling workflowApi - getActionResults');
+    const response = await apiClient.get<WorkflowApiResponse<ActionResult[]>>(
+      `/workflow/actions/action-config/subtypes/${subtypeCode}/results`
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch action results');
+    }
     return response.data.data;
   },
 

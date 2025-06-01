@@ -9,7 +9,7 @@ import { ResponseUtil, PaginatedResponse } from '../utils/response';
 export interface ActionRecordSearchCriteria {
   cif?: string;
   loanAccountNumber?: string;
-  agent?: string;
+  agentName?: string;
   actionType?: string;
   actionSubtype?: string;
   actionResult?: string;
@@ -62,8 +62,8 @@ export const ActionRecordRepository = AppDataSource.getRepository(ActionRecord).
         queryBuilder.andWhere('action.loan_account_number = :loanAccountNumber', { loanAccountNumber: criteria.loanAccountNumber });
       }
       
-      if (criteria.agent) {
-        queryBuilder.andWhere('action.agent_id = :agentId', { agentId: criteria.agent });
+      if (criteria.agentName) {
+        queryBuilder.andWhere('agent.name = :agentName', { agentName: criteria.agentName });
       }
       
       if (criteria.actionType) {
@@ -71,11 +71,11 @@ export const ActionRecordRepository = AppDataSource.getRepository(ActionRecord).
       }
       
       if (criteria.actionSubtype) {
-        queryBuilder.andWhere('action.action_subtype_id = :actionSubtypeId', { actionSubtypeId: criteria.actionSubtypeId });
+        queryBuilder.andWhere('actionSubtype.code = :actionSubtype', { actionSubtypeId: criteria.actionSubtype });
       }
       
       if (criteria.actionResult) {
-        queryBuilder.andWhere('action.action_result_id = :actionResultId', { actionResultId: criteria.actionResultId });
+        queryBuilder.andWhere('actionResult.code = :actionResult', { actionResultId: criteria.actionResult });
       }
       
       if (criteria.startDate) {
@@ -132,20 +132,20 @@ export const ActionRecordRepository = AppDataSource.getRepository(ActionRecord).
         queryBuilder.andWhere('action.cif = :cif', { cif: criteria.cif });
       }
       
-      if (criteria.agent) {
-        queryBuilder.andWhere('action.agent_id = :agentId', { agentId: criteria.agentId });
+      if (criteria.agentName) {
+        queryBuilder.andWhere('agent.name = :agentName', { agentName: criteria.agentName });
       }
       
       if (criteria.actionType) {
-        queryBuilder.andWhere('action.action_type_id = :actionTypeId', { actionTypeId: criteria.actionTypeId });
+        queryBuilder.andWhere('actionType.code = :actionType', { actionType: criteria.actionType });
       }
       
       if (criteria.actionSubtype) {
-        queryBuilder.andWhere('action.action_subtype_id = :actionSubtypeId', { actionSubtypeId: criteria.actionSubtypeId });
+        queryBuilder.andWhere('actionSubtype.code = :actionSubtype', { actionSubtypeId: criteria.actionSubtype });
       }
       
       if (criteria.actionResult) {
-        queryBuilder.andWhere('action.action_result_id = :actionResultId', { actionResultId: criteria.actionResultId });
+        queryBuilder.andWhere('actionResult.code = :actionResult', { actionResultId: criteria.actionResult });
       }
       
       if (criteria.startDate) {

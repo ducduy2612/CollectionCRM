@@ -87,9 +87,11 @@ export class ActionController {
   async getCustomerActions(req: Request, res: Response, next: NextFunction) {
     try {
       const { cif } = req.params;
-      const { actionType, actionSubtype, actionResult ,startDate, endDate, page = 1, pageSize = 10 } = req.query;
+      const { agentName, loanAccountNumber, actionType, actionSubtype, actionResult ,startDate, endDate, page = 1, pageSize = 10 } = req.query;
       
       const result = await ActionRecordRepository.findByCif(cif, {
+        agentName: agentName as string,
+        loanAccountNumber: loanAccountNumber as string,
         actionType: actionType as string,
         actionSubtype: actionSubtype as string,
         actionResult: actionResult as string,
