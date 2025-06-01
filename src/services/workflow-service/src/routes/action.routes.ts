@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { ActionController } from '../controllers/action.controller';
-import { ConfigController } from '../controllers/config.controller';
+import { ActionConfigController } from '../controllers/action-config.controller';
 import { requireAuth, agentContextMiddleware, requireRoles } from '../middleware/auth.middleware';
 import { validatePagination } from '../middleware/validation.middleware';
 
 const router = Router();
 const actionController = new ActionController();
-const configController = new ConfigController();
+const actionConfigController = new ActionConfigController();
 
 /**
  * @route POST /actions
@@ -61,171 +61,171 @@ router.put(
 // =============================================
 
 /**
- * @route POST /config/action-types
+ * @route POST /action-config/action-types
  * @desc Add new action type
  * @access Private - Requires authentication
  */
 router.post(
-  '/config/action-types',
+  '/action-config/action-types',
   requireAuth,
   requireRoles(['ADMIN']),
-  configController.addActionType
+  actionConfigController.addActionType
 );
 
 /**
- * @route POST /config/action-subtypes
+ * @route POST /action-config/action-subtypes
  * @desc Add new action subtype
  * @access Private - Requires authentication
  */
 router.post(
-  '/config/action-subtypes',
+  '/action-config/action-subtypes',
   requireAuth,
   requireRoles(['ADMIN']),
-  configController.addActionSubtype
+  actionConfigController.addActionSubtype
 );
 
 /**
- * @route POST /config/action-results
+ * @route POST /action-config/action-results
  * @desc Add new action result
  * @access Private - Requires authentication
  */
 router.post(
-  '/config/action-results',
+  '/action-config/action-results',
   requireAuth,
   requireRoles(['ADMIN']),
-  configController.addActionResult
+  actionConfigController.addActionResult
 );
 
 /**
- * @route POST /config/mappings/type-subtype
+ * @route POST /action-config/mappings/type-subtype
  * @desc Map action type to subtype
  * @access Private - Requires authentication
  */
 router.post(
-  '/config/mappings/type-subtype',
+  '/action-config/mappings/type-subtype',
   requireAuth,
   requireRoles(['ADMIN']),
-  configController.mapTypeToSubtype
+  actionConfigController.mapTypeToSubtype
 );
 
 /**
- * @route POST /config/mappings/subtype-result
+ * @route POST /action-config/mappings/subtype-result
  * @desc Map action subtype to result
  * @access Private - Requires authentication
  */
 router.post(
-  '/config/mappings/subtype-result',
+  '/action-config/mappings/subtype-result',
   requireAuth,
   requireRoles(['ADMIN']),
-  configController.mapSubtypeToResult
+  actionConfigController.mapSubtypeToResult
 );
 
 /**
- * @route GET /config/types/:typeCode/subtypes
+ * @route GET /action-config/types/:typeCode/subtypes
  * @desc Get available subtypes for a type
  * @access Private - Requires authentication
  */
 router.get(
-  '/config/types/:typeCode/subtypes',
+  '/action-config/types/:typeCode/subtypes',
   requireAuth,
   requireRoles(['ADMIN']),
-  configController.getSubtypesForType
+  actionConfigController.getSubtypesForType
 );
 
 /**
- * @route GET /config/subtypes/:subtypeCode/results
+ * @route GET /action-config/subtypes/:subtypeCode/results
  * @desc Get available results for a subtype
  * @access Private - Requires authentication
  */
 router.get(
-  '/config/subtypes/:subtypeCode/results',
+  '/action-config/subtypes/:subtypeCode/results',
   requireAuth,
   requireRoles(['ADMIN']),
-  configController.getResultsForSubtype
+  actionConfigController.getResultsForSubtype
 );
 
 /**
- * @route POST /config/validate
+ * @route POST /action-config/validate
  * @desc Validate action configuration
  * @access Private - Requires authentication
  */
 router.post(
-  '/config/validate',
+  '/action-config/validate',
   requireAuth,
   requireRoles(['ADMIN']),
-  configController.validateActionConfiguration
+  actionConfigController.validateActionConfiguration
 );
 
 /**
- * @route DELETE /config/action-types/:typeCode
+ * @route DELETE /action-config/action-types/:typeCode
  * @desc Deactivate action type
  * @access Private - Requires authentication
  */
 router.delete(
-  '/config/action-types/:typeCode',
+  '/action-config/action-types/:typeCode',
   requireAuth,
   requireRoles(['ADMIN']),
-  configController.deactivateActionType
+  actionConfigController.deactivateActionType
 );
 
 /**
- * @route DELETE /config/action-subtypes/:subtypeCode
+ * @route DELETE /action-config/action-subtypes/:subtypeCode
  * @desc Deactivate action subtype
  * @access Private - Requires authentication
  */
 router.delete(
-  '/config/action-subtypes/:subtypeCode',
+  '/action-config/action-subtypes/:subtypeCode',
   requireAuth,
   requireRoles(['ADMIN']),
-  configController.deactivateActionSubtype
+  actionConfigController.deactivateActionSubtype
 );
 
 /**
- * @route DELETE /config/action-results/:resultCode
+ * @route DELETE /action-config/action-results/:resultCode
  * @desc Deactivate action result
  * @access Private - Requires authentication
  */
 router.delete(
-  '/config/action-results/:resultCode',
+  '/action-config/action-results/:resultCode',
   requireAuth,
   requireRoles(['ADMIN']),
-  configController.deactivateActionResult
+  actionConfigController.deactivateActionResult
 );
 
 /**
- * @route DELETE /config/mappings/type-subtype
+ * @route DELETE /action-config/mappings/type-subtype
  * @desc Remove type-subtype mapping
  * @access Private - Requires authentication
  */
 router.delete(
-  '/config/mappings/type-subtype',
+  '/action-config/mappings/type-subtype',
   requireAuth,
   requireRoles(['ADMIN']),
-  configController.removeTypeSubtypeMapping
+  actionConfigController.removeTypeSubtypeMapping
 );
 
 /**
- * @route DELETE /config/mappings/subtype-result
+ * @route DELETE /action-config/mappings/subtype-result
  * @desc Remove subtype-result mapping
  * @access Private - Requires authentication
  */
 router.delete(
-  '/config/mappings/subtype-result',
+  '/action-config/mappings/subtype-result',
   requireAuth,
   requireRoles(['ADMIN']),
-  configController.removeSubtypeResultMapping
+  actionConfigController.removeSubtypeResultMapping
 );
 
 /**
- * @route GET /config/usage-stats
+ * @route GET /action-config/usage-stats
  * @desc Get configuration usage statistics
  * @access Private - Requires authentication
  */
 router.get(
-  '/config/usage-stats',
+  '/action-config/usage-stats',
   requireAuth,
   requireRoles(['ADMIN']),
-  configController.getConfigurationUsageStats
+  actionConfigController.getConfigurationUsageStats
 );
 
 export default router;

@@ -1,17 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
-import { ConfigRepository, ActionTypeConfig, ActionSubtypeConfig, ActionResultConfig } from '../repositories/config.repository';
+import { ActionConfigRepository, ActionTypeConfig, ActionSubtypeConfig, ActionResultConfig } from '../repositories/action-config.repository';
 import { ActionTypeRepository, ActionSubtypeRepository, ActionResultRepository } from '../repositories/action-config.repository';
 import { Errors, OperationType, SourceSystemType } from '../utils/errors';
 import { ResponseUtil } from '../utils/response';
 import { logger } from '../utils/logger';
 
 /**
- * Configuration controller for workflow service admin functions
+ * Action configuration controller for workflow service admin functions
  */
-export class ConfigController {
+export class ActionConfigController {
   /**
    * Add new action type
-   * @route POST /config/action-types
+   * @route POST /action-config/action-types
    */
   async addActionType(req: Request, res: Response, next: NextFunction) {
     try {
@@ -33,7 +33,7 @@ export class ConfigController {
         display_order
       };
       
-      const id = await ConfigRepository.addActionType(
+      const id = await ActionConfigRepository.addActionType(
         config,
         req.user?.userId || 'ADMIN'
       );
@@ -54,7 +54,7 @@ export class ConfigController {
 
   /**
    * Add new action subtype
-   * @route POST /config/action-subtypes
+   * @route POST /action-config/action-subtypes
    */
   async addActionSubtype(req: Request, res: Response, next: NextFunction) {
     try {
@@ -76,7 +76,7 @@ export class ConfigController {
         display_order
       };
       
-      const id = await ConfigRepository.addActionSubtype(
+      const id = await ActionConfigRepository.addActionSubtype(
         config,
         req.user?.userId || 'ADMIN'
       );
@@ -97,7 +97,7 @@ export class ConfigController {
 
   /**
    * Add new action result
-   * @route POST /config/action-results
+   * @route POST /action-config/action-results
    */
   async addActionResult(req: Request, res: Response, next: NextFunction) {
     try {
@@ -119,7 +119,7 @@ export class ConfigController {
         display_order
       };
       
-      const id = await ConfigRepository.addActionResult(
+      const id = await ActionConfigRepository.addActionResult(
         config,
         req.user?.userId || 'ADMIN'
       );
@@ -140,7 +140,7 @@ export class ConfigController {
 
   /**
    * Map action type to subtype
-   * @route POST /config/mappings/type-subtype
+   * @route POST /action-config/mappings/type-subtype
    */
   async mapTypeToSubtype(req: Request, res: Response, next: NextFunction) {
     try {
@@ -155,7 +155,7 @@ export class ConfigController {
         );
       }
       
-      const id = await ConfigRepository.mapTypeToSubtype(
+      const id = await ActionConfigRepository.mapTypeToSubtype(
         type_code,
         subtype_code,
         req.user?.userId || 'ADMIN'
@@ -177,7 +177,7 @@ export class ConfigController {
 
   /**
    * Map action subtype to result
-   * @route POST /config/mappings/subtype-result
+   * @route POST /action-config/mappings/subtype-result
    */
   async mapSubtypeToResult(req: Request, res: Response, next: NextFunction) {
     try {
@@ -192,7 +192,7 @@ export class ConfigController {
         );
       }
       
-      const id = await ConfigRepository.mapSubtypeToResult(
+      const id = await ActionConfigRepository.mapSubtypeToResult(
         subtype_code,
         result_code,
         req.user?.userId || 'ADMIN'
@@ -214,13 +214,13 @@ export class ConfigController {
 
   /**
    * Get available subtypes for a type
-   * @route GET /config/types/:typeCode/subtypes
+   * @route GET /action-config/types/:typeCode/subtypes
    */
   async getSubtypesForType(req: Request, res: Response, next: NextFunction) {
     try {
       const { typeCode } = req.params;
       
-      const subtypes = await ConfigRepository.getSubtypesForType(typeCode);
+      const subtypes = await ActionConfigRepository.getSubtypesForType(typeCode);
       
       return ResponseUtil.success(
         res,
@@ -235,13 +235,13 @@ export class ConfigController {
 
   /**
    * Get available results for a subtype
-   * @route GET /config/subtypes/:subtypeCode/results
+   * @route GET /action-config/subtypes/:subtypeCode/results
    */
   async getResultsForSubtype(req: Request, res: Response, next: NextFunction) {
     try {
       const { subtypeCode } = req.params;
       
-      const results = await ConfigRepository.getResultsForSubtype(subtypeCode);
+      const results = await ActionConfigRepository.getResultsForSubtype(subtypeCode);
       
       return ResponseUtil.success(
         res,
@@ -256,7 +256,7 @@ export class ConfigController {
 
   /**
    * Validate action configuration
-   * @route POST /config/validate
+   * @route POST /action-config/validate
    */
   async validateActionConfiguration(req: Request, res: Response, next: NextFunction) {
     try {
@@ -271,7 +271,7 @@ export class ConfigController {
         );
       }
       
-      const isValid = await ConfigRepository.validateActionConfiguration(
+      const isValid = await ActionConfigRepository.validateActionConfiguration(
         type_id,
         subtype_id,
         result_id
@@ -290,13 +290,13 @@ export class ConfigController {
 
   /**
    * Deactivate action type
-   * @route DELETE /config/action-types/:typeCode
+   * @route DELETE /action-config/action-types/:typeCode
    */
   async deactivateActionType(req: Request, res: Response, next: NextFunction) {
     try {
       const { typeCode } = req.params;
       
-      const success = await ConfigRepository.deactivateActionType(
+      const success = await ActionConfigRepository.deactivateActionType(
         typeCode,
         req.user?.userId || 'ADMIN'
       );
@@ -316,13 +316,13 @@ export class ConfigController {
 
   /**
    * Deactivate action subtype
-   * @route DELETE /config/action-subtypes/:subtypeCode
+   * @route DELETE /action-config/action-subtypes/:subtypeCode
    */
   async deactivateActionSubtype(req: Request, res: Response, next: NextFunction) {
     try {
       const { subtypeCode } = req.params;
       
-      const success = await ConfigRepository.deactivateActionSubtype(
+      const success = await ActionConfigRepository.deactivateActionSubtype(
         subtypeCode,
         req.user?.userId || 'ADMIN'
       );
@@ -342,13 +342,13 @@ export class ConfigController {
 
   /**
    * Deactivate action result
-   * @route DELETE /config/action-results/:resultCode
+   * @route DELETE /action-config/action-results/:resultCode
    */
   async deactivateActionResult(req: Request, res: Response, next: NextFunction) {
     try {
       const { resultCode } = req.params;
       
-      const success = await ConfigRepository.deactivateActionResult(
+      const success = await ActionConfigRepository.deactivateActionResult(
         resultCode,
         req.user?.userId || 'ADMIN'
       );
@@ -368,7 +368,7 @@ export class ConfigController {
 
   /**
    * Remove type-subtype mapping
-   * @route DELETE /config/mappings/type-subtype
+   * @route DELETE /action-config/mappings/type-subtype
    */
   async removeTypeSubtypeMapping(req: Request, res: Response, next: NextFunction) {
     try {
@@ -383,7 +383,7 @@ export class ConfigController {
         );
       }
       
-      const success = await ConfigRepository.removeTypeSubtypeMapping(
+      const success = await ActionConfigRepository.removeTypeSubtypeMapping(
         type_code,
         subtype_code,
         req.user?.userId || 'ADMIN'
@@ -404,7 +404,7 @@ export class ConfigController {
 
   /**
    * Remove subtype-result mapping
-   * @route DELETE /config/mappings/subtype-result
+   * @route DELETE /action-config/mappings/subtype-result
    */
   async removeSubtypeResultMapping(req: Request, res: Response, next: NextFunction) {
     try {
@@ -419,7 +419,7 @@ export class ConfigController {
         );
       }
       
-      const success = await ConfigRepository.removeSubtypeResultMapping(
+      const success = await ActionConfigRepository.removeSubtypeResultMapping(
         subtype_code,
         result_code,
         req.user?.userId || 'ADMIN'
@@ -440,11 +440,11 @@ export class ConfigController {
 
   /**
    * Get configuration usage statistics
-   * @route GET /config/usage-stats
+   * @route GET /action-config/usage-stats
    */
   async getConfigurationUsageStats(req: Request, res: Response, next: NextFunction) {
     try {
-      const stats = await ConfigRepository.getConfigurationUsageStats();
+      const stats = await ActionConfigRepository.getConfigurationUsageStats();
       
       return ResponseUtil.success(
         res,
@@ -459,7 +459,7 @@ export class ConfigController {
 
   /**
    * Get all action types
-   * @route GET /config/action-types
+   * @route GET /action-config/action-types
    */
   async getAllActionTypes(req: Request, res: Response, next: NextFunction) {
     try {
@@ -478,7 +478,7 @@ export class ConfigController {
 
   /**
    * Get all action subtypes
-   * @route GET /config/action-subtypes
+   * @route GET /action-config/action-subtypes
    */
   async getAllActionSubtypes(req: Request, res: Response, next: NextFunction) {
     try {
@@ -497,7 +497,7 @@ export class ConfigController {
 
   /**
    * Get all action results
-   * @route GET /config/action-results
+   * @route GET /action-config/action-results
    */
   async getAllActionResults(req: Request, res: Response, next: NextFunction) {
     try {
