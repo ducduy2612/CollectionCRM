@@ -112,8 +112,7 @@ const CustomersPage: React.FC = () => {
     try {
       const actionsData = await workflowApi.getCustomerActions(cif, {
         page,
-        pageSize: 10,
-        type: actionType as any
+        pageSize: 10
       });
       setActions(actionsData.actions);
       setActionsPagination(actionsData.pagination);

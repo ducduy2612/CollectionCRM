@@ -26,8 +26,12 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
   onPageChange 
 }) => {
   const [currentPage, setCurrentPage] = useState<number>(pagination?.page || 1);
-  const [actionType, setActionType] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
+  const [filters, setFilters] = useState({
+    actionType: '',
+    actionSubType: '',
+    actionResult: ''
+  });
 
   // Update current page when pagination prop changes
   useEffect(() => {
@@ -93,7 +97,7 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
     if (onPageChange && newPage !== currentPage) {
       setLoading(true);
       try {
-        await onPageChange(newPage, actionType);
+        await onPageChange(newPage);
         setCurrentPage(newPage);
       } catch (error) {
         console.error('Error changing page:', error);
@@ -103,21 +107,37 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
     }
   };
 
-  const handleFilterClick = async () => {
-    const newActionType = actionType ? undefined : 'CALL';
-    setActionType(newActionType);
+  // Get unique filter options from current actions
+  const getFilterOptions = () => {
+    const types = new Set<string>();
+    const subTypes = new Set<string>();
+    const results = new Set<string>();
     
-    if (onPageChange) {
-      setLoading(true);
-      try {
-        await onPageChange(1, newActionType); // Reset to first page when filter changes
-        setCurrentPage(1);
-      } catch (error) {
-        console.error('Error applying filter:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
+    actions.forEach(action => {
+      if (action.actionType?.code) types.add(action.actionType.code);
+      if (action.actionSubtype?.code) subTypes.add(action.actionSubtype.code);
+      if (action.actionResult?.code) results.add(action.actionResult.code);
+    });
+    
+    return {
+      actionTypes: Array.from(types),
+      actionSubTypes: Array.from(subTypes),
+      actionResults: Array.from(results)
+    };
+  };
+  
+  const filterOptions = getFilterOptions();
+  
+  // Apply client-side filters
+  const filteredActions = actions.filter(action => {
+    if (filters.actionType && action.actionType?.code !== filters.actionType) return false;
+    if (filters.actionSubType && action.actionSubtype?.code !== filters.actionSubType) return false;
+    if (filters.actionResult && action.actionResult?.code !== filters.actionResult) return false;
+    return true;
+  });
+  
+  const handleFilterChange = (filterName: string, value: string) => {
+    setFilters(prev => ({ ...prev, [filterName]: value }));
   };
 
   // Generate page numbers for pagination
@@ -149,10 +169,40 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Action History</CardTitle>
-        <Button variant="secondary" size="sm" onClick={handleFilterClick} disabled={loading}>
-          <i className="bi bi-filter mr-2"></i>
-          {actionType ? `Filtering: ${actionType}` : 'Filter'}
-        </Button>
+        <div className="flex space-x-2">
+          <select
+            value={filters.actionType}
+            onChange={(e) => handleFilterChange('actionType', e.target.value)}
+            className="border rounded p-1 text-sm"
+          >
+            <option value="">All Types</option>
+            {filterOptions.actionTypes.map(type => (
+              <option key={type} value={type}>{type}</option>
+            ))}
+          </select>
+          
+          <select
+            value={filters.actionSubType}
+            onChange={(e) => handleFilterChange('actionSubType', e.target.value)}
+            className="border rounded p-1 text-sm"
+          >
+            <option value="">All Subtypes</option>
+            {filterOptions.actionSubTypes.map(type => (
+              <option key={type} value={type}>{type}</option>
+            ))}
+          </select>
+          
+          <select
+            value={filters.actionResult}
+            onChange={(e) => handleFilterChange('actionResult', e.target.value)}
+            className="border rounded p-1 text-sm"
+          >
+            <option value="">All Results</option>
+            {filterOptions.actionResults.map(result => (
+              <option key={result} value={result}>{result}</option>
+            ))}
+          </select>
+        </div>
       </CardHeader>
       
       <CardContent>
@@ -162,16 +212,16 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
           </div>
         )}
         
-        {!loading && actions.length === 0 && (
+        {!loading && filteredActions.length === 0 && (
           <div className="text-center py-8 text-neutral-500">
-            {actionType ? `No ${actionType} actions found` : 'No actions found'}
+            No actions match the current filters
           </div>
         )}
         
-        {!loading && actions.length > 0 && (
+        {!loading && filteredActions.length > 0 && (
           <div className="space-y-4">
             <div className="max-h-96 overflow-y-auto space-y-4 pr-2">
-              {actions.map((action, index) => (
+              {filteredActions.map((action, index) => (
                 <div key={action.id || index} className="p-3 border-l-4 border-primary-500 bg-neutral-50 rounded-r-md">
                   <div className="flex justify-between mb-2">
                     <div className="font-semibold flex items-center">
@@ -204,7 +254,7 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
             {totalPages > 1 && (
               <div className="flex flex-col items-center space-y-2 pt-4 border-t">
                 <div className="text-sm text-neutral-600">
-                  Showing {actions.length} of {totalItems} actions
+                  Showing {filteredActions.length} of {actions.length} actions on this page
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button
