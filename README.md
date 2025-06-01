@@ -61,6 +61,7 @@ cp src/frontend/.env.example src/frontend/.env
 cp src/services/auth-service/.env.example src/services/auth-service/.env
 cp src/services/api-gateway/.env.example src/services/api-gateway/.env
 cp src/services/bank-sync-service/.env.example src/services/bank-sync-service/.env
+cp src/services/workflow-service/.env.example src/services/workflow-service/.env
 ```
 
 **Note**: The `.env` files contain environment-specific configurations and should be customized for your development setup. These files are gitignored to prevent sensitive information from being committed.
