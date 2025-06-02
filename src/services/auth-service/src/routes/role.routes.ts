@@ -386,4 +386,81 @@ router.post(
   }
 );
 
+/**
+ * Remove users from role route
+ * DELETE /roles/:id/users
+ */
+router.delete(
+  '/:id/users',
+  authenticate,
+  authorizeRoles(['ADMIN']),
+  [
+    body('userIds').isArray().withMessage('User IDs must be an array'),
+  ],
+  async (req: express.Request, res: express.Response) => {
+    try {
+      // Debug logging
+      console.log('DELETE /roles/:id/users - Request body:', req.body);
+      console.log('DELETE /roles/:id/users - Content-Type:', req.headers['content-type']);
+      
+      // Validate request
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        console.log('Validation errors:', errors.array());
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: 'Validation error',
+          errors: errors.array().map((err: any) => ({
+            code: 'VALIDATION_ERROR',
+            message: err.msg,
+            field: err.param
+          }))
+        });
+      }
+
+      const roleId = req.params.id;
+      const { userIds } = req.body;
+      
+      console.log('Role ID:', roleId);
+      console.log('User IDs:', userIds);
+
+      // Remove users from role
+      try {
+        console.log('Calling roleService.removeUsersFromRole...');
+        const removedUsers = await roleService.removeUsersFromRole(roleId, userIds);
+        console.log('Service call successful, removed users:', removedUsers);
+
+        // Return successful response
+        return res.status(200).json({
+          success: true,
+          data: {
+            roleId,
+            assignedUsers: removedUsers // Keep consistent with assignRoleToUsers response structure
+          },
+          message: 'Users removed from role successfully',
+          errors: []
+        });
+      } catch (error: any) {
+        console.log('Service call failed with error:', error.message);
+        console.log('Error stack:', error.stack);
+        return res.status(400).json({
+          success: false,
+          data: null,
+          message: 'User removal from role failed',
+          errors: [{ code: 'ROLE_REMOVAL_FAILED', message: error.message || 'Failed to remove users from role' }]
+        });
+      }
+    } catch (error) {
+      console.error('Remove users from role error:', error);
+      return res.status(500).json({
+        success: false,
+        data: null,
+        message: 'User removal from role error',
+        errors: [{ code: 'ROLE_REMOVAL_ERROR', message: 'An error occurred during user removal from role' }]
+      });
+    }
+  }
+);
+
 export default router;

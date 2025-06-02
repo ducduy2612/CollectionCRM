@@ -13,6 +13,8 @@ import AuthLayout from './layouts/AuthLayout';
 import LoginPage from './pages/auth/LoginPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import CustomersPage from './pages/customers/CustomersPage';
+import SettingsPage from './pages/settings/SettingsPage';
+import UserManagementPage from './pages/settings/UserManagementPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 // Components
@@ -46,6 +48,9 @@ function App() {
               
               <Route path="/customers" element={<CustomersPage />} />
               <Route path="/customers/:cif" element={<CustomersPage />} />
+              
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/settings/user-management" element={<UserManagementPage />} />
             </Route>
 
             {/* Redirect root to dashboard */}

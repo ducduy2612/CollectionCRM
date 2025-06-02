@@ -229,6 +229,57 @@ export class RoleRepository {
     
     return updated;
   }
+
+  /**
+   * Get users before removing them from role
+   * @param roleId - Role ID
+   * @param userIds - Array of user IDs
+   */
+  public async getUsersBeforeRoleRemoval(roleId: string, userIds: string[]): Promise<any[]> {
+    // First, get the role name
+    const role = await this.findById(roleId);
+    
+    if (!role || userIds.length === 0) {
+      return [];
+    }
+    
+    // Get users that will be affected by the role removal
+    const users = await db('users')
+      .whereIn('id', userIds)
+      .where({ role: role.name })
+      .select('id', 'username', 'email', 'first_name', 'last_name', 'is_active', 'created_at', 'updated_at');
+    
+    // Add roles array to match the expected UserResponse format
+    return users.map((user: any) => ({
+      ...user,
+      roles: [role.name] // Current role that will be removed
+    }));
+  }
+
+  /**
+   * Remove users from role
+   * @param roleId - Role ID
+   * @param userIds - Array of user IDs
+   */
+  public async removeUsersFromRole(roleId: string, userIds: string[]): Promise<number> {
+    // First, get the role name
+    const role = await this.findById(roleId);
+    
+    if (!role || userIds.length === 0) {
+      return 0;
+    }
+    
+    // Remove role from users (set to default AGENT role)
+    const updated = await db('users')
+      .whereIn('id', userIds)
+      .where({ role: role.name })
+      .update({
+        role: 'AGENT', // Set to default AGENT role
+        updated_at: new Date(),
+      });
+    
+    return updated;
+  }
 }
 
 // Export singleton instance

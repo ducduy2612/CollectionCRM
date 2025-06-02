@@ -176,6 +176,22 @@ export class RoleService {
   }
 
   /**
+   * Remove users from role
+   * @param id - Role ID
+   * @param userIds - Array of user IDs
+   */
+  public async removeUsersFromRole(id: string, userIds: string[]): Promise<any[]> {
+    // Get the users before removing them
+    const usersToRemove = await roleRepository.getUsersBeforeRoleRemoval(id, userIds);
+    
+    // Remove the role from users
+    await roleRepository.removeUsersFromRole(id, userIds);
+    
+    // Return the users that were removed
+    return usersToRemove;
+  }
+
+  /**
    * Add permission to role
    * @param roleId - Role ID
    * @param resource - Resource
