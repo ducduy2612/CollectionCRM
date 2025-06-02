@@ -1,15 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Customer } from '../types';
 import { Button } from '../../../components/ui/Button';
 import { Avatar } from '../../../components/ui/Avatar';
 import { getCustomerInitials, getCustomerDisplayName } from '../../../utils/customer.utils';
+import RecordActionModal from './RecordActionModal';
 
 interface ActionPanelProps {
   customer: Customer;
   lastContactDate?: string;
+  onActionRecorded?: () => void;
 }
 
-const ActionPanel: React.FC<ActionPanelProps> = ({ customer, lastContactDate }) => {
+const ActionPanel: React.FC<ActionPanelProps> = ({ customer, lastContactDate, onActionRecorded }) => {
+  const [isRecordActionModalOpen, setIsRecordActionModalOpen] = useState(false);
   // Using utility functions for customer name and initials
 
   // Helper function to calculate days since last contact
@@ -49,11 +52,23 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ customer, lastContactDate }) 
           <i className="bi bi-telephone mr-2"></i>
           Call Now
         </Button>
-        <Button variant="primary">
+        <Button variant="primary" onClick={() => setIsRecordActionModalOpen(true)}>
           <i className="bi bi-journal-text mr-2"></i>
           Record Action
         </Button>
       </div>
+
+      {/* Record Action Modal */}
+      <RecordActionModal
+        isOpen={isRecordActionModalOpen}
+        onClose={() => setIsRecordActionModalOpen(false)}
+        customer={customer}
+        loans={customer.loans || []}
+        onSuccess={() => {
+          setIsRecordActionModalOpen(false);
+          onActionRecorded?.();
+        }}
+      />
     </div>
   );
 };

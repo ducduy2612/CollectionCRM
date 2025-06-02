@@ -1,6 +1,5 @@
 import { apiClient } from './client';
 import { CustomerAction, CustomerStatus } from '../../pages/customers/types';
-import { ActionType, ActionSubtype, ActionResult } from '../../types/action-config';
 
 export interface WorkflowApiResponse<T> {
   success: boolean;
@@ -10,6 +9,33 @@ export interface WorkflowApiResponse<T> {
     code: string;
     message: string;
   }>;
+}
+
+export interface ActionType {
+  id: string;
+  code: string;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ActionSubtype {
+  subtype_id: string;
+  subtype_code: string;
+  subtype_name: string;
+  subtype_description: string | null;
+  subtype_displayOrder: number;
+}
+
+export interface ActionResult {
+  result_id: string;
+  result_code: string;
+  result_name: string;
+  result_description: string | null;
+  result_displayOrder: number;
 }
 
 export interface ActionsResponse {
@@ -87,7 +113,7 @@ export const workflowApi = {
 
   // Get action subtypes for a type
   getActionSubtypes: async (typeCode: string): Promise<ActionSubtype[]> => {
-    console.log('calling workflowApi - getActionSubtypes');
+    console.log('calling workflowApi - getActionSubtypes ' + typeCode);
     const response = await apiClient.get<WorkflowApiResponse<ActionSubtype[]>>(
       `/workflow/actions/action-config/types/${typeCode}/subtypes`
     );
@@ -160,6 +186,69 @@ export const workflowApi = {
     
     if (!response.data.success) {
       throw new Error(response.data.message || 'Failed to record case action');
+    }
+    
+    return response.data.data;
+  },
+
+  // Record multiple actions in bulk
+  recordBulkActions: async (actions: Array<{
+    cif: string;
+    loanAccountNumber: string;
+    actionTypeId: string;
+    actionSubtypeId: string;
+    actionResultId: string;
+    actionDate?: string;
+    promiseDate?: string;
+    promiseAmount?: number;
+    dueAmount?: number;
+    dpd?: number;
+    fUpdate?: string;
+    notes?: string;
+    visitLocation?: any;
+  }>): Promise<{
+    successful: Array<{
+      index: number;
+      actionId: string;
+      cif: string;
+      loanAccountNumber: string;
+    }>;
+    failed: Array<{
+      index: number;
+      error: string;
+      actionData: any;
+    }>;
+    summary: {
+      total: number;
+      successful: number;
+      failed: number;
+    };
+  }> => {
+    console.log('calling workflowApi - recordBulkActions');
+    const response = await apiClient.post<WorkflowApiResponse<{
+      successful: Array<{
+        index: number;
+        actionId: string;
+        cif: string;
+        loanAccountNumber: string;
+      }>;
+      failed: Array<{
+        index: number;
+        error: string;
+        actionData: any;
+      }>;
+      summary: {
+        total: number;
+        successful: number;
+        failed: number;
+      };
+    }>>(
+      '/workflow/actions/bulk',
+      { actions }
+    );
+    
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to record bulk actions');
     }
     
     return response.data.data;

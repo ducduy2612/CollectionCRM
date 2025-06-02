@@ -159,10 +159,13 @@ CREATE TABLE workflow_service.action_records (
     action_type_id UUID NOT NULL,
     action_subtype_id UUID NOT NULL,
     action_result_id UUID NOT NULL,
-    action_date TIMESTAMP NOT NULL,
+    action_date TIMESTAMP NOT NULL DEFAULT NOW(),
+    promise_date TIMESTAMP,
+    promise_amount DECIMAL(18,2),
+    due_amount DECIMAL(18,2),
+    dpd INTEGER,
     f_update TIMESTAMP,
     notes TEXT,
-    call_trace_id VARCHAR(20),
     visit_latitude DECIMAL(10,8),
     visit_longitude DECIMAL(11,8),
     visit_address TEXT,
@@ -276,11 +279,6 @@ CREATE TABLE workflow_service.customer_cases (
     assigned_call_agent_id UUID,
     assigned_field_agent_id UUID,
     f_update TIMESTAMP,
-    customer_status customer_status,
-    collateral_status collateral_status,
-    processing_state_status processing_state_status,
-    lending_violation_status lending_violation_status,
-    recovery_ability_status recovery_ability_status,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by VARCHAR(50),
@@ -372,12 +370,6 @@ CREATE INDEX idx_customer_agents_cif_is_current ON workflow_service.customer_age
 CREATE INDEX idx_customer_cases_assigned_call_agent_id ON workflow_service.customer_cases(assigned_call_agent_id);
 CREATE INDEX idx_customer_cases_assigned_field_agent_id ON workflow_service.customer_cases(assigned_field_agent_id);
 CREATE INDEX idx_customer_cases_f_update ON workflow_service.customer_cases(f_update);
-CREATE INDEX idx_customer_cases_customer_status ON workflow_service.customer_cases(customer_status);
-CREATE INDEX idx_customer_cases_collateral_status ON workflow_service.customer_cases(collateral_status);
-CREATE INDEX idx_customer_cases_processing_state_status ON workflow_service.customer_cases(processing_state_status);
-CREATE INDEX idx_customer_cases_lending_violation_status ON workflow_service.customer_cases(lending_violation_status);
-CREATE INDEX idx_customer_cases_recovery_ability_status ON workflow_service.customer_cases(recovery_ability_status);
-CREATE INDEX idx_customer_cases_status_composite ON workflow_service.customer_cases(customer_status, processing_state_status, recovery_ability_status);
 
 -- Customer Case Action indexes
 CREATE INDEX idx_customer_case_actions_cif ON workflow_service.customer_case_actions(cif);
@@ -401,7 +393,6 @@ SELECT
     COUNT(DISTINCT ar.id) AS total_actions,
     COUNT(DISTINCT ar.cif) AS total_customers,
     COUNT(DISTINCT CASE WHEN ares.code = 'PROMISE_TO_PAY' THEN ar.id END) AS payment_promises,
-    COUNT(DISTINCT CASE WHEN ares.code = 'PAYMENT_MADE' THEN ar.id END) AS payments_received,
     EXTRACT(MONTH FROM ar.action_date) AS month,
     EXTRACT(YEAR FROM ar.action_date) AS year
 FROM
@@ -423,59 +414,6 @@ CREATE INDEX idx_agent_performance_user_id ON workflow_service.agent_performance
 CREATE INDEX idx_agent_performance_team ON workflow_service.agent_performance(team);
 CREATE INDEX idx_agent_performance_year_month ON workflow_service.agent_performance(year, month);
 
--- Customer Collection Status View
-CREATE MATERIALIZED VIEW workflow_service.customer_collection_status AS
-SELECT
-    c.cif,
-    c.name,
-    c.company_name,
-    c.segment,
-    cc.customer_status,
-    cc.collateral_status,
-    cc.processing_state_status,
-    cc.lending_violation_status,
-    cc.recovery_ability_status,
-    a_call.id AS call_agent_id,
-    a_call.name AS call_agent_name,
-    a_call.user_id AS call_agent_user_id,
-    a_field.id AS field_agent_id,
-    a_field.name AS field_agent_name,
-    a_field.user_id AS field_agent_user_id,
-    COUNT(DISTINCT l.account_number) AS total_loans,
-    SUM(l.outstanding) AS total_outstanding,
-    SUM(l.due_amount) AS total_due_amount,
-    MAX(l.dpd) AS max_dpd,
-    COUNT(DISTINCT ar.id) AS total_actions,
-    MAX(ar.action_date) AS last_action_date
-FROM
-    bank_sync_service.customers c
-LEFT JOIN
-    workflow_service.customer_cases cc ON c.cif = cc.cif
-LEFT JOIN
-    workflow_service.agents a_call ON cc.assigned_call_agent_id = a_call.id
-LEFT JOIN
-    workflow_service.agents a_field ON cc.assigned_field_agent_id = a_field.id
-LEFT JOIN
-    bank_sync_service.loans l ON c.cif = l.cif
-LEFT JOIN
-    workflow_service.action_records ar ON c.cif = ar.cif
-GROUP BY
-    c.cif, c.name, c.company_name, c.segment, cc.customer_status, cc.collateral_status,
-    cc.processing_state_status, cc.lending_violation_status, cc.recovery_ability_status,
-    a_call.id, a_call.name, a_call.user_id, a_field.id, a_field.name, a_field.user_id;
-
-COMMENT ON MATERIALIZED VIEW workflow_service.customer_collection_status IS 'Provides customer collection status summary for reporting';
-
--- Create indexes on materialized view
-CREATE INDEX idx_customer_collection_status_cif ON workflow_service.customer_collection_status(cif);
-CREATE INDEX idx_customer_collection_status_segment ON workflow_service.customer_collection_status(segment);
-CREATE INDEX idx_customer_collection_status_customer_status ON workflow_service.customer_collection_status(customer_status);
-CREATE INDEX idx_customer_collection_status_max_dpd ON workflow_service.customer_collection_status(max_dpd);
-CREATE INDEX idx_customer_collection_status_call_agent_id ON workflow_service.customer_collection_status(call_agent_id);
-CREATE INDEX idx_customer_collection_status_field_agent_id ON workflow_service.customer_collection_status(field_agent_id);
-CREATE INDEX idx_customer_collection_status_call_agent_user_id ON workflow_service.customer_collection_status(call_agent_user_id);
-CREATE INDEX idx_customer_collection_status_field_agent_user_id ON workflow_service.customer_collection_status(field_agent_user_id);
-
 -- =============================================
 -- CREATE FUNCTIONS FOR MATERIALIZED VIEW REFRESH
 -- =============================================
@@ -485,7 +423,6 @@ CREATE OR REPLACE FUNCTION workflow_service.refresh_workflow_materialized_views(
 RETURNS void AS $$
 BEGIN
     REFRESH MATERIALIZED VIEW CONCURRENTLY workflow_service.agent_performance;
-    REFRESH MATERIALIZED VIEW CONCURRENTLY workflow_service.customer_collection_status;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -560,6 +497,7 @@ WHERE
 -- =============================================
 -- VIEWS FOR EASY QUERYING
 -- =============================================
+    
 
 -- View to get action records with readable names
 CREATE VIEW workflow_service.v_action_records AS
@@ -576,9 +514,12 @@ SELECT
     ares.code AS action_result_code,
     ares.name AS action_result_name,
     ar.action_date,
+    ar.promise_date,
+    ar.promise_amount,
+    ar.due_amount,
+    ar.dpd,
     ar.f_update,
     ar.notes,
-    ar.call_trace_id,
     ar.visit_latitude,
     ar.visit_longitude,
     ar.visit_address,

@@ -21,6 +21,18 @@ router.post(
 );
 
 /**
+ * @route POST /actions/bulk
+ * @desc Record multiple actions in bulk
+ * @access Private - Requires authentication
+ */
+router.post(
+  '/bulk',
+  requireAuth,
+  agentContextMiddleware,
+  actionController.recordBulkActions
+);
+
+/**
  * @route GET /actions/customer/:cif
  * @desc Get customer actions
  * @access Private - Requires authentication

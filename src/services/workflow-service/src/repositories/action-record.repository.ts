@@ -49,7 +49,6 @@ export const ActionRecordRepository = AppDataSource.getRepository(ActionRecord).
    */
   async findByCif(cif: string, criteria: Omit<ActionRecordSearchCriteria, 'cif'>): Promise<PaginatedResponse<ActionRecord>> {
     try {
-      console.log(criteria);
       const queryBuilder = this.createQueryBuilder('action')
         .leftJoinAndSelect('action.agent', 'agent')
         .leftJoinAndSelect('action.actionType', 'actionType')

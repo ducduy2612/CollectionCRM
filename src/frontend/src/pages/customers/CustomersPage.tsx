@@ -121,6 +121,30 @@ const CustomersPage: React.FC = () => {
     }
   };
 
+  const handleActionRecorded = async () => {
+    if (!cif) return;
+    
+    try {
+      // Refresh actions data
+      const actionsData = await workflowApi.getCustomerActions(cif, {
+        page: actionsPagination.page,
+        pageSize: actionsPagination.pageSize
+      });
+      setActions(actionsData.actions);
+      setActionsPagination(actionsData.pagination);
+      
+      // Update last contact date from the most recent action
+      if (actionsData.actions && actionsData.actions.length > 0) {
+        const sortedActions = [...actionsData.actions].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setLastContactDate(sortedActions[0].createdAt);
+      }
+    } catch (err) {
+      console.error('Error refreshing actions:', err);
+    }
+  };
+
   // If no CIF is provided, show the customer list
   if (!cif) {
     return (
@@ -218,7 +242,7 @@ const CustomersPage: React.FC = () => {
       )}
 
       {/* Action Panel */}
-      {customer && <ActionPanel customer={customer} lastContactDate={lastContactDate} />}
+      {customer && <ActionPanel customer={customer} lastContactDate={lastContactDate} onActionRecorded={handleActionRecorded} />}
     </div>
   );
 };

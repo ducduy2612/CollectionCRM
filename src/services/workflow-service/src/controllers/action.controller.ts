@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { EntityManager } from 'typeorm';
 import { ActionRecordRepository } from '../repositories/action-record.repository';
 import {
   ActionRecord,
@@ -28,9 +29,12 @@ export class ActionController {
         actionSubtypeId,
         actionResultId,
         actionDate,
+        promiseDate,
+        promiseAmount,
+        dueAmount,
+        dpd,
         fUpdate,
         notes,
-        callTraceId,
         visitLocation
       } = req.body;
       
@@ -53,9 +57,12 @@ export class ActionController {
         actionSubtypeId: actionSubtypeId,
         actionResultId: actionResultId,
         actionDate: actionDate ? new Date(actionDate) : new Date(),
+        promiseDate: promiseDate,
+        promiseAmount: promiseAmount,
+        dueAmount: dueAmount,
+        dpd: dpd,
         fUpdate: fUpdate ? new Date(fUpdate) : new Date(), // Set fUpdate to current timestamp for now, in future needs more fUpdate logic handling
         notes,
-        callTraceId,
         createdBy: req.user?.username || 'system',
         updatedBy: req.user?.username || 'system'
       });
@@ -76,6 +83,149 @@ export class ActionController {
       );
     } catch (error) {
       logger.error({ error, path: req.path }, 'Error recording action');
+      next(error);
+    }
+  }
+
+  /**
+   * Record multiple actions in bulk
+   * @route POST /actions/bulk
+   */
+  async recordBulkActions(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { actions } = req.body;
+      
+      // Validate that actions array is provided and not empty
+      if (!actions || !Array.isArray(actions) || actions.length === 0) {
+        throw Errors.create(
+          Errors.Validation.REQUIRED_FIELD_MISSING,
+          'Actions array is required and must not be empty',
+          OperationType.VALIDATION,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      // Validate each action has required fields
+      const invalidActions: number[] = [];
+      actions.forEach((action, index) => {
+        const { cif, loanAccountNumber, actionTypeId, actionSubtypeId, actionResultId } = action;
+        if (!cif || !loanAccountNumber || !actionTypeId || !actionSubtypeId || !actionResultId) {
+          invalidActions.push(index);
+        }
+      });
+
+      if (invalidActions.length > 0) {
+        throw Errors.create(
+          Errors.Validation.REQUIRED_FIELD_MISSING,
+          `Missing required fields in actions at indices: ${invalidActions.join(', ')}`,
+          OperationType.VALIDATION,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      const results = {
+        successful: [] as any[],
+        failed: [] as any[],
+        summary: {
+          total: actions.length,
+          successful: 0,
+          failed: 0
+        }
+      };
+
+      // Use database transaction for consistency
+      await ActionRecordRepository.manager.transaction(async (transactionalEntityManager: EntityManager) => {
+        for (let i = 0; i < actions.length; i++) {
+          try {
+            const actionData = actions[i];
+            const {
+              cif,
+              loanAccountNumber,
+              actionTypeId,
+              actionSubtypeId,
+              actionResultId,
+              actionDate,
+              promiseDate,
+              promiseAmount,
+              dueAmount,
+              dpd,
+              fUpdate,
+              notes,
+              visitLocation
+            } = actionData;
+
+            // Create action record within transaction
+            const action = transactionalEntityManager.create(ActionRecord, {
+              cif,
+              loanAccountNumber,
+              agentId: req.user?.agentId,
+              actionTypeId: actionTypeId,
+              actionSubtypeId: actionSubtypeId,
+              actionResultId: actionResultId,
+              actionDate: actionDate ? new Date(actionDate) : new Date(),
+              promiseDate: promiseDate,
+              promiseAmount: promiseAmount,
+              dueAmount: dueAmount,
+              dpd: dpd,
+              fUpdate: fUpdate ? new Date(fUpdate) : new Date(),
+              notes,
+              createdBy: req.user?.username || 'system',
+              updatedBy: req.user?.username || 'system'
+            });
+
+            const savedAction = await transactionalEntityManager.save(ActionRecord, action);
+
+            // Set visit location if provided
+            if (visitLocation) {
+              savedAction.setVisitLocation(visitLocation as VisitLocation);
+              await transactionalEntityManager.save(ActionRecord, savedAction);
+            }
+
+            results.successful.push({
+              index: i,
+              actionId: savedAction.id,
+              cif: savedAction.cif,
+              loanAccountNumber: savedAction.loanAccountNumber
+            });
+            results.summary.successful++;
+
+            logger.info({
+              actionId: savedAction.id,
+              cif: savedAction.cif,
+              index: i
+            }, 'Bulk action recorded successfully');
+
+          } catch (error) {
+            logger.error({
+              error,
+              index: i,
+              actionData: actions[i]
+            }, 'Error recording bulk action');
+
+            results.failed.push({
+              index: i,
+              error: error instanceof Error ? error.message : 'Unknown error',
+              actionData: actions[i]
+            });
+            results.summary.failed++;
+          }
+        }
+      });
+
+      logger.info({
+        total: results.summary.total,
+        successful: results.summary.successful,
+        failed: results.summary.failed
+      }, 'Bulk action recording completed');
+
+      return ResponseUtil.success(
+        res,
+        results,
+        `Bulk action recording completed. ${results.summary.successful} successful, ${results.summary.failed} failed.`,
+        201
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error in bulk action recording');
       next(error);
     }
   }

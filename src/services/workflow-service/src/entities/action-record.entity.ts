@@ -63,15 +63,24 @@ export class ActionRecord extends BaseEntity {
   @Index()
   actionDate: Date;
 
+  @Column({ name: 'promise_date', type: 'timestamp', nullable: true })
+  promiseDate: Date | null;
+
+  @Column({ name: 'promise_amount', type: 'decimal', precision: 18, scale: 2, nullable: true })
+  promiseAmount: number | null;
+
+  @Column({ name: 'due_amount', type: 'decimal', precision: 18, scale: 2, nullable: true })
+  dueAmount: number | null;
+
+  @Column({ type: 'integer', nullable: true })
+  dpd: number | null;
+
   @Column({ name: 'f_update', type: 'timestamp', nullable: true })
   @Index()
   fUpdate: Date | null;
 
   @Column({ type: 'text', nullable: true })
-  notes: string;
-
-  @Column({ name: 'call_trace_id', nullable: true })
-  callTraceId: string;
+  notes: string | null;
 
   @Column({ name: 'visit_latitude', type: 'decimal', precision: 10, scale: 8, nullable: true })
   visitLatitude: number | null;
