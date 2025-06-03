@@ -12,13 +12,20 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token and handle method override for cloud workstation CORS
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Handle PUT method override for cloud workstation CORS compatibility
+    if (config.method === 'put') {
+      config.method = 'post';
+      config.headers['X-HTTP-Method-Override'] = 'PUT';
+    }
+    
     return config;
   },
   (error) => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Customer, Loan, CustomerAction, Payment, CustomerStatus } from './types';
 import CustomerHeader from './components/CustomerHeader';
@@ -19,11 +19,6 @@ const CustomersPage: React.FC = () => {
   const navigate = useNavigate();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loans, setLoans] = useState<Loan[]>([]);
-  const [actions, setActions] = useState<CustomerAction[]>([]);
-  const [actionsPagination, setActionsPagination] = useState({
-    page: 1,
-    pageSize: 10
-  });
   const [payments, setPayments] = useState<Payment[]>([]);
   const [customerStatus, setCustomerStatus] = useState<CustomerStatus>({
     customerStatus: 'UNCOOPERATIVE',
@@ -57,21 +52,7 @@ const CustomersPage: React.FC = () => {
           setLoans(customerData.loans);
         }
 
-        // Fetch customer actions with pagination
-        const actionsData = await workflowApi.getCustomerActions(cif, {
-          page: 1,
-          pageSize: 10
-        });
-        setActions(actionsData.actions);
-        setActionsPagination(actionsData.pagination);
-        
-        // Set last contact date from the most recent action
-        if (actionsData.actions && actionsData.actions.length > 0) {
-          const sortedActions = [...actionsData.actions].sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-          setLastContactDate(sortedActions[0].createdAt);
-        }
+        // Last contact date will be set by ActionHistory component
 
         // Fetch customer case status
         // const statusData = await workflowApi.getCustomerCaseStatus(cif);
@@ -106,44 +87,31 @@ const CustomersPage: React.FC = () => {
     navigate(`/customers/${selectedCif}`);
   };
 
-  const handleActionPageChange = async (page: number, actionType?: string) => {
+  const handleActionRecorded = useCallback(async () => {
     if (!cif) return;
     
     try {
-      const actionsData = await workflowApi.getCustomerActions(cif, {
-        page,
-        pageSize: 10
-      });
-      setActions(actionsData.actions);
-      setActionsPagination(actionsData.pagination);
-    } catch (err) {
-      console.error('Error fetching actions page:', err);
-    }
-  };
-
-  const handleActionRecorded = async () => {
-    if (!cif) return;
-    
-    try {
-      // Refresh actions data
-      const actionsData = await workflowApi.getCustomerActions(cif, {
-        page: actionsPagination.page,
-        pageSize: actionsPagination.pageSize
-      });
-      setActions(actionsData.actions);
-      setActionsPagination(actionsData.pagination);
-      
-      // Update last contact date from the most recent action
-      if (actionsData.actions && actionsData.actions.length > 0) {
-        const sortedActions = [...actionsData.actions].sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setLastContactDate(sortedActions[0].createdAt);
+      // Refresh the ActionHistory component
+      if ((window as any).refreshActionHistory) {
+        (window as any).refreshActionHistory();
       }
     } catch (err) {
       console.error('Error refreshing actions:', err);
     }
-  };
+  }, [cif]);
+
+  const handleLastContactDateChange = useCallback((date: string | undefined) => {
+    setLastContactDate(date);
+  }, []);
+
+  // Memoize the ActionHistory component to prevent unnecessary re-renders and API calls
+  // This must be called before any early returns to follow Rules of Hooks
+  const actionHistoryComponent = useMemo(() => (
+    <ActionHistory
+      cif={cif}
+      onLastContactDateChange={handleLastContactDateChange}
+    />
+  ), [cif, handleLastContactDateChange]);
 
   // If no CIF is provided, show the customer list
   if (!cif) {
@@ -195,12 +163,8 @@ const CustomersPage: React.FC = () => {
         <div className="grid grid-cols-2 gap-6">
           {customer && <ContactInformation phones={customer.phones} emails={customer.emails} addresses={customer.addresses} />}
           {loans && loans.length > 0 && <LoanSummary loans={loans} />}
-          {<ActionHistory
-            actions={actions}
-            cif={cif}
-            pagination={actionsPagination}
-            onPageChange={handleActionPageChange}
-          />}
+          {/* ActionHistory is rendered above and shown via CSS */}
+          <div /> {/* Placeholder to maintain grid layout */}
           {payments && payments.length > 0 && <PaymentHistory payments={payments} />}
           <CustomerStatusComponent status={customerStatus} />
         </div>
@@ -214,12 +178,7 @@ const CustomersPage: React.FC = () => {
 
       {activeTab === 'actions' && (
         <div className="space-y-6">
-          <ActionHistory
-            actions={actions}
-            cif={cif}
-            pagination={actionsPagination}
-            onPageChange={handleActionPageChange}
-          />
+          {/* ActionHistory is rendered above and shown via CSS */}
         </div>
       )}
 
@@ -240,6 +199,15 @@ const CustomersPage: React.FC = () => {
           <p className="text-neutral-600">References tab - Under development</p>
         </div>
       )}
+
+      {/* ActionHistory - Rendered once and positioned based on active tab */}
+      <div
+        style={{
+          display: (activeTab === 'overview' || activeTab === 'actions') ? 'block' : 'none'
+        }}
+      >
+        {actionHistoryComponent}
+      </div>
 
       {/* Action Panel */}
       {customer && <ActionPanel customer={customer} lastContactDate={lastContactDate} onActionRecorded={handleActionRecorded} />}

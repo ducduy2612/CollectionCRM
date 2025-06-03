@@ -253,6 +253,8 @@ const UserModal: React.FC<UserModalProps> = ({
         await authApi.updateUser(user.id, updateData);
       }
 
+      // Reset loading state before calling onSuccess
+      setState(prev => ({ ...prev, loading: false }));
       onSuccess();
     } catch (error) {
       setState(prev => ({

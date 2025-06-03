@@ -200,6 +200,8 @@ export interface CustomerAction {
   actionDate: string;
   fUpdate: string;
   notes: string;
+  dueAmount?: number | string;
+  dpd?: number;
   callTraceId?: string;
   visitLatitude?: string;
   visitLongitude?: string;

@@ -78,6 +78,7 @@ interface UserListProps {
   onEditUser?: (user: UserResponse) => void;
   onViewSessions?: (user: UserResponse) => void;
   onDeleteUser?: (user: UserResponse) => void;
+  refreshTrigger?: number; // Add refresh trigger prop
 }
 
 // Debounce hook
@@ -100,7 +101,8 @@ const useDebounce = (value: string, delay: number) => {
 const UserList: React.FC<UserListProps> = ({
   onEditUser,
   onViewSessions,
-  onDeleteUser
+  onDeleteUser,
+  refreshTrigger
 }) => {
   const [state, setState] = useState<UserListState>({
     users: [],
@@ -193,6 +195,13 @@ const UserList: React.FC<UserListProps> = ({
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
+
+  // Reload users when refresh trigger changes
+  useEffect(() => {
+    if (refreshTrigger !== undefined && refreshTrigger > 0) {
+      loadUsers();
+    }
+  }, [refreshTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset to first page when filters change
   useEffect(() => {

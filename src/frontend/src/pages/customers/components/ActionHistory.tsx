@@ -4,41 +4,104 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui
 import { Button } from '../../../components/ui/Button';
 import { Badge } from '../../../components/ui/Badge';
 import { Spinner } from '../../../components/ui/Spinner';
+import ActionSearchModal, { ActionSearchFilters } from './ActionSearchModal';
+import { workflowApi } from '../../../services/api/workflow.api';
 
 interface ActionHistoryProps {
-  actions?: CustomerAction[];
   cif?: string;
   limit?: number;
-  pagination?: {
-    page: number;
-    pageSize: number;
-    totalPages?: number;
-    totalItems?: number;
-  };
-  onPageChange?: (page: number, actionType?: string) => Promise<void>;
+  onActionRefresh?: () => void; // Callback to notify parent when actions are refreshed
+  onLastContactDateChange?: (date: string | undefined) => void; // Callback to pass last contact date to parent
 }
 
-const ActionHistory: React.FC<ActionHistoryProps> = ({ 
-  actions = [], 
-  cif, 
-  limit = 10, 
-  pagination,
-  onPageChange 
+const ActionHistory: React.FC<ActionHistoryProps> = ({
+  cif,
+  limit = 10,
+  onActionRefresh,
+  onLastContactDateChange
 }) => {
-  const [currentPage, setCurrentPage] = useState<number>(pagination?.page || 1);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [filters, setFilters] = useState({
-    actionType: '',
-    actionSubType: '',
-    actionResult: ''
+  // Internal state for actions and pagination
+  const [actions, setActions] = useState<CustomerAction[]>([]);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pageSize: 10,
+    totalPages: 1,
+    totalItems: 0
   });
+  const [currentFilters, setCurrentFilters] = useState<ActionSearchFilters>({});
+  const [loading, setLoading] = useState<boolean>(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState<boolean>(false);
+  const [initialLoad, setInitialLoad] = useState<boolean>(true);
 
-  // Update current page when pagination prop changes
+  // Load actions when component mounts or CIF changes
   useEffect(() => {
-    if (pagination?.page) {
-      setCurrentPage(pagination.page);
+    if (cif) {
+      loadActions(1, {});
     }
-  }, [pagination?.page]);
+  }, [cif]);
+
+  const loadActions = async (page: number, filters: ActionSearchFilters) => {
+    if (!cif) return;
+
+    setLoading(true);
+    try {
+      const actionsData = await workflowApi.getCustomerActions(cif, {
+        page,
+        pageSize: limit,
+        ...filters
+      });
+      
+      setActions(actionsData.actions);
+      setPagination(actionsData.pagination);
+      setCurrentFilters(filters);
+      
+      // Update last contact date from the most recent action (only on first page with no filters)
+      if (page === 1 && Object.keys(filters).length === 0 && onLastContactDateChange) {
+        if (actionsData.actions && actionsData.actions.length > 0) {
+          const sortedActions = [...actionsData.actions].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+          onLastContactDateChange(sortedActions[0].createdAt);
+        } else {
+          onLastContactDateChange(undefined);
+        }
+      }
+      
+      // Notify parent component if this is a refresh
+      if (!initialLoad && onActionRefresh) {
+        onActionRefresh();
+      }
+      
+      if (initialLoad) {
+        setInitialLoad(false);
+      }
+    } catch (error) {
+      console.error('Error loading actions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Expose refresh method for external use
+  const refreshActions = () => {
+    if (cif) {
+      loadActions(pagination.page, currentFilters);
+    }
+  };
+
+  // Expose this method to parent component
+  useEffect(() => {
+    if (cif && window) {
+      // Store refresh function globally so parent can call it
+      (window as any).refreshActionHistory = refreshActions;
+    }
+    
+    return () => {
+      if (window) {
+        delete (window as any).refreshActionHistory;
+      }
+    };
+  }, [cif, pagination.page, currentFilters]);
 
   // Helper function to get action type icon
   const getActionTypeIcon = (type: string) => {
@@ -93,56 +156,42 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
     });
   };
 
-  const handlePageChange = async (newPage: number) => {
-    if (onPageChange && newPage !== currentPage) {
-      setLoading(true);
-      try {
-        await onPageChange(newPage);
-        setCurrentPage(newPage);
-      } catch (error) {
-        console.error('Error changing page:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
+  // Helper function to format currency
+  const formatCurrency = (amount: number | string) => {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      maximumFractionDigits: 0
+    }).format(numAmount || 0);
   };
 
-  // Get unique filter options from current actions
-  const getFilterOptions = () => {
-    const types = new Set<string>();
-    const subTypes = new Set<string>();
-    const results = new Set<string>();
-    
-    actions.forEach(action => {
-      if (action.actionType?.code) types.add(action.actionType.code);
-      if (action.actionSubtype?.code) subTypes.add(action.actionSubtype.code);
-      if (action.actionResult?.code) results.add(action.actionResult.code);
-    });
-    
-    return {
-      actionTypes: Array.from(types),
-      actionSubTypes: Array.from(subTypes),
-      actionResults: Array.from(results)
-    };
+  // Helper function to get DPD badge variant
+  const getDpdBadgeVariant = (dpd: number): 'primary' | 'secondary' | 'info' | 'warning' | 'success' | 'danger' | 'neutral' => {
+    if (dpd === 0) return 'success';
+    if (dpd <= 30) return 'warning';
+    return 'danger';
   };
-  
-  const filterOptions = getFilterOptions();
-  
-  // Apply client-side filters
-  const filteredActions = actions.filter(action => {
-    if (filters.actionType && action.actionType?.code !== filters.actionType) return false;
-    if (filters.actionSubType && action.actionSubtype?.code !== filters.actionSubType) return false;
-    if (filters.actionResult && action.actionResult?.code !== filters.actionResult) return false;
-    return true;
-  });
-  
-  const handleFilterChange = (filterName: string, value: string) => {
-    setFilters(prev => ({ ...prev, [filterName]: value }));
+
+  const handlePageChange = async (newPage: number) => {
+    await loadActions(newPage, currentFilters);
   };
+
+  const handleSearch = async (filters: ActionSearchFilters) => {
+    await loadActions(1, filters); // Reset to first page with new filters
+  };
+
+  const handleClearFilters = async () => {
+    await loadActions(1, {}); // Clear all filters
+  };
+
+  // Check if there are active filters
+  const hasActiveFilters = Object.values(currentFilters).some(value => value && value.trim() !== '');
 
   // Generate page numbers for pagination
   const generatePageNumbers = () => {
-    const totalPages = pagination?.totalPages || 1;
+    const totalPages = pagination.totalPages || 1;
+    const currentPage = pagination.page || 1;
     const pages = [];
     const maxVisiblePages = 5;
     
@@ -162,66 +211,60 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
     return pages;
   };
 
-  const totalPages = pagination?.totalPages || 1;
-  const totalItems = pagination?.totalItems || 0;
+  const totalPages = pagination.totalPages || 1;
+  const totalItems = pagination.totalItems || 0;
+  const currentPage = pagination.page || 1;
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Action History</CardTitle>
-        <div className="flex space-x-2">
-          <select
-            value={filters.actionType}
-            onChange={(e) => handleFilterChange('actionType', e.target.value)}
-            className="border rounded p-1 text-sm"
+        <div className="flex items-center space-x-2">
+          {hasActiveFilters && (
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-neutral-600">
+                {Object.keys(currentFilters).length} filter{Object.keys(currentFilters).length !== 1 ? 's' : ''} active
+              </span>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleClearFilters}
+                disabled={loading}
+              >
+                <i className="bi bi-x-circle mr-1"></i>
+                Clear
+              </Button>
+            </div>
+          )}
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setIsSearchModalOpen(true)}
+            disabled={loading}
           >
-            <option value="">All Types</option>
-            {filterOptions.actionTypes.map(type => (
-              <option key={type} value={type}>{type}</option>
-            ))}
-          </select>
-          
-          <select
-            value={filters.actionSubType}
-            onChange={(e) => handleFilterChange('actionSubType', e.target.value)}
-            className="border rounded p-1 text-sm"
-          >
-            <option value="">All Subtypes</option>
-            {filterOptions.actionSubTypes.map(type => (
-              <option key={type} value={type}>{type}</option>
-            ))}
-          </select>
-          
-          <select
-            value={filters.actionResult}
-            onChange={(e) => handleFilterChange('actionResult', e.target.value)}
-            className="border rounded p-1 text-sm"
-          >
-            <option value="">All Results</option>
-            {filterOptions.actionResults.map(result => (
-              <option key={result} value={result}>{result}</option>
-            ))}
-          </select>
+            <i className="bi bi-search mr-1"></i>
+            Search
+          </Button>
         </div>
       </CardHeader>
       
       <CardContent>
-        {loading && (
+        {(loading || initialLoad) && (
           <div className="flex justify-center py-8">
             <Spinner size="md" />
           </div>
         )}
         
-        {!loading && filteredActions.length === 0 && (
+        {!loading && !initialLoad && actions.length === 0 && (
           <div className="text-center py-8 text-neutral-500">
-            No actions match the current filters
+            {hasActiveFilters ? 'No actions match the current filters' : 'No actions found'}
           </div>
         )}
         
-        {!loading && filteredActions.length > 0 && (
+        {!loading && !initialLoad && actions.length > 0 && (
           <div className="space-y-4">
             <div className="max-h-96 overflow-y-auto space-y-4 pr-2">
-              {filteredActions.map((action, index) => (
+              {actions.map((action, index) => (
                 <div key={action.id || index} className="p-3 border-l-4 border-primary-500 bg-neutral-50 rounded-r-md">
                   <div className="flex justify-between mb-2">
                     <div className="font-semibold flex items-center">
@@ -239,6 +282,56 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
                       {formatDate(action.actionDate || action.createdAt)}
                     </div>
                   </div>
+                  
+                  {/* Additional Information Section */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3 text-sm bg-white p-3 rounded border">
+                    <div className="space-y-2">
+                      {action.loanAccountNumber && (
+                        <div className="flex items-center">
+                          <i className="bi bi-credit-card mr-2 text-neutral-500"></i>
+                          <span className="text-neutral-600 font-medium">Loan Account:</span>
+                          <span className="ml-2 font-semibold text-primary-700">{action.loanAccountNumber}</span>
+                        </div>
+                      )}
+                      {action.agent?.name && (
+                        <div className="flex items-center">
+                          <i className="bi bi-person mr-2 text-neutral-500"></i>
+                          <span className="text-neutral-600 font-medium">Agent:</span>
+                          <span className="ml-2 font-semibold">{action.agent.name}</span>
+                        </div>
+                      )}
+                      {action.fUpdate && (
+                        <div className="flex items-center">
+                          <i className="bi bi-calendar-event mr-2 text-neutral-500"></i>
+                          <span className="text-neutral-600 font-medium">Follow-up:</span>
+                          <span className="ml-2 font-semibold text-info-700">
+                            {formatDate(action.fUpdate)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      {action.dueAmount !== undefined && action.dueAmount !== null && (
+                        <div className="flex items-center">
+                          <i className="bi bi-currency-dollar mr-2 text-neutral-500"></i>
+                          <span className="text-neutral-600 font-medium">Due Amount:</span>
+                          <span className="ml-2 font-semibold text-danger-600">
+                            {formatCurrency(action.dueAmount)}
+                          </span>
+                        </div>
+                      )}
+                      {action.dpd !== undefined && action.dpd !== null && (
+                        <div className="flex items-center">
+                          <i className="bi bi-clock mr-2 text-neutral-500"></i>
+                          <span className="text-neutral-600 font-medium">DPD:</span>
+                          <Badge variant={getDpdBadgeVariant(action.dpd)} className="ml-2">
+                            {action.dpd} days
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
                   <div>
                     <p className="text-neutral-700 mb-2">{action.notes || 'No notes provided'}</p>
                     {action.actionResult && (
@@ -254,7 +347,8 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
             {totalPages > 1 && (
               <div className="flex flex-col items-center space-y-2 pt-4 border-t">
                 <div className="text-sm text-neutral-600">
-                  Showing {filteredActions.length} of {actions.length} actions on this page
+                  Showing {actions.length} actions on this page
+                  {totalItems > 0 && ` (${totalItems} total)`}
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button
@@ -298,8 +392,24 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
           </div>
         )}
       </CardContent>
+      
+      {/* Search Modal */}
+      <ActionSearchModal
+        isOpen={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
+        onSearch={handleSearch}
+        currentFilters={currentFilters}
+      />
     </Card>
   );
 };
 
-export default ActionHistory;
+export default React.memo(ActionHistory, (prevProps, nextProps) => {
+  // Only re-render if cif or callback functions change
+  return (
+    prevProps.cif === nextProps.cif &&
+    prevProps.limit === nextProps.limit &&
+    prevProps.onActionRefresh === nextProps.onActionRefresh &&
+    prevProps.onLastContactDateChange === nextProps.onLastContactDateChange
+  );
+});

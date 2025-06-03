@@ -61,6 +61,7 @@ interface RoleListProps {
   onEditRole?: (role: RoleResponse) => void;
   onViewUsers?: (role: RoleResponse) => void;
   onDeleteRole?: (role: RoleResponse) => void;
+  refreshTrigger?: number; // Add refresh trigger prop
 }
 
 // Debounce hook
@@ -84,7 +85,8 @@ const RoleList: React.FC<RoleListProps> = ({
   onAddRole,
   onEditRole,
   onViewUsers,
-  onDeleteRole
+  onDeleteRole,
+  refreshTrigger
 }) => {
   const [state, setState] = useState<RoleListState>({
     roles: [],
@@ -161,7 +163,14 @@ const RoleList: React.FC<RoleListProps> = ({
   // Load roles on component mount
   useEffect(() => {
     loadRoles();
-  }, [loadRoles]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Reload roles when refresh trigger changes
+  useEffect(() => {
+    if (refreshTrigger !== undefined && refreshTrigger > 0) {
+      loadRoles();
+    }
+  }, [refreshTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -230,10 +239,18 @@ const RoleList: React.FC<RoleListProps> = ({
       setShowDeleteConfirm(false);
       setRoleToDelete(null);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete role';
+      
       setState(prev => ({
         ...prev,
-        error: error instanceof Error ? error.message : 'Failed to delete role'
+        error: errorMessage
       }));
+      
+      // If the error is about users being assigned, close the modal since we now prevent this case
+      if (errorMessage.includes('assigned to') && errorMessage.includes('user(s)')) {
+        setShowDeleteConfirm(false);
+        setRoleToDelete(null);
+      }
     } finally {
       setActionLoading(null);
     }
@@ -421,33 +438,64 @@ const RoleList: React.FC<RoleListProps> = ({
         size="sm"
       >
         <div className="space-y-4">
-          <p className="text-neutral-700">
-            Are you sure you want to delete the role "{roleToDelete?.name}"? This action cannot be undone.
-          </p>
-          
-          {roleToDelete && state.userCounts[roleToDelete.id] > 0 && (
-            <div className="bg-warning-50 border border-warning-200 text-warning-700 px-3 py-2 rounded-md text-sm">
-              Warning: This role is currently assigned to {state.userCounts[roleToDelete.id]} user(s). 
-              Deleting this role may affect user permissions.
-            </div>
-          )}
+          {roleToDelete && state.userCounts[roleToDelete.id] > 0 ? (
+            <>
+              <p className="text-neutral-700">
+                Cannot delete the role "{roleToDelete.name}" because it is currently assigned to {state.userCounts[roleToDelete.id]} user(s).
+              </p>
+              
+              <div className="bg-danger-50 border border-danger-200 text-danger-700 px-3 py-2 rounded-md text-sm">
+                <strong>Action Required:</strong> Before deleting this role, you must:
+                <ul className="mt-2 ml-4 list-disc">
+                  <li>Remove all users from this role, or</li>
+                  <li>Reassign users to a different role (e.g., default agent role)</li>
+                </ul>
+              </div>
 
-          <div className="flex justify-end gap-3">
-            <Button
-              variant="secondary"
-              onClick={handleCancelDelete}
-              disabled={actionLoading === `delete-${roleToDelete?.id}`}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              onClick={handleDeleteRole}
-              loading={actionLoading === `delete-${roleToDelete?.id}`}
-            >
-              Delete Role
-            </Button>
-          </div>
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={handleCancelDelete}
+                >
+                  Close
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    handleCancelDelete();
+                    if (onViewUsers && roleToDelete) {
+                      onViewUsers(roleToDelete);
+                    }
+                  }}
+                >
+                  Manage Users
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-neutral-700">
+                Are you sure you want to delete the role "{roleToDelete?.name}"? This action cannot be undone.
+              </p>
+
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={handleCancelDelete}
+                  disabled={actionLoading === `delete-${roleToDelete?.id}`}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={handleDeleteRole}
+                  loading={actionLoading === `delete-${roleToDelete?.id}`}
+                >
+                  Delete Role
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
     </div>

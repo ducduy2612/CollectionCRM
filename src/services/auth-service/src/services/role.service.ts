@@ -145,6 +145,18 @@ export class RoleService {
    * @param id - Role ID
    */
   public async deleteRole(id: string): Promise<boolean> {
+    // Check if role exists
+    const role = await roleRepository.findById(id);
+    if (!role) {
+      throw new Error('Role not found');
+    }
+
+    // Check if any users are assigned to this role
+    const { users, total } = await roleRepository.getUsersWithRole(id, 1, 1);
+    if (total > 0) {
+      throw new Error(`Cannot delete role "${role.name}" because it is assigned to ${total} user(s). Please remove all users from this role before deletion or reassign them to a different role.`);
+    }
+
     return roleRepository.delete(id);
   }
 

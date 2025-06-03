@@ -136,15 +136,20 @@ export interface UserSessionsResponse {
 }
 
 // Role Management Types
+export interface PermissionData {
+  resource: string;
+  action: string;
+}
+
 export interface RoleData {
   name: string;
   description?: string;
-  permissions: string[];
+  permissions: PermissionData[];
 }
 
 export interface UpdateRoleData {
   description?: string;
-  permissions?: string[];
+  permissions?: PermissionData[];
 }
 
 export interface RoleResponse {
@@ -289,6 +294,7 @@ export const authApi = {
    * @returns Promise<UsersListResponse>
    */
   getUsers: async (filters: UserFilters = {}, pagination: PaginationParams = {}): Promise<UsersListResponse> => {
+    console.log('calling authApi - getUsers');
     const params = new URLSearchParams();
     
     if (filters.username) params.append('username', filters.username);
@@ -436,6 +442,7 @@ export const authApi = {
    * @returns Promise<RolesListResponse>
    */
   getRoles: async (): Promise<RolesListResponse> => {
+    console.log('calling authApi - getRoles');
     const response = await apiClient.get<AuthApiResponse<RolesListResponse>>('/auth/roles');
     
     if (!response.data.success) {
@@ -513,6 +520,7 @@ export const authApi = {
    * @returns Promise<RoleUsersResponse>
    */
   getUsersWithRole: async (id: string, pagination: PaginationParams = {}): Promise<RoleUsersResponse> => {
+    console.log('calling authApi - getUsersWithRole');
     const params = new URLSearchParams();
     
     if (pagination.page) params.append('page', pagination.page.toString());

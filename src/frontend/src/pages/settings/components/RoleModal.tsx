@@ -1,15 +1,67 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button, Alert } from '../../../components/ui';
-import { authApi, RoleResponse, RoleData, UpdateRoleData } from '../../../services/api/auth.api';
+import { authApi, RoleResponse, RoleData, UpdateRoleData, PermissionData } from '../../../services/api/auth.api';
 
-// Predefined permissions list
+// Available permissions based on backend format (resource:action)
 const AVAILABLE_PERMISSIONS = [
-  'USER_READ', 'USER_WRITE', 'USER_DELETE',
-  'ROLE_READ', 'ROLE_WRITE', 'ROLE_DELETE',
-  'CUSTOMER_READ', 'CUSTOMER_WRITE', 'CUSTOMER_DELETE',
-  'WORKFLOW_READ', 'WORKFLOW_WRITE', 'WORKFLOW_DELETE',
-  'ADMIN_ACCESS', 'SUPERVISOR_ACCESS'
+  // User Management
+  'users:create',
+  'users:read',
+  'users:update',
+  'users:delete',
+  
+  // Role Management
+  'roles:create',
+  'roles:read',
+  'roles:update',
+  'roles:delete',
+  
+  // Customer Management
+  'customers:create',
+  'customers:read',
+  'customers:update',
+  'customers:delete',
+  
+  // Workflow Management
+  'workflows:create',
+  'workflows:read',
+  'workflows:update',
+  'workflows:delete',
+  
+  // System Access
+  'admin:access',
+  'supervisor:access'
 ];
+
+// Helper function to format permission labels for display
+const formatPermissionLabel = (permission: string): string => {
+  if (permission.includes(':')) {
+    const [resource, action] = permission.split(':');
+    const resourceLabel = resource.charAt(0).toUpperCase() + resource.slice(1);
+    const actionLabel = action.charAt(0).toUpperCase() + action.slice(1);
+    return `${actionLabel} ${resourceLabel}`;
+  }
+  // Fallback for any non-standard permissions
+  return permission.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+};
+
+// Helper function to convert permission strings to backend format
+const convertPermissionsToBackendFormat = (permissions: string[]): PermissionData[] => {
+  return permissions.map(permission => {
+    if (permission.includes(':')) {
+      const [resource, action] = permission.split(':');
+      return { resource, action };
+    }
+    // Fallback for any non-standard permissions
+    return { resource: permission, action: 'access' };
+  });
+};
+
+// Helper function to convert backend permissions to frontend format
+const convertPermissionsFromBackendFormat = (permissions: string[]) => {
+  // Backend returns permissions as "resource:action" strings, so no conversion needed
+  return permissions;
+};
 
 interface RoleModalProps {
   isOpen: boolean;
@@ -183,14 +235,14 @@ const RoleModal: React.FC<RoleModalProps> = ({
         const roleData: RoleData = {
           name: state.formData.name.trim(),
           description: state.formData.description.trim() || undefined,
-          permissions: state.formData.permissions
+          permissions: convertPermissionsToBackendFormat(state.formData.permissions)
         };
 
         await authApi.createRole(roleData);
       } else if (mode === 'edit' && role) {
         const updateData: UpdateRoleData = {
           description: state.formData.description.trim() || undefined,
-          permissions: state.formData.permissions
+          permissions: convertPermissionsToBackendFormat(state.formData.permissions)
         };
 
         await authApi.updateRole(role.id, updateData);
@@ -205,6 +257,9 @@ const RoleModal: React.FC<RoleModalProps> = ({
           general: error instanceof Error ? error.message : `Failed to ${mode} role`
         }
       }));
+    } finally {
+      // Ensure loading is always set to false
+      setState(prev => ({ ...prev, loading: false }));
     }
   };
 
@@ -226,11 +281,11 @@ const RoleModal: React.FC<RoleModalProps> = ({
 
   // Group permissions by category for better organization
   const permissionGroups = {
-    'User Management': ['USER_READ', 'USER_WRITE', 'USER_DELETE'],
-    'Role Management': ['ROLE_READ', 'ROLE_WRITE', 'ROLE_DELETE'],
-    'Customer Management': ['CUSTOMER_READ', 'CUSTOMER_WRITE', 'CUSTOMER_DELETE'],
-    'Workflow Management': ['WORKFLOW_READ', 'WORKFLOW_WRITE', 'WORKFLOW_DELETE'],
-    'System Access': ['ADMIN_ACCESS', 'SUPERVISOR_ACCESS']
+    'User Management': ['users:create', 'users:read', 'users:update', 'users:delete'],
+    'Role Management': ['roles:create', 'roles:read', 'roles:update', 'roles:delete'],
+    'Customer Management': ['customers:create', 'customers:read', 'customers:update', 'customers:delete'],
+    'Workflow Management': ['workflows:create', 'workflows:read', 'workflows:update', 'workflows:delete'],
+    'System Access': ['admin:access', 'supervisor:access']
   };
 
   return (
@@ -330,7 +385,7 @@ const RoleModal: React.FC<RoleModalProps> = ({
                         className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded disabled:opacity-50"
                       />
                       <span className="ml-2 text-sm text-neutral-700">
-                        {permission.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                        {formatPermissionLabel(permission)}
                       </span>
                     </label>
                   ))}

@@ -11,6 +11,7 @@ import { errorHandler, notFoundHandler } from './middleware/error-handler.middle
 import { getCorsOptions } from './config/cors.config';
 import { createSwaggerSpec } from './config/swagger.config';
 import { jwtAuth } from './middleware/jwt-auth.middleware';
+import { methodOverride } from './middleware/method-override.middleware';
 
 // Load environment variables
 dotenv.config();
@@ -27,6 +28,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Request logging
 app.use(requestLogger());
+
+// Method override middleware (for cloud workstation CORS compatibility)
+app.use(methodOverride);
 
 // JWT authentication middleware
 app.use(jwtAuth);

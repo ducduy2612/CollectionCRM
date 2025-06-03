@@ -33,6 +33,7 @@ interface UserManagementState {
   userForSessions: UserResponse | null;
   showRoleUsersModal: boolean;
   roleForUsers: RoleResponse | null;
+  refreshTrigger: number;
 }
 
 const UserManagement: React.FC<UserManagementProps> = ({ className }) => {
@@ -50,6 +51,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ className }) => {
     userForSessions: null,
     showRoleUsersModal: false,
     roleForUsers: null,
+    refreshTrigger: 0,
   });
 
   const handleTabChange = (tab: UserManagementTab) => {
@@ -61,12 +63,17 @@ const UserManagement: React.FC<UserManagementProps> = ({ className }) => {
   };
 
   const handleRefresh = () => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
+    setState(prev => ({
+      ...prev,
+      loading: true,
+      error: null,
+      refreshTrigger: prev.refreshTrigger + 1
+    }));
     
-    // Simulate API call
+    // Reset loading state after a short delay
     setTimeout(() => {
       setState(prev => ({ ...prev, loading: false }));
-    }, 1000);
+    }, 500);
   };
 
   // User management handlers
@@ -159,9 +166,8 @@ const UserManagement: React.FC<UserManagementProps> = ({ className }) => {
       ...prev,
       showRoleModal: false,
       selectedRole: null,
+      refreshTrigger: prev.refreshTrigger + 1
     }));
-    // Trigger refresh of role list
-    handleRefresh();
   };
 
   const handleViewRoleUsers = (role: RoleResponse) => {
@@ -205,6 +211,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ className }) => {
           onEditUser={handleEditUser}
           onViewSessions={handleViewUserSessions}
           onDeleteUser={handleDeleteUser}
+          refreshTrigger={state.refreshTrigger}
         />
       </div>
     );
@@ -228,6 +235,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ className }) => {
           onEditRole={handleEditRole}
           onViewUsers={handleViewRoleUsers}
           onDeleteRole={handleDeleteRole}
+          refreshTrigger={state.refreshTrigger}
         />
       </div>
     );

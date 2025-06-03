@@ -70,11 +70,11 @@ export const ActionRecordRepository = AppDataSource.getRepository(ActionRecord).
       }
       
       if (criteria.actionSubtype) {
-        queryBuilder.andWhere('actionSubtype.code = :actionSubtype', { actionSubtypeId: criteria.actionSubtype });
+        queryBuilder.andWhere('actionSubtype.code = :actionSubtype', { actionSubtype: criteria.actionSubtype });
       }
       
       if (criteria.actionResult) {
-        queryBuilder.andWhere('actionResult.code = :actionResult', { actionResultId: criteria.actionResult });
+        queryBuilder.andWhere('actionResult.code = :actionResult', { actionResult: criteria.actionResult });
       }
       
       if (criteria.startDate) {
@@ -140,11 +140,11 @@ export const ActionRecordRepository = AppDataSource.getRepository(ActionRecord).
       }
       
       if (criteria.actionSubtype) {
-        queryBuilder.andWhere('actionSubtype.code = :actionSubtype', { actionSubtypeId: criteria.actionSubtype });
+        queryBuilder.andWhere('actionSubtype.code = :actionSubtype', { actionSubtype: criteria.actionSubtype });
       }
       
       if (criteria.actionResult) {
-        queryBuilder.andWhere('actionResult.code = :actionResult', { actionResultId: criteria.actionResult });
+        queryBuilder.andWhere('actionResult.code = :actionResult', { actionResult: criteria.actionResult });
       }
       
       if (criteria.startDate) {
