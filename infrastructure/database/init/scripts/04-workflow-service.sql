@@ -21,9 +21,42 @@ DROP FUNCTION IF EXISTS workflow_service.deactivate_action_result(VARCHAR, VARCH
 DROP FUNCTION IF EXISTS workflow_service.remove_type_subtype_mapping(VARCHAR, VARCHAR, VARCHAR) CASCADE;
 DROP FUNCTION IF EXISTS workflow_service.remove_subtype_result_mapping(VARCHAR, VARCHAR, VARCHAR) CASCADE;
 DROP FUNCTION IF EXISTS workflow_service.get_configuration_usage_stats() CASCADE;
+-- Drop status dictionary management functions
+DROP FUNCTION IF EXISTS workflow_service.add_customer_status(VARCHAR, VARCHAR, TEXT, VARCHAR, INTEGER, VARCHAR) CASCADE;
+DROP FUNCTION IF EXISTS workflow_service.add_collateral_status(VARCHAR, VARCHAR, TEXT, VARCHAR, INTEGER, VARCHAR) CASCADE;
+DROP FUNCTION IF EXISTS workflow_service.add_processing_state(VARCHAR, VARCHAR, TEXT, VARCHAR, INTEGER, VARCHAR) CASCADE;
+DROP FUNCTION IF EXISTS workflow_service.add_processing_substate(VARCHAR, VARCHAR, TEXT, VARCHAR, INTEGER, VARCHAR) CASCADE;
+DROP FUNCTION IF EXISTS workflow_service.add_lending_violation_status(VARCHAR, VARCHAR, TEXT, VARCHAR, INTEGER, VARCHAR) CASCADE;
+DROP FUNCTION IF EXISTS workflow_service.add_recovery_ability_status(VARCHAR, VARCHAR, TEXT, VARCHAR, INTEGER, VARCHAR) CASCADE;
+DROP FUNCTION IF EXISTS workflow_service.map_state_to_substate(VARCHAR, VARCHAR, VARCHAR) CASCADE;
+DROP FUNCTION IF EXISTS workflow_service.get_substates_for_state(VARCHAR) CASCADE;
+DROP FUNCTION IF EXISTS workflow_service.validate_processing_state_configuration(UUID, UUID) CASCADE;
+DROP FUNCTION IF EXISTS workflow_service.deactivate_customer_status(VARCHAR, VARCHAR) CASCADE;
+DROP FUNCTION IF EXISTS workflow_service.deactivate_collateral_status(VARCHAR, VARCHAR) CASCADE;
+DROP FUNCTION IF EXISTS workflow_service.deactivate_processing_state(VARCHAR, VARCHAR) CASCADE;
+DROP FUNCTION IF EXISTS workflow_service.deactivate_processing_substate(VARCHAR, VARCHAR) CASCADE;
+DROP FUNCTION IF EXISTS workflow_service.deactivate_lending_violation_status(VARCHAR, VARCHAR) CASCADE;
+DROP FUNCTION IF EXISTS workflow_service.deactivate_recovery_ability_status(VARCHAR, VARCHAR) CASCADE;
+DROP FUNCTION IF EXISTS workflow_service.remove_state_substate_mapping(VARCHAR, VARCHAR, VARCHAR) CASCADE;
+DROP FUNCTION IF EXISTS workflow_service.get_status_usage_stats() CASCADE;
 
 -- Drop tables in dependency order (partitioned tables and their partitions will be dropped automatically)
 DROP TABLE IF EXISTS workflow_service.customer_case_actions CASCADE;
+-- Drop status tracking tables
+DROP TABLE IF EXISTS workflow_service.recovery_ability_status CASCADE;
+DROP TABLE IF EXISTS workflow_service.lending_violation_status CASCADE;
+DROP TABLE IF EXISTS workflow_service.processing_state_status CASCADE;
+DROP TABLE IF EXISTS workflow_service.collateral_status CASCADE;
+DROP TABLE IF EXISTS workflow_service.customer_status CASCADE;
+-- Drop mapping tables
+DROP TABLE IF EXISTS workflow_service.processing_state_substate_mappings CASCADE;
+-- Drop dictionary tables
+DROP TABLE IF EXISTS workflow_service.recovery_ability_status_dict CASCADE;
+DROP TABLE IF EXISTS workflow_service.lending_violation_status_dict CASCADE;
+DROP TABLE IF EXISTS workflow_service.processing_substate_dict CASCADE;
+DROP TABLE IF EXISTS workflow_service.processing_state_dict CASCADE;
+DROP TABLE IF EXISTS workflow_service.collateral_status_dict CASCADE;
+DROP TABLE IF EXISTS workflow_service.customer_status_dict CASCADE;
 DROP TABLE IF EXISTS workflow_service.customer_cases CASCADE;
 DROP TABLE IF EXISTS workflow_service.action_records CASCADE; -- This will drop all partitions automatically
 DROP TABLE IF EXISTS workflow_service.customer_agents CASCADE; -- This will drop all partitions automatically
@@ -279,6 +312,7 @@ CREATE TABLE workflow_service.customer_cases (
     assigned_call_agent_id UUID,
     assigned_field_agent_id UUID,
     f_update TIMESTAMP,
+    master_notes TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by VARCHAR(50),
@@ -290,27 +324,231 @@ CREATE TABLE workflow_service.customer_cases (
 
 COMMENT ON TABLE workflow_service.customer_cases IS 'Stores the current status of customers for strategy allocation';
 
--- Customer Case Actions table
-CREATE TABLE workflow_service.customer_case_actions (
+-- =============================================
+-- STATUS DICTIONARY TABLES (Frontend Manageable)
+-- =============================================
+
+-- Customer Status Dictionary
+CREATE TABLE workflow_service.customer_status_dict (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    cif VARCHAR(20) NOT NULL,
-    agent_id UUID NOT NULL,
-    action_date TIMESTAMP NOT NULL,
-    notes TEXT,
-    customer_status customer_status,
-    collateral_status collateral_status,
-    processing_state_status processing_state_status,
-    lending_violation_status lending_violation_status,
-    recovery_ability_status recovery_ability_status,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    color VARCHAR(7), -- Hex color code for UI
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    display_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_by VARCHAR(50) NOT NULL,
+    updated_by VARCHAR(50) NOT NULL
+);
+
+COMMENT ON TABLE workflow_service.customer_status_dict IS 'Dictionary of customer status values - manageable from frontend';
+
+-- Collateral Status Dictionary
+CREATE TABLE workflow_service.collateral_status_dict (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    color VARCHAR(7), -- Hex color code for UI
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    display_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_by VARCHAR(50) NOT NULL,
+    updated_by VARCHAR(50) NOT NULL
+);
+
+COMMENT ON TABLE workflow_service.collateral_status_dict IS 'Dictionary of collateral status values - manageable from frontend';
+
+-- Processing State Dictionary
+CREATE TABLE workflow_service.processing_state_dict (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    color VARCHAR(7), -- Hex color code for UI
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    display_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_by VARCHAR(50) NOT NULL,
+    updated_by VARCHAR(50) NOT NULL
+);
+
+COMMENT ON TABLE workflow_service.processing_state_dict IS 'Dictionary of processing state values - manageable from frontend';
+
+-- Processing Substate Dictionary
+CREATE TABLE workflow_service.processing_substate_dict (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    color VARCHAR(7), -- Hex color code for UI
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    display_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_by VARCHAR(50) NOT NULL,
+    updated_by VARCHAR(50) NOT NULL
+);
+
+COMMENT ON TABLE workflow_service.processing_substate_dict IS 'Dictionary of processing substate values - manageable from frontend';
+
+-- State-Substate Mapping table
+CREATE TABLE workflow_service.processing_state_substate_mappings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    state_id UUID NOT NULL,
+    substate_id UUID NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by VARCHAR(50) NOT NULL,
     updated_by VARCHAR(50) NOT NULL,
-    CONSTRAINT fk_customer_case_action_customer FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif),
-    CONSTRAINT fk_customer_case_action_agent FOREIGN KEY (agent_id) REFERENCES workflow_service.agents(id)
+    CONSTRAINT fk_state_mapping_state FOREIGN KEY (state_id) REFERENCES workflow_service.processing_state_dict(id) ON DELETE CASCADE,
+    CONSTRAINT fk_state_mapping_substate FOREIGN KEY (substate_id) REFERENCES workflow_service.processing_substate_dict(id) ON DELETE CASCADE,
+    CONSTRAINT uk_state_substate_mapping UNIQUE (state_id, substate_id)
 );
 
-COMMENT ON TABLE workflow_service.customer_case_actions IS 'Stores actions and status inputs from agents at the customer level';
+COMMENT ON TABLE workflow_service.processing_state_substate_mappings IS 'Maps processing states to their allowed substates';
+
+-- Lending Violation Status Dictionary
+CREATE TABLE workflow_service.lending_violation_status_dict (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    color VARCHAR(7), -- Hex color code for UI
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    display_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_by VARCHAR(50) NOT NULL,
+    updated_by VARCHAR(50) NOT NULL
+);
+
+COMMENT ON TABLE workflow_service.lending_violation_status_dict IS 'Dictionary of lending violation status values - manageable from frontend';
+
+-- Recovery Ability Status Dictionary
+CREATE TABLE workflow_service.recovery_ability_status_dict (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    color VARCHAR(7), -- Hex color code for UI
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    display_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_by VARCHAR(50) NOT NULL,
+    updated_by VARCHAR(50) NOT NULL
+);
+
+COMMENT ON TABLE workflow_service.recovery_ability_status_dict IS 'Dictionary of recovery ability status values - manageable from frontend';
+
+-- =============================================
+-- STATUS TRACKING TABLES (Using Dictionary References)
+-- =============================================
+
+-- Customer Status table
+CREATE TABLE workflow_service.customer_status (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    cif VARCHAR(20) NOT NULL,
+    agent_id UUID NOT NULL,
+    action_date TIMESTAMP NOT NULL,
+    status_id UUID NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_by VARCHAR(50) NOT NULL,
+    updated_by VARCHAR(50) NOT NULL,
+    CONSTRAINT fk_customer_status_customer FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif),
+    CONSTRAINT fk_customer_status_agent FOREIGN KEY (agent_id) REFERENCES workflow_service.agents(id),
+    CONSTRAINT fk_customer_status_dict FOREIGN KEY (status_id) REFERENCES workflow_service.customer_status_dict(id)
+);
+
+COMMENT ON TABLE workflow_service.customer_status IS 'Stores customer status updates from agents';
+
+-- Collateral Status table (with link to collaterals)
+CREATE TABLE workflow_service.collateral_status (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    cif VARCHAR(20) NOT NULL,
+    collateral_number VARCHAR(20),
+    agent_id UUID NOT NULL,
+    action_date TIMESTAMP NOT NULL,
+    status_id UUID NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_by VARCHAR(50) NOT NULL,
+    updated_by VARCHAR(50) NOT NULL,
+    CONSTRAINT fk_collateral_status_customer FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif),
+    CONSTRAINT fk_collateral_status_collateral FOREIGN KEY (collateral_number) REFERENCES bank_sync_service.collaterals(collateral_number),
+    CONSTRAINT fk_collateral_status_agent FOREIGN KEY (agent_id) REFERENCES workflow_service.agents(id),
+    CONSTRAINT fk_collateral_status_dict FOREIGN KEY (status_id) REFERENCES workflow_service.collateral_status_dict(id)
+);
+
+COMMENT ON TABLE workflow_service.collateral_status IS 'Stores collateral status updates from agents - linked to specific collaterals';
+
+-- Processing State Status table (with state and substate)
+CREATE TABLE workflow_service.processing_state_status (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    cif VARCHAR(20) NOT NULL,
+    agent_id UUID NOT NULL,
+    action_date TIMESTAMP NOT NULL,
+    state_id UUID NOT NULL,
+    substate_id UUID,
+    notes TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_by VARCHAR(50) NOT NULL,
+    updated_by VARCHAR(50) NOT NULL,
+    CONSTRAINT fk_processing_state_status_customer FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif),
+    CONSTRAINT fk_processing_state_status_agent FOREIGN KEY (agent_id) REFERENCES workflow_service.agents(id),
+    CONSTRAINT fk_processing_state_status_state FOREIGN KEY (state_id) REFERENCES workflow_service.processing_state_dict(id),
+    CONSTRAINT fk_processing_state_status_substate FOREIGN KEY (substate_id) REFERENCES workflow_service.processing_substate_dict(id)
+);
+
+COMMENT ON TABLE workflow_service.processing_state_status IS 'Stores processing state updates with state and substate';
+
+-- Lending Violation Status table
+CREATE TABLE workflow_service.lending_violation_status (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    cif VARCHAR(20) NOT NULL,
+    agent_id UUID NOT NULL,
+    action_date TIMESTAMP NOT NULL,
+    status_id UUID NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_by VARCHAR(50) NOT NULL,
+    updated_by VARCHAR(50) NOT NULL,
+    CONSTRAINT fk_lending_violation_status_customer FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif),
+    CONSTRAINT fk_lending_violation_status_agent FOREIGN KEY (agent_id) REFERENCES workflow_service.agents(id),
+    CONSTRAINT fk_lending_violation_status_dict FOREIGN KEY (status_id) REFERENCES workflow_service.lending_violation_status_dict(id)
+);
+
+COMMENT ON TABLE workflow_service.lending_violation_status IS 'Stores lending violation status updates from agents';
+
+-- Recovery Ability Status table
+CREATE TABLE workflow_service.recovery_ability_status (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    cif VARCHAR(20) NOT NULL,
+    agent_id UUID NOT NULL,
+    action_date TIMESTAMP NOT NULL,
+    status_id UUID NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_by VARCHAR(50) NOT NULL,
+    updated_by VARCHAR(50) NOT NULL,
+    CONSTRAINT fk_recovery_ability_status_customer FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif),
+    CONSTRAINT fk_recovery_ability_status_agent FOREIGN KEY (agent_id) REFERENCES workflow_service.agents(id),
+    CONSTRAINT fk_recovery_ability_status_dict FOREIGN KEY (status_id) REFERENCES workflow_service.recovery_ability_status_dict(id)
+);
+
+COMMENT ON TABLE workflow_service.recovery_ability_status IS 'Stores recovery ability status updates from agents';
 
 -- =============================================
 -- CREATE INDEXES
@@ -371,13 +609,85 @@ CREATE INDEX idx_customer_cases_assigned_call_agent_id ON workflow_service.custo
 CREATE INDEX idx_customer_cases_assigned_field_agent_id ON workflow_service.customer_cases(assigned_field_agent_id);
 CREATE INDEX idx_customer_cases_f_update ON workflow_service.customer_cases(f_update);
 
--- Customer Case Action indexes
-CREATE INDEX idx_customer_case_actions_cif ON workflow_service.customer_case_actions(cif);
-CREATE INDEX idx_customer_case_actions_agent_id ON workflow_service.customer_case_actions(agent_id);
-CREATE INDEX idx_customer_case_actions_action_date ON workflow_service.customer_case_actions(action_date);
-CREATE INDEX idx_customer_case_actions_customer_status ON workflow_service.customer_case_actions(customer_status);
-CREATE INDEX idx_customer_case_actions_processing_state_status ON workflow_service.customer_case_actions(processing_state_status);
-CREATE INDEX idx_customer_case_actions_recovery_ability_status ON workflow_service.customer_case_actions(recovery_ability_status);
+-- =============================================
+-- STATUS DICTIONARY TABLE INDEXES
+-- =============================================
+
+-- Customer Status Dictionary indexes
+CREATE INDEX idx_customer_status_dict_code ON workflow_service.customer_status_dict(code);
+CREATE INDEX idx_customer_status_dict_is_active ON workflow_service.customer_status_dict(is_active);
+CREATE INDEX idx_customer_status_dict_display_order ON workflow_service.customer_status_dict(display_order);
+
+-- Collateral Status Dictionary indexes
+CREATE INDEX idx_collateral_status_dict_code ON workflow_service.collateral_status_dict(code);
+CREATE INDEX idx_collateral_status_dict_is_active ON workflow_service.collateral_status_dict(is_active);
+CREATE INDEX idx_collateral_status_dict_display_order ON workflow_service.collateral_status_dict(display_order);
+
+-- Processing State Dictionary indexes
+CREATE INDEX idx_processing_state_dict_code ON workflow_service.processing_state_dict(code);
+CREATE INDEX idx_processing_state_dict_is_active ON workflow_service.processing_state_dict(is_active);
+CREATE INDEX idx_processing_state_dict_display_order ON workflow_service.processing_state_dict(display_order);
+
+-- Processing Substate Dictionary indexes
+CREATE INDEX idx_processing_substate_dict_code ON workflow_service.processing_substate_dict(code);
+CREATE INDEX idx_processing_substate_dict_is_active ON workflow_service.processing_substate_dict(is_active);
+CREATE INDEX idx_processing_substate_dict_display_order ON workflow_service.processing_substate_dict(display_order);
+
+-- Processing State-Substate Mappings indexes
+CREATE INDEX idx_processing_state_substate_mappings_state_id ON workflow_service.processing_state_substate_mappings(state_id);
+CREATE INDEX idx_processing_state_substate_mappings_substate_id ON workflow_service.processing_state_substate_mappings(substate_id);
+CREATE INDEX idx_processing_state_substate_mappings_is_active ON workflow_service.processing_state_substate_mappings(is_active);
+
+-- Lending Violation Status Dictionary indexes
+CREATE INDEX idx_lending_violation_status_dict_code ON workflow_service.lending_violation_status_dict(code);
+CREATE INDEX idx_lending_violation_status_dict_is_active ON workflow_service.lending_violation_status_dict(is_active);
+CREATE INDEX idx_lending_violation_status_dict_display_order ON workflow_service.lending_violation_status_dict(display_order);
+
+-- Recovery Ability Status Dictionary indexes
+CREATE INDEX idx_recovery_ability_status_dict_code ON workflow_service.recovery_ability_status_dict(code);
+CREATE INDEX idx_recovery_ability_status_dict_is_active ON workflow_service.recovery_ability_status_dict(is_active);
+CREATE INDEX idx_recovery_ability_status_dict_display_order ON workflow_service.recovery_ability_status_dict(display_order);
+
+-- =============================================
+-- STATUS TRACKING TABLE INDEXES
+-- =============================================
+
+-- Customer Status indexes
+CREATE INDEX idx_customer_status_cif ON workflow_service.customer_status(cif);
+CREATE INDEX idx_customer_status_agent_id ON workflow_service.customer_status(agent_id);
+CREATE INDEX idx_customer_status_action_date ON workflow_service.customer_status(action_date);
+CREATE INDEX idx_customer_status_status_id ON workflow_service.customer_status(status_id);
+CREATE INDEX idx_customer_status_cif_action_date ON workflow_service.customer_status(cif, action_date);
+
+-- Collateral Status indexes
+CREATE INDEX idx_collateral_status_cif ON workflow_service.collateral_status(cif);
+CREATE INDEX idx_collateral_status_collateral_number ON workflow_service.collateral_status(collateral_number);
+CREATE INDEX idx_collateral_status_agent_id ON workflow_service.collateral_status(agent_id);
+CREATE INDEX idx_collateral_status_action_date ON workflow_service.collateral_status(action_date);
+CREATE INDEX idx_collateral_status_status_id ON workflow_service.collateral_status(status_id);
+CREATE INDEX idx_collateral_status_cif_action_date ON workflow_service.collateral_status(cif, action_date);
+
+-- Processing State Status indexes
+CREATE INDEX idx_processing_state_status_cif ON workflow_service.processing_state_status(cif);
+CREATE INDEX idx_processing_state_status_agent_id ON workflow_service.processing_state_status(agent_id);
+CREATE INDEX idx_processing_state_status_action_date ON workflow_service.processing_state_status(action_date);
+CREATE INDEX idx_processing_state_status_state_id ON workflow_service.processing_state_status(state_id);
+CREATE INDEX idx_processing_state_status_substate_id ON workflow_service.processing_state_status(substate_id);
+CREATE INDEX idx_processing_state_status_cif_action_date ON workflow_service.processing_state_status(cif, action_date);
+
+-- Lending Violation Status indexes
+CREATE INDEX idx_lending_violation_status_cif ON workflow_service.lending_violation_status(cif);
+CREATE INDEX idx_lending_violation_status_agent_id ON workflow_service.lending_violation_status(agent_id);
+CREATE INDEX idx_lending_violation_status_action_date ON workflow_service.lending_violation_status(action_date);
+CREATE INDEX idx_lending_violation_status_status_id ON workflow_service.lending_violation_status(status_id);
+CREATE INDEX idx_lending_violation_status_cif_action_date ON workflow_service.lending_violation_status(cif, action_date);
+
+-- Recovery Ability Status indexes
+CREATE INDEX idx_recovery_ability_status_cif ON workflow_service.recovery_ability_status(cif);
+CREATE INDEX idx_recovery_ability_status_agent_id ON workflow_service.recovery_ability_status(agent_id);
+CREATE INDEX idx_recovery_ability_status_action_date ON workflow_service.recovery_ability_status(action_date);
+CREATE INDEX idx_recovery_ability_status_status_id ON workflow_service.recovery_ability_status(status_id);
+CREATE INDEX idx_recovery_ability_status_cif_action_date ON workflow_service.recovery_ability_status(cif, action_date);
 
 -- =============================================
 -- CREATE MATERIALIZED VIEWS
@@ -493,6 +803,94 @@ WHERE
     OR (ast.code = 'FIELD_VISIT' AND ar.code IN ('PROMISE_TO_PAY', 'PAYMENT_MADE', 'REFUSED_TO_PAY', 'DISPUTE', 'PARTIAL_PAYMENT'))
     OR (ast.code = 'PAYMENT_REMINDER' AND ar.code IN ('PROMISE_TO_PAY', 'PAYMENT_MADE', 'PARTIAL_PAYMENT'))
     OR (ast.code = 'DISPUTE_RESOLUTION' AND ar.code IN ('DISPUTE', 'PROMISE_TO_PAY', 'PAYMENT_MADE'));
+
+-- =============================================
+-- INSERT INITIAL STATUS DICTIONARY DATA
+-- =============================================
+
+-- Insert initial customer status dictionary
+INSERT INTO workflow_service.customer_status_dict (code, name, description, color, display_order, created_by, updated_by) VALUES
+('ACTIVE', 'Active', 'Customer is actively engaged', '#28a745', 1, 'SYSTEM', 'SYSTEM'),
+('UNRESPONSIVE', 'Unresponsive', 'Customer is not responding to contacts', '#ffc107', 2, 'SYSTEM', 'SYSTEM'),
+('COOPERATIVE', 'Cooperative', 'Customer is cooperative and willing to resolve', '#17a2b8', 3, 'SYSTEM', 'SYSTEM'),
+('HOSTILE', 'Hostile', 'Customer is hostile or aggressive', '#dc3545', 4, 'SYSTEM', 'SYSTEM'),
+('DECEASED', 'Deceased', 'Customer is deceased', '#6c757d', 5, 'SYSTEM', 'SYSTEM'),
+('RELOCATED', 'Relocated', 'Customer has moved to unknown address', '#fd7e14', 6, 'SYSTEM', 'SYSTEM');
+
+-- Insert initial collateral status dictionary
+INSERT INTO workflow_service.collateral_status_dict (code, name, description, color, display_order, created_by, updated_by) VALUES
+('SECURED', 'Secured', 'Collateral is properly secured', '#28a745', 1, 'SYSTEM', 'SYSTEM'),
+('AT_RISK', 'At Risk', 'Collateral may be at risk', '#ffc107', 2, 'SYSTEM', 'SYSTEM'),
+('MISSING', 'Missing', 'Collateral cannot be located', '#dc3545', 3, 'SYSTEM', 'SYSTEM'),
+('DAMAGED', 'Damaged', 'Collateral is damaged', '#fd7e14', 4, 'SYSTEM', 'SYSTEM'),
+('SOLD', 'Sold', 'Collateral has been sold by customer', '#6c757d', 5, 'SYSTEM', 'SYSTEM'),
+('REPOSSESSED', 'Repossessed', 'Collateral has been repossessed', '#17a2b8', 6, 'SYSTEM', 'SYSTEM');
+
+-- Insert initial processing state dictionary
+INSERT INTO workflow_service.processing_state_dict (code, name, description, color, display_order, created_by, updated_by) VALUES
+('INVESTIGATION', 'Investigation', 'Case is under investigation', '#17a2b8', 1, 'SYSTEM', 'SYSTEM'),
+('CONTACT', 'Contact', 'Attempting to contact customer', '#ffc107', 2, 'SYSTEM', 'SYSTEM'),
+('NEGOTIATION', 'Negotiation', 'Negotiating with customer', '#fd7e14', 3, 'SYSTEM', 'SYSTEM'),
+('LEGAL', 'Legal', 'Legal action in progress', '#dc3545', 4, 'SYSTEM', 'SYSTEM'),
+('RESOLUTION', 'Resolution', 'Case is being resolved', '#28a745', 5, 'SYSTEM', 'SYSTEM');
+
+-- Insert initial processing substate dictionary
+INSERT INTO workflow_service.processing_substate_dict (code, name, description, color, display_order, created_by, updated_by) VALUES
+-- Investigation substates
+('INITIAL_REVIEW', 'Initial Review', 'Initial case review and assessment', '#17a2b8', 1, 'SYSTEM', 'SYSTEM'),
+('DOCUMENT_COLLECTION', 'Document Collection', 'Collecting required documents', '#17a2b8', 2, 'SYSTEM', 'SYSTEM'),
+('VERIFICATION', 'Verification', 'Verifying customer information and claims', '#17a2b8', 3, 'SYSTEM', 'SYSTEM'),
+-- Contact substates
+('FIRST_CONTACT', 'First Contact', 'Initial contact attempt', '#ffc107', 10, 'SYSTEM', 'SYSTEM'),
+('FOLLOW_UP', 'Follow Up', 'Follow-up contact', '#ffc107', 11, 'SYSTEM', 'SYSTEM'),
+('ESCALATED_CONTACT', 'Escalated Contact', 'Escalated contact attempt', '#ffc107', 12, 'SYSTEM', 'SYSTEM'),
+-- Negotiation substates
+('PAYMENT_PLAN', 'Payment Plan', 'Negotiating payment plan', '#fd7e14', 20, 'SYSTEM', 'SYSTEM'),
+('SETTLEMENT', 'Settlement', 'Settlement negotiation', '#fd7e14', 21, 'SYSTEM', 'SYSTEM'),
+('RESTRUCTURE', 'Restructure', 'Loan restructuring discussion', '#fd7e14', 22, 'SYSTEM', 'SYSTEM'),
+-- Legal substates
+('NOTICE_SENT', 'Notice Sent', 'Legal notice sent', '#dc3545', 30, 'SYSTEM', 'SYSTEM'),
+('COURT_FILING', 'Court Filing', 'Court case filed', '#dc3545', 31, 'SYSTEM', 'SYSTEM'),
+('JUDGMENT', 'Judgment', 'Court judgment obtained', '#dc3545', 32, 'SYSTEM', 'SYSTEM'),
+-- Resolution substates
+('PAID_IN_FULL', 'Paid in Full', 'Account paid in full', '#28a745', 40, 'SYSTEM', 'SYSTEM'),
+('SETTLED', 'Settled', 'Account settled', '#28a745', 41, 'SYSTEM', 'SYSTEM'),
+('WRITTEN_OFF', 'Written Off', 'Account written off', '#6c757d', 42, 'SYSTEM', 'SYSTEM'),
+('CLOSED', 'Closed', 'Case closed', '#28a745', 43, 'SYSTEM', 'SYSTEM');
+
+-- Insert initial lending violation status dictionary
+INSERT INTO workflow_service.lending_violation_status_dict (code, name, description, color, display_order, created_by, updated_by) VALUES
+('NONE', 'None', 'No lending violations detected', '#28a745', 1, 'SYSTEM', 'SYSTEM'),
+('MINOR', 'Minor', 'Minor lending violations', '#ffc107', 2, 'SYSTEM', 'SYSTEM'),
+('MAJOR', 'Major', 'Major lending violations', '#fd7e14', 3, 'SYSTEM', 'SYSTEM'),
+('CRITICAL', 'Critical', 'Critical lending violations', '#dc3545', 4, 'SYSTEM', 'SYSTEM'),
+('FRAUD_SUSPECTED', 'Fraud Suspected', 'Suspected fraudulent activity', '#6f42c1', 5, 'SYSTEM', 'SYSTEM'),
+('UNDER_REVIEW', 'Under Review', 'Violation under review', '#17a2b8', 6, 'SYSTEM', 'SYSTEM');
+
+-- Insert initial recovery ability status dictionary
+INSERT INTO workflow_service.recovery_ability_status_dict (code, name, description, color, display_order, created_by, updated_by) VALUES
+('HIGH', 'High', 'High recovery potential', '#28a745', 1, 'SYSTEM', 'SYSTEM'),
+('MEDIUM', 'Medium', 'Medium recovery potential', '#ffc107', 2, 'SYSTEM', 'SYSTEM'),
+('LOW', 'Low', 'Low recovery potential', '#fd7e14', 3, 'SYSTEM', 'SYSTEM'),
+('NONE', 'None', 'No recovery potential', '#dc3545', 4, 'SYSTEM', 'SYSTEM'),
+('UNKNOWN', 'Unknown', 'Recovery potential unknown', '#6c757d', 5, 'SYSTEM', 'SYSTEM'),
+('UNDER_ASSESSMENT', 'Under Assessment', 'Recovery ability being assessed', '#17a2b8', 6, 'SYSTEM', 'SYSTEM');
+
+-- Insert initial processing state-substate mappings
+INSERT INTO workflow_service.processing_state_substate_mappings (state_id, substate_id, created_by, updated_by)
+SELECT
+    ps.id,
+    pss.id,
+    'SYSTEM',
+    'SYSTEM'
+FROM workflow_service.processing_state_dict ps
+CROSS JOIN workflow_service.processing_substate_dict pss
+WHERE
+    (ps.code = 'INVESTIGATION' AND pss.code IN ('INITIAL_REVIEW', 'DOCUMENT_COLLECTION', 'VERIFICATION'))
+    OR (ps.code = 'CONTACT' AND pss.code IN ('FIRST_CONTACT', 'FOLLOW_UP', 'ESCALATED_CONTACT'))
+    OR (ps.code = 'NEGOTIATION' AND pss.code IN ('PAYMENT_PLAN', 'SETTLEMENT', 'RESTRUCTURE'))
+    OR (ps.code = 'LEGAL' AND pss.code IN ('NOTICE_SENT', 'COURT_FILING', 'JUDGMENT'))
+    OR (ps.code = 'RESOLUTION' AND pss.code IN ('PAID_IN_FULL', 'SETTLED', 'WRITTEN_OFF', 'CLOSED'));
 
 -- =============================================
 -- VIEWS FOR EASY QUERYING

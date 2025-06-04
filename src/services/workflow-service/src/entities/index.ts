@@ -8,4 +8,19 @@ export * from './action-type-subtype-mapping.entity';
 export * from './action-subtype-result-mapping.entity';
 export * from './customer-agent.entity';
 export * from './customer-case.entity';
-export * from './customer-case-action.entity';
+
+// Status Dictionary Entities
+export * from './customer-status-dict.entity';
+export * from './collateral-status-dict.entity';
+export * from './processing-state-dict.entity';
+export * from './processing-substate-dict.entity';
+export * from './processing-state-substate-mapping.entity';
+export * from './lending-violation-status-dict.entity';
+export * from './recovery-ability-status-dict.entity';
+
+// Status Tracking Entities
+export * from './customer-status.entity';
+export * from './collateral-status.entity';
+export * from './processing-state-status.entity';
+export * from './lending-violation-status.entity';
+export * from './recovery-ability-status.entity';

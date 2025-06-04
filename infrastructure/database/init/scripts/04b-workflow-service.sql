@@ -510,3 +510,601 @@ COMMENT ON FUNCTION workflow_service.map_subtype_to_result(VARCHAR, VARCHAR, VAR
 COMMENT ON FUNCTION workflow_service.get_subtypes_for_type(VARCHAR) IS 'Gets available subtypes for a given action type';
 COMMENT ON FUNCTION workflow_service.get_results_for_subtype(VARCHAR) IS 'Gets available results for a given action subtype';
 COMMENT ON FUNCTION workflow_service.validate_action_configuration(UUID, UUID, UUID) IS 'Validates if the action type, subtype, and result combination is allowed';
+
+-- =============================================
+-- STATUS DICTIONARY MANAGEMENT FUNCTIONS
+-- =============================================
+
+-- Function to add new customer status
+CREATE OR REPLACE FUNCTION workflow_service.add_customer_status(
+    p_code VARCHAR(50),
+    p_name VARCHAR(100),
+    p_description TEXT DEFAULT NULL,
+    p_color VARCHAR(7) DEFAULT NULL,
+    p_display_order INTEGER DEFAULT 0,
+    p_created_by VARCHAR(50) DEFAULT 'ADMIN'
+)
+RETURNS UUID AS $$
+DECLARE
+    v_id UUID;
+BEGIN
+    INSERT INTO workflow_service.customer_status_dict (code, name, description, color, display_order, created_by, updated_by)
+    VALUES (p_code, p_name, p_description, p_color, p_display_order, p_created_by, p_created_by)
+    RETURNING id INTO v_id;
+    
+    RETURN v_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to add new collateral status
+CREATE OR REPLACE FUNCTION workflow_service.add_collateral_status(
+    p_code VARCHAR(50),
+    p_name VARCHAR(100),
+    p_description TEXT DEFAULT NULL,
+    p_color VARCHAR(7) DEFAULT NULL,
+    p_display_order INTEGER DEFAULT 0,
+    p_created_by VARCHAR(50) DEFAULT 'ADMIN'
+)
+RETURNS UUID AS $$
+DECLARE
+    v_id UUID;
+BEGIN
+    INSERT INTO workflow_service.collateral_status_dict (code, name, description, color, display_order, created_by, updated_by)
+    VALUES (p_code, p_name, p_description, p_color, p_display_order, p_created_by, p_created_by)
+    RETURNING id INTO v_id;
+    
+    RETURN v_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to add new processing state
+CREATE OR REPLACE FUNCTION workflow_service.add_processing_state(
+    p_code VARCHAR(50),
+    p_name VARCHAR(100),
+    p_description TEXT DEFAULT NULL,
+    p_color VARCHAR(7) DEFAULT NULL,
+    p_display_order INTEGER DEFAULT 0,
+    p_created_by VARCHAR(50) DEFAULT 'ADMIN'
+)
+RETURNS UUID AS $$
+DECLARE
+    v_id UUID;
+BEGIN
+    INSERT INTO workflow_service.processing_state_dict (code, name, description, color, display_order, created_by, updated_by)
+    VALUES (p_code, p_name, p_description, p_color, p_display_order, p_created_by, p_created_by)
+    RETURNING id INTO v_id;
+    
+    RETURN v_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to add new processing substate
+CREATE OR REPLACE FUNCTION workflow_service.add_processing_substate(
+    p_code VARCHAR(50),
+    p_name VARCHAR(100),
+    p_description TEXT DEFAULT NULL,
+    p_color VARCHAR(7) DEFAULT NULL,
+    p_display_order INTEGER DEFAULT 0,
+    p_created_by VARCHAR(50) DEFAULT 'ADMIN'
+)
+RETURNS UUID AS $$
+DECLARE
+    v_id UUID;
+BEGIN
+    INSERT INTO workflow_service.processing_substate_dict (code, name, description, color, display_order, created_by, updated_by)
+    VALUES (p_code, p_name, p_description, p_color, p_display_order, p_created_by, p_created_by)
+    RETURNING id INTO v_id;
+    
+    RETURN v_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to add new lending violation status
+CREATE OR REPLACE FUNCTION workflow_service.add_lending_violation_status(
+    p_code VARCHAR(50),
+    p_name VARCHAR(100),
+    p_description TEXT DEFAULT NULL,
+    p_color VARCHAR(7) DEFAULT NULL,
+    p_display_order INTEGER DEFAULT 0,
+    p_created_by VARCHAR(50) DEFAULT 'ADMIN'
+)
+RETURNS UUID AS $$
+DECLARE
+    v_id UUID;
+BEGIN
+    INSERT INTO workflow_service.lending_violation_status_dict (code, name, description, color, display_order, created_by, updated_by)
+    VALUES (p_code, p_name, p_description, p_color, p_display_order, p_created_by, p_created_by)
+    RETURNING id INTO v_id;
+    
+    RETURN v_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to add new recovery ability status
+CREATE OR REPLACE FUNCTION workflow_service.add_recovery_ability_status(
+    p_code VARCHAR(50),
+    p_name VARCHAR(100),
+    p_description TEXT DEFAULT NULL,
+    p_color VARCHAR(7) DEFAULT NULL,
+    p_display_order INTEGER DEFAULT 0,
+    p_created_by VARCHAR(50) DEFAULT 'ADMIN'
+)
+RETURNS UUID AS $$
+DECLARE
+    v_id UUID;
+BEGIN
+    INSERT INTO workflow_service.recovery_ability_status_dict (code, name, description, color, display_order, created_by, updated_by)
+    VALUES (p_code, p_name, p_description, p_color, p_display_order, p_created_by, p_created_by)
+    RETURNING id INTO v_id;
+    
+    RETURN v_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to map processing state to substate
+CREATE OR REPLACE FUNCTION workflow_service.map_state_to_substate(
+    p_state_code VARCHAR(50),
+    p_substate_code VARCHAR(50),
+    p_created_by VARCHAR(50) DEFAULT 'ADMIN'
+)
+RETURNS UUID AS $$
+DECLARE
+    v_id UUID;
+    v_state_id UUID;
+    v_substate_id UUID;
+BEGIN
+    -- Get state ID
+    SELECT id INTO v_state_id FROM workflow_service.processing_state_dict WHERE code = p_state_code AND is_active = TRUE;
+    IF v_state_id IS NULL THEN
+        RAISE EXCEPTION 'Processing state with code % not found or inactive', p_state_code;
+    END IF;
+    
+    -- Get substate ID
+    SELECT id INTO v_substate_id FROM workflow_service.processing_substate_dict WHERE code = p_substate_code AND is_active = TRUE;
+    IF v_substate_id IS NULL THEN
+        RAISE EXCEPTION 'Processing substate with code % not found or inactive', p_substate_code;
+    END IF;
+    
+    -- Insert mapping
+    INSERT INTO workflow_service.processing_state_substate_mappings (state_id, substate_id, created_by, updated_by)
+    VALUES (v_state_id, v_substate_id, p_created_by, p_created_by)
+    ON CONFLICT (state_id, substate_id) DO UPDATE SET
+        is_active = TRUE,
+        updated_at = NOW(),
+        updated_by = p_created_by
+    RETURNING id INTO v_id;
+    
+    RETURN v_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to get available substates for a processing state
+CREATE OR REPLACE FUNCTION workflow_service.get_substates_for_state(p_state_code VARCHAR(50))
+RETURNS TABLE (
+    substate_id UUID,
+    substate_code VARCHAR(50),
+    substate_name VARCHAR(100),
+    substate_description TEXT,
+    substate_color VARCHAR(7),
+    display_order INTEGER
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        pss.id,
+        pss.code,
+        pss.name,
+        pss.description,
+        pss.color,
+        pss.display_order
+    FROM workflow_service.processing_substate_dict pss
+    INNER JOIN workflow_service.processing_state_substate_mappings pssm ON pss.id = pssm.substate_id
+    INNER JOIN workflow_service.processing_state_dict ps ON pssm.state_id = ps.id
+    WHERE ps.code = p_state_code
+        AND ps.is_active = TRUE
+        AND pss.is_active = TRUE
+        AND pssm.is_active = TRUE
+    ORDER BY pss.display_order, pss.name;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to validate processing state configuration
+CREATE OR REPLACE FUNCTION workflow_service.validate_processing_state_configuration(
+    p_state_id UUID,
+    p_substate_id UUID
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    v_state_substate_valid BOOLEAN := FALSE;
+BEGIN
+    -- Check if state-substate mapping exists and is active
+    SELECT EXISTS(
+        SELECT 1 FROM workflow_service.processing_state_substate_mappings
+        WHERE state_id = p_state_id
+            AND substate_id = p_substate_id
+            AND is_active = TRUE
+    ) INTO v_state_substate_valid;
+    
+    RETURN v_state_substate_valid;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to safely deactivate customer status (prevents if used in existing records)
+CREATE OR REPLACE FUNCTION workflow_service.deactivate_customer_status(
+    p_status_code VARCHAR(50),
+    p_updated_by VARCHAR(50) DEFAULT 'ADMIN'
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    v_status_id UUID;
+    v_record_count INTEGER;
+BEGIN
+    -- Get status ID
+    SELECT id INTO v_status_id FROM workflow_service.customer_status_dict WHERE code = p_status_code AND is_active = TRUE;
+    IF v_status_id IS NULL THEN
+        RAISE EXCEPTION 'Customer status with code % not found or already inactive', p_status_code;
+    END IF;
+    
+    -- Check if status is used in existing status records
+    SELECT COUNT(*) INTO v_record_count
+    FROM workflow_service.customer_status
+    WHERE status_id = v_status_id;
+    
+    IF v_record_count > 0 THEN
+        RAISE EXCEPTION 'Cannot deactivate customer status %. It is used in % existing status records. Historical data must be preserved.',
+            p_status_code, v_record_count;
+    END IF;
+    
+    -- Safe to deactivate - no existing records use this status
+    UPDATE workflow_service.customer_status_dict
+    SET is_active = FALSE, updated_at = NOW(), updated_by = p_updated_by
+    WHERE id = v_status_id;
+    
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to safely deactivate collateral status (prevents if used in existing records)
+CREATE OR REPLACE FUNCTION workflow_service.deactivate_collateral_status(
+    p_status_code VARCHAR(50),
+    p_updated_by VARCHAR(50) DEFAULT 'ADMIN'
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    v_status_id UUID;
+    v_record_count INTEGER;
+BEGIN
+    -- Get status ID
+    SELECT id INTO v_status_id FROM workflow_service.collateral_status_dict WHERE code = p_status_code AND is_active = TRUE;
+    IF v_status_id IS NULL THEN
+        RAISE EXCEPTION 'Collateral status with code % not found or already inactive', p_status_code;
+    END IF;
+    
+    -- Check if status is used in existing status records
+    SELECT COUNT(*) INTO v_record_count
+    FROM workflow_service.collateral_status
+    WHERE status_id = v_status_id;
+    
+    IF v_record_count > 0 THEN
+        RAISE EXCEPTION 'Cannot deactivate collateral status %. It is used in % existing status records. Historical data must be preserved.',
+            p_status_code, v_record_count;
+    END IF;
+    
+    -- Safe to deactivate - no existing records use this status
+    UPDATE workflow_service.collateral_status_dict
+    SET is_active = FALSE, updated_at = NOW(), updated_by = p_updated_by
+    WHERE id = v_status_id;
+    
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to safely deactivate processing state (prevents if used in existing records)
+CREATE OR REPLACE FUNCTION workflow_service.deactivate_processing_state(
+    p_state_code VARCHAR(50),
+    p_updated_by VARCHAR(50) DEFAULT 'ADMIN'
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    v_state_id UUID;
+    v_record_count INTEGER;
+BEGIN
+    -- Get state ID
+    SELECT id INTO v_state_id FROM workflow_service.processing_state_dict WHERE code = p_state_code AND is_active = TRUE;
+    IF v_state_id IS NULL THEN
+        RAISE EXCEPTION 'Processing state with code % not found or already inactive', p_state_code;
+    END IF;
+    
+    -- Check if state is used in existing status records
+    SELECT COUNT(*) INTO v_record_count
+    FROM workflow_service.processing_state_status
+    WHERE state_id = v_state_id;
+    
+    IF v_record_count > 0 THEN
+        RAISE EXCEPTION 'Cannot deactivate processing state %. It is used in % existing status records. Historical data must be preserved.',
+            p_state_code, v_record_count;
+    END IF;
+    
+    -- Safe to deactivate - no existing records use this state
+    UPDATE workflow_service.processing_state_dict
+    SET is_active = FALSE, updated_at = NOW(), updated_by = p_updated_by
+    WHERE id = v_state_id;
+    
+    -- Also deactivate related mappings
+    UPDATE workflow_service.processing_state_substate_mappings
+    SET is_active = FALSE, updated_at = NOW(), updated_by = p_updated_by
+    WHERE state_id = v_state_id;
+    
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to safely deactivate processing substate (prevents if used in existing records)
+CREATE OR REPLACE FUNCTION workflow_service.deactivate_processing_substate(
+    p_substate_code VARCHAR(50),
+    p_updated_by VARCHAR(50) DEFAULT 'ADMIN'
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    v_substate_id UUID;
+    v_record_count INTEGER;
+BEGIN
+    -- Get substate ID
+    SELECT id INTO v_substate_id FROM workflow_service.processing_substate_dict WHERE code = p_substate_code AND is_active = TRUE;
+    IF v_substate_id IS NULL THEN
+        RAISE EXCEPTION 'Processing substate with code % not found or already inactive', p_substate_code;
+    END IF;
+    
+    -- Check if substate is used in existing status records
+    SELECT COUNT(*) INTO v_record_count
+    FROM workflow_service.processing_state_status
+    WHERE substate_id = v_substate_id;
+    
+    IF v_record_count > 0 THEN
+        RAISE EXCEPTION 'Cannot deactivate processing substate %. It is used in % existing status records. Historical data must be preserved.',
+            p_substate_code, v_record_count;
+    END IF;
+    
+    -- Safe to deactivate - no existing records use this substate
+    UPDATE workflow_service.processing_substate_dict
+    SET is_active = FALSE, updated_at = NOW(), updated_by = p_updated_by
+    WHERE id = v_substate_id;
+    
+    -- Also deactivate related mappings
+    UPDATE workflow_service.processing_state_substate_mappings
+    SET is_active = FALSE, updated_at = NOW(), updated_by = p_updated_by
+    WHERE substate_id = v_substate_id;
+    
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to safely deactivate lending violation status (prevents if used in existing records)
+CREATE OR REPLACE FUNCTION workflow_service.deactivate_lending_violation_status(
+    p_status_code VARCHAR(50),
+    p_updated_by VARCHAR(50) DEFAULT 'ADMIN'
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    v_status_id UUID;
+    v_record_count INTEGER;
+BEGIN
+    -- Get status ID
+    SELECT id INTO v_status_id FROM workflow_service.lending_violation_status_dict WHERE code = p_status_code AND is_active = TRUE;
+    IF v_status_id IS NULL THEN
+        RAISE EXCEPTION 'Lending violation status with code % not found or already inactive', p_status_code;
+    END IF;
+    
+    -- Check if status is used in existing status records
+    SELECT COUNT(*) INTO v_record_count
+    FROM workflow_service.lending_violation_status
+    WHERE status_id = v_status_id;
+    
+    IF v_record_count > 0 THEN
+        RAISE EXCEPTION 'Cannot deactivate lending violation status %. It is used in % existing status records. Historical data must be preserved.',
+            p_status_code, v_record_count;
+    END IF;
+    
+    -- Safe to deactivate - no existing records use this status
+    UPDATE workflow_service.lending_violation_status_dict
+    SET is_active = FALSE, updated_at = NOW(), updated_by = p_updated_by
+    WHERE id = v_status_id;
+    
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to safely deactivate recovery ability status (prevents if used in existing records)
+CREATE OR REPLACE FUNCTION workflow_service.deactivate_recovery_ability_status(
+    p_status_code VARCHAR(50),
+    p_updated_by VARCHAR(50) DEFAULT 'ADMIN'
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    v_status_id UUID;
+    v_record_count INTEGER;
+BEGIN
+    -- Get status ID
+    SELECT id INTO v_status_id FROM workflow_service.recovery_ability_status_dict WHERE code = p_status_code AND is_active = TRUE;
+    IF v_status_id IS NULL THEN
+        RAISE EXCEPTION 'Recovery ability status with code % not found or already inactive', p_status_code;
+    END IF;
+    
+    -- Check if status is used in existing status records
+    SELECT COUNT(*) INTO v_record_count
+    FROM workflow_service.recovery_ability_status
+    WHERE status_id = v_status_id;
+    
+    IF v_record_count > 0 THEN
+        RAISE EXCEPTION 'Cannot deactivate recovery ability status %. It is used in % existing status records. Historical data must be preserved.',
+            p_status_code, v_record_count;
+    END IF;
+    
+    -- Safe to deactivate - no existing records use this status
+    UPDATE workflow_service.recovery_ability_status_dict
+    SET is_active = FALSE, updated_at = NOW(), updated_by = p_updated_by
+    WHERE id = v_status_id;
+    
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to safely remove state-substate mapping (prevents if combination used in existing records)
+CREATE OR REPLACE FUNCTION workflow_service.remove_state_substate_mapping(
+    p_state_code VARCHAR(50),
+    p_substate_code VARCHAR(50),
+    p_updated_by VARCHAR(50) DEFAULT 'ADMIN'
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    v_state_id UUID;
+    v_substate_id UUID;
+    v_record_count INTEGER;
+BEGIN
+    -- Get state and substate IDs
+    SELECT id INTO v_state_id FROM workflow_service.processing_state_dict WHERE code = p_state_code;
+    SELECT id INTO v_substate_id FROM workflow_service.processing_substate_dict WHERE code = p_substate_code;
+    
+    IF v_state_id IS NULL THEN
+        RAISE EXCEPTION 'Processing state with code % not found', p_state_code;
+    END IF;
+    
+    IF v_substate_id IS NULL THEN
+        RAISE EXCEPTION 'Processing substate with code % not found', p_substate_code;
+    END IF;
+    
+    -- Check if this combination is used in existing status records
+    SELECT COUNT(*) INTO v_record_count
+    FROM workflow_service.processing_state_status
+    WHERE state_id = v_state_id AND substate_id = v_substate_id;
+    
+    IF v_record_count > 0 THEN
+        RAISE EXCEPTION 'Cannot remove mapping between state % and substate %. This combination is used in % existing status records. Historical data must be preserved.',
+            p_state_code, p_substate_code, v_record_count;
+    END IF;
+    
+    -- Safe to deactivate mapping
+    UPDATE workflow_service.processing_state_substate_mappings
+    SET is_active = FALSE, updated_at = NOW(), updated_by = p_updated_by
+    WHERE state_id = v_state_id AND substate_id = v_substate_id;
+    
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to get status dictionary usage statistics
+CREATE OR REPLACE FUNCTION workflow_service.get_status_usage_stats()
+RETURNS TABLE (
+    status_type VARCHAR(30),
+    status_code VARCHAR(50),
+    status_name VARCHAR(100),
+    is_active BOOLEAN,
+    usage_count BIGINT,
+    can_be_deactivated BOOLEAN
+) AS $$
+BEGIN
+    RETURN QUERY
+    -- Customer Status usage
+    SELECT
+        'CUSTOMER_STATUS'::VARCHAR(30) as status_type,
+        cs.code,
+        cs.name,
+        cs.is_active,
+        COUNT(cst.id) as usage_count,
+        CASE WHEN COUNT(cst.id) = 0 THEN TRUE ELSE FALSE END as can_be_deactivated
+    FROM workflow_service.customer_status_dict cs
+    LEFT JOIN workflow_service.customer_status cst ON cs.id = cst.status_id
+    GROUP BY cs.id, cs.code, cs.name, cs.is_active
+    
+    UNION ALL
+    
+    -- Collateral Status usage
+    SELECT
+        'COLLATERAL_STATUS'::VARCHAR(30) as status_type,
+        cls.code,
+        cls.name,
+        cls.is_active,
+        COUNT(clst.id) as usage_count,
+        CASE WHEN COUNT(clst.id) = 0 THEN TRUE ELSE FALSE END as can_be_deactivated
+    FROM workflow_service.collateral_status_dict cls
+    LEFT JOIN workflow_service.collateral_status clst ON cls.id = clst.status_id
+    GROUP BY cls.id, cls.code, cls.name, cls.is_active
+    
+    UNION ALL
+    
+    -- Processing State usage
+    SELECT
+        'PROCESSING_STATE'::VARCHAR(30) as status_type,
+        ps.code,
+        ps.name,
+        ps.is_active,
+        COUNT(pst.id) as usage_count,
+        CASE WHEN COUNT(pst.id) = 0 THEN TRUE ELSE FALSE END as can_be_deactivated
+    FROM workflow_service.processing_state_dict ps
+    LEFT JOIN workflow_service.processing_state_status pst ON ps.id = pst.state_id
+    GROUP BY ps.id, ps.code, ps.name, ps.is_active
+    
+    UNION ALL
+    
+    -- Processing Substate usage
+    SELECT
+        'PROCESSING_SUBSTATE'::VARCHAR(30) as status_type,
+        pss.code,
+        pss.name,
+        pss.is_active,
+        COUNT(pst.id) as usage_count,
+        CASE WHEN COUNT(pst.id) = 0 THEN TRUE ELSE FALSE END as can_be_deactivated
+    FROM workflow_service.processing_substate_dict pss
+    LEFT JOIN workflow_service.processing_state_status pst ON pss.id = pst.substate_id
+    GROUP BY pss.id, pss.code, pss.name, pss.is_active
+    
+    UNION ALL
+    
+    -- Lending Violation Status usage
+    SELECT
+        'LENDING_VIOLATION'::VARCHAR(30) as status_type,
+        lvs.code,
+        lvs.name,
+        lvs.is_active,
+        COUNT(lvst.id) as usage_count,
+        CASE WHEN COUNT(lvst.id) = 0 THEN TRUE ELSE FALSE END as can_be_deactivated
+    FROM workflow_service.lending_violation_status_dict lvs
+    LEFT JOIN workflow_service.lending_violation_status lvst ON lvs.id = lvst.status_id
+    GROUP BY lvs.id, lvs.code, lvs.name, lvs.is_active
+    
+    UNION ALL
+    
+    -- Recovery Ability Status usage
+    SELECT
+        'RECOVERY_ABILITY'::VARCHAR(30) as status_type,
+        ras.code,
+        ras.name,
+        ras.is_active,
+        COUNT(rast.id) as usage_count,
+        CASE WHEN COUNT(rast.id) = 0 THEN TRUE ELSE FALSE END as can_be_deactivated
+    FROM workflow_service.recovery_ability_status_dict ras
+    LEFT JOIN workflow_service.recovery_ability_status rast ON ras.id = rast.status_id
+    GROUP BY ras.id, ras.code, ras.name, ras.is_active
+    
+    ORDER BY status_type, status_code;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Add comments for status dictionary functions
+COMMENT ON FUNCTION workflow_service.add_customer_status(VARCHAR, VARCHAR, TEXT, VARCHAR, INTEGER, VARCHAR) IS 'Adds a new customer status for admin configuration';
+COMMENT ON FUNCTION workflow_service.add_collateral_status(VARCHAR, VARCHAR, TEXT, VARCHAR, INTEGER, VARCHAR) IS 'Adds a new collateral status for admin configuration';
+COMMENT ON FUNCTION workflow_service.add_processing_state(VARCHAR, VARCHAR, TEXT, VARCHAR, INTEGER, VARCHAR) IS 'Adds a new processing state for admin configuration';
+COMMENT ON FUNCTION workflow_service.add_processing_substate(VARCHAR, VARCHAR, TEXT, VARCHAR, INTEGER, VARCHAR) IS 'Adds a new processing substate for admin configuration';
+COMMENT ON FUNCTION workflow_service.add_lending_violation_status(VARCHAR, VARCHAR, TEXT, VARCHAR, INTEGER, VARCHAR) IS 'Adds a new lending violation status for admin configuration';
+COMMENT ON FUNCTION workflow_service.add_recovery_ability_status(VARCHAR, VARCHAR, TEXT, VARCHAR, INTEGER, VARCHAR) IS 'Adds a new recovery ability status for admin configuration';
+COMMENT ON FUNCTION workflow_service.map_state_to_substate(VARCHAR, VARCHAR, VARCHAR) IS 'Maps a processing state to a substate';
+COMMENT ON FUNCTION workflow_service.get_substates_for_state(VARCHAR) IS 'Gets available substates for a given processing state';
+COMMENT ON FUNCTION workflow_service.validate_processing_state_configuration(UUID, UUID) IS 'Validates if the processing state and substate combination is allowed';
+COMMENT ON FUNCTION workflow_service.deactivate_customer_status(VARCHAR, VARCHAR) IS 'Safely deactivates a customer status, preventing deactivation if used in existing records';
+COMMENT ON FUNCTION workflow_service.deactivate_collateral_status(VARCHAR, VARCHAR) IS 'Safely deactivates a collateral status, preventing deactivation if used in existing records';
+COMMENT ON FUNCTION workflow_service.deactivate_processing_state(VARCHAR, VARCHAR) IS 'Safely deactivates a processing state, preventing deactivation if used in existing records';
+COMMENT ON FUNCTION workflow_service.deactivate_processing_substate(VARCHAR, VARCHAR) IS 'Safely deactivates a processing substate, preventing deactivation if used in existing records';
+COMMENT ON FUNCTION workflow_service.deactivate_lending_violation_status(VARCHAR, VARCHAR) IS 'Safely deactivates a lending violation status, preventing deactivation if used in existing records';
+COMMENT ON FUNCTION workflow_service.deactivate_recovery_ability_status(VARCHAR, VARCHAR) IS 'Safely deactivates a recovery ability status, preventing deactivation if used in existing records';
+COMMENT ON FUNCTION workflow_service.remove_state_substate_mapping(VARCHAR, VARCHAR, VARCHAR) IS 'Safely removes state-substate mapping, preventing removal if combination used in existing records';
+COMMENT ON FUNCTION workflow_service.get_status_usage_stats() IS 'Returns usage statistics for all status dictionary items and whether they can be safely deactivated';

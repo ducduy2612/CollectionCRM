@@ -1,5 +1,13 @@
 import { apiClient } from './client';
-import { CustomerAction, CustomerStatus } from '../../pages/customers/types';
+import {
+  CustomerAction,
+  CustomerStatus,
+  ActionType,
+  ActionSubtype,
+  ActionResult,
+  StatusDictItem,
+  ProcessingSubstateDictItem as ProcessingSubstate
+} from '../../pages/customers/types';
 
 export interface WorkflowApiResponse<T> {
   success: boolean;
@@ -11,32 +19,47 @@ export interface WorkflowApiResponse<T> {
   }>;
 }
 
-export interface ActionType {
+// =============================================
+// STATUS HISTORY INTERFACES
+// =============================================
+
+export interface StatusHistoryItem {
   id: string;
-  code: string;
-  name: string;
-  description: string | null;
-  isActive: boolean;
-  displayOrder: number;
-  createdAt: string;
-  updatedAt: string;
+  cif: string;
+  agent_id: string;
+  agent_name?: string;
+  action_date: string;
+  status_id: string;
+  status_code: string;
+  status_name: string;
+  status_color?: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface ActionSubtype {
-  subtype_id: string;
-  subtype_code: string;
-  subtype_name: string;
-  subtype_description: string | null;
-  subtype_displayOrder: number;
+export interface StatusHistoryResponse {
+  history: StatusHistoryItem[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    totalPages: number;
+    totalItems: number;
+  };
 }
 
-export interface ActionResult {
-  result_id: string;
-  result_code: string;
-  result_name: string;
-  result_description: string | null;
-  result_displayOrder: number;
+export interface RecordStatusRequest {
+  cif: string;
+  statusId: string;
+  actionDate?: string;
+  notes?: string;
 }
+
+export interface PaginationParams {
+  page?: number;
+  pageSize?: number;
+}
+
 
 export interface ActionsResponse {
   actions: CustomerAction[];
@@ -135,62 +158,6 @@ export const workflowApi = {
     return response.data.data;
   },
 
-  // Get customer case status
-  getCustomerCaseStatus: async (cif: string): Promise<CaseStatusResponse> => {
-    const response = await apiClient.get<WorkflowApiResponse<CaseStatusResponse>>(
-      `/workflow/cases/status/${cif}`
-    );
-    
-    if (!response.data.success) {
-      throw new Error(response.data.message || 'Failed to fetch customer case status');
-    }
-    
-    return response.data.data;
-  },
-
-  // Get customer case history
-  getCustomerCaseHistory: async (cif: string, params?: {
-    page?: number;
-    pageSize?: number;
-  }): Promise<CasesResponse> => {
-    const response = await apiClient.get<WorkflowApiResponse<CasesResponse>>(
-      `/workflow/cases/customer/${cif}`,
-      { params }
-    );
-    
-    if (!response.data.success) {
-      throw new Error(response.data.message || 'Failed to fetch customer case history');
-    }
-    
-    return response.data.data;
-  },
-
-  // Record a case action
-  recordCaseAction: async (data: {
-    cif: string;
-    type: 'CALL' | 'SMS' | 'EMAIL' | 'VISIT' | 'PAYMENT' | 'NOTE';
-    subtype?: string;
-    actionResult: string;
-    actionDate?: string;
-    notes?: string;
-    customerStatus?: string;
-    collateralStatus?: string;
-    processingStateStatus?: string;
-    lendingViolationStatus?: string;
-    recoveryAbilityStatus?: string;
-  }): Promise<CustomerAction> => {
-    const response = await apiClient.post<WorkflowApiResponse<CustomerAction>>(
-      '/workflow/actions',
-      data
-    );
-    
-    if (!response.data.success) {
-      throw new Error(response.data.message || 'Failed to record case action');
-    }
-    
-    return response.data.data;
-  },
-
   // Record multiple actions in bulk
   recordBulkActions: async (actions: Array<{
     cif: string;
@@ -254,25 +221,6 @@ export const workflowApi = {
     return response.data.data;
   },
 
-  // Update customer status
-  updateCustomerStatus: async (cif: string, status: CustomerStatus): Promise<void> => {
-    const response = await apiClient.post<WorkflowApiResponse<any>>(
-      '/workflow/cases',
-      {
-        cif,
-        customerStatus: status.customerStatus,
-        collateralStatus: status.collateralStatus,
-        processingStateStatus: status.processingState,
-        lendingViolationStatus: status.lendingViolation,
-        recoveryAbilityStatus: status.recoveryAbility
-      }
-    );
-    
-    if (!response.data.success) {
-      throw new Error(response.data.message || 'Failed to update customer status');
-    }
-  },
-
   // Get agent assignments
   getAgentAssignments: async (agentId: string, params?: {
     cif?: string;
@@ -302,6 +250,218 @@ export const workflowApi = {
       throw new Error(response.data.message || 'Failed to fetch assignment history');
     }
     
+    return response.data.data;
+  },
+
+  // =============================================
+  // STATUS DICTIONARY API FUNCTIONS
+  // =============================================
+
+  // Get customer status options
+  getCustomerStatusDict: async (): Promise<StatusDictItem[]> => {
+    console.log('calling workflowApi - getCustomerStatusDict');
+    const response = await apiClient.get<WorkflowApiResponse<StatusDictItem[]>>(
+      '/workflow/status-dict/customer-status'
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch customer statuses');
+    }
+    return response.data.data;
+  },
+
+  // Get collateral status options
+  getCollateralStatusDict: async (): Promise<StatusDictItem[]> => {
+    console.log('calling workflowApi - getCollateralStatusDict');
+    const response = await apiClient.get<WorkflowApiResponse<StatusDictItem[]>>(
+      '/workflow/status-dict/collateral-status'
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch collateral statuses');
+    }
+    return response.data.data;
+  },
+
+  // Get processing state options
+  getProcessingStateDict: async (): Promise<StatusDictItem[]> => {
+    console.log('calling workflowApi - getProcessingStateDict');
+    const response = await apiClient.get<WorkflowApiResponse<StatusDictItem[]>>(
+      '/workflow/status-dict/processing-state'
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch processing states');
+    }
+    return response.data.data;
+  },
+
+  // Get processing substates for a specific state
+  getProcessingSubstateDict: async (stateCode?: string): Promise<ProcessingSubstate[]> => {
+    console.log('calling workflowApi - getProcessingSubstateDict');
+    const endpoint = stateCode
+      ? `/workflow/status-dict/processing-state/${stateCode}/substates`
+      : '/workflow/status-dict/processing-substate';
+    
+    const response = await apiClient.get<WorkflowApiResponse<ProcessingSubstate[]>>(endpoint);
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch processing substates');
+    }
+    return response.data.data;
+  },
+
+  // Get lending violation status options
+  getLendingViolationStatusDict: async (): Promise<StatusDictItem[]> => {
+    console.log('calling workflowApi - getLendingViolationStatusDict');
+    const response = await apiClient.get<WorkflowApiResponse<StatusDictItem[]>>(
+      '/workflow/status-dict/lending-violation-status'
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch lending violation statuses');
+    }
+    return response.data.data;
+  },
+
+  // Get recovery ability status options
+  getRecoveryAbilityStatusDict: async (): Promise<StatusDictItem[]> => {
+    console.log('calling workflowApi - getRecoveryAbilityStatusDict');
+    const response = await apiClient.get<WorkflowApiResponse<StatusDictItem[]>>(
+      '/workflow/status-dict/recovery-ability-status'
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch recovery ability statuses');
+    }
+    return response.data.data;
+  },
+
+  // =============================================
+  // STATUS HISTORY API FUNCTIONS
+  // =============================================
+
+  // Get customer status history
+  getCustomerStatusHistory: async (cif: string, pagination?: PaginationParams): Promise<StatusHistoryResponse> => {
+    console.log('calling workflowApi - getCustomerStatusHistory');
+    const response = await apiClient.get<WorkflowApiResponse<StatusHistoryResponse>>(
+      `/workflow/cases/customer-status/${cif}`,
+      { params: pagination }
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch customer status history');
+    }
+    return response.data.data;
+  },
+
+  // Record new customer status
+  recordCustomerStatus: async (data: RecordStatusRequest): Promise<{ id: string; message: string }> => {
+    console.log('calling workflowApi - recordCustomerStatus');
+    const response = await apiClient.post<WorkflowApiResponse<{ id: string; message: string }>>(
+      '/workflow/cases/customer-status',
+      data
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to record customer status');
+    }
+    return response.data.data;
+  },
+
+  // Get collateral status history
+  getCollateralStatusHistory: async (cif: string, pagination?: PaginationParams): Promise<StatusHistoryResponse> => {
+    console.log('calling workflowApi - getCollateralStatusHistory');
+    const response = await apiClient.get<WorkflowApiResponse<StatusHistoryResponse>>(
+      `/workflow/cases/collateral-status/${cif}`,
+      { params: pagination }
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch collateral status history');
+    }
+    return response.data.data;
+  },
+
+  // Record new collateral status
+  recordCollateralStatus: async (data: RecordStatusRequest): Promise<{ id: string; message: string }> => {
+    console.log('calling workflowApi - recordCollateralStatus');
+    const response = await apiClient.post<WorkflowApiResponse<{ id: string; message: string }>>(
+      '/workflow/cases/collateral-status',
+      data
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to record collateral status');
+    }
+    return response.data.data;
+  },
+
+  // Get processing state status history
+  getProcessingStateStatusHistory: async (cif: string, pagination?: PaginationParams): Promise<StatusHistoryResponse> => {
+    console.log('calling workflowApi - getProcessingStateStatusHistory');
+    const response = await apiClient.get<WorkflowApiResponse<StatusHistoryResponse>>(
+      `/workflow/cases/processing-state-status/${cif}`,
+      { params: pagination }
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch processing state status history');
+    }
+    return response.data.data;
+  },
+
+  // Record new processing state status
+  recordProcessingStateStatus: async (data: RecordStatusRequest): Promise<{ id: string; message: string }> => {
+    console.log('calling workflowApi - recordProcessingStateStatus');
+    const response = await apiClient.post<WorkflowApiResponse<{ id: string; message: string }>>(
+      '/workflow/cases/processing-state-status',
+      data
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to record processing state status');
+    }
+    return response.data.data;
+  },
+
+  // Get lending violation status history
+  getLendingViolationStatusHistory: async (cif: string, pagination?: PaginationParams): Promise<StatusHistoryResponse> => {
+    console.log('calling workflowApi - getLendingViolationStatusHistory');
+    const response = await apiClient.get<WorkflowApiResponse<StatusHistoryResponse>>(
+      `/workflow/cases/lending-violation-status/${cif}`,
+      { params: pagination }
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch lending violation status history');
+    }
+    return response.data.data;
+  },
+
+  // Record new lending violation status
+  recordLendingViolationStatus: async (data: RecordStatusRequest): Promise<{ id: string; message: string }> => {
+    console.log('calling workflowApi - recordLendingViolationStatus');
+    const response = await apiClient.post<WorkflowApiResponse<{ id: string; message: string }>>(
+      '/workflow/cases/lending-violation-status',
+      data
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to record lending violation status');
+    }
+    return response.data.data;
+  },
+
+  // Get recovery ability status history
+  getRecoveryAbilityStatusHistory: async (cif: string, pagination?: PaginationParams): Promise<StatusHistoryResponse> => {
+    console.log('calling workflowApi - getRecoveryAbilityStatusHistory');
+    const response = await apiClient.get<WorkflowApiResponse<StatusHistoryResponse>>(
+      `/workflow/cases/recovery-ability-status/${cif}`,
+      { params: pagination }
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch recovery ability status history');
+    }
+    return response.data.data;
+  },
+
+  // Record new recovery ability status
+  recordRecoveryAbilityStatus: async (data: RecordStatusRequest): Promise<{ id: string; message: string }> => {
+    console.log('calling workflowApi - recordRecoveryAbilityStatus');
+    const response = await apiClient.post<WorkflowApiResponse<{ id: string; message: string }>>(
+      '/workflow/cases/recovery-ability-status',
+      data
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to record recovery ability status');
+    }
     return response.data.data;
   }
 };

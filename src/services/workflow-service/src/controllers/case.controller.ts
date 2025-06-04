@@ -1,127 +1,367 @@
 import { Request, Response, NextFunction } from 'express';
-import { CustomerCaseRepository, CustomerCaseActionRepository } from '../repositories/customer-case.repository';
 import { Errors, OperationType, SourceSystemType } from '../utils/errors';
 import { ResponseUtil } from '../utils/response';
 import { logger } from '../utils/logger';
+import {
+  CustomerStatusRepository,
+  LendingViolationStatusRepository,
+  RecoveryAbilityStatusRepository,
+  ProcessingStateStatusRepository,
+  CollateralStatusRepository
+} from '../repositories';
 
 /**
  * Case controller
  */
 export class CaseController {
   /**
-   * Get customer case history
-   * @route GET /cases/customer/:cif
+   * Get customer status list by CIF
+   * @route GET /customer-status/:cif
    */
-  async getCustomerCaseHistory(req: Request, res: Response, next: NextFunction) {
+  async getCustomerStatus(req: Request, res: Response, next: NextFunction) {
     try {
       const { cif } = req.params;
-      const { startDate, endDate, page = 1, pageSize = 10 } = req.query;
-      
-      const result = await CustomerCaseActionRepository.findByCif(cif, {
-        startDate: startDate ? new Date(startDate as string) : undefined,
-        endDate: endDate ? new Date(endDate as string) : undefined,
-        page: Number(page),
-        pageSize: Math.min(Number(pageSize), 100)
-      });
-      
+      const { page = 1, pageSize = 10 } = req.query;
+
+      const result = await CustomerStatusRepository.findByCif(
+        cif,
+        Number(page),
+        Number(pageSize)
+      );
+
+      logger.info({ cif, page, pageSize }, 'Customer status retrieved successfully');
+
       return ResponseUtil.success(
         res,
-        {
-          caseActions: result.items,
-          pagination: result.pagination
-        },
-        'Customer case history retrieved successfully'
+        result,
+        'Customer status retrieved successfully'
       );
     } catch (error) {
-      logger.error({ error, path: req.path }, 'Error getting customer case history');
+      logger.error({ error, path: req.path }, 'Error retrieving customer status');
       next(error);
     }
   }
-  
+
   /**
-   * Record case action
-   * @route POST /cases
+   * Record new customer status
+   * @route POST /customer-status
    */
-  async recordCaseAction(req: Request, res: Response, next: NextFunction) {
+  async recordCustomerStatus(req: Request, res: Response, next: NextFunction) {
     try {
-      const {
-        cif,
-        actionDate,
-        notes,
-        customerStatus,
-        collateralStatus,
-        processingStateStatus,
-        lendingViolationStatus,
-        recoveryAbilityStatus
-      } = req.body;
-      
+      const { cif, statusId, actionDate, notes } = req.body;
+
       // Validate required fields
-      if (!cif) {
+      if (!cif || !statusId) {
         throw Errors.create(
           Errors.Validation.REQUIRED_FIELD_MISSING,
-          'CIF is required',
+          'Missing required fields: cif, statusId',
           OperationType.VALIDATION,
           SourceSystemType.WORKFLOW_SERVICE
         );
       }
-      
-      // At least one status field should be provided
-      if (!customerStatus && !collateralStatus && !processingStateStatus && 
-          !lendingViolationStatus && !recoveryAbilityStatus && !notes) {
-        throw Errors.create(
-          Errors.Validation.REQUIRED_FIELD_MISSING,
-          'At least one status field or notes is required',
-          OperationType.VALIDATION,
-          SourceSystemType.WORKFLOW_SERVICE
-        );
-      }
-      
-      // Create case action
-      const caseAction = await CustomerCaseActionRepository.createCaseAction({
+
+      const status = await CustomerStatusRepository.createStatus({
         cif,
         agentId: req.user?.agentId,
+        statusId,
         actionDate: actionDate ? new Date(actionDate) : new Date(),
         notes,
-        customerStatus,
-        collateralStatus,
-        processingStateStatus,
-        lendingViolationStatus,
-        recoveryAbilityStatus,
-        createdBy: req.user?.userId || 'system',
-        updatedBy: req.user?.userId || 'system'
+        createdBy: req.user?.username || 'system',
+        updatedBy: req.user?.username || 'system'
       });
-      
-      logger.info({ caseActionId: caseAction.id, cif }, 'Case action recorded successfully');
-      
-      return ResponseUtil.success(
-        res,
-        caseAction,
-        'Case action recorded successfully',
-        201
-      );
-    } catch (error) {
-      logger.error({ error, path: req.path }, 'Error recording case action');
-      next(error);
-    }
-  }
-  
-  /**
-   * Get customer case status
-   * @route GET /cases/status/:cif
-   */
-  async getCustomerCaseStatus(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { cif } = req.params;
-      
-      const status = await CustomerCaseRepository.getCustomerCaseStatus(cif);
-      
+
+      logger.info({ statusId: status.id, cif }, 'Customer status recorded successfully');
+
       return ResponseUtil.success(
         res,
         status,
-        'Customer case status retrieved successfully'
+        'Customer status recorded successfully',
+        201
       );
     } catch (error) {
-      logger.error({ error, path: req.path }, 'Error getting customer case status');
+      logger.error({ error, path: req.path }, 'Error recording customer status');
+      next(error);
+    }
+  }
+
+  /**
+   * Get lending violation status list by CIF
+   * @route GET /lending-violation-status/:cif
+   */
+  async getLendingViolationStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { cif } = req.params;
+      const { page = 1, pageSize = 10 } = req.query;
+
+      const result = await LendingViolationStatusRepository.findByCif(
+        cif,
+        Number(page),
+        Number(pageSize)
+      );
+
+      logger.info({ cif, page, pageSize }, 'Lending violation status retrieved successfully');
+
+      return ResponseUtil.success(
+        res,
+        result,
+        'Lending violation status retrieved successfully'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error retrieving lending violation status');
+      next(error);
+    }
+  }
+
+  /**
+   * Record new lending violation status
+   * @route POST /lending-violation-status
+   */
+  async recordLendingViolationStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { cif, statusId, actionDate, notes } = req.body;
+
+      // Validate required fields
+      if (!cif || !statusId) {
+        throw Errors.create(
+          Errors.Validation.REQUIRED_FIELD_MISSING,
+          'Missing required fields: cif, statusId',
+          OperationType.VALIDATION,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      const status = await LendingViolationStatusRepository.createStatus({
+        cif,
+        agentId: req.user?.agentId,
+        statusId,
+        actionDate: actionDate ? new Date(actionDate) : new Date(),
+        notes,
+        createdBy: req.user?.username || 'system',
+        updatedBy: req.user?.username || 'system'
+      });
+
+      logger.info({ statusId: status.id, cif }, 'Lending violation status recorded successfully');
+
+      return ResponseUtil.success(
+        res,
+        status,
+        'Lending violation status recorded successfully',
+        201
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error recording lending violation status');
+      next(error);
+    }
+  }
+
+  /**
+   * Get recovery ability status list by CIF
+   * @route GET /recovery-ability-status/:cif
+   */
+  async getRecoveryAbilityStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { cif } = req.params;
+      const { page = 1, pageSize = 10 } = req.query;
+
+      const result = await RecoveryAbilityStatusRepository.findByCif(
+        cif,
+        Number(page),
+        Number(pageSize)
+      );
+
+      logger.info({ cif, page, pageSize }, 'Recovery ability status retrieved successfully');
+
+      return ResponseUtil.success(
+        res,
+        result,
+        'Recovery ability status retrieved successfully'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error retrieving recovery ability status');
+      next(error);
+    }
+  }
+
+  /**
+   * Record new recovery ability status
+   * @route POST /recovery-ability-status
+   */
+  async recordRecoveryAbilityStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { cif, statusId, actionDate, notes } = req.body;
+
+      // Validate required fields
+      if (!cif || !statusId) {
+        throw Errors.create(
+          Errors.Validation.REQUIRED_FIELD_MISSING,
+          'Missing required fields: cif, statusId',
+          OperationType.VALIDATION,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      const status = await RecoveryAbilityStatusRepository.createStatus({
+        cif,
+        agentId: req.user?.agentId,
+        statusId,
+        actionDate: actionDate ? new Date(actionDate) : new Date(),
+        notes,
+        createdBy: req.user?.username || 'system',
+        updatedBy: req.user?.username || 'system'
+      });
+
+      logger.info({ statusId: status.id, cif }, 'Recovery ability status recorded successfully');
+
+      return ResponseUtil.success(
+        res,
+        status,
+        'Recovery ability status recorded successfully',
+        201
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error recording recovery ability status');
+      next(error);
+    }
+  }
+
+  /**
+   * Get processing state status list by CIF
+   * @route GET /processing-state-status/:cif
+   */
+  async getProcessingStateStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { cif } = req.params;
+      const { page = 1, pageSize = 10 } = req.query;
+
+      const result = await ProcessingStateStatusRepository.findByCif(
+        cif,
+        Number(page),
+        Number(pageSize)
+      );
+
+      logger.info({ cif, page, pageSize }, 'Processing state status retrieved successfully');
+
+      return ResponseUtil.success(
+        res,
+        result,
+        'Processing state status retrieved successfully'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error retrieving processing state status');
+      next(error);
+    }
+  }
+
+  /**
+   * Record new processing state status
+   * @route POST /processing-state-status
+   */
+  async recordProcessingStateStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { cif, stateId, substateId, actionDate, notes } = req.body;
+
+      // Validate required fields
+      if (!cif || !stateId) {
+        throw Errors.create(
+          Errors.Validation.REQUIRED_FIELD_MISSING,
+          'Missing required fields: cif, stateId',
+          OperationType.VALIDATION,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      const status = await ProcessingStateStatusRepository.createStatus({
+        cif,
+        agentId: req.user?.agentId,
+        stateId,
+        substateId,
+        actionDate: actionDate ? new Date(actionDate) : new Date(),
+        notes,
+        createdBy: req.user?.username || 'system',
+        updatedBy: req.user?.username || 'system'
+      });
+
+      logger.info({ statusId: status.id, cif }, 'Processing state status recorded successfully');
+
+      return ResponseUtil.success(
+        res,
+        status,
+        'Processing state status recorded successfully',
+        201
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error recording processing state status');
+      next(error);
+    }
+  }
+
+  /**
+   * Get collateral status list by CIF
+   * @route GET /collateral-status/:cif
+   */
+  async getCollateralStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { cif } = req.params;
+      const { page = 1, pageSize = 10 } = req.query;
+
+      const result = await CollateralStatusRepository.findByCif(
+        cif,
+        Number(page),
+        Number(pageSize)
+      );
+
+      logger.info({ cif, page, pageSize }, 'Collateral status retrieved successfully');
+
+      return ResponseUtil.success(
+        res,
+        result,
+        'Collateral status retrieved successfully'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error retrieving collateral status');
+      next(error);
+    }
+  }
+
+  /**
+   * Record new collateral status
+   * @route POST /collateral-status
+   */
+  async recordCollateralStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { cif, collateralNumber, statusId, actionDate, notes } = req.body;
+
+      // Validate required fields
+      if (!cif || !statusId) {
+        throw Errors.create(
+          Errors.Validation.REQUIRED_FIELD_MISSING,
+          'Missing required fields: cif, statusId',
+          OperationType.VALIDATION,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      const status = await CollateralStatusRepository.createStatus({
+        cif,
+        collateralNumber,
+        agentId: req.user?.agentId,
+        statusId,
+        actionDate: actionDate ? new Date(actionDate) : new Date(),
+        notes,
+        createdBy: req.user?.username || 'system',
+        updatedBy: req.user?.username || 'system'
+      });
+
+      logger.info({ statusId: status.id, cif }, 'Collateral status recorded successfully');
+
+      return ResponseUtil.success(
+        res,
+        status,
+        'Collateral status recorded successfully',
+        201
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error recording collateral status');
       next(error);
     }
   }

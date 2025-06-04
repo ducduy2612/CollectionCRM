@@ -234,6 +234,221 @@ export interface Payment {
   method: string;
 }
 
+// =============================================
+// STATUS DICTIONARY TYPES
+// =============================================
+
+/**
+ * Base interface for status dictionary items
+ * Used for all status dictionaries (customer, collateral, processing state, etc.)
+ */
+export interface StatusDictItem {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  color?: string; // Hex color code for UI
+  isActive: boolean;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+}
+
+/**
+ * Customer Status Dictionary Item
+ */
+export interface CustomerStatusDictItem extends StatusDictItem {}
+
+/**
+ * Collateral Status Dictionary Item
+ */
+export interface CollateralStatusDictItem extends StatusDictItem {}
+
+/**
+ * Processing State Dictionary Item
+ */
+export interface ProcessingStateDictItem extends StatusDictItem {}
+
+/**
+ * Processing Substate Dictionary Item
+ */
+export interface ProcessingSubstateDictItem extends StatusDictItem {}
+
+/**
+ * Lending Violation Status Dictionary Item
+ */
+export interface LendingViolationStatusDictItem extends StatusDictItem {}
+
+/**
+ * Recovery Ability Status Dictionary Item
+ */
+export interface RecoveryAbilityStatusDictItem extends StatusDictItem {}
+
+// =============================================
+// STATUS HISTORY TYPES
+// =============================================
+
+/**
+ * Base interface for status history items
+ */
+export interface BaseStatusHistoryItem {
+  id: string;
+  cif: string;
+  agentId: string;
+  actionDate: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+  agent?: AgentDetail;
+}
+
+/**
+ * Customer Status History Item
+ */
+export interface CustomerStatusHistoryItem extends BaseStatusHistoryItem {
+  statusId: string;
+  status?: CustomerStatusDictItem;
+}
+
+/**
+ * Collateral Status History Item
+ */
+export interface CollateralStatusHistoryItem extends BaseStatusHistoryItem {
+  collateralId: string;
+  statusId: string;
+  status?: CollateralStatusDictItem;
+}
+
+/**
+ * Processing State Status History Item
+ */
+export interface ProcessingStateStatusHistoryItem extends BaseStatusHistoryItem {
+  stateId: string;
+  substateId?: string;
+  state?: ProcessingStateDictItem;
+  substate?: ProcessingSubstateDictItem;
+}
+
+/**
+ * Lending Violation Status History Item
+ */
+export interface LendingViolationStatusHistoryItem extends BaseStatusHistoryItem {
+  statusId: string;
+  status?: LendingViolationStatusDictItem;
+}
+
+/**
+ * Recovery Ability Status History Item
+ */
+export interface RecoveryAbilityStatusHistoryItem extends BaseStatusHistoryItem {
+  statusId: string;
+  status?: RecoveryAbilityStatusDictItem;
+}
+
+// =============================================
+// COMBINED STATUS DATA TYPES
+// =============================================
+
+/**
+ * Customer Status Data - includes current status and history
+ */
+export interface CustomerStatusData {
+  // Current status values (latest from each category)
+  current: {
+    customerStatus?: CustomerStatusDictItem;
+    collateralStatus?: CollateralStatusDictItem;
+    processingState?: ProcessingStateDictItem;
+    processingSubstate?: ProcessingSubstateDictItem;
+    lendingViolation?: LendingViolationStatusDictItem;
+    recoveryAbility?: RecoveryAbilityStatusDictItem;
+    lastUpdated?: string;
+  };
+  
+  // Status history for each category
+  history: {
+    customerStatus: CustomerStatusHistoryItem[];
+    collateralStatus: CollateralStatusHistoryItem[];
+    processingState: ProcessingStateStatusHistoryItem[];
+    lendingViolation: LendingViolationStatusHistoryItem[];
+    recoveryAbility: RecoveryAbilityStatusHistoryItem[];
+  };
+}
+
+// =============================================
+// API RESPONSE TYPES
+// =============================================
+
+/**
+ * API Response for status dictionaries
+ */
+export interface StatusDictionariesResponse {
+  customerStatus: CustomerStatusDictItem[];
+  collateralStatus: CollateralStatusDictItem[];
+  processingState: ProcessingStateDictItem[];
+  processingSubstate: ProcessingSubstateDictItem[];
+  lendingViolation: LendingViolationStatusDictItem[];
+  recoveryAbility: RecoveryAbilityStatusDictItem[];
+}
+
+/**
+ * API Response for customer status data
+ */
+export interface CustomerStatusResponse {
+  cif: string;
+  statusData: CustomerStatusData;
+}
+
+// =============================================
+// FORM AND UI TYPES
+// =============================================
+
+/**
+ * Status selection option for forms
+ */
+export interface StatusSelectOption {
+  value: string;
+  label: string;
+  description?: string;
+  color?: string;
+  disabled?: boolean;
+}
+
+/**
+ * Status update request
+ */
+export interface StatusUpdateRequest {
+  cif: string;
+  statusType: 'customer' | 'collateral' | 'processing_state' | 'lending_violation' | 'recovery_ability';
+  statusId: string;
+  substateId?: string; // For processing state only
+  collateralId?: string; // For collateral status only
+  notes?: string;
+  actionDate?: string; // Defaults to current timestamp if not provided
+}
+
+/**
+ * Status display configuration
+ */
+export interface StatusDisplayConfig {
+  showHistory: boolean;
+  showTimestamps: boolean;
+  showAgentInfo: boolean;
+  showNotes: boolean;
+  maxHistoryItems?: number;
+}
+
+// =============================================
+// BACKWARD COMPATIBILITY
+// =============================================
+
+/**
+ * @deprecated Use CustomerStatusData instead
+ * Legacy CustomerStatus interface - kept for backward compatibility
+ */
 export interface CustomerStatus {
   customerStatus: string;
   collateralStatus: string;

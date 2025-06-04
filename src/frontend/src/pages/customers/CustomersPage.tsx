@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Customer, Loan, CustomerAction, Payment, CustomerStatus } from './types';
+import { Customer, Loan, CustomerAction, Payment } from './types';
 import CustomerHeader from './components/CustomerHeader';
 import CustomerTabs from './components/CustomerTabs';
 import ContactInformation from './components/ContactInformation';
@@ -20,13 +20,6 @@ const CustomersPage: React.FC = () => {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loans, setLoans] = useState<Loan[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
-  const [customerStatus, setCustomerStatus] = useState<CustomerStatus>({
-    customerStatus: 'UNCOOPERATIVE',
-    collateralStatus: 'SECURED',
-    processingState: 'FOLLOW_UP',
-    lendingViolation: 'NONE',
-    recoveryAbility: 'PARTIAL'
-  });
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -166,7 +159,7 @@ const CustomersPage: React.FC = () => {
           {/* ActionHistory is rendered above and shown via CSS */}
           <div /> {/* Placeholder to maintain grid layout */}
           {payments && payments.length > 0 && <PaymentHistory payments={payments} />}
-          <CustomerStatusComponent status={customerStatus} />
+          <CustomerStatusComponent cif={cif || ''} />
         </div>
       )}
 
