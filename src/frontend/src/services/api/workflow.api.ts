@@ -25,21 +25,47 @@ export interface WorkflowApiResponse<T> {
 
 export interface StatusHistoryItem {
   id: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
   cif: string;
-  agent_id: string;
-  agent_name?: string;
-  action_date: string;
-  status_id: string;
-  status_code: string;
-  status_name: string;
-  status_color?: string;
+  agentId: string;
+  actionDate: string;
+  statusId: string;
   notes: string | null;
-  created_at: string;
-  updated_at: string;
+  agent: {
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    createdBy: string | null;
+    updatedBy: string | null;
+    employeeId: string;
+    name: string;
+    email: string;
+    phone: string | null;
+    type: string;
+    team: string;
+    isActive: boolean;
+    userId: string;
+  };
+  status: {
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    createdBy: string;
+    updatedBy: string;
+    code: string;
+    name: string;
+    description: string;
+    color: string;
+    isActive: boolean;
+    displayOrder: number;
+  };
 }
 
 export interface StatusHistoryResponse {
-  history: StatusHistoryItem[];
+  items: StatusHistoryItem[];
   pagination: {
     page: number;
     pageSize: number;

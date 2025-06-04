@@ -73,10 +73,10 @@ export const validatePagination = (req: Request, res: Response, next: NextFuncti
   }
   
   // Validate page size
-  if (pageSize < 1 || pageSize > 100) {
+  if (pageSize < 1 || pageSize > 500) {
     errors.push({
       field: 'pageSize',
-      message: 'Page size must be between 1 and 100',
+      message: 'Page size must be between 1 and 500',
       code: 'VALIDATION_ERROR'
     });
   }

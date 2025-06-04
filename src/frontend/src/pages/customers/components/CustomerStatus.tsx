@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui
 import { Button } from '../../../components/ui/Button';
 import { Spinner } from '../../../components/ui/Spinner';
 import { Alert } from '../../../components/ui/Alert';
-import { workflowApi, StatusHistoryItem as ApiStatusHistoryItem } from '../../../services/api/workflow.api';
+import { workflowApi, StatusHistoryItem } from '../../../services/api/workflow.api';
 import { StatusDictItem, StatusUpdateRequest } from '../types';
 import StatusHistoryModal from './StatusHistoryModal';
 import StatusUpdateModal from './StatusUpdateModal';
@@ -21,14 +21,14 @@ interface StatusDictionaries {
 }
 
 interface CurrentStatuses {
-  customer?: ApiStatusHistoryItem;
-  collateral?: ApiStatusHistoryItem;
-  processingState?: ApiStatusHistoryItem;
-  lendingViolation?: ApiStatusHistoryItem;
-  recoveryAbility?: ApiStatusHistoryItem;
+  customer?: StatusHistoryItem;
+  collateral?: StatusHistoryItem;
+  processingState?: StatusHistoryItem;
+  lendingViolation?: StatusHistoryItem;
+  recoveryAbility?: StatusHistoryItem;
 }
 
-type StatusType = 'customer' | 'collateral' | 'processing_state' | 'lending_violation' | 'recovery_ability';
+type StatusType = 'customer' | 'collateral' | 'processingState' | 'lendingViolation' | 'recoveryAbility';
 
 interface ModalState {
   showHistory: boolean;
@@ -43,7 +43,7 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modalState, setModalState] = useState<ModalState>({ showHistory: false, showUpdate: false, statusType: null });
-  const [statusHistory, setStatusHistory] = useState<ApiStatusHistoryItem[]>([]);
+  const [statusHistory, setStatusHistory] = useState<StatusHistoryItem[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
   // Load status dictionaries on component mount
@@ -91,34 +91,35 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
       ] = await Promise.all([
         workflowApi.getCustomerStatusHistory(cif, { page: 1, pageSize: 1 }).catch(err => {
           console.warn('Customer status history not available:', err);
-          return { history: [], pagination: { page: 1, pageSize: 1, totalPages: 0, totalItems: 0 } };
+          return { items: [], pagination: { page: 1, pageSize: 1, totalPages: 0, totalItems: 0 } };
         }),
         workflowApi.getCollateralStatusHistory(cif, { page: 1, pageSize: 1 }).catch(err => {
           console.warn('Collateral status history not available:', err);
-          return { history: [], pagination: { page: 1, pageSize: 1, totalPages: 0, totalItems: 0 } };
+          return { items: [], pagination: { page: 1, pageSize: 1, totalPages: 0, totalItems: 0 } };
         }),
         workflowApi.getProcessingStateStatusHistory(cif, { page: 1, pageSize: 1 }).catch(err => {
           console.warn('Processing state status history not available:', err);
-          return { history: [], pagination: { page: 1, pageSize: 1, totalPages: 0, totalItems: 0 } };
+          return { items: [], pagination: { page: 1, pageSize: 1, totalPages: 0, totalItems: 0 } };
         }),
         workflowApi.getLendingViolationStatusHistory(cif, { page: 1, pageSize: 1 }).catch(err => {
           console.warn('Lending violation status history not available:', err);
-          return { history: [], pagination: { page: 1, pageSize: 1, totalPages: 0, totalItems: 0 } };
+          return { items: [], pagination: { page: 1, pageSize: 1, totalPages: 0, totalItems: 0 } };
         }),
         workflowApi.getRecoveryAbilityStatusHistory(cif, { page: 1, pageSize: 1 }).catch(err => {
           console.warn('Recovery ability status history not available:', err);
-          return { history: [], pagination: { page: 1, pageSize: 1, totalPages: 0, totalItems: 0 } };
+          return { items: [], pagination: { page: 1, pageSize: 1, totalPages: 0, totalItems: 0 } };
         })
       ]);
 
       console.log('Current statuses loaded successfully');
       setCurrentStatuses({
-        customer: customerHistory.history?.[0] || undefined,
-        collateral: collateralHistory.history?.[0] || undefined,
-        processingState: processingStateHistory.history?.[0] || undefined,
-        lendingViolation: lendingViolationHistory.history?.[0] || undefined,
-        recoveryAbility: recoveryAbilityHistory.history?.[0] || undefined
+        customer: customerHistory.items?.[0] || undefined,
+        collateral: collateralHistory.items?.[0] || undefined,
+        processingState: processingStateHistory.items?.[0] || undefined,
+        lendingViolation: lendingViolationHistory.items?.[0] || undefined,
+        recoveryAbility: recoveryAbilityHistory.items?.[0] || undefined
       });
+      console.log(currentStatuses.customer)
     } catch (err) {
       console.error('Error loading current statuses:', err);
       throw new Error(`Failed to load current status data: ${err instanceof Error ? err.message : 'Unknown error'}`);
@@ -155,13 +156,14 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
       return { name: 'No Status', color: '#6B7280' };
     }
 
-    const dictKey = statusType === 'processingState' ? 'processingState' : statusType;
-    const dictionary = statusDictionaries[dictKey as keyof StatusDictionaries];
-    const statusItem = dictionary.find(item => item.id === currentStatus.status_id);
-
+    // const dictKey = statusType === 'processingState' ? 'processingState' : statusType;
+    // const dictionary = statusDictionaries[dictKey as keyof StatusDictionaries];
+    // const statusItem = dictionary.find(item => item.id === currentStatus.status_id);
+    // console.log(dictionary)
+    // console.log(statusItem)
     return {
-      name: statusItem?.name || currentStatus.status_name || 'Unknown',
-      color: statusItem?.color || currentStatus.status_color || '#6B7280'
+      name: currentStatus.status?.name || 'Unknown',
+      color: currentStatus.status?.color || '#6B7280'
     };
   };
 
@@ -172,24 +174,27 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
 
     try {
       let historyResponse;
+      // Fetch records with a large page size to get more data for client-side pagination
+      const paginationParams = { page: 1, pageSize: 200 };
+      
       switch (statusType) {
         case 'customer':
-          historyResponse = await workflowApi.getCustomerStatusHistory(cif);
+          historyResponse = await workflowApi.getCustomerStatusHistory(cif, paginationParams);
           break;
         case 'collateral':
-          historyResponse = await workflowApi.getCollateralStatusHistory(cif);
+          historyResponse = await workflowApi.getCollateralStatusHistory(cif, paginationParams);
           break;
-        case 'processing_state':
-          historyResponse = await workflowApi.getProcessingStateStatusHistory(cif);
+        case 'processingState':
+          historyResponse = await workflowApi.getProcessingStateStatusHistory(cif, paginationParams);
           break;
-        case 'lending_violation':
-          historyResponse = await workflowApi.getLendingViolationStatusHistory(cif);
+        case 'lendingViolation':
+          historyResponse = await workflowApi.getLendingViolationStatusHistory(cif, paginationParams);
           break;
-        case 'recovery_ability':
-          historyResponse = await workflowApi.getRecoveryAbilityStatusHistory(cif);
+        case 'recoveryAbility':
+          historyResponse = await workflowApi.getRecoveryAbilityStatusHistory(cif, paginationParams);
           break;
       }
-      setStatusHistory(historyResponse.history || []);
+      setStatusHistory(historyResponse.items || []);
     } catch (err) {
       console.error('Error loading status history:', err);
       setStatusHistory([]);
@@ -233,7 +238,7 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
             notes: data.notes
           });
           break;
-        case 'processing_state':
+        case 'processingState':
           await workflowApi.recordProcessingStateStatus({
             cif: data.cif,
             statusId: data.statusId,
@@ -241,7 +246,7 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
             notes: data.notes
           });
           break;
-        case 'lending_violation':
+        case 'lendingViolation':
           await workflowApi.recordLendingViolationStatus({
             cif: data.cif,
             statusId: data.statusId,
@@ -249,7 +254,7 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
             notes: data.notes
           });
           break;
-        case 'recovery_ability':
+        case 'recoveryAbility':
           await workflowApi.recordRecoveryAbilityStatus({
             cif: data.cif,
             statusId: data.statusId,
@@ -296,7 +301,7 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
   const getStatusDictForModal = (): Record<string, StatusDictItem> => {
     if (!statusDictionaries || !modalState.statusType) return {};
 
-    const dictKey = modalState.statusType === 'processing_state' ? 'processingState' : modalState.statusType;
+    const dictKey = modalState.statusType;
     const dictionary = statusDictionaries[dictKey as keyof StatusDictionaries];
     
     if (!dictionary || !Array.isArray(dictionary)) return {};
@@ -309,25 +314,10 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
 
   // Get status options for update modal
   const getStatusOptionsForUpdate: () => StatusDictItem[] = useCallback(() => {
-    console.log('getStatusOptionsForUpdate called:', {
-      statusDictionaries: !!statusDictionaries,
-      modalStateStatusType: modalState.statusType,
-      statusDictionariesKeys: statusDictionaries ? Object.keys(statusDictionaries) : []
-    });
-    
     if (!statusDictionaries || !modalState.statusType) return [];
-
-    const dictKey = modalState.statusType === 'processing_state' ? 'processingState' : modalState.statusType;
+    const dictKey = modalState.statusType
     const dictionary = statusDictionaries[dictKey as keyof StatusDictionaries];
-    
-    console.log('Dictionary lookup:', {
-      dictKey,
-      dictionaryExists: !!dictionary,
-      dictionaryLength: dictionary ? dictionary.length : 0
-    });
-    
     if (!dictionary || !Array.isArray(dictionary)) return [];
-    
     return dictionary;
   }, [statusDictionaries, modalState.statusType]);
 
@@ -405,7 +395,7 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
             {/* Processing State */}
             <div 
               className="bg-neutral-50 rounded-md p-4 text-center border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors"
-              onClick={() => handleStatusClick('processing_state')}
+              onClick={() => handleStatusClick('processingState')}
             >
               <div className="text-xs text-neutral-600 mb-2 font-medium">Processing State</div>
               <div 
@@ -419,7 +409,7 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
             {/* Lending Violation */}
             <div 
               className="bg-neutral-50 rounded-md p-4 text-center border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors"
-              onClick={() => handleStatusClick('lending_violation')}
+              onClick={() => handleStatusClick('lendingViolation')}
             >
               <div className="text-xs text-neutral-600 mb-2 font-medium">Lending Violation</div>
               <div 
@@ -433,7 +423,7 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
             {/* Recovery Ability */}
             <div 
               className="bg-neutral-50 rounded-md p-4 text-center border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors"
-              onClick={() => handleStatusClick('recovery_ability')}
+              onClick={() => handleStatusClick('recoveryAbility')}
             >
               <div className="text-xs text-neutral-600 mb-2 font-medium">Recovery Ability</div>
               <div 

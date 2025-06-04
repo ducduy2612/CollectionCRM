@@ -422,7 +422,7 @@ export interface StatusSelectOption {
  */
 export interface StatusUpdateRequest {
   cif: string;
-  statusType: 'customer' | 'collateral' | 'processing_state' | 'lending_violation' | 'recovery_ability';
+  statusType: 'customer' | 'collateral' | 'processingState' | 'lendingViolation' | 'recoveryAbility';
   statusId: string;
   substateId?: string; // For processing state only
   collateralId?: string; // For collateral status only

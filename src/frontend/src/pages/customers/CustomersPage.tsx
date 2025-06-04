@@ -148,6 +148,9 @@ const CustomersPage: React.FC = () => {
         onReferenceClick={() => setActiveTab('references')}
       />
 
+      {/* Customer Status component */}
+      <CustomerStatusComponent cif={cif || ''} />
+      
       {/* Tabs */}
       <CustomerTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
@@ -159,7 +162,6 @@ const CustomersPage: React.FC = () => {
           {/* ActionHistory is rendered above and shown via CSS */}
           <div /> {/* Placeholder to maintain grid layout */}
           {payments && payments.length > 0 && <PaymentHistory payments={payments} />}
-          <CustomerStatusComponent cif={cif || ''} />
         </div>
       )}
 

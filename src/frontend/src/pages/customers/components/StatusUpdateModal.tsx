@@ -59,6 +59,7 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
         notes: '',
         actionDate: new Date().toISOString().slice(0, 16)
       });
+      console.log(statusOptions)
       setErrors({});
       setIsSubmitting(false);
     }
@@ -78,22 +79,18 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
 
   // Convert status options to select options
   const statusSelectOptions: SelectOption[] = statusOptions
-    .filter(option => option.isActive)
     .sort((a, b) => a.displayOrder - b.displayOrder)
     .map(option => ({
       value: option.id,
-      label: option.name,
-      disabled: !option.isActive
+      label: option.name
     }));
 
   const substateSelectOptions: SelectOption[] = substateOptions
     ? substateOptions
-        .filter(option => option.isActive)
         .sort((a, b) => a.displayOrder - b.displayOrder)
         .map(option => ({
           value: option.id,
-          label: option.name,
-          disabled: !option.isActive
+          label: option.name
         }))
     : [];
 

@@ -23,10 +23,10 @@ type StatusHistoryItem =
 interface StatusHistoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  statusType: 'customer' | 'collateral' | 'processing_state' | 'lending_violation' | 'recovery_ability';
+  statusType: 'customer' | 'collateral' | 'processingState' | 'lendingViolation' | 'recoveryAbility';
   statusHistory: StatusHistoryItem[];
   statusDict: Record<string, StatusDictItem>;
-  onUpdateStatus?: (statusType: 'customer' | 'collateral' | 'processing_state' | 'lending_violation' | 'recovery_ability') => void;
+  onUpdateStatus?: (statusType: 'customer' | 'collateral' | 'processingState' | 'lendingViolation' | 'recoveryAbility') => void;
 }
 
 const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({

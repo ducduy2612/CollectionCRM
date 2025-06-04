@@ -21,7 +21,7 @@ export class CaseController {
   async getCustomerStatus(req: Request, res: Response, next: NextFunction) {
     try {
       const { cif } = req.params;
-      const { page = 1, pageSize = 10 } = req.query;
+      const { page = 1, pageSize = 100 } = req.query;
 
       const result = await CustomerStatusRepository.findByCif(
         cif,
@@ -91,7 +91,7 @@ export class CaseController {
   async getLendingViolationStatus(req: Request, res: Response, next: NextFunction) {
     try {
       const { cif } = req.params;
-      const { page = 1, pageSize = 10 } = req.query;
+      const { page = 1, pageSize = 100 } = req.query;
 
       const result = await LendingViolationStatusRepository.findByCif(
         cif,
@@ -161,7 +161,7 @@ export class CaseController {
   async getRecoveryAbilityStatus(req: Request, res: Response, next: NextFunction) {
     try {
       const { cif } = req.params;
-      const { page = 1, pageSize = 10 } = req.query;
+      const { page = 1, pageSize = 100 } = req.query;
 
       const result = await RecoveryAbilityStatusRepository.findByCif(
         cif,
@@ -231,7 +231,7 @@ export class CaseController {
   async getProcessingStateStatus(req: Request, res: Response, next: NextFunction) {
     try {
       const { cif } = req.params;
-      const { page = 1, pageSize = 10 } = req.query;
+      const { page = 1, pageSize = 100 } = req.query;
 
       const result = await ProcessingStateStatusRepository.findByCif(
         cif,
@@ -302,7 +302,7 @@ export class CaseController {
   async getCollateralStatus(req: Request, res: Response, next: NextFunction) {
     try {
       const { cif } = req.params;
-      const { page = 1, pageSize = 10 } = req.query;
+      const { page = 1, pageSize = 100 } = req.query;
 
       const result = await CollateralStatusRepository.findByCif(
         cif,
