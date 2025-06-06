@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../components/ui/Button';
 import UserManagement from './components/UserManagement';
+import { useTranslation } from '../../i18n/hooks/useTranslation';
 
 const UserManagementPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation(['settings', 'common']);
 
   const handleGoBack = () => {
     navigate('/settings');
@@ -21,14 +23,14 @@ const UserManagementPage: React.FC = () => {
             size="sm"
             onClick={handleGoBack}
             leftIcon={<ArrowLeftIcon className="w-4 h-4" />}
-            aria-label="Go back to settings"
+            aria-label={t('settings:messages.back_to_settings')}
           >
-            Back to Settings
+            {t('settings:messages.back_to_settings')}
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900">User Management</h1>
+            <h1 className="text-3xl font-bold text-neutral-900">{t('settings:titles.user_management')}</h1>
             <p className="text-neutral-600 mt-1">
-              Manage user accounts, roles, and permissions across the system
+              {t('settings:messages.user_management_description')}
             </p>
           </div>
         </div>

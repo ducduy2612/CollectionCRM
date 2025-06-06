@@ -3,6 +3,7 @@ import { Phone, Email, Address } from '../types';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Badge } from '../../../components/ui/Badge';
+import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 interface ContactInformationProps {
   phones: Phone[];
@@ -11,13 +12,14 @@ interface ContactInformationProps {
 }
 
 const ContactInformation: React.FC<ContactInformationProps> = ({ phones, emails, addresses }) => {
+  const { t } = useTranslation(['customers', 'forms', 'common']);
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Contact Information</CardTitle>
+        <CardTitle>{t('customers:tabs.contact_info')}</CardTitle>
         <Button variant="secondary" size="sm">
           <i className="bi bi-pencil mr-2"></i>
-          Edit
+          {t('common:buttons.edit')}
         </Button>
       </CardHeader>
       
@@ -26,7 +28,7 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ phones, emails,
         <div className="contact-section mb-6">
           <div className="text-sm font-semibold text-neutral-600 mb-3 flex items-center">
             <i className="bi bi-telephone text-primary-500 mr-2"></i>
-            Phone Numbers
+            {t('customers:fields.phone')}
           </div>
           
           {phones && phones.map((phone, index) => (
@@ -36,7 +38,7 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ phones, emails,
               </div>
               <div className="flex-1">
                 <div className="text-xs text-neutral-500 mb-1">
-                  {phone.type} {phone.isPrimary && '(Primary)'} {phone.isVerified && '(Verified)'}
+                  {phone.type} {phone.isPrimary && `(${t('forms:options.primary')})`} {phone.isVerified && `(${t('forms:options.verified')})`}
                 </div>
                 <div className="font-semibold text-neutral-800">
                   {phone.number}
@@ -46,18 +48,18 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ phones, emails,
               {index < 2 && (
                 <div className="text-xs text-neutral-600 bg-neutral-100 px-2 py-1 rounded mr-3 whitespace-nowrap">
                   <i className="bi bi-clock"></i>
-                  Best: {index === 0 ? '9-11 AM' : '6-8 PM'}
+                  {t('customers:fields.preferred_contact')}: {index === 0 ? '9-11 AM' : '6-8 PM'}
                 </div>
               )}
               <div className="flex gap-2">
                 <Button size="sm" variant="primary">
                   <i className="bi bi-telephone mr-1"></i>
-                  Call
+                  {t('customers:actions.make_call')}
                 </Button>
                 {phone.type === 'MOBILE' && (
                   <Button size="sm" variant="secondary">
                     <i className="bi bi-chat mr-1"></i>
-                    SMS
+                    {t('customers:contact_methods.sms')}
                   </Button>
                 )}
               </div>
@@ -69,7 +71,7 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ phones, emails,
         <div className="contact-section mb-6">
           <div className="text-sm font-semibold text-neutral-600 mb-3 flex items-center">
             <i className="bi bi-envelope text-primary-500 mr-2"></i>
-            Email Addresses
+            {t('customers:fields.email')}
           </div>
           
           {emails && emails.map((email, index) => (
@@ -79,7 +81,7 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ phones, emails,
               </div>
               <div className="flex-1">
                 <div className="text-xs text-neutral-500 mb-1">
-                  EMAIL {email.isPrimary && '(Primary)'} {email.isVerified && '(Verified)'}
+                  {t('customers:contact_methods.email')} {email.isPrimary && `(${t('forms:options.primary')})`} {email.isVerified && `(${t('forms:options.verified')})`}
                 </div>
                 <div className="font-semibold text-neutral-800">
                   {email.address}
@@ -88,7 +90,7 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ phones, emails,
               <div className="flex gap-2">
                 <Button size="sm" variant="primary">
                   <i className="bi bi-envelope mr-1"></i>
-                  Email
+                  {t('customers:contact_methods.email')}
                 </Button>
               </div>
             </div>
@@ -99,7 +101,7 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ phones, emails,
         <div className="contact-section">
           <div className="text-sm font-semibold text-neutral-600 mb-3 flex items-center">
             <i className="bi bi-geo-alt text-primary-500 mr-2"></i>
-            Addresses
+            {t('customers:fields.address')}
           </div>
           
           {addresses && addresses.map((address, index) => (
@@ -109,7 +111,7 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ phones, emails,
               </div>
               <div className="flex-1">
                 <div className="text-xs text-neutral-500 mb-1">
-                  {address.type} ADDRESS {address.isPrimary && '(Primary)'} {address.isVerified && '(Verified)'}
+                  {address.type} {t('customers:fields.address')} {address.isPrimary && `(${t('forms:options.primary')})`} {address.isVerified && `(${t('forms:options.verified')})`}
                 </div>
                 <div className="font-semibold text-neutral-800">
                   {address.addressLine1}
@@ -120,7 +122,7 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ phones, emails,
               <div className="flex gap-2">
                 <Button size="sm" variant="secondary">
                   <i className="bi bi-map mr-1"></i>
-                  Map
+                  {t('common:buttons.view')}
                 </Button>
               </div>
             </div>

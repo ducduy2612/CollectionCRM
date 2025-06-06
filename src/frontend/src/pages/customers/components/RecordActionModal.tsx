@@ -8,6 +8,7 @@ import { Spinner } from '../../../components/ui/Spinner';
 import { Alert } from '../../../components/ui/Alert';
 import { workflowApi, ActionType, ActionSubtype, ActionResult } from '../../../services/api/workflow.api';
 import { Customer, Loan } from '../types';
+import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 interface RecordActionModalProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
   loans,
   onSuccess
 }) => {
+  const { t } = useTranslation();
   // State for dropdown options
   const [actionTypes, setActionTypes] = useState<ActionType[]>([]);
   const [actionSubtypes, setActionSubtypes] = useState<ActionSubtype[]>([]);
@@ -105,7 +107,7 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
       const types = await workflowApi.getActionTypes();
       setActionTypes(types);
     } catch (err) {
-      setError('Failed to load action types');
+      setError(t('customers:record_action.messages.failed_to_load_action_types'));
       console.error('Error loading action types:', err);
     } finally {
       setLoading(false);
@@ -246,20 +248,20 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
     const selectedActions = Object.values(loanActions).filter(action => action.selected);
     
     if (selectedActions.length === 0) {
-      return 'Please select at least one loan to record actions for.';
+      return t('customers:record_action.validation.select_at_least_one_loan');
     }
 
     if (!selectedActionTypeId) {
-      return 'Please select an Action Type.';
+      return t('customers:record_action.validation.select_action_type');
     }
 
     if (!selectedActionSubtypeId) {
-      return 'Please select an Action SubType.';
+      return t('customers:record_action.validation.select_action_subtype');
     }
 
     for (const action of selectedActions) {
       if (!action.actionResultId) {
-        return 'Please select an Action Result for all selected loans.';
+        return t('customers:record_action.validation.select_action_result');
       }
 
       // Validate promise fields if result is PROMISE_TO_PAY
@@ -267,10 +269,10 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
       
       if (actionResult?.result_code === 'PROMISE_TO_PAY') {
         if (!action.promiseAmount || parseFloat(action.promiseAmount) <= 0) {
-          return 'Promise Amount is required and must be greater than 0 for Promise to Pay actions.';
+          return t('customers:record_action.validation.promise_amount_required');
         }
         if (!action.promiseDate) {
-          return 'Promise Date is required for Promise to Pay actions.';
+          return t('customers:record_action.validation.promise_date_required');
         }
       }
     }
@@ -313,13 +315,18 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
       const result = await workflowApi.recordBulkActions(bulkActions);
       
       if (result.summary.failed > 0) {
-        setError(`${result.summary.successful} actions recorded successfully, ${result.summary.failed} failed.`);
+        setError(t('customers:record_action.messages.partial_success', {
+          replace: {
+            successful: result.summary.successful,
+            failed: result.summary.failed
+          }
+        }));
       } else {
         onSuccess?.();
         onClose();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to record actions');
+      setError(err instanceof Error ? err.message : t('customers:messages.failed_to_load_action_types'));
       console.error('Error recording actions:', err);
     } finally {
       setSubmitting(false);
@@ -363,8 +370,10 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Record Action"
-      description={`Record actions for ${customer.name} (${customer.cif})`}
+      title={t('customers:record_action.title')}
+      description={t('customers:record_action.description', {
+        replace: { name: customer.name, cif: customer.cif }
+      })}
       size="full"
     >
       <div className="space-y-6">
@@ -382,21 +391,21 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
           <>
             {/* Customer-level Action Type and SubType Selection */}
             <div className="bg-neutral-50 border rounded-lg p-4">
-              <h4 className="font-medium text-neutral-900 mb-4">Action Configuration</h4>
+              <h4 className="font-medium text-neutral-900 mb-4">{t('customers:record_action.action_configuration')}</h4>
               <div className="grid grid-cols-2 gap-4">
                 <Select
-                  label="Action Type"
+                  label={t('customers:record_action.action_type')}
                   options={getActionTypeOptions()}
                   value={selectedActionTypeId}
                   onChange={(e) => handleActionTypeChange(e.target.value)}
-                  placeholder="Select Action Type"
+                  placeholder={t('customers:record_action.placeholders.select_action_type')}
                 />
                 <Select
-                  label="Action SubType"
+                  label={t('customers:record_action.action_subtype')}
                   options={getActionSubtypeOptions()}
                   value={selectedActionSubtypeId}
                   onChange={(e) => handleActionSubtypeChange(e.target.value)}
-                  placeholder="Select Action SubType"
+                  placeholder={t('customers:record_action.placeholders.select_action_subtype')}
                   disabled={!selectedActionTypeId}
                 />
               </div>
@@ -418,14 +427,14 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
                         className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
                       />
                     </TableHead>
-                    <TableHead>Loan Account</TableHead>
-                    <TableHead>Due Amount</TableHead>
-                    <TableHead>DPD</TableHead>
-                    <TableHead>Action Result</TableHead>
-                    <TableHead>Follow Up Date</TableHead>
-                    <TableHead>Promise Amount</TableHead>
-                    <TableHead>Promise Date</TableHead>
-                    <TableHead>Notes</TableHead>
+                    <TableHead>{t('customers:record_action.loan_account')}</TableHead>
+                    <TableHead>{t('customers:record_action.due_amount')}</TableHead>
+                    <TableHead>{t('customers:record_action.dpd')}</TableHead>
+                    <TableHead>{t('customers:record_action.action_result')}</TableHead>
+                    <TableHead>{t('customers:record_action.follow_up_date')}</TableHead>
+                    <TableHead>{t('customers:record_action.promise_amount')}</TableHead>
+                    <TableHead>{t('customers:record_action.promise_date')}</TableHead>
+                    <TableHead>{t('customers:record_action.notes')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -451,7 +460,7 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
                             options={getActionResultOptions()}
                             value={action?.actionResultId || ''}
                             onChange={(e) => handleActionResultChange(loan.accountNumber, e.target.value)}
-                            placeholder="Select Result"
+                            placeholder={t('customers:record_action.placeholders.select_result')}
                             disabled={!selectedActionSubtypeId}
                             className="min-w-[150px]"
                           />
@@ -471,7 +480,7 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
                             value={action?.promiseAmount || ''}
                             onChange={(e) => handleFieldChange(loan.accountNumber, 'promiseAmount', e.target.value)}
                             disabled={!isPromiseToPay}
-                            placeholder={isPromiseToPay ? 'Required' : 'N/A'}
+                            placeholder={isPromiseToPay ? t('customers:record_action.placeholders.required') : t('customers:record_action.placeholders.na')}
                             className="min-w-[120px]"
                           />
                         </TableCell>
@@ -481,7 +490,7 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
                             value={action?.promiseDate || ''}
                             onChange={(e) => handleFieldChange(loan.accountNumber, 'promiseDate', e.target.value)}
                             disabled={!isPromiseToPay}
-                            placeholder={isPromiseToPay ? 'Required' : 'N/A'}
+                            placeholder={isPromiseToPay ? t('customers:record_action.placeholders.required') : t('customers:record_action.placeholders.na')}
                             className="min-w-[140px]"
                           />
                         </TableCell>
@@ -490,7 +499,7 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
                             type="text"
                             value={action?.notes || ''}
                             onChange={(e) => handleFieldChange(loan.accountNumber, 'notes', e.target.value)}
-                            placeholder="Enter notes"
+                            placeholder={t('customers:record_action.placeholders.enter_notes')}
                             className="min-w-[200px]"
                           />
                         </TableCell>
@@ -503,13 +512,13 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
 
             {/* Global Notes Section */}
             <div className="border rounded-lg p-4 bg-neutral-50">
-              <h4 className="font-medium text-neutral-900 mb-3">Global Notes</h4>
+              <h4 className="font-medium text-neutral-900 mb-3">{t('customers:record_action.global_notes')}</h4>
               <div className="space-y-3">
                 <Input
                   type="text"
                   value={globalNotes}
                   onChange={(e) => setGlobalNotes(e.target.value)}
-                  placeholder="Enter notes to apply to all selected loans"
+                  placeholder={t('customers:record_action.placeholders.enter_global_notes')}
                 />
                 <label className="flex items-center space-x-2">
                   <input
@@ -519,7 +528,7 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
                     className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
                   />
                   <span className="text-sm text-neutral-700">
-                    Apply these notes to all selected loans
+                    {t('customers:record_action.apply_global_notes')}
                   </span>
                 </label>
               </div>
@@ -530,20 +539,22 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
 
       <ModalFooter>
         <Button variant="secondary" onClick={onClose} disabled={submitting}>
-          Cancel
+          {t('forms:buttons.cancel')}
         </Button>
-        <Button 
-          variant="primary" 
-          onClick={handleSubmit} 
+        <Button
+          variant="primary"
+          onClick={handleSubmit}
           disabled={loading || submitting || selectedCount === 0}
         >
           {submitting ? (
             <>
               <Spinner size="sm" className="mr-2" />
-              Recording Actions...
+              {t('customers:record_action.recording_actions')}
             </>
           ) : (
-            `Record Actions (${selectedCount})`
+            t('customers:record_action.record_actions_count', {
+              replace: { count: selectedCount }
+            })
           )}
         </Button>
       </ModalFooter>

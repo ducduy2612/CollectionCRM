@@ -3,7 +3,9 @@ import { Loan } from '../types';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Badge } from '../../../components/ui/Badge';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../../components/ui/Table';
 import LoanDetails from './LoanDetails';
+import { useTranslation, useLocalization } from '../../../i18n/hooks/useTranslation';
 
 interface LoanSummaryProps {
   loans: Loan[];
@@ -13,18 +15,26 @@ type SortField = 'outstanding' | 'dueAmount' | 'dpd' | 'nextPaymentDate' | 'prod
 type SortDirection = 'asc' | 'desc';
 
 const LoanSummary: React.FC<LoanSummaryProps> = ({ loans }) => {
+  const { t } = useTranslation(['customers']);
+  const { formatDate: formatLocalizedDate, formatCurrency: formatLocalizedCurrency } = useLocalization();
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [selectedLoanAccount, setSelectedLoanAccount] = useState<string | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  // Helper function to format currency
+  
+  // Helper function to format currency with localization
   const formatCurrency = (amount: number | string) => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-      maximumFractionDigits: 0
-    }).format(numAmount || 0);
+    return formatLocalizedCurrency(numAmount || 0, 'VND');
+  };
+
+  // Helper function to format date with localization
+  const formatDate = (dateString: string) => {
+    return formatLocalizedDate(dateString, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
   };
 
   // Helper function to get status badge variant
@@ -122,88 +132,102 @@ const LoanSummary: React.FC<LoanSummaryProps> = ({ loans }) => {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Loan Summary ({loans.length} loans)</CardTitle>
+        <CardTitle>{t('customers:loan_summary.title')} ({t('customers:loan_summary.loans_count', { count: loans.length })})</CardTitle>
         <Button variant="secondary" size="sm">
           <i className="bi bi-graph-up mr-2"></i>
-          Analytics
+          {t('customers:loan_summary.analytics')}
         </Button>
       </CardHeader>
       
       <CardContent>
-        {/* Sortable Column Headers */}
-        <div className="grid grid-cols-5 p-3 bg-neutral-100 border rounded-md mb-4">
-          <button
-            onClick={() => handleSort('outstanding')}
-            className="text-left text-xs font-medium text-neutral-700 hover:text-blue-600 flex items-center"
-          >
-            Outstanding
-            {renderSortIcon('outstanding')}
-          </button>
-          <button
-            onClick={() => handleSort('dueAmount')}
-            className="text-left text-xs font-medium text-neutral-700 hover:text-blue-600 flex items-center"
-          >
-            Due Amount
-            {renderSortIcon('dueAmount')}
-          </button>
-          <button
-            onClick={() => handleSort('dpd')}
-            className="text-left text-xs font-medium text-neutral-700 hover:text-blue-600 flex items-center"
-          >
-            DPD
-            {renderSortIcon('dpd')}
-          </button>
-          <button
-            onClick={() => handleSort('nextPaymentDate')}
-            className="text-left text-xs font-medium text-neutral-700 hover:text-blue-600 flex items-center"
-          >
-            Next Payment
-            {renderSortIcon('nextPaymentDate')}
-          </button>
-          <button
-            onClick={() => handleSort('productType')}
-            className="text-left text-xs font-medium text-neutral-700 hover:text-blue-600 flex items-center"
-          >
-            Product Type
-            {renderSortIcon('productType')}
-          </button>
-        </div>
-
-        <div className="max-h-96 overflow-y-auto pr-2">
-          {sortedLoans.map((loan, index) => (
-            <div
-              key={index}
-              className="mb-4 border rounded-md overflow-hidden cursor-pointer hover:shadow-md hover:border-blue-300 transition-all duration-200"
-              onClick={() => handleLoanClick(loan.accountNumber)}
-            >
-              <div className="flex justify-between items-center p-3 bg-neutral-50 border-b border-neutral-200">
-                <div className="font-semibold">{loan.productType} #{loan.accountNumber}</div>
-                <div className="flex items-center gap-2">
-                  <Badge variant={getStatusVariant(loan.dpd)}>
-                    {loan.dpd === 0 ? 'Current' : `${loan.dpd} DPD`}
-                  </Badge>
-                  <i className="bi bi-chevron-right text-neutral-400"></i>
-                </div>
-              </div>
-              <div className="grid grid-cols-5 p-3">
-                <div>
-                  <div className="font-semibold">{formatCurrency(loan.outstanding)}</div>
-                </div>
-                <div>
-                  <div className="font-semibold">{formatCurrency(loan.dueAmount)}</div>
-                </div>
-                <div>
-                  <div className="font-semibold">{loan.dpd}</div>
-                </div>
-                <div>
-                  <div className="font-semibold">{new Date(loan.nextPaymentDate).toLocaleDateString()}</div>
-                </div>
-                <div>
-                  <div className="font-semibold">{loan.productType}</div>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="max-h-96 overflow-y-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>
+                  <button
+                    onClick={() => handleSort('productType')}
+                    className="text-left text-xs font-medium text-neutral-700 hover:text-blue-600 flex items-center"
+                  >
+                    {t('customers:loan_summary.product_type')}
+                    {renderSortIcon('productType')}
+                  </button>
+                </TableHead>
+                <TableHead>
+                  <button
+                    onClick={() => handleSort('outstanding')}
+                    className="text-left text-xs font-medium text-neutral-700 hover:text-blue-600 flex items-center"
+                  >
+                    {t('customers:loan_summary.outstanding')}
+                    {renderSortIcon('outstanding')}
+                  </button>
+                </TableHead>
+                <TableHead>
+                  <button
+                    onClick={() => handleSort('dueAmount')}
+                    className="text-left text-xs font-medium text-neutral-700 hover:text-blue-600 flex items-center"
+                  >
+                    {t('customers:loan_summary.due_amount')}
+                    {renderSortIcon('dueAmount')}
+                  </button>
+                </TableHead>
+                <TableHead>
+                  <button
+                    onClick={() => handleSort('dpd')}
+                    className="text-left text-xs font-medium text-neutral-700 hover:text-blue-600 flex items-center"
+                  >
+                    {t('customers:loan_summary.dpd')}
+                    {renderSortIcon('dpd')}
+                  </button>
+                </TableHead>
+                <TableHead>
+                  <button
+                    onClick={() => handleSort('nextPaymentDate')}
+                    className="text-left text-xs font-medium text-neutral-700 hover:text-blue-600 flex items-center"
+                  >
+                    {t('customers:loan_summary.next_payment')}
+                    {renderSortIcon('nextPaymentDate')}
+                  </button>
+                </TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sortedLoans.map((loan, index) => (
+                <TableRow
+                  key={index}
+                  clickable={true}
+                  onClick={() => handleLoanClick(loan.accountNumber)}
+                >
+                  <TableCell className="whitespace-nowrap">
+                    <div className="font-semibold text-primary-700">
+                      {loan.productType}
+                    </div>
+                    <div className="text-sm text-neutral-600">
+                      #{loan.accountNumber}
+                    </div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm font-semibold">
+                    {formatCurrency(loan.outstanding)}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm font-semibold text-danger-600">
+                    {formatCurrency(loan.dueAmount)}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    <Badge variant={getStatusVariant(loan.dpd)}>
+                      {loan.dpd === 0 ? t('customers:loan_summary.current') : `${loan.dpd} ${t('customers:loan_summary.dpd')}`}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm font-semibold">
+                    {formatDate(loan.nextPaymentDate)}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    <i className="bi bi-chevron-right text-neutral-400"></i>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
         
         {/* Totals Section */}
@@ -211,11 +235,11 @@ const LoanSummary: React.FC<LoanSummaryProps> = ({ loans }) => {
           <div className="mt-4 pt-4 border-t border-neutral-200">
             <div className="grid grid-cols-5 p-3 bg-neutral-50 rounded-md">
               <div>
-                <div className="text-xs text-neutral-500 mb-1">Total Outstanding</div>
+                <div className="text-xs text-neutral-500 mb-1">{t('customers:loan_summary.total_outstanding')}</div>
                 <div className="font-bold text-lg">{formatCurrency(totalOutstanding)}</div>
               </div>
               <div>
-                <div className="text-xs text-neutral-500 mb-1">Total Due Amount</div>
+                <div className="text-xs text-neutral-500 mb-1">{t('customers:loan_summary.total_due_amount')}</div>
                 <div className="font-bold text-lg">{formatCurrency(totalDueAmount)}</div>
               </div>
               <div>
@@ -227,7 +251,7 @@ const LoanSummary: React.FC<LoanSummaryProps> = ({ loans }) => {
                 <div className="font-semibold">-</div>
               </div>
               <div>
-                <div className="text-xs text-neutral-500 mb-1">Total Loans</div>
+                <div className="text-xs text-neutral-500 mb-1">{t('customers:loan_summary.total_loans')}</div>
                 <div className="font-bold text-lg">{loans.length}</div>
               </div>
             </div>

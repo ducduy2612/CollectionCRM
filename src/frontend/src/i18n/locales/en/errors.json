@@ -77,6 +77,8 @@
   },
   "not_found": {
     "page_not_found": "Page not found",
+    "page_not_found_title": "Page Not Found",
+    "page_not_found_description": "The page you're looking for doesn't exist.",
     "resource_not_found": "Resource not found",
     "file_not_found": "File not found",
     "user_not_found": "User not found",
@@ -175,7 +177,8 @@
     "reload_page": "Reload Page",
     "clear_cache": "Clear Cache",
     "logout": "Logout",
-    "login": "Login"
+    "login": "Login",
+    "go_to_dashboard": "Go to Dashboard"
   },
   "codes": {
     "error_400": "Bad Request",

@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { CustomerAction } from '../types';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Badge } from '../../../components/ui/Badge';
 import { Spinner } from '../../../components/ui/Spinner';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../../components/ui/Table';
 import ActionSearchModal, { ActionSearchFilters } from './ActionSearchModal';
 import { workflowApi } from '../../../services/api/workflow.api';
+import { useTranslation, useLocalization } from '../../../i18n/hooks/useTranslation';
 
 interface ActionHistoryProps {
   cif?: string;
@@ -14,14 +16,21 @@ interface ActionHistoryProps {
   onLastContactDateChange?: (date: string | undefined) => void; // Callback to pass last contact date to parent
 }
 
+type SortField = 'actionType' | 'actionDate' | 'loanAccountNumber' | 'agent' | 'dueAmount' | 'dpd' | 'fUpdate' | 'actionResult';
+type SortDirection = 'asc' | 'desc';
+
 const ActionHistory: React.FC<ActionHistoryProps> = ({
   cif,
   limit = 10,
   onActionRefresh,
   onLastContactDateChange
 }) => {
+  const { t } = useTranslation(['customers', 'tables', 'common']);
+  const { formatDate: formatLocalizedDate, formatCurrency: formatLocalizedCurrency } = useLocalization();
   // Internal state for actions and pagination
   const [actions, setActions] = useState<CustomerAction[]>([]);
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [pagination, setPagination] = useState({
     page: 1,
     pageSize: 10,
@@ -143,27 +152,22 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
     return 'secondary';
   };
 
-  // Helper function to format date
+  // Helper function to format date with localization
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
+    return formatLocalizedDate(dateString, {
       year: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
     });
   };
 
-  // Helper function to format currency
+  // Helper function to format currency with localization
   const formatCurrency = (amount: number | string) => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-      maximumFractionDigits: 0
-    }).format(numAmount || 0);
+    return formatLocalizedCurrency(numAmount || 0, 'VND');
   };
 
   // Helper function to get DPD badge variant
@@ -172,6 +176,82 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
     if (dpd <= 30) return 'warning';
     return 'danger';
   };
+
+  // Sorting function
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  // Helper function to render sort icon
+  const renderSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <i className="bi bi-arrow-down-up text-neutral-400 ml-1"></i>;
+    }
+    return sortDirection === 'asc'
+      ? <i className="bi bi-arrow-up text-blue-600 ml-1"></i>
+      : <i className="bi bi-arrow-down text-blue-600 ml-1"></i>;
+  };
+
+  // Sort actions based on current sort field and direction
+  const sortedActions = useMemo(() => {
+    if (!sortField) return actions;
+
+    return [...actions].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortField) {
+        case 'actionType':
+          aValue = a.actionType?.name || a.actionType?.code || '';
+          bValue = b.actionType?.name || b.actionType?.code || '';
+          break;
+        case 'actionDate':
+          aValue = new Date(a.actionDate || a.createdAt).getTime();
+          bValue = new Date(b.actionDate || b.createdAt).getTime();
+          break;
+        case 'loanAccountNumber':
+          aValue = a.loanAccountNumber || '';
+          bValue = b.loanAccountNumber || '';
+          break;
+        case 'agent':
+          aValue = a.agent?.name || '';
+          bValue = b.agent?.name || '';
+          break;
+        case 'dueAmount':
+          aValue = typeof a.dueAmount === 'string' ? parseFloat(a.dueAmount) || 0 : Number(a.dueAmount) || 0;
+          bValue = typeof b.dueAmount === 'string' ? parseFloat(b.dueAmount) || 0 : Number(b.dueAmount) || 0;
+          break;
+        case 'dpd':
+          aValue = a.dpd || 0;
+          bValue = b.dpd || 0;
+          break;
+        case 'fUpdate':
+          aValue = a.fUpdate ? new Date(a.fUpdate).getTime() : 0;
+          bValue = b.fUpdate ? new Date(b.fUpdate).getTime() : 0;
+          break;
+        case 'actionResult':
+          aValue = a.actionResult?.name || a.actionResult?.code || '';
+          bValue = b.actionResult?.name || b.actionResult?.code || '';
+          break;
+        default:
+          return 0;
+      }
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [actions, sortField, sortDirection]);
 
   const handlePageChange = async (newPage: number) => {
     await loadActions(newPage, currentFilters);
@@ -218,12 +298,12 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Action History</CardTitle>
+        <CardTitle>{t('customers:tabs.actions')}</CardTitle>
         <div className="flex items-center space-x-2">
           {hasActiveFilters && (
             <div className="flex items-center space-x-2">
               <span className="text-sm text-neutral-600">
-                {Object.keys(currentFilters).length} filter{Object.keys(currentFilters).length !== 1 ? 's' : ''} active
+                {Object.keys(currentFilters).length} {t('tables:filters.filters_active')}
               </span>
               <Button
                 variant="secondary"
@@ -232,7 +312,7 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
                 disabled={loading}
               >
                 <i className="bi bi-x-circle mr-1"></i>
-                Clear
+                {t('tables:filters.clear_filters')}
               </Button>
             </div>
           )}
@@ -243,7 +323,7 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
             disabled={loading}
           >
             <i className="bi bi-search mr-1"></i>
-            Search
+            {t('common:buttons.search')}
           </Button>
         </div>
       </CardHeader>
@@ -257,98 +337,178 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
         
         {!loading && !initialLoad && actions.length === 0 && (
           <div className="text-center py-8 text-neutral-500">
-            {hasActiveFilters ? 'No actions match the current filters' : 'No actions found'}
+            {hasActiveFilters ? t('tables:search.no_results') : t('customers:messages.no_customers')}
           </div>
         )}
         
         {!loading && !initialLoad && actions.length > 0 && (
           <div className="space-y-4">
-            <div className="max-h-96 overflow-y-auto space-y-4 pr-2">
-              {actions.map((action, index) => (
-                <div key={action.id || index} className="p-3 border-l-4 border-primary-500 bg-neutral-50 rounded-r-md">
-                  <div className="flex justify-between mb-2">
-                    <div className="font-semibold flex items-center">
-                      <i className={`bi ${getActionTypeIcon(action.actionType?.code || '')} mr-2 text-primary-600`}></i>
-                      <Badge variant={getActionBadgeVariant(action.actionType?.code || '')}>
-                        {action.actionType?.name || action.actionType?.code || 'Unknown'}
-                      </Badge>
-                      {action.actionSubtype && (
-                        <span className="ml-2 text-sm text-neutral-600">
-                          {action.actionSubtype.name || action.actionSubtype.code}
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-sm text-neutral-500">
-                      {formatDate(action.actionDate || action.createdAt)}
-                    </div>
-                  </div>
-                  
-                  {/* Additional Information Section */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3 text-sm bg-white p-3 rounded border">
-                    <div className="space-y-2">
-                      {action.loanAccountNumber && (
+            <div className="max-h-96 overflow-y-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>
+                      <button
+                        onClick={() => handleSort('actionType')}
+                        className="text-left text-xs font-medium text-neutral-700 hover:text-blue-600 flex items-center"
+                      >
+                        {t('tables:headers.action_type')}
+                        {renderSortIcon('actionType')}
+                      </button>
+                    </TableHead>
+                    <TableHead>
+                      <button
+                        onClick={() => handleSort('actionDate')}
+                        className="text-left text-xs font-medium text-neutral-700 hover:text-blue-600 flex items-center"
+                      >
+                        {t('tables:headers.date')}
+                        {renderSortIcon('actionDate')}
+                      </button>
+                    </TableHead>
+                    <TableHead>
+                      <button
+                        onClick={() => handleSort('loanAccountNumber')}
+                        className="text-left text-xs font-medium text-neutral-700 hover:text-blue-600 flex items-center"
+                      >
+                        {t('tables:headers.loan_account_number')}
+                        {renderSortIcon('loanAccountNumber')}
+                      </button>
+                    </TableHead>
+                    <TableHead>
+                      <button
+                        onClick={() => handleSort('agent')}
+                        className="text-left text-xs font-medium text-neutral-700 hover:text-blue-600 flex items-center"
+                      >
+                        {t('tables:headers.agent')}
+                        {renderSortIcon('agent')}
+                      </button>
+                    </TableHead>
+                    <TableHead>
+                      <button
+                        onClick={() => handleSort('dueAmount')}
+                        className="text-left text-xs font-medium text-neutral-700 hover:text-blue-600 flex items-center"
+                      >
+                        {t('tables:headers.amount')}
+                        {renderSortIcon('dueAmount')}
+                      </button>
+                    </TableHead>
+                    <TableHead>
+                      <button
+                        onClick={() => handleSort('dpd')}
+                        className="text-left text-xs font-medium text-neutral-700 hover:text-blue-600 flex items-center"
+                      >
+                        {t('tables:headers.delinquency_days')}
+                        {renderSortIcon('dpd')}
+                      </button>
+                    </TableHead>
+                    <TableHead>
+                      <button
+                        onClick={() => handleSort('fUpdate')}
+                        className="text-left text-xs font-medium text-neutral-700 hover:text-blue-600 flex items-center"
+                      >
+                        {t('customers:fields.follow_up')}
+                        {renderSortIcon('fUpdate')}
+                      </button>
+                    </TableHead>
+                    <TableHead>
+                      <button
+                        onClick={() => handleSort('actionResult')}
+                        className="text-left text-xs font-medium text-neutral-700 hover:text-blue-600 flex items-center"
+                      >
+                        {t('tables:headers.result')}
+                        {renderSortIcon('actionResult')}
+                      </button>
+                    </TableHead>
+                    <TableHead>{t('tables:headers.notes')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sortedActions.map((action, index) => (
+                    <TableRow key={action.id || index}>
+                      <TableCell className="whitespace-nowrap">
                         <div className="flex items-center">
-                          <i className="bi bi-credit-card mr-2 text-neutral-500"></i>
-                          <span className="text-neutral-600 font-medium">Loan Account:</span>
-                          <span className="ml-2 font-semibold text-primary-700">{action.loanAccountNumber}</span>
+                          <i className={`bi ${getActionTypeIcon(action.actionType?.code || '')} mr-2 text-primary-600`}></i>
+                          <div>
+                            <Badge variant={getActionBadgeVariant(action.actionType?.code || '')}>
+                              {action.actionType?.name || action.actionType?.code || t('common:status.unknown')}
+                            </Badge>
+                            {action.actionSubtype && (
+                              <div className="text-xs text-neutral-600 mt-1">
+                                {action.actionSubtype.name || action.actionSubtype.code}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      )}
-                      {action.agent?.name && (
-                        <div className="flex items-center">
-                          <i className="bi bi-person mr-2 text-neutral-500"></i>
-                          <span className="text-neutral-600 font-medium">Agent:</span>
-                          <span className="ml-2 font-semibold">{action.agent.name}</span>
-                        </div>
-                      )}
-                      {action.fUpdate && (
-                        <div className="flex items-center">
-                          <i className="bi bi-calendar-event mr-2 text-neutral-500"></i>
-                          <span className="text-neutral-600 font-medium">Follow-up:</span>
-                          <span className="ml-2 font-semibold text-info-700">
-                            {formatDate(action.fUpdate)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      {action.dueAmount !== undefined && action.dueAmount !== null && (
-                        <div className="flex items-center">
-                          <i className="bi bi-currency-dollar mr-2 text-neutral-500"></i>
-                          <span className="text-neutral-600 font-medium">Due Amount:</span>
-                          <span className="ml-2 font-semibold text-danger-600">
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm text-neutral-900">
+                        {formatDate(action.actionDate || action.createdAt)}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm">
+                        {action.loanAccountNumber ? (
+                          <span className="font-semibold text-primary-700">{action.loanAccountNumber}</span>
+                        ) : (
+                          <span className="text-neutral-400">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm">
+                        {action.agent?.name ? (
+                          <span className="font-semibold">{action.agent.name}</span>
+                        ) : (
+                          <span className="text-neutral-400">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm">
+                        {action.dueAmount !== undefined && action.dueAmount !== null ? (
+                          <span className="font-semibold text-danger-600">
                             {formatCurrency(action.dueAmount)}
                           </span>
-                        </div>
-                      )}
-                      {action.dpd !== undefined && action.dpd !== null && (
-                        <div className="flex items-center">
-                          <i className="bi bi-clock mr-2 text-neutral-500"></i>
-                          <span className="text-neutral-600 font-medium">DPD:</span>
-                          <Badge variant={getDpdBadgeVariant(action.dpd)} className="ml-2">
-                            {action.dpd} days
+                        ) : (
+                          <span className="text-neutral-400">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {action.dpd !== undefined && action.dpd !== null ? (
+                          <Badge variant={getDpdBadgeVariant(action.dpd)}>
+                            {action.dpd} {t('common:time.days')}
                           </Badge>
+                        ) : (
+                          <span className="text-neutral-400">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-sm">
+                        {action.fUpdate ? (
+                          <span className="text-info-700">
+                            {formatDate(action.fUpdate)}
+                          </span>
+                        ) : (
+                          <span className="text-neutral-400">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {action.actionResult ? (
+                          <Badge variant={getResultBadgeVariant(action.actionResult.code)}>
+                            {action.actionResult.name || action.actionResult.code}
+                          </Badge>
+                        ) : (
+                          <span className="text-neutral-400">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-sm text-neutral-700 max-w-xs">
+                        <div className="truncate" title={action.notes || t('customers:messages.no_notes')}>
+                          {action.notes || t('customers:messages.no_notes')}
                         </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <p className="text-neutral-700 mb-2">{action.notes || 'No notes provided'}</p>
-                    {action.actionResult && (
-                      <Badge variant={getResultBadgeVariant(action.actionResult.code)}>
-                        {action.actionResult.name || action.actionResult.code}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              ))}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
             
             {totalPages > 1 && (
               <div className="flex flex-col items-center space-y-2 pt-4 border-t">
                 <div className="text-sm text-neutral-600">
-                  Showing {actions.length} actions on this page
-                  {totalItems > 0 && ` (${totalItems} total)`}
+                  {t('tables:pagination.showing')} {actions.length} {t('customers:titles.actions')}
+                  {totalItems > 0 && ` (${totalItems} ${t('tables:pagination.total')})`}
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button
@@ -358,7 +518,7 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
                     disabled={currentPage === 1 || loading}
                   >
                     <i className="bi bi-chevron-left mr-1"></i>
-                    Previous
+                    {t('tables:pagination.previous')}
                   </Button>
                   
                   {generatePageNumbers().map((pageNum) => (
@@ -380,12 +540,12 @@ const ActionHistory: React.FC<ActionHistoryProps> = ({
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages || loading}
                   >
-                    Next
+                    {t('tables:pagination.next')}
                     <i className="bi bi-chevron-right ml-1"></i>
                   </Button>
                 </div>
                 <div className="text-xs text-neutral-500">
-                  Page {currentPage} of {totalPages}
+                  {t('tables:pagination.page')} {currentPage} {t('tables:pagination.of')} {totalPages}
                 </div>
               </div>
             )}

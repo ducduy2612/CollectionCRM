@@ -40,6 +40,7 @@
     "modified_by": "Modified By",
     "customer_id": "Customer ID",
     "account_number": "Account Number",
+    "loan_account_number": "Loan",
     "loan_id": "Loan ID",
     "payment_id": "Payment ID",
     "collection_status": "Collection Status",
@@ -49,7 +50,12 @@
     "last_contact": "Last Contact",
     "next_action": "Next Action",
     "resolution": "Resolution",
-    "outcome": "Outcome"
+    "outcome": "Outcome",
+    "principal": "Principal",
+    "interest": "Interest",
+    "total": "Total",
+    "action_type": "Action Type",
+    "result": "Result"
   },
   "actions": {
     "view": "View",
@@ -138,7 +144,8 @@
     "clear_filters": "Clear Filters",
     "apply_filters": "Apply Filters",
     "save_filter": "Save Filter",
-    "load_filter": "Load Filter"
+    "load_filter": "Load Filter",
+    "filters_active": "filters active"
   },
   "sorting": {
     "sort_by": "Sort by",

@@ -4,6 +4,7 @@ import { Button } from '../../../components/ui/Button';
 import { Select, SelectOption } from '../../../components/ui/Select';
 import { Input } from '../../../components/ui/Input';
 import { StatusDictItem, StatusUpdateRequest } from '../types';
+import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 interface StatusUpdateModalProps {
   isOpen: boolean;
@@ -40,6 +41,7 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
   collateralId,
   onSubmit
 }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>({
     statusId: '',
     substateId: '',
@@ -68,12 +70,12 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
   // Get status type display name
   const getStatusTypeDisplayName = (type: string) => {
     switch (type) {
-      case 'customer': return 'Customer Status';
-      case 'collateral': return 'Collateral Status';
-      case 'processing_state': return 'Processing State';
-      case 'lending_violation': return 'Lending Violation';
-      case 'recovery_ability': return 'Recovery Ability';
-      default: return 'Status';
+      case 'customer': return t('customers:status_update.customer_status');
+      case 'collateral': return t('customers:status_update.collateral_status');
+      case 'processing_state': return t('customers:status_update.processing_state');
+      case 'lending_violation': return t('customers:status_update.lending_violation');
+      case 'recovery_ability': return t('customers:status_update.recovery_ability');
+      default: return t('customers:fields.status');
     }
   };
 
@@ -99,25 +101,25 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
     const newErrors: FormErrors = {};
 
     if (!formData.statusId.trim()) {
-      newErrors.statusId = 'Status is required';
+      newErrors.statusId = t('customers:status_update.validation.status_required');
     }
 
     if (statusType === 'processing_state' && substateOptions && substateOptions.length > 0 && !formData.substateId?.trim()) {
-      newErrors.substateId = 'Substate is required';
+      newErrors.substateId = t('customers:status_update.validation.substate_required');
     }
 
     if (!formData.actionDate.trim()) {
-      newErrors.actionDate = 'Action date is required';
+      newErrors.actionDate = t('customers:status_update.validation.action_date_required');
     } else {
       const actionDate = new Date(formData.actionDate);
       const now = new Date();
       if (actionDate > now) {
-        newErrors.actionDate = 'Action date cannot be in the future';
+        newErrors.actionDate = t('customers:status_update.validation.action_date_future');
       }
     }
 
     if (formData.notes.trim().length > 500) {
-      newErrors.notes = 'Notes cannot exceed 500 characters';
+      newErrors.notes = t('customers:status_update.validation.notes_max_length');
     }
 
     setErrors(newErrors);
@@ -184,8 +186,12 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleCancel}
-      title={`Update ${getStatusTypeDisplayName(statusType)}`}
-      description={`Record a new ${getStatusTypeDisplayName(statusType).toLowerCase()} update`}
+      title={t('customers:status_update.title', {
+        replace: { statusType: getStatusTypeDisplayName(statusType) }
+      })}
+      description={t('customers:status_update.description', {
+        replace: { statusType: getStatusTypeDisplayName(statusType).toLowerCase() }
+      })}
       size="md"
       closeOnOverlayClick={!isSubmitting}
       closeOnEsc={!isSubmitting}
@@ -197,7 +203,9 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
           options={statusSelectOptions}
           value={formData.statusId}
           onChange={(e) => handleInputChange('statusId', e.target.value)}
-          placeholder={`Select ${getStatusTypeDisplayName(statusType).toLowerCase()}...`}
+          placeholder={t('customers:status_update.placeholders.select_status', {
+            replace: { statusType: getStatusTypeDisplayName(statusType).toLowerCase() }
+          })}
           error={errors.statusId}
           required
           disabled={isSubmitting}
@@ -206,11 +214,11 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
         {/* Substate Selection (only for processing_state) */}
         {statusType === 'processing_state' && substateSelectOptions.length > 0 && (
           <Select
-            label="Processing Substate"
+            label={t('customers:status_update.processing_substate')}
             options={substateSelectOptions}
             value={formData.substateId || ''}
             onChange={(e) => handleInputChange('substateId', e.target.value)}
-            placeholder="Select processing substate..."
+            placeholder={t('customers:status_update.placeholders.select_substate')}
             error={errors.substateId}
             disabled={isSubmitting || !formData.statusId}
           />
@@ -219,11 +227,11 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
         {/* Action Date */}
         <Input
           type="datetime-local"
-          label="Action Date"
+          label={t('customers:status_update.action_date')}
           value={formData.actionDate}
           onChange={(e) => handleInputChange('actionDate', e.target.value)}
           error={errors.actionDate}
-          hint="Date and time when this status change occurred"
+          hint={t('customers:status_update.action_date_hint')}
           required
           disabled={isSubmitting}
           max={new Date().toISOString().slice(0, 16)}
@@ -232,12 +240,12 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
         {/* Notes */}
         <div className="w-full">
           <label className="block mb-2 text-sm font-medium text-neutral-700">
-            Notes
+            {t('customers:status_update.notes')}
           </label>
           <textarea
             value={formData.notes}
             onChange={(e) => handleInputChange('notes', e.target.value)}
-            placeholder="Add any relevant notes about this status change..."
+            placeholder={t('customers:status_update.notes_placeholder')}
             rows={4}
             maxLength={500}
             disabled={isSubmitting}
@@ -250,17 +258,19 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
               <p className="text-xs text-danger-600">{errors.notes}</p>
             )}
             <p className="text-xs text-neutral-500 ml-auto">
-              {formData.notes.length}/500 characters
+              {t('customers:status_update.notes_counter', {
+                replace: { count: formData.notes.length }
+              })}
             </p>
           </div>
         </div>
 
         {/* Customer Info Display */}
         <div className="bg-neutral-50 rounded-md p-3 border border-neutral-200">
-          <div className="text-xs text-neutral-600 mb-1">Customer</div>
+          <div className="text-xs text-neutral-600 mb-1">{t('customers:status_update.customer')}</div>
           <div className="text-sm font-medium text-neutral-800">CIF: {cif}</div>
           {statusType === 'collateral' && collateralId && (
-            <div className="text-xs text-neutral-600 mt-1">Collateral ID: {collateralId}</div>
+            <div className="text-xs text-neutral-600 mt-1">{t('customers:status_update.collateral_id')}: {collateralId}</div>
           )}
         </div>
       </form>
@@ -272,7 +282,7 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
           onClick={handleCancel}
           disabled={isSubmitting}
         >
-          Cancel
+          {t('forms:buttons.cancel')}
         </Button>
         <Button
           type="submit"
@@ -286,10 +296,10 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Updating...
+              {t('customers:status_update.updating')}
             </div>
           ) : (
-            'Update Status'
+            t('customers:status_update.update_status')
           )}
         </Button>
       </ModalFooter>

@@ -8,6 +8,7 @@ import {
 } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from '../../i18n/hooks/useTranslation';
 
 interface FormProps<TFieldValues extends FieldValues = FieldValues> {
   children: (methods: UseFormReturn<TFieldValues>) => React.ReactNode;
@@ -52,12 +53,18 @@ export const FormField: React.FC<FormFieldProps> = ({
   required,
   children,
 }) => {
+  const { t } = useTranslation(['forms', 'common']);
+
   return (
     <div className="mb-4">
       {label && (
         <label htmlFor={name} className="block mb-2 text-sm font-medium text-neutral-700">
           {label}
-          {required && <span className="text-danger-500 ml-1">*</span>}
+          {required && (
+            <span className="text-danger-500 ml-1" title={t('forms:validation.required')}>
+              {t('forms:indicators.required')}
+            </span>
+          )}
         </label>
       )}
       {children}

@@ -1,4 +1,5 @@
 {
+  "quick_actions": "Quick Actions",
   "titles": {
     "settings": "Settings",
     "general_settings": "General Settings",
@@ -22,15 +23,19 @@
     "groups": "Groups",
     "sessions": "Sessions",
     "add_user": "Add User",
+    "add_role": "Add Role",
     "edit_user": "Edit User",
     "delete_user": "Delete User",
+    "delete_role": "Delete Role",
     "activate_user": "Activate User",
     "deactivate_user": "Deactivate User",
     "reset_password": "Reset Password",
     "assign_role": "Assign Role",
     "remove_role": "Remove Role",
     "view_permissions": "View Permissions",
+    "view_users": "View Users",
     "manage_sessions": "Manage Sessions",
+    "manage_users": "Manage Users",
     "user_details": "User Details",
     "user_activity": "User Activity",
     "login_history": "Login History"
@@ -182,7 +187,32 @@
     "settings_restored": "Settings restored successfully",
     "unsaved_changes": "You have unsaved changes",
     "confirm_reset": "Are you sure you want to reset all settings?",
-    "confirm_restore": "Are you sure you want to restore settings?"
+    "confirm_restore": "Are you sure you want to restore settings?",
+    "back_to_settings": "Back to Settings",
+    "user_management_description": "Manage user accounts, roles, and permissions across the system",
+    "cannot_delete_role_with_users": "Cannot delete the role \"{{roleName}}\" because it is currently assigned to {{userCount}} user(s).",
+    "delete_role_requirements": "Before deleting this role, you must:",
+    "remove_users_from_role": "Remove all users from this role, or",
+    "reassign_users_to_role": "Reassign users to a different role (e.g., default agent role)",
+    "confirm_delete_role": "Are you sure you want to delete the role \"{{roleName}}\"? This action cannot be undone.",
+    "add_user_description": "Add a new user to the system with their role and permissions",
+    "edit_user_description": "Update user information and role assignments",
+    "username_cannot_change": "Username cannot be changed after creation",
+    "hide_password": "Hide password",
+    "show_password": "Show password",
+    "password_requirements": "Password must be at least 8 characters and contain both letters and numbers",
+    "select_role": "Select a role...",
+    "loading_roles": "Loading roles...",
+    "manage_user_accounts": "Manage user accounts and permissions",
+    "configure_roles": "Configure roles and access levels",
+    "customer_management": "Customer Management",
+    "workflow_management": "Workflow Management",
+    "system_access": "System Access",
+    "create_role_description": "Create a new role with specific permissions for system access",
+    "edit_role_description": "Update role permissions and settings",
+    "enter_role_name": "Enter role name",
+    "role_name_cannot_change": "Role name cannot be changed after creation",
+    "selected_permissions": "Selected {{selected}} of {{total}} permissions"
   },
   "validation": {
     "required_field": "This field is required",
@@ -194,6 +224,8 @@
     "passwords_dont_match": "Passwords do not match",
     "invalid_format": "Invalid format",
     "value_too_large": "Value is too large",
-    "value_too_small": "Value is too small"
+    "value_too_small": "Value is too small",
+    "password_letters_numbers": "Password must contain both letters and numbers",
+    "select_valid_role": "Please select a valid role"
   }
 }

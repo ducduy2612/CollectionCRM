@@ -77,6 +77,8 @@
   },
   "not_found": {
     "page_not_found": "Không tìm thấy trang",
+    "page_not_found_title": "Không Tìm Thấy Trang",
+    "page_not_found_description": "Trang bạn đang tìm kiếm không tồn tại.",
     "resource_not_found": "Không tìm thấy tài nguyên",
     "file_not_found": "Không tìm thấy tệp",
     "user_not_found": "Không tìm thấy người dùng",

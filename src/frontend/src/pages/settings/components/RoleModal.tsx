@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button, Alert } from '../../../components/ui';
 import { authApi, RoleResponse, RoleData, UpdateRoleData, PermissionData } from '../../../services/api/auth.api';
+import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 // Available permissions based on backend format (resource:action)
 const AVAILABLE_PERMISSIONS = [
@@ -97,6 +98,7 @@ const RoleModal: React.FC<RoleModalProps> = ({
   role,
   mode
 }) => {
+  const { t } = useTranslation();
   const [state, setState] = useState<RoleModalState>({
     formData: {
       name: '',
@@ -281,21 +283,21 @@ const RoleModal: React.FC<RoleModalProps> = ({
 
   // Group permissions by category for better organization
   const permissionGroups = {
-    'User Management': ['users:create', 'users:read', 'users:update', 'users:delete'],
-    'Role Management': ['roles:create', 'roles:read', 'roles:update', 'roles:delete'],
-    'Customer Management': ['customers:create', 'customers:read', 'customers:update', 'customers:delete'],
-    'Workflow Management': ['workflows:create', 'workflows:read', 'workflows:update', 'workflows:delete'],
-    'System Access': ['admin:access', 'supervisor:access']
+    [t('settings:titles.user_management')]: ['users:create', 'users:read', 'users:update', 'users:delete'],
+    [t('settings:user_management.roles')]: ['roles:create', 'roles:read', 'roles:update', 'roles:delete'],
+    [t('settings:messages.customer_management', { defaultValue: 'Customer Management' })]: ['customers:create', 'customers:read', 'customers:update', 'customers:delete'],
+    [t('settings:messages.workflow_management', { defaultValue: 'Workflow Management' })]: ['workflows:create', 'workflows:read', 'workflows:update', 'workflows:delete'],
+    [t('settings:messages.system_access', { defaultValue: 'System Access' })]: ['admin:access', 'supervisor:access']
   };
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={mode === 'create' ? 'Create New Role' : 'Edit Role'}
-      description={mode === 'create' 
-        ? 'Create a new role with specific permissions for system access'
-        : 'Update role permissions and settings'
+      title={mode === 'create' ? t('settings:user_management.add_role', { defaultValue: 'Create New Role' }) : t('settings:user_management.edit_role', { defaultValue: 'Edit Role' })}
+      description={mode === 'create'
+        ? t('settings:messages.create_role_description', { defaultValue: 'Create a new role with specific permissions for system access' })
+        : t('settings:messages.edit_role_description', { defaultValue: 'Update role permissions and settings' })
       }
       size="lg"
       closeOnOverlayClick={!state.loading}
@@ -312,19 +314,19 @@ const RoleModal: React.FC<RoleModalProps> = ({
         {/* Role Name Field */}
         <div>
           <Input
-            label="Role Name"
+            label={t('settings:user_fields.role')}
             type="text"
             value={state.formData.name}
             onChange={handleInputChange('name')}
             error={state.errors.name}
             disabled={mode === 'edit' || state.loading}
-            placeholder="Enter role name"
+            placeholder={t('settings:messages.enter_role_name', { defaultValue: 'Enter role name' })}
             required
             aria-describedby={state.errors.name ? 'name-error' : undefined}
           />
           {mode === 'edit' && (
             <p className="mt-1 text-xs text-neutral-500">
-              Role name cannot be changed after creation
+              {t('settings:messages.role_name_cannot_change', { defaultValue: 'Role name cannot be changed after creation' })}
             </p>
           )}
         </div>
@@ -332,14 +334,14 @@ const RoleModal: React.FC<RoleModalProps> = ({
         {/* Description Field */}
         <div>
           <label htmlFor="description" className="block text-sm font-medium text-neutral-700 mb-1">
-            Description
+            {t('forms:labels.description')}
           </label>
           <textarea
             id="description"
             value={state.formData.description}
             onChange={handleInputChange('description')}
             disabled={state.loading}
-            placeholder="Enter role description (optional)"
+            placeholder={t('forms:placeholders.enter_description')}
             rows={3}
             className="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-neutral-50 disabled:text-neutral-500"
             aria-describedby={state.errors.description ? 'description-error' : undefined}
@@ -355,7 +357,7 @@ const RoleModal: React.FC<RoleModalProps> = ({
         <div>
           <div className="flex items-center justify-between mb-3">
             <label className="block text-sm font-medium text-neutral-700">
-              Permissions *
+              {t('settings:user_management.permissions')} *
             </label>
             <button
               type="button"
@@ -363,9 +365,9 @@ const RoleModal: React.FC<RoleModalProps> = ({
               disabled={state.loading}
               className="text-sm text-primary-600 hover:text-primary-700 focus:outline-none focus:underline disabled:opacity-50"
             >
-              {state.formData.permissions.length === AVAILABLE_PERMISSIONS.length 
-                ? 'Deselect All' 
-                : 'Select All'
+              {state.formData.permissions.length === AVAILABLE_PERMISSIONS.length
+                ? t('tables:actions.deselect_all')
+                : t('tables:actions.select_all')
               }
             </button>
           </div>
@@ -401,7 +403,13 @@ const RoleModal: React.FC<RoleModalProps> = ({
           )}
 
           <p className="mt-2 text-xs text-neutral-500">
-            Selected {state.formData.permissions.length} of {AVAILABLE_PERMISSIONS.length} permissions
+            {t('settings:messages.selected_permissions', {
+              defaultValue: 'Selected {{selected}} of {{total}} permissions',
+              replace: {
+                selected: state.formData.permissions.length.toString(),
+                total: AVAILABLE_PERMISSIONS.length.toString()
+              }
+            })}
           </p>
         </div>
 
@@ -413,14 +421,14 @@ const RoleModal: React.FC<RoleModalProps> = ({
             onClick={handleClose}
             disabled={state.loading}
           >
-            Cancel
+            {t('common:cancel')}
           </Button>
           <Button
             type="submit"
             variant="primary"
             loading={state.loading}
           >
-            {mode === 'create' ? 'Create Role' : 'Update Role'}
+            {mode === 'create' ? t('settings:user_management.add_role', { defaultValue: 'Create Role' }) : t('settings:user_management.edit_role', { defaultValue: 'Update Role' })}
           </Button>
         </div>
       </form>

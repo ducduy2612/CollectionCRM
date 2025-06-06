@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  Table, 
-  TableHeader, 
-  TableBody, 
-  TableRow, 
-  TableHead, 
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
   TableCell,
   Button,
   Input,
@@ -13,6 +13,7 @@ import {
   Modal
 } from '../../../components/ui';
 import { authApi, RoleResponse, RoleUsersResponse } from '../../../services/api/auth.api';
+import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 // Icons as SVG components
 const SearchIcon = () => (
@@ -88,6 +89,7 @@ const RoleList: React.FC<RoleListProps> = ({
   onDeleteRole,
   refreshTrigger
 }) => {
+  const { t } = useTranslation();
   const [state, setState] = useState<RoleListState>({
     roles: [],
     loading: false,
@@ -275,7 +277,7 @@ const RoleList: React.FC<RoleListProps> = ({
 
   // Truncate description with tooltip
   const truncateDescription = (description: string | undefined, maxLength: number = 50) => {
-    if (!description) return 'No description';
+    if (!description) return t('common:no_description', { defaultValue: 'No description' });
     if (description.length <= maxLength) return description;
     return description.substring(0, maxLength) + '...';
   };
@@ -289,11 +291,11 @@ const RoleList: React.FC<RoleListProps> = ({
           <div className="flex-1 max-w-md">
             <Input
               type="text"
-              placeholder="Search roles by name or description..."
+              placeholder={t('tables:search.search_placeholder')}
               value={state.searchQuery}
               onChange={handleSearchChange}
               leftIcon={<SearchIcon />}
-              aria-label="Search roles"
+              aria-label={t('tables:actions.search')}
             />
           </div>
         </div>
@@ -302,10 +304,10 @@ const RoleList: React.FC<RoleListProps> = ({
         <Button
           onClick={handleAddRole}
           className="flex items-center gap-2"
-          aria-label="Add new role"
+          aria-label={t('settings:user_management.add_role', { defaultValue: 'Add new role' })}
         >
           <PlusIcon />
-          Add New Role
+          {t('settings:user_management.add_role', { defaultValue: 'Add New Role' })}
         </Button>
       </div>
 
@@ -313,7 +315,7 @@ const RoleList: React.FC<RoleListProps> = ({
       {filteredRoles.length > 0 && (
         <div className="text-sm text-neutral-600">
           <span>
-            Showing {filteredRoles.length} of {state.roles.length} roles
+            {t('tables:pagination.showing')} {filteredRoles.length} {t('tables:pagination.of')} {state.roles.length} {t('settings:user_management.roles').toLowerCase()}
           </span>
         </div>
       )}
@@ -331,7 +333,7 @@ const RoleList: React.FC<RoleListProps> = ({
           <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
             <div className="flex items-center gap-2">
               <Spinner size="sm" />
-              <span className="text-sm text-neutral-600">Loading roles...</span>
+              <span className="text-sm text-neutral-600">{t('tables:messages.loading_data')}</span>
             </div>
           </div>
         )}
@@ -339,12 +341,12 @@ const RoleList: React.FC<RoleListProps> = ({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead className="text-center">Permissions</TableHead>
-              <TableHead className="text-center">Users</TableHead>
-              <TableHead className="hidden md:table-cell">Created</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>{t('tables:headers.name')}</TableHead>
+              <TableHead>{t('tables:headers.description')}</TableHead>
+              <TableHead className="text-center">{t('settings:user_management.permissions')}</TableHead>
+              <TableHead className="text-center">{t('settings:user_management.users')}</TableHead>
+              <TableHead className="hidden md:table-cell">{t('tables:headers.created_date')}</TableHead>
+              <TableHead className="text-right">{t('tables:headers.actions', { defaultValue: 'Actions' })}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -352,8 +354,8 @@ const RoleList: React.FC<RoleListProps> = ({
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-8 text-neutral-500">
                   {state.searchQuery.trim()
-                    ? 'No roles found matching your search criteria'
-                    : 'No roles found'
+                    ? t('tables:search.no_results')
+                    : t('tables:messages.no_data')
                   }
                 </TableCell>
               </TableRow>
@@ -398,7 +400,7 @@ const RoleList: React.FC<RoleListProps> = ({
                         variant="ghost"
                         size="icon"
                         onClick={() => handleEditRole(role)}
-                        aria-label={`Edit ${role.name} role`}
+                        aria-label={t('tables:actions.edit') + ' ' + role.name + ' role'}
                       >
                         <EditIcon />
                       </Button>
@@ -407,7 +409,7 @@ const RoleList: React.FC<RoleListProps> = ({
                         variant="ghost"
                         size="icon"
                         onClick={() => handleViewUsers(role)}
-                        aria-label={`View users with ${role.name} role`}
+                        aria-label={t('settings:user_management.view_users', { defaultValue: 'View users' }) + ' with ' + role.name + ' role'}
                       >
                         <UsersIcon />
                       </Button>
@@ -417,7 +419,7 @@ const RoleList: React.FC<RoleListProps> = ({
                         size="icon"
                         onClick={() => handleDeleteRoleConfirm(role)}
                         className="text-danger-600 hover:text-danger-700 hover:bg-danger-50"
-                        aria-label={`Delete ${role.name} role`}
+                        aria-label={t('tables:actions.delete') + ' ' + role.name + ' role'}
                       >
                         <TrashIcon />
                       </Button>
@@ -434,21 +436,25 @@ const RoleList: React.FC<RoleListProps> = ({
       <Modal
         isOpen={showDeleteConfirm}
         onClose={handleCancelDelete}
-        title="Delete Role"
+        title={t('settings:user_management.delete_role', { defaultValue: 'Delete Role' })}
         size="sm"
       >
         <div className="space-y-4">
           {roleToDelete && state.userCounts[roleToDelete.id] > 0 ? (
             <>
               <p className="text-neutral-700">
-                Cannot delete the role "{roleToDelete.name}" because it is currently assigned to {state.userCounts[roleToDelete.id]} user(s).
+                {t('settings:messages.cannot_delete_role_with_users', {
+                  defaultValue: 'Cannot delete the role "{{roleName}}" because it is currently assigned to {{userCount}} user(s).',
+                  roleName: roleToDelete.name,
+                  userCount: state.userCounts[roleToDelete.id]
+                })}
               </p>
               
               <div className="bg-danger-50 border border-danger-200 text-danger-700 px-3 py-2 rounded-md text-sm">
-                <strong>Action Required:</strong> Before deleting this role, you must:
+                <strong>{t('common:action_required', { defaultValue: 'Action Required' })}:</strong> {t('settings:messages.delete_role_requirements', { defaultValue: 'Before deleting this role, you must:' })}
                 <ul className="mt-2 ml-4 list-disc">
-                  <li>Remove all users from this role, or</li>
-                  <li>Reassign users to a different role (e.g., default agent role)</li>
+                  <li>{t('settings:messages.remove_users_from_role', { defaultValue: 'Remove all users from this role, or' })}</li>
+                  <li>{t('settings:messages.reassign_users_to_role', { defaultValue: 'Reassign users to a different role (e.g., default agent role)' })}</li>
                 </ul>
               </div>
 
@@ -457,7 +463,7 @@ const RoleList: React.FC<RoleListProps> = ({
                   variant="secondary"
                   onClick={handleCancelDelete}
                 >
-                  Close
+                  {t('common:close')}
                 </Button>
                 <Button
                   variant="primary"
@@ -468,14 +474,17 @@ const RoleList: React.FC<RoleListProps> = ({
                     }
                   }}
                 >
-                  Manage Users
+                  {t('settings:user_management.manage_users', { defaultValue: 'Manage Users' })}
                 </Button>
               </div>
             </>
           ) : (
             <>
               <p className="text-neutral-700">
-                Are you sure you want to delete the role "{roleToDelete?.name}"? This action cannot be undone.
+                {t('settings:messages.confirm_delete_role', {
+                  defaultValue: 'Are you sure you want to delete the role "{{roleName}}"? This action cannot be undone.',
+                  roleName: roleToDelete?.name
+                })}
               </p>
 
               <div className="flex justify-end gap-3">
@@ -484,14 +493,14 @@ const RoleList: React.FC<RoleListProps> = ({
                   onClick={handleCancelDelete}
                   disabled={actionLoading === `delete-${roleToDelete?.id}`}
                 >
-                  Cancel
+                  {t('common:cancel')}
                 </Button>
                 <Button
                   variant="danger"
                   onClick={handleDeleteRole}
                   loading={actionLoading === `delete-${roleToDelete?.id}`}
                 >
-                  Delete Role
+                  {t('settings:user_management.delete_role', { defaultValue: 'Delete Role' })}
                 </Button>
               </div>
             </>

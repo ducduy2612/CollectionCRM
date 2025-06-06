@@ -6,6 +6,7 @@ import { Badge } from '../../../components/ui/Badge';
 import { Modal } from '../../../components/ui/Modal';
 import { Spinner } from '../../../components/ui/Spinner';
 import { bankApi } from '../../../services/api/bank.api';
+import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 interface LoanDetailsProps {
   accountNumber: string;
@@ -14,6 +15,7 @@ interface LoanDetailsProps {
 }
 
 const LoanDetails: React.FC<LoanDetailsProps> = ({ accountNumber, isOpen, onClose }) => {
+  const { t } = useTranslation(['customers', 'common', 'tables']);
   const [loan, setLoan] = useState<Loan | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +66,7 @@ const LoanDetails: React.FC<LoanDetailsProps> = ({ accountNumber, isOpen, onClos
       const loanData = await bankApi.getLoan(accountNumber);
       setLoan(loanData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch loan details');
+      setError(err instanceof Error ? err.message : t('customers:messages.failed_to_load'));
     } finally {
       setLoading(false);
     }
@@ -80,7 +82,7 @@ const LoanDetails: React.FC<LoanDetailsProps> = ({ accountNumber, isOpen, onClos
     if (!loan?.dueSegmentations || loan.dueSegmentations.length === 0) {
       return (
         <div className="text-center py-4 text-neutral-500">
-          No due segmentations available
+          {t('customers:messages.no_customers')}
         </div>
       );
     }
@@ -90,9 +92,9 @@ const LoanDetails: React.FC<LoanDetailsProps> = ({ accountNumber, isOpen, onClos
         {loan.dueSegmentations.map((segment, index) => (
           <div key={segment.id || index} className="border rounded-md p-3 bg-neutral-50">
             <div className="flex justify-between items-center mb-2">
-              <span className="font-medium text-sm">Due Date: {new Date(segment.dueDate).toLocaleDateString()}</span>
+              <span className="font-medium text-sm">{t('tables:headers.due_date')}: {new Date(segment.dueDate).toLocaleDateString()}</span>
               <span className="text-xs text-neutral-500">
-                Total: {formatCurrency(
+                {t('tables:headers.total')}: {formatCurrency(
                   (parseFloat(segment.principalAmount) || 0) +
                   (parseFloat(segment.interestAmount) || 0) +
                   (parseFloat(segment.feesAmount) || 0) +
@@ -102,19 +104,19 @@ const LoanDetails: React.FC<LoanDetailsProps> = ({ accountNumber, isOpen, onClos
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
               <div>
-                <span className="text-neutral-500">Principal:</span>
+                <span className="text-neutral-500">{t('tables:headers.principal')}:</span>
                 <div className="font-medium">{formatCurrency(segment.principalAmount)}</div>
               </div>
               <div>
-                <span className="text-neutral-500">Interest:</span>
+                <span className="text-neutral-500">{t('tables:headers.interest')}:</span>
                 <div className="font-medium">{formatCurrency(segment.interestAmount)}</div>
               </div>
               <div>
-                <span className="text-neutral-500">Fees:</span>
+                <span className="text-neutral-500">{t('customers:fields.fees')}:</span>
                 <div className="font-medium">{formatCurrency(segment.feesAmount)}</div>
               </div>
               <div>
-                <span className="text-neutral-500">Penalty:</span>
+                <span className="text-neutral-500">{t('customers:fields.penalty')}:</span>
                 <div className="font-medium">{formatCurrency(segment.penaltyAmount)}</div>
               </div>
             </div>
@@ -128,7 +130,7 @@ const LoanDetails: React.FC<LoanDetailsProps> = ({ accountNumber, isOpen, onClos
     <Modal isOpen={isOpen} onClose={onClose} size="lg">
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Loan Details</h2>
+          <h2 className="text-xl font-semibold">{t('customers:titles.customer_loans')}</h2>
           <Button variant="ghost" size="sm" onClick={onClose}>
             <i className="bi bi-x-lg"></i>
           </Button>
@@ -160,7 +162,7 @@ const LoanDetails: React.FC<LoanDetailsProps> = ({ accountNumber, isOpen, onClos
                   </CardTitle>
                   <div className="flex gap-2">
                     <Badge variant={getStatusVariant(loan.dpd)}>
-                      {loan.dpd === 0 ? 'Current' : `${loan.dpd} DPD`}
+                      {loan.dpd === 0 ? t('customers:collection_status.current') : `${loan.dpd} DPD`}
                     </Badge>
                     {loan.status && (
                       <Badge variant={getLoanStatusVariant(loan.status)}>
@@ -173,19 +175,19 @@ const LoanDetails: React.FC<LoanDetailsProps> = ({ accountNumber, isOpen, onClos
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <span className="text-sm text-neutral-500">Outstanding Balance</span>
+                    <span className="text-sm text-neutral-500">{t('tables:headers.remaining_balance')}</span>
                     <div className="text-xl font-bold text-red-600">
                       {formatCurrency(loan.outstanding)}
                     </div>
                   </div>
                   <div>
-                    <span className="text-sm text-neutral-500">Due Amount</span>
+                    <span className="text-sm text-neutral-500">{t('tables:headers.amount')}</span>
                     <div className="text-xl font-bold text-orange-600">
                       {formatCurrency(loan.dueAmount)}
                     </div>
                   </div>
                   <div>
-                    <span className="text-sm text-neutral-500">Original Amount</span>
+                    <span className="text-sm text-neutral-500">{t('tables:headers.loan_amount')}</span>
                     <div className="text-xl font-bold text-blue-600">
                       {formatCurrency(loan.originalAmount)}
                     </div>
@@ -197,61 +199,61 @@ const LoanDetails: React.FC<LoanDetailsProps> = ({ accountNumber, isOpen, onClos
             {/* Loan Information */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Loan Information</CardTitle>
+                <CardTitle className="text-base">{t('customers:tabs.loans')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-3">
                     <div>
-                      <span className="text-sm text-neutral-500">Product Type</span>
+                      <span className="text-sm text-neutral-500">{t('tables:headers.type')}</span>
                       <div className="font-medium">{loan.productType}</div>
                     </div>
                     <div>
-                      <span className="text-sm text-neutral-500">Currency</span>
+                      <span className="text-sm text-neutral-500">{t('customers:fields.currency')}</span>
                       <div className="font-medium">{loan.currency || 'N/A'}</div>
                     </div>
                     <div>
-                      <span className="text-sm text-neutral-500">Interest Rate</span>
+                      <span className="text-sm text-neutral-500">{t('tables:headers.interest_rate')}</span>
                       <div className="font-medium">
                         {loan.interestRate ? formatPercentage(loan.interestRate) : 'N/A'}
                       </div>
                     </div>
                     <div>
-                      <span className="text-sm text-neutral-500">Term</span>
-                      <div className="font-medium">{loan.term ? `${loan.term} months` : 'N/A'}</div>
+                      <span className="text-sm text-neutral-500">{t('tables:headers.term')}</span>
+                      <div className="font-medium">{loan.term ? `${loan.term} ${t('customers:fields.months')}` : 'N/A'}</div>
                     </div>
                     <div>
-                      <span className="text-sm text-neutral-500">Payment Frequency</span>
+                      <span className="text-sm text-neutral-500">{t('customers:fields.payment_frequency')}</span>
                       <div className="font-medium">{loan.paymentFrequency || 'N/A'}</div>
                     </div>
                   </div>
                   <div className="space-y-3">
                     <div>
-                      <span className="text-sm text-neutral-500">Disbursement Date</span>
+                      <span className="text-sm text-neutral-500">{t('customers:fields.disbursement_date')}</span>
                       <div className="font-medium">
                         {loan.disbursementDate ? new Date(loan.disbursementDate).toLocaleDateString() : 'N/A'}
                       </div>
                     </div>
                     <div>
-                      <span className="text-sm text-neutral-500">Maturity Date</span>
+                      <span className="text-sm text-neutral-500">{t('customers:fields.maturity_date')}</span>
                       <div className="font-medium">
                         {loan.maturityDate ? new Date(loan.maturityDate).toLocaleDateString() : 'N/A'}
                       </div>
                     </div>
                     <div>
-                      <span className="text-sm text-neutral-500">Next Payment Date</span>
+                      <span className="text-sm text-neutral-500">{t('tables:headers.next_payment')}</span>
                       <div className="font-medium">
                         {new Date(loan.nextPaymentDate).toLocaleDateString()}
                       </div>
                     </div>
                     <div>
-                      <span className="text-sm text-neutral-500">Remaining Amount</span>
+                      <span className="text-sm text-neutral-500">{t('tables:headers.remaining_balance')}</span>
                       <div className="font-medium">
                         {loan.remainingAmount ? formatCurrency(loan.remainingAmount) : 'N/A'}
                       </div>
                     </div>
                     <div>
-                      <span className="text-sm text-neutral-500">Delinquency Status</span>
+                      <span className="text-sm text-neutral-500">{t('customers:fields.collection_status')}</span>
                       <div className="font-medium">{loan.delinquencyStatus}</div>
                     </div>
                   </div>
@@ -262,7 +264,7 @@ const LoanDetails: React.FC<LoanDetailsProps> = ({ accountNumber, isOpen, onClos
             {/* Due Segmentations */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Due Segmentations</CardTitle>
+                <CardTitle className="text-base">{t('customers:fields.due_segmentations')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {renderDueSegmentations()}
@@ -273,19 +275,19 @@ const LoanDetails: React.FC<LoanDetailsProps> = ({ accountNumber, isOpen, onClos
             {(loan.sourceSystem || loan.createdAt) && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">System Information</CardTitle>
+                  <CardTitle className="text-base">{t('customers:fields.system_info')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     {loan.sourceSystem && (
                       <div>
-                        <span className="text-neutral-500">Source System</span>
+                        <span className="text-neutral-500">{t('customers:fields.source_system')}</span>
                         <div className="font-medium">{loan.sourceSystem}</div>
                       </div>
                     )}
                     {loan.createdAt && (
                       <div>
-                        <span className="text-neutral-500">Created At</span>
+                        <span className="text-neutral-500">{t('tables:headers.created_date')}</span>
                         <div className="font-medium">
                           {new Date(loan.createdAt).toLocaleString()}
                         </div>
@@ -293,7 +295,7 @@ const LoanDetails: React.FC<LoanDetailsProps> = ({ accountNumber, isOpen, onClos
                     )}
                     {loan.updatedAt && (
                       <div>
-                        <span className="text-neutral-500">Updated At</span>
+                        <span className="text-neutral-500">{t('tables:headers.last_updated')}</span>
                         <div className="font-medium">
                           {new Date(loan.updatedAt).toLocaleString()}
                         </div>
@@ -301,7 +303,7 @@ const LoanDetails: React.FC<LoanDetailsProps> = ({ accountNumber, isOpen, onClos
                     )}
                     {loan.lastSyncedAt && (
                       <div>
-                        <span className="text-neutral-500">Last Synced</span>
+                        <span className="text-neutral-500">{t('customers:fields.last_sync')}</span>
                         <div className="font-medium">
                           {new Date(loan.lastSyncedAt).toLocaleString()}
                         </div>

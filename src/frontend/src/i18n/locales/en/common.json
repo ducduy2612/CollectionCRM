@@ -88,11 +88,14 @@
     "synced": "Synced",
     "syncing": "Syncing",
     "outdated": "Outdated",
-    "up_to_date": "Up to Date"
+    "up_to_date": "Up to Date",
+    "unknown": "Unknown"
   },
   "messages": {
+    "copyright": "© 2025 Collection CRM. All rights reserved.",
     "no_data": "No data available",
     "no_results": "No results found",
+    "no_description": "No description",
     "empty_state": "Nothing to show here",
     "loading_data": "Loading data...",
     "operation_successful": "Operation completed successfully",
@@ -111,7 +114,8 @@
     "invalid_format": "Invalid format",
     "duplicate_entry": "This entry already exists",
     "item_not_found": "Item not found",
-    "operation_cancelled": "Operation cancelled"
+    "operation_cancelled": "Operation cancelled",
+    "action_required": "Action Required"
   },
   "time": {
     "now": "Now",
@@ -138,7 +142,8 @@
     "months_ago": "{{count}} month ago",
     "months_ago_plural": "{{count}} months ago",
     "years_ago": "{{count}} year ago",
-    "years_ago_plural": "{{count}} years ago"
+    "years_ago_plural": "{{count}} years ago",
+    "days": "days"
   },
   "units": {
     "currency": "$",

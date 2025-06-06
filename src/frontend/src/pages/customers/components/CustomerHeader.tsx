@@ -4,6 +4,7 @@ import { Avatar } from '../../../components/ui/Avatar';
 import { Badge } from '../../../components/ui/Badge';
 import { getCustomerInitials, getCustomerDisplayName } from '../../../utils/customer.utils';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 interface CustomerHeaderProps {
   customer: Customer;
@@ -11,6 +12,8 @@ interface CustomerHeaderProps {
 }
 
 const CustomerHeader: React.FC<CustomerHeaderProps> = ({ customer, onReferenceClick }) => {
+  const { t } = useTranslation(['customers', 'common']);
+  
   // Handle click on reference customer
   const handleReferenceClick = () => {
     if (onReferenceClick) {
@@ -28,27 +31,27 @@ const CustomerHeader: React.FC<CustomerHeaderProps> = ({ customer, onReferenceCl
             <div>
               <h1 className="text-xl font-bold text-neutral-900">{getCustomerDisplayName(customer)}</h1>
               <p className="text-sm text-neutral-600">
-                CIF: {customer.cif} | {customer.type} | Segment: {customer.segment}
+                {t('customers:fields.customer_id')}: {customer.cif} | {customer.type} | {t('forms:labels.category')}: {customer.segment}
               </p>
-              <p className="text-sm text-neutral-600">Case Status: Active Collection</p>
+              <p className="text-sm text-neutral-600">{t('customers:fields.collection_status')}: {t('customers:collection_status.in_collection')}</p>
               {/* Display different fields based on customer type */}
               {customer.type === 'INDIVIDUAL' && (
                 <div className="text-sm text-neutral-600 mt-2">
-                  {customer.dateOfBirth && <p>Date of Birth: {customer.dateOfBirth}</p>}
-                  {customer.nationalId && <p>National ID: {customer.nationalId}</p>}
-                  {customer.gender && <p>Gender: {customer.gender}</p>}
+                  {customer.dateOfBirth && <p>{t('customers:fields.date_of_birth')}: {customer.dateOfBirth}</p>}
+                  {customer.nationalId && <p>{t('forms:labels.tax_id')}: {customer.nationalId}</p>}
+                  {customer.gender && <p>{t('customers:fields.gender')}: {customer.gender}</p>}
                 </div>
               )}
               
               {customer.type === 'ORGANIZATION' && (
                 <div className="text-sm text-neutral-600 mt-2">
-                  {customer.registrationNumber && <p>Registration Number: {customer.registrationNumber}</p>}
-                  {customer.taxId && <p>Tax ID: {customer.taxId}</p>}
+                  {customer.registrationNumber && <p>{t('forms:labels.reference')}: {customer.registrationNumber}</p>}
+                  {customer.taxId && <p>{t('forms:labels.tax_id')}: {customer.taxId}</p>}
                 </div>
               )}
               <div className="flex gap-2 mt-2">
-                <Badge variant="success">ACTIVE</Badge>
-                <Badge variant="danger">HIGH RISK</Badge>
+                <Badge variant="success">{t('customers:status.active')}</Badge>
+                <Badge variant="danger">{t('customers:risk_levels.high')}</Badge>
               </div>
             </div>
           </div>
@@ -56,7 +59,7 @@ const CustomerHeader: React.FC<CustomerHeaderProps> = ({ customer, onReferenceCl
         
         {/* Right side - Reference Customers Section */}
         <div className="w-1/2 pl-4 border-l border-neutral-200">
-          <h3 className="text-base font-semibold mb-3">Reference Customers</h3>
+          <h3 className="text-base font-semibold mb-3">{t('customers:titles.references')}</h3>
           
           {customer.referenceCustomers && customer.referenceCustomers.length > 0 ? (
             <div className="grid grid-cols-1 gap-3">
@@ -76,14 +79,14 @@ const CustomerHeader: React.FC<CustomerHeaderProps> = ({ customer, onReferenceCl
                   <div className="text-neutral-500 text-xs mt-1">
                     {ref.type === 'INDIVIDUAL' && (
                       <>
-                        {ref.nationalId && <div>ID: {ref.nationalId}</div>}
-                        {ref.gender && <div>Gender: {ref.gender}</div>}
+                        {ref.nationalId && <div>{t('customers:fields.customer_id')}: {ref.nationalId}</div>}
+                        {ref.gender && <div>{t('customers:fields.gender')}: {ref.gender}</div>}
                       </>
                     )}
                     {ref.type === 'ORGANIZATION' && (
                       <>
-                        {ref.registrationNumber && <div>Reg: {ref.registrationNumber}</div>}
-                        {ref.taxId && <div>Tax ID: {ref.taxId}</div>}
+                        {ref.registrationNumber && <div>{t('forms:labels.reference')}: {ref.registrationNumber}</div>}
+                        {ref.taxId && <div>{t('forms:labels.tax_id')}: {ref.taxId}</div>}
                       </>
                     )}
                   </div>
@@ -92,7 +95,7 @@ const CustomerHeader: React.FC<CustomerHeaderProps> = ({ customer, onReferenceCl
             </div>
           ) : (
             <div className="text-sm text-neutral-500 italic p-4 text-center border border-dashed border-neutral-200 rounded">
-              No reference customers available
+              {t('customers:messages.no_customers')}
             </div>
           )}
         </div>

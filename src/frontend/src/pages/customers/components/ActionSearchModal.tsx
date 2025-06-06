@@ -6,6 +6,7 @@ import { Input } from '../../../components/ui/Input';
 import { Spinner } from '../../../components/ui/Spinner';
 import { Alert } from '../../../components/ui/Alert';
 import { workflowApi, ActionType, ActionSubtype, ActionResult } from '../../../services/api/workflow.api';
+import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 export interface ActionSearchFilters {
   loanAccountNumber?: string;
@@ -30,6 +31,7 @@ const ActionSearchModal: React.FC<ActionSearchModalProps> = ({
   onSearch,
   currentFilters = {}
 }) => {
+  const { t } = useTranslation(['customers', 'forms', 'common']);
   // State for dropdown options
   const [actionTypes, setActionTypes] = useState<ActionType[]>([]);
   const [actionSubtypes, setActionSubtypes] = useState<ActionSubtype[]>([]);
@@ -84,7 +86,7 @@ const ActionSearchModal: React.FC<ActionSearchModalProps> = ({
       const types = await workflowApi.getActionTypes();
       setActionTypes(types);
     } catch (err) {
-      setError('Failed to load action types');
+      setError(t('customers:messages.failed_to_load_action_types'));
       console.error('Error loading action types:', err);
     } finally {
       setLoading(false);
@@ -180,7 +182,7 @@ const ActionSearchModal: React.FC<ActionSearchModalProps> = ({
 
   const getActionTypeOptions = (): SelectOption[] => {
     return [
-      { value: '', label: 'All Types' },
+      { value: '', label: t('customers:action_search.all_types') },
       ...actionTypes.map(type => ({
         value: type.code,
         label: type.name
@@ -190,7 +192,7 @@ const ActionSearchModal: React.FC<ActionSearchModalProps> = ({
 
   const getActionSubtypeOptions = (): SelectOption[] => {
     return [
-      { value: '', label: 'All Subtypes' },
+      { value: '', label: t('customers:action_search.all_subtypes') },
       ...actionSubtypes.map(subtype => ({
         value: subtype.subtype_code,
         label: subtype.subtype_name
@@ -200,7 +202,7 @@ const ActionSearchModal: React.FC<ActionSearchModalProps> = ({
 
   const getActionResultOptions = (): SelectOption[] => {
     return [
-      { value: '', label: 'All Results' },
+      { value: '', label: t('customers:action_search.all_results') },
       ...actionResults.map(result => ({
         value: result.result_code,
         label: result.result_name
@@ -214,8 +216,8 @@ const ActionSearchModal: React.FC<ActionSearchModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Search Action History"
-      description="Filter actions by various criteria"
+      title={t('customers:action_search.title')}
+      description={t('customers:action_search.description')}
       size="lg"
     >
       <div className="space-y-6">
@@ -234,46 +236,46 @@ const ActionSearchModal: React.FC<ActionSearchModalProps> = ({
             {/* Basic Filters */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="Loan Account Number"
+                label={t('customers:action_search.loan_account_number')}
                 type="text"
                 value={filters.loanAccountNumber || ''}
                 onChange={(e) => handleFilterChange('loanAccountNumber', e.target.value)}
-                placeholder="Enter loan account number"
+                placeholder={t('customers:action_search.placeholders.loan_account_number')}
               />
               <Input
-                label="Agent Name"
+                label={t('customers:action_search.agent_name')}
                 type="text"
                 value={filters.agentName || ''}
                 onChange={(e) => handleFilterChange('agentName', e.target.value)}
-                placeholder="Enter agent name"
+                placeholder={t('customers:action_search.placeholders.agent_name')}
               />
             </div>
 
             {/* Action Configuration */}
             <div className="bg-neutral-50 border rounded-lg p-4">
-              <h4 className="font-medium text-neutral-900 mb-4">Action Filters</h4>
+              <h4 className="font-medium text-neutral-900 mb-4">{t('customers:action_search.action_filters')}</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Select
-                  label="Action Type"
+                  label={t('customers:action_search.action_type')}
                   options={getActionTypeOptions()}
                   value={selectedActionTypeCode}
                   onChange={(e) => handleActionTypeChange(e.target.value)}
-                  placeholder="Select Action Type"
+                  placeholder={t('customers:action_search.placeholders.select_action_type')}
                 />
                 <Select
-                  label="Action Subtype"
+                  label={t('customers:action_search.action_subtype')}
                   options={getActionSubtypeOptions()}
                   value={selectedActionSubtypeCode}
                   onChange={(e) => handleActionSubtypeChange(e.target.value)}
-                  placeholder="Select Action Subtype"
+                  placeholder={t('customers:action_search.placeholders.select_action_subtype')}
                   disabled={!selectedActionTypeCode}
                 />
                 <Select
-                  label="Action Result"
+                  label={t('customers:action_search.action_result')}
                   options={getActionResultOptions()}
                   value={filters.actionResult || ''}
                   onChange={(e) => handleFilterChange('actionResult', e.target.value)}
-                  placeholder="Select Action Result"
+                  placeholder={t('customers:action_search.placeholders.select_action_result')}
                   disabled={!selectedActionSubtypeCode}
                 />
               </div>
@@ -281,16 +283,16 @@ const ActionSearchModal: React.FC<ActionSearchModalProps> = ({
 
             {/* Date Range */}
             <div className="bg-neutral-50 border rounded-lg p-4">
-              <h4 className="font-medium text-neutral-900 mb-4">Date Range</h4>
+              <h4 className="font-medium text-neutral-900 mb-4">{t('customers:action_search.date_range')}</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
-                  label="Start Date"
+                  label={t('customers:action_search.start_date')}
                   type="date"
                   value={filters.startDate || ''}
                   onChange={(e) => handleFilterChange('startDate', e.target.value)}
                 />
                 <Input
-                  label="End Date"
+                  label={t('customers:action_search.end_date')}
                   type="date"
                   value={filters.endDate || ''}
                   onChange={(e) => handleFilterChange('endDate', e.target.value)}
@@ -301,20 +303,20 @@ const ActionSearchModal: React.FC<ActionSearchModalProps> = ({
             {/* Active Filters Summary */}
             {hasActiveFilters && (
               <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
-                <h4 className="font-medium text-primary-900 mb-2">Active Filters</h4>
+                <h4 className="font-medium text-primary-900 mb-2">{t('customers:action_search.active_filters')}</h4>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(filters).map(([key, value]) => {
                     if (!value || value.trim() === '') return null;
                     
                     let displayKey = key;
                     switch (key) {
-                      case 'loanAccountNumber': displayKey = 'Loan Account'; break;
-                      case 'agentName': displayKey = 'Agent'; break;
-                      case 'actionType': displayKey = 'Type'; break;
-                      case 'actionSubtype': displayKey = 'Subtype'; break;
-                      case 'actionResult': displayKey = 'Result'; break;
-                      case 'startDate': displayKey = 'From'; break;
-                      case 'endDate': displayKey = 'To'; break;
+                      case 'loanAccountNumber': displayKey = t('customers:action_search.filter_labels.loan_account'); break;
+                      case 'agentName': displayKey = t('customers:action_search.filter_labels.agent'); break;
+                      case 'actionType': displayKey = t('customers:action_search.filter_labels.type'); break;
+                      case 'actionSubtype': displayKey = t('customers:action_search.filter_labels.subtype'); break;
+                      case 'actionResult': displayKey = t('customers:action_search.filter_labels.result'); break;
+                      case 'startDate': displayKey = t('customers:action_search.filter_labels.from'); break;
+                      case 'endDate': displayKey = t('customers:action_search.filter_labels.to'); break;
                     }
                     
                     return (
@@ -332,27 +334,27 @@ const ActionSearchModal: React.FC<ActionSearchModalProps> = ({
 
       <ModalFooter>
         <Button variant="secondary" onClick={onClose} disabled={loading}>
-          Cancel
+          {t('forms:buttons.cancel')}
         </Button>
-        <Button 
-          variant="secondary" 
-          onClick={handleClearFilters} 
+        <Button
+          variant="secondary"
+          onClick={handleClearFilters}
           disabled={loading || !hasActiveFilters}
         >
-          Clear Filters
+          {t('forms:buttons.clear')}
         </Button>
-        <Button 
-          variant="primary" 
-          onClick={handleSearch} 
+        <Button
+          variant="primary"
+          onClick={handleSearch}
           disabled={loading}
         >
           {loading ? (
             <>
               <Spinner size="sm" className="mr-2" />
-              Loading...
+              {t('common:loading')}
             </>
           ) : (
-            'Apply Filters'
+            t('forms:buttons.apply')
           )}
         </Button>
       </ModalFooter>

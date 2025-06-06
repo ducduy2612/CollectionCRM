@@ -88,11 +88,14 @@
     "synced": "Đã đồng bộ",
     "syncing": "Đang đồng bộ",
     "outdated": "Lỗi thời",
-    "up_to_date": "Cập nhật"
+    "up_to_date": "Cập nhật",
+    "unknown": "Không xác định"
   },
   "messages": {
+    "copyright": "2025 Collection CRM. IT Collection VPBANK",
     "no_data": "Không có dữ liệu",
     "no_results": "Không tìm thấy kết quả",
+    "no_description": "Không có mô tả",
     "empty_state": "Không có gì để hiển thị",
     "loading_data": "Đang tải dữ liệu...",
     "operation_successful": "Thao tác hoàn thành thành công",
@@ -111,7 +114,8 @@
     "invalid_format": "Định dạng không hợp lệ",
     "duplicate_entry": "Mục này đã tồn tại",
     "item_not_found": "Không tìm thấy mục",
-    "operation_cancelled": "Thao tác đã bị hủy"
+    "operation_cancelled": "Thao tác đã bị hủy",
+    "action_required": "Yêu cầu hành động"
   },
   "time": {
     "now": "Bây giờ",
@@ -138,7 +142,8 @@
     "months_ago": "{{count}} tháng trước",
     "months_ago_plural": "{{count}} tháng trước",
     "years_ago": "{{count}} năm trước",
-    "years_ago_plural": "{{count}} năm trước"
+    "years_ago_plural": "{{count}} năm trước",
+    "days": "ngày"
   },
   "units": {
     "currency": "₫",

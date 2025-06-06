@@ -50,6 +50,10 @@
     "collateral": "Tài sản thế chấp",
     "guarantor": "Người bảo lãnh"
   },
+  "indicators": {
+    "required": "*",
+    "optional": "(tùy chọn)"
+  },
   "placeholders": {
     "username": "Nhập tên đăng nhập",
     "password": "Nhập mật khẩu",
@@ -188,7 +192,9 @@
     "completed": "Hoàn thành",
     "cancelled": "Đã hủy",
     "draft": "Bản nháp",
-    "published": "Đã xuất bản"
+    "published": "Đã xuất bản",
+    "primary": "Chính",
+    "verified": "Đã xác minh"
   },
   "messages": {
     "form_saved": "Biểu mẫu đã lưu thành công",

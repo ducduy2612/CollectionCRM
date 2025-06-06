@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Input, Select, Button, Alert } from '../../../components/ui';
 import { authApi, UserResponse, UserData, UpdateUserData, RoleResponse } from '../../../services/api/auth.api';
+import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 // Icons
 const EyeIcon = () => (
@@ -59,6 +60,7 @@ const UserModal: React.FC<UserModalProps> = ({
   user,
   mode
 }) => {
+  const { t } = useTranslation();
   const [state, setState] = useState<UserModalState>({
     formData: {
       username: '',
@@ -140,45 +142,45 @@ const UserModal: React.FC<UserModalProps> = ({
   // Validation functions
   const validateUsername = (username: string): string | undefined => {
     if (!username.trim()) {
-      return 'Username is required';
+      return t('forms:validation.username_required');
     }
     if (username.length < 3) {
-      return 'Username must be at least 3 characters long';
+      return t('forms:validation.min_length', { replace: { min: '3' } });
     }
     return undefined;
   };
 
   const validateEmail = (email: string): string | undefined => {
     if (!email.trim()) {
-      return 'Email is required';
+      return t('forms:validation.required');
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return 'Please enter a valid email address';
+      return t('forms:validation.email_invalid');
     }
     return undefined;
   };
 
   const validatePassword = (password: string): string | undefined => {
     if (mode === 'create' && !password.trim()) {
-      return 'Password is required';
+      return t('forms:validation.required');
     }
     if (password && password.length < 8) {
-      return 'Password must be at least 8 characters long';
+      return t('forms:validation.min_length', { replace: { min: '8' } });
     }
     if (password && !/(?=.*[a-zA-Z])(?=.*\d)/.test(password)) {
-      return 'Password must contain both letters and numbers';
+      return t('settings:validation.password_letters_numbers', { defaultValue: 'Password must contain both letters and numbers' });
     }
     return undefined;
   };
 
   const validateRole = (role: string): string | undefined => {
     if (!role.trim()) {
-      return 'Role is required';
+      return t('forms:validation.required');
     }
     const validRoles = state.roles.map(r => r.name);
     if (!validRoles.includes(role)) {
-      return 'Please select a valid role';
+      return t('settings:validation.select_valid_role', { defaultValue: 'Please select a valid role' });
     }
     return undefined;
   };
@@ -296,10 +298,10 @@ const UserModal: React.FC<UserModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={mode === 'create' ? 'Create New User' : 'Edit User'}
-      description={mode === 'create' 
-        ? 'Add a new user to the system with their role and permissions'
-        : 'Update user information and role assignments'
+      title={mode === 'create' ? t('settings:user_management.add_user') : t('settings:user_management.edit_user')}
+      description={mode === 'create'
+        ? t('settings:messages.add_user_description', { defaultValue: 'Add a new user to the system with their role and permissions' })
+        : t('settings:messages.edit_user_description', { defaultValue: 'Update user information and role assignments' })
       }
       size="md"
       closeOnOverlayClick={!state.loading}
@@ -316,19 +318,19 @@ const UserModal: React.FC<UserModalProps> = ({
         {/* Username Field */}
         <div>
           <Input
-            label="Username"
+            label={t('forms:labels.username')}
             type="text"
             value={state.formData.username}
             onChange={handleInputChange('username')}
             error={state.errors.username}
             disabled={mode === 'edit' || state.loading}
-            placeholder="Enter username"
+            placeholder={t('forms:placeholders.username')}
             required
             aria-describedby={state.errors.username ? 'username-error' : undefined}
           />
           {mode === 'edit' && (
             <p className="mt-1 text-xs text-neutral-500">
-              Username cannot be changed after creation
+              {t('settings:messages.username_cannot_change', { defaultValue: 'Username cannot be changed after creation' })}
             </p>
           )}
         </div>
@@ -336,13 +338,13 @@ const UserModal: React.FC<UserModalProps> = ({
         {/* Email Field */}
         <div>
           <Input
-            label="Email"
+            label={t('forms:labels.email')}
             type="email"
             value={state.formData.email}
             onChange={handleInputChange('email')}
             error={state.errors.email}
             disabled={state.loading}
-            placeholder="Enter email address"
+            placeholder={t('forms:placeholders.enter_email')}
             required
             aria-describedby={state.errors.email ? 'email-error' : undefined}
           />
@@ -353,13 +355,13 @@ const UserModal: React.FC<UserModalProps> = ({
           <div>
             <div className="relative">
               <Input
-                label="Password"
+                label={t('forms:labels.password')}
                 type={state.showPassword ? 'text' : 'password'}
                 value={state.formData.password}
                 onChange={handleInputChange('password')}
                 error={state.errors.password}
                 disabled={state.loading}
-                placeholder="Enter password"
+                placeholder={t('forms:placeholders.password')}
                 required
                 aria-describedby={state.errors.password ? 'password-error' : undefined}
               />
@@ -368,13 +370,13 @@ const UserModal: React.FC<UserModalProps> = ({
                 className="absolute right-3 top-8 text-neutral-400 hover:text-neutral-600 focus:outline-none"
                 onClick={togglePasswordVisibility}
                 tabIndex={-1}
-                aria-label={state.showPassword ? 'Hide password' : 'Show password'}
+                aria-label={state.showPassword ? t('settings:messages.hide_password', { defaultValue: 'Hide password' }) : t('settings:messages.show_password', { defaultValue: 'Show password' })}
               >
                 {state.showPassword ? <EyeSlashIcon /> : <EyeIcon />}
               </button>
             </div>
             <p className="mt-1 text-xs text-neutral-500">
-              Password must be at least 8 characters and contain both letters and numbers
+              {t('settings:messages.password_requirements', { defaultValue: 'Password must be at least 8 characters and contain both letters and numbers' })}
             </p>
           </div>
         )}
@@ -383,25 +385,25 @@ const UserModal: React.FC<UserModalProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <Input
-              label="First Name"
+              label={t('forms:labels.first_name')}
               type="text"
               value={state.formData.first_name}
               onChange={handleInputChange('first_name')}
               error={state.errors.first_name}
               disabled={state.loading}
-              placeholder="Enter first name"
+              placeholder={t('forms:placeholders.enter_first_name')}
               aria-describedby={state.errors.first_name ? 'first-name-error' : undefined}
             />
           </div>
           <div>
             <Input
-              label="Last Name"
+              label={t('forms:labels.last_name')}
               type="text"
               value={state.formData.last_name}
               onChange={handleInputChange('last_name')}
               error={state.errors.last_name}
               disabled={state.loading}
-              placeholder="Enter last name"
+              placeholder={t('forms:placeholders.enter_last_name')}
               aria-describedby={state.errors.last_name ? 'last-name-error' : undefined}
             />
           </div>
@@ -410,11 +412,11 @@ const UserModal: React.FC<UserModalProps> = ({
         {/* Role Field */}
         <div>
           <Select
-            label="Role"
+            label={t('settings:user_fields.role')}
             value={state.formData.role}
             onChange={handleInputChange('role')}
             options={[
-              { value: '', label: 'Select a role...' },
+              { value: '', label: t('settings:messages.select_role', { defaultValue: 'Select a role...' }) },
               ...roleOptions
             ]}
             error={state.errors.role}
@@ -423,7 +425,7 @@ const UserModal: React.FC<UserModalProps> = ({
             aria-describedby={state.errors.role ? 'role-error' : undefined}
           />
           {state.loadingRoles && (
-            <p className="mt-1 text-xs text-neutral-500">Loading roles...</p>
+            <p className="mt-1 text-xs text-neutral-500">{t('settings:messages.loading_roles', { defaultValue: 'Loading roles...' })}</p>
           )}
         </div>
 
@@ -435,7 +437,7 @@ const UserModal: React.FC<UserModalProps> = ({
             onClick={handleClose}
             disabled={state.loading}
           >
-            Cancel
+            {t('common:cancel')}
           </Button>
           <Button
             type="submit"
@@ -443,7 +445,7 @@ const UserModal: React.FC<UserModalProps> = ({
             loading={state.loading}
             disabled={state.loadingRoles}
           >
-            {mode === 'create' ? 'Create User' : 'Update User'}
+            {mode === 'create' ? t('settings:user_management.add_user') : t('settings:user_management.edit_user')}
           </Button>
         </div>
       </form>

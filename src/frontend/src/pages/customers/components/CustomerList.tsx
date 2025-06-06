@@ -9,12 +9,14 @@ import { Spinner } from '../../../components/ui/Spinner';
 import { Select } from '../../../components/ui/Select';
 import { bankApi } from '../../../services/api/bank.api';
 import { getCustomerInitials, getCustomerDisplayName } from '../../../utils/customer.utils';
+import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 interface CustomerListProps {
   onCustomerSelect?: (cif: string) => void;
 }
 
 const CustomerList: React.FC<CustomerListProps> = ({ onCustomerSelect }) => {
+  const { t } = useTranslation(['customers', 'common', 'forms', 'tables']);
   const [customers, setCustomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +67,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onCustomerSelect }) => {
       setCustomers(response.customers);
     } catch (err) {
       console.error('Error searching customers:', err);
-      setError('Failed to search customers. Please try again later.');
+      setError(t('customers:messages.failed_to_load'));
     } finally {
       setLoading(false);
     }
@@ -88,14 +90,14 @@ const CustomerList: React.FC<CustomerListProps> = ({ onCustomerSelect }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Find Customer</CardTitle>
+        <CardTitle>{t('customers:search.advanced_search')}</CardTitle>
       </CardHeader>
       
       <CardContent>
         <form onSubmit={handleSearch} className="mb-4 space-y-4">
           <div className="flex">
             <Input
-              placeholder="Search customers by CIF..."
+              placeholder={t('customers:search.placeholder')}
               className="flex-1 rounded-r-none"
               name="cif"
               value={searchParams.cif}
@@ -103,7 +105,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onCustomerSelect }) => {
             />
             <Button type="submit" className="rounded-l-none">
               <i className="bi bi-search mr-2"></i>
-              Search
+              {t('common:buttons.search')}
             </Button>
           </div>
           
@@ -114,16 +116,16 @@ const CustomerList: React.FC<CustomerListProps> = ({ onCustomerSelect }) => {
               size="sm"
               onClick={toggleAdvancedSearch}
             >
-              {showAdvancedSearch ? 'Hide' : 'Show'} Advanced Search
+              {showAdvancedSearch ? t('common:buttons.close') : t('customers:search.advanced_search')}
             </Button>
           </div>
           
           {showAdvancedSearch && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-neutral-50 rounded-md">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Name</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">{t('customers:fields.full_name')}</label>
                 <Input
-                  placeholder="Customer Name"
+                  placeholder={t('forms:placeholders.enter_first_name')}
                   name="name"
                   value={searchParams.name}
                   onChange={handleInputChange}
@@ -131,9 +133,9 @@ const CustomerList: React.FC<CustomerListProps> = ({ onCustomerSelect }) => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">National ID</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">{t('forms:labels.tax_id')}</label>
                 <Input
-                  placeholder="National ID"
+                  placeholder={t('forms:labels.tax_id')}
                   name="nationalId"
                   value={searchParams.nationalId}
                   onChange={handleInputChange}
@@ -141,9 +143,9 @@ const CustomerList: React.FC<CustomerListProps> = ({ onCustomerSelect }) => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Company Name</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">{t('forms:labels.employer')}</label>
                 <Input
-                  placeholder="Company Name"
+                  placeholder={t('forms:labels.employer')}
                   name="companyName"
                   value={searchParams.companyName}
                   onChange={handleInputChange}
@@ -151,9 +153,9 @@ const CustomerList: React.FC<CustomerListProps> = ({ onCustomerSelect }) => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Registration Number</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">{t('forms:labels.reference')}</label>
                 <Input
-                  placeholder="Registration Number"
+                  placeholder={t('forms:labels.reference')}
                   name="registrationNumber"
                   value={searchParams.registrationNumber}
                   onChange={handleInputChange}
@@ -161,13 +163,13 @@ const CustomerList: React.FC<CustomerListProps> = ({ onCustomerSelect }) => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Segment</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">{t('forms:labels.category')}</label>
                 <Select
                   name="segment"
                   value={searchParams.segment}
                   onChange={handleInputChange}
                   options={[
-                    { value: "", label: "All Segments" },
+                    { value: "", label: t('tables:filters.all') },
                     { value: "RETAIL", label: "Retail" },
                     { value: "SME", label: "SME" },
                     { value: "CORPORATE", label: "Corporate" },
@@ -177,17 +179,17 @@ const CustomerList: React.FC<CustomerListProps> = ({ onCustomerSelect }) => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Status</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">{t('customers:fields.status')}</label>
                 <Select
                   name="status"
                   value={searchParams.status}
                   onChange={handleInputChange}
                   options={[
-                    { value: "", label: "All Statuses" },
-                    { value: "ACTIVE", label: "Active" },
-                    { value: "PENDING", label: "Pending" },
-                    { value: "COLLECTION", label: "Collection" },
-                    { value: "CLOSED", label: "Closed" }
+                    { value: "", label: t('tables:filters.all') },
+                    { value: "ACTIVE", label: t('customers:status.active') },
+                    { value: "PENDING", label: t('customers:status.pending') },
+                    { value: "COLLECTION", label: t('customers:collection_status.in_collection') },
+                    { value: "CLOSED", label: t('customers:status.closed') }
                   ]}
                 />
               </div>
@@ -212,11 +214,11 @@ const CustomerList: React.FC<CustomerListProps> = ({ onCustomerSelect }) => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-neutral-200">
-                  <th className="text-left py-3 px-4 font-medium text-neutral-900">CIF</th>
-                  <th className="text-left py-3 px-4 font-medium text-neutral-900">Name</th>
-                  <th className="text-left py-3 px-4 font-medium text-neutral-900">Segment</th>
-                  <th className="text-left py-3 px-4 font-medium text-neutral-900">Status</th>
-                  <th className="text-left py-3 px-4 font-medium text-neutral-900">Actions</th>
+                  <th className="text-left py-3 px-4 font-medium text-neutral-900">{t('customers:fields.customer_id')}</th>
+                  <th className="text-left py-3 px-4 font-medium text-neutral-900">{t('tables:headers.name')}</th>
+                  <th className="text-left py-3 px-4 font-medium text-neutral-900">{t('tables:headers.category')}</th>
+                  <th className="text-left py-3 px-4 font-medium text-neutral-900">{t('tables:headers.status')}</th>
+                  <th className="text-left py-3 px-4 font-medium text-neutral-900">{t('customers:titles.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -243,7 +245,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onCustomerSelect }) => {
                       <div className="flex gap-2">
                         <Link to={`/customers/${customer.cif}`}>
                           <Button size="sm" variant="primary" onClick={() => onCustomerSelect?.(customer.cif)}>
-                            View
+                            {t('tables:actions.view')}
                           </Button>
                         </Link>
                       </div>
@@ -257,7 +259,7 @@ const CustomerList: React.FC<CustomerListProps> = ({ onCustomerSelect }) => {
         
         {!loading && Object.values(searchParams).some(param => param.trim() !== '') && customers.length === 0 && (
           <div className="text-center py-8 text-neutral-500">
-            <p>No customers found matching your search criteria</p>
+            <p>{t('customers:search.no_results')}</p>
           </div>
         )}
       </CardContent>

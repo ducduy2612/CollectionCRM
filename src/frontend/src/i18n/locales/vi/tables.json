@@ -40,6 +40,7 @@
     "modified_by": "Sửa đổi bởi",
     "customer_id": "Mã khách hàng",
     "account_number": "Số tài khoản",
+    "loan_account_number": "Khoản vay",
     "loan_id": "Mã khoản vay",
     "payment_id": "Mã thanh toán",
     "collection_status": "Trạng thái thu hồi",
@@ -49,7 +50,12 @@
     "last_contact": "Liên hệ cuối",
     "next_action": "Hành động tiếp theo",
     "resolution": "Giải quyết",
-    "outcome": "Kết quả"
+    "outcome": "Kết quả",
+    "principal": "Gốc",
+    "interest": "Lãi",
+    "total": "Tổng",
+    "action_type": "Hành động",
+    "result": "Kết quả"
   },
   "actions": {
     "view": "Xem",
@@ -138,7 +144,8 @@
     "clear_filters": "Xóa bộ lọc",
     "apply_filters": "Áp dụng bộ lọc",
     "save_filter": "Lưu bộ lọc",
-    "load_filter": "Tải bộ lọc"
+    "load_filter": "Tải bộ lọc",
+    "filters_active": "bộ lọc đang hoạt động"
   },
   "sorting": {
     "sort_by": "Sắp xếp theo",

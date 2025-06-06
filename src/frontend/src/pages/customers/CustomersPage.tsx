@@ -13,11 +13,12 @@ import CustomerList from './components/CustomerList';
 import { bankApi } from '../../services/api/bank.api';
 import { workflowApi } from '../../services/api/workflow.api';
 import { Spinner } from '../../components/ui/Spinner';
-import { useNamespacedTranslation } from '../../i18n';
+import { useTranslation } from '../../i18n/hooks/useTranslation';
 
 const CustomersPage: React.FC = () => {
   const { cif } = useParams<{ cif: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation(['customers', 'common', 'errors']);
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loans, setLoans] = useState<Loan[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -64,7 +65,7 @@ const CustomersPage: React.FC = () => {
 
       } catch (err) {
         console.error('Error fetching customer data:', err);
-        setError('Failed to load customer data. Please try again later.');
+        setError(t('customers:messages.failed_to_load'));
       } finally {
         setLoading(false);
       }
@@ -111,7 +112,7 @@ const CustomersPage: React.FC = () => {
   if (!cif) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-neutral-900">Customers</h1>
+        <h1 className="text-3xl font-bold text-neutral-900">{t('customers:titles.customers')}</h1>
         <CustomerList onCustomerSelect={handleCustomerSelect} />
       </div>
     );
@@ -136,7 +137,7 @@ const CustomersPage: React.FC = () => {
   if (!customer) {
     return (
       <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-md">
-        <p>Customer not found.</p>
+        <p>{t('customers:messages.customer_not_found')}</p>
       </div>
     );
   }
@@ -186,13 +187,13 @@ const CustomersPage: React.FC = () => {
 
       {activeTab === 'documents' && (
         <div className="bg-white rounded-lg border border-neutral-200 p-8 text-center">
-          <p className="text-neutral-600">Documents tab - Under development</p>
+          <p className="text-neutral-600">{t('customers:tabs.documents')} - {t('customers:messages.under_development')}</p>
         </div>
       )}
 
       {activeTab === 'references' && (
         <div className="bg-white rounded-lg border border-neutral-200 p-8 text-center">
-          <p className="text-neutral-600">References tab - Under development</p>
+          <p className="text-neutral-600">{t('customers:tabs.references')} - {t('customers:messages.under_development')}</p>
         </div>
       )}
 

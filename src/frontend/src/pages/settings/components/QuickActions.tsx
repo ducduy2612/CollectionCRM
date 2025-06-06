@@ -7,6 +7,7 @@ import {
   ShieldCheckIcon,
   BoltIcon
 } from '@heroicons/react/24/outline';
+import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 interface QuickAction {
   id: string;
@@ -27,28 +28,30 @@ const getIconComponent = (iconName: string) => {
 };
 
 const QuickActions: React.FC = () => {
+  const { t } = useTranslation();
+  
   const quickActions: QuickAction[] = [
     {
       id: 'add-user',
-      title: 'Add New User',
+      title: t('settings:user_management.add_user'),
       icon: 'bi-plus-circle',
       href: '/settings/users/new'
     },
     {
       id: 'import-data',
-      title: 'Import Data',
+      title: t('settings:integrations.import_export'),
       icon: 'bi-upload',
       href: '/settings/import'
     },
     {
       id: 'export-settings',
-      title: 'Export Settings',
+      title: t('settings:actions.export_settings'),
       icon: 'bi-download',
       href: '/settings/export'
     },
     {
       id: 'security-audit',
-      title: 'Security Audit',
+      title: t('settings:security.audit_trail'),
       icon: 'bi-shield-check',
       href: '/settings/security/audit'
     }
@@ -63,7 +66,7 @@ const QuickActions: React.FC = () => {
     <Card className="mb-8">
       <h2 className="text-lg font-semibold text-neutral-800 mb-4 flex items-center gap-2">
         <BoltIcon className="w-5 h-5 text-primary-600" />
-        Quick Actions
+        {t('settings:quick_actions')}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {quickActions.map((action) => (

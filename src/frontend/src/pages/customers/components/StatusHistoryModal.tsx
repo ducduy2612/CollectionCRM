@@ -12,6 +12,7 @@ import {
   RecoveryAbilityStatusHistoryItem,
   StatusDictItem
 } from '../types';
+import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 type StatusHistoryItem = 
   | CustomerStatusHistoryItem 
@@ -37,6 +38,7 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
   statusDict,
   onUpdateStatus
 }) => {
+  const { t } = useTranslation();
   const [sortField, setSortField] = useState<'actionDate' | 'status'>('actionDate');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -45,28 +47,28 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
   // Get status type display name
   const getStatusTypeDisplayName = (type: string) => {
     switch (type) {
-      case 'customer': return 'Customer Status';
-      case 'collateral': return 'Collateral Status';
-      case 'processing_state': return 'Processing State';
-      case 'lending_violation': return 'Lending Violation';
-      case 'recovery_ability': return 'Recovery Ability';
-      default: return 'Status';
+      case 'customer': return t('customers:status_update.customer_status');
+      case 'collateral': return t('customers:status_update.collateral_status');
+      case 'processing_state': return t('customers:status_update.processing_state');
+      case 'lending_violation': return t('customers:status_update.lending_violation');
+      case 'recovery_ability': return t('customers:status_update.recovery_ability');
+      default: return t('customers:fields.status');
     }
   };
 
   // Get status name from dictionary
   const getStatusName = (item: StatusHistoryItem): string => {
     if ('statusId' in item) {
-      return statusDict[item.statusId]?.name || 'Unknown Status';
+      return statusDict[item.statusId]?.name || t('customers:status.unknown');
     }
     if ('stateId' in item) {
-      const stateName = statusDict[item.stateId]?.name || 'Unknown State';
+      const stateName = statusDict[item.stateId]?.name || t('customers:status.unknown');
       if (item.substateId && statusDict[item.substateId]) {
         return `${stateName} - ${statusDict[item.substateId].name}`;
       }
       return stateName;
     }
-    return 'Unknown Status';
+    return t('customers:status.unknown');
   };
 
   // Get status color
@@ -156,8 +158,12 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`${getStatusTypeDisplayName(statusType)} History`}
-      description={`View the complete history of ${getStatusTypeDisplayName(statusType).toLowerCase()} changes`}
+      title={t('customers:status_history.title', {
+        replace: { statusType: getStatusTypeDisplayName(statusType) }
+      })}
+      description={t('customers:status_history.description', {
+        replace: { statusType: getStatusTypeDisplayName(statusType).toLowerCase() }
+      })}
       size="xl"
     >
       <div className="space-y-4">
@@ -168,7 +174,7 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <p className="text-neutral-600">No status history available</p>
+            <p className="text-neutral-600">{t('customers:status_history.no_history')}</p>
           </div>
         ) : (
           <>
@@ -180,7 +186,7 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
                     onClick={() => handleSort('actionDate')}
                   >
                     <div className="flex items-center gap-2">
-                      Date
+                      {t('customers:status_history.date')}
                       <SortIcon field="actionDate" />
                     </div>
                   </TableHead>
@@ -189,12 +195,12 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
                     onClick={() => handleSort('status')}
                   >
                     <div className="flex items-center gap-2">
-                      Status
+                      {t('customers:status_history.status')}
                       <SortIcon field="status" />
                     </div>
                   </TableHead>
-                  <TableHead>Agent</TableHead>
-                  <TableHead>Notes</TableHead>
+                  <TableHead>{t('customers:status_history.agent')}</TableHead>
+                  <TableHead>{t('customers:status_history.notes')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -215,7 +221,7 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        {item.agent?.name || 'Unknown Agent'}
+                        {item.agent?.name || t('customers:status_history.unknown_agent')}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -232,7 +238,13 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
             {totalPages > 1 && (
               <div className="flex items-center justify-between pt-4 border-t border-neutral-200">
                 <div className="text-sm text-neutral-600">
-                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, statusHistory.length)} of {statusHistory.length} entries
+                  {t('customers:status_history.showing_entries', {
+                    replace: {
+                      start: ((currentPage - 1) * itemsPerPage) + 1,
+                      end: Math.min(currentPage * itemsPerPage, statusHistory.length),
+                      total: statusHistory.length
+                    }
+                  })}
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
@@ -241,10 +253,12 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
                     onClick={() => setCurrentPage(currentPage - 1)}
                     disabled={!hasPrevPage}
                   >
-                    Previous
+                    {t('customers:status_history.previous')}
                   </Button>
                   <span className="text-sm text-neutral-600">
-                    Page {currentPage} of {totalPages}
+                    {t('customers:status_history.page_of', {
+                      replace: { current: currentPage, total: totalPages }
+                    })}
                   </span>
                   <Button
                     variant="secondary"
@@ -252,7 +266,7 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
                     onClick={() => setCurrentPage(currentPage + 1)}
                     disabled={!hasNextPage}
                   >
-                    Next
+                    {t('customers:status_history.next')}
                   </Button>
                 </div>
               </div>
@@ -263,7 +277,7 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
 
       <ModalFooter>
         <Button variant="secondary" onClick={onClose}>
-          Close
+          {t('customers:status_history.close')}
         </Button>
         {onUpdateStatus && (
           <Button
@@ -271,7 +285,7 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
             onClick={() => onUpdateStatus(statusType)}
           >
             <i className="bi bi-plus-circle mr-2"></i>
-            Update Status
+            {t('customers:status_history.update_status')}
           </Button>
         )}
       </ModalFooter>

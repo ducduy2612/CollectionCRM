@@ -1,4 +1,5 @@
 {
+  "quick_actions": "Hành động nhanh",
   "titles": {
     "settings": "Cài đặt",
     "general_settings": "Cài đặt chung",
@@ -22,15 +23,19 @@
     "groups": "Nhóm",
     "sessions": "Phiên",
     "add_user": "Thêm người dùng",
+    "add_role": "Thêm vai trò",
     "edit_user": "Chỉnh sửa người dùng",
     "delete_user": "Xóa người dùng",
+    "delete_role": "Xóa vai trò",
     "activate_user": "Kích hoạt người dùng",
     "deactivate_user": "Vô hiệu hóa người dùng",
     "reset_password": "Đặt lại mật khẩu",
     "assign_role": "Gán vai trò",
     "remove_role": "Xóa vai trò",
     "view_permissions": "Xem quyền",
+    "view_users": "Xem người dùng",
     "manage_sessions": "Quản lý phiên",
+    "manage_users": "Quản lý người dùng",
     "user_details": "Chi tiết người dùng",
     "user_activity": "Hoạt động người dùng",
     "login_history": "Lịch sử đăng nhập"
@@ -182,7 +187,32 @@
     "settings_restored": "Cài đặt đã khôi phục thành công",
     "unsaved_changes": "Bạn có thay đổi chưa lưu",
     "confirm_reset": "Bạn có chắc chắn muốn đặt lại tất cả cài đặt?",
-    "confirm_restore": "Bạn có chắc chắn muốn khôi phục cài đặt?"
+    "confirm_restore": "Bạn có chắc chắn muốn khôi phục cài đặt?",
+    "back_to_settings": "Quay lại Cài đặt",
+    "user_management_description": "Quản lý tài khoản người dùng, vai trò và quyền hạn trong hệ thống",
+    "cannot_delete_role_with_users": "Không thể xóa vai trò \"{{roleName}}\" vì hiện tại nó được gán cho {{userCount}} người dùng.",
+    "delete_role_requirements": "Trước khi xóa vai trò này, bạn phải:",
+    "remove_users_from_role": "Xóa tất cả người dùng khỏi vai trò này, hoặc",
+    "reassign_users_to_role": "Gán lại người dùng cho vai trò khác (ví dụ: vai trò nhân viên mặc định)",
+    "confirm_delete_role": "Bạn có chắc chắn muốn xóa vai trò \"{{roleName}}\"? Hành động này không thể hoàn tác.",
+    "add_user_description": "Thêm người dùng mới vào hệ thống với vai trò và quyền hạn của họ",
+    "edit_user_description": "Cập nhật thông tin người dùng và gán vai trò",
+    "username_cannot_change": "Tên đăng nhập không thể thay đổi sau khi tạo",
+    "hide_password": "Ẩn mật khẩu",
+    "show_password": "Hiện mật khẩu",
+    "password_requirements": "Mật khẩu phải có ít nhất 8 ký tự và chứa cả chữ cái và số",
+    "select_role": "Chọn vai trò...",
+    "loading_roles": "Đang tải vai trò...",
+    "manage_user_accounts": "Quản lý tài khoản người dùng và quyền hạn",
+    "configure_roles": "Cấu hình vai trò và mức độ truy cập",
+    "customer_management": "Quản lý khách hàng",
+    "workflow_management": "Quản lý quy trình",
+    "system_access": "Truy cập hệ thống",
+    "create_role_description": "Tạo vai trò mới với quyền hạn cụ thể cho truy cập hệ thống",
+    "edit_role_description": "Cập nhật quyền hạn và cài đặt vai trò",
+    "enter_role_name": "Nhập tên vai trò",
+    "role_name_cannot_change": "Tên vai trò không thể thay đổi sau khi tạo",
+    "selected_permissions": "Đã chọn {{selected}} trong {{total}} quyền hạn"
   },
   "validation": {
     "required_field": "Trường này là bắt buộc",
@@ -194,6 +224,8 @@
     "passwords_dont_match": "Mật khẩu không khớp",
     "invalid_format": "Định dạng không hợp lệ",
     "value_too_large": "Giá trị quá lớn",
-    "value_too_small": "Giá trị quá nhỏ"
+    "value_too_small": "Giá trị quá nhỏ",
+    "password_letters_numbers": "Mật khẩu phải chứa cả chữ cái và số",
+    "select_valid_role": "Vui lòng chọn vai trò hợp lệ"
   }
 }

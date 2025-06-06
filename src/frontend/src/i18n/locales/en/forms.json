@@ -50,6 +50,10 @@
     "collateral": "Collateral",
     "guarantor": "Guarantor"
   },
+  "indicators": {
+    "required": "*",
+    "optional": "(optional)"
+  },
   "placeholders": {
     "username": "Enter your username",
     "password": "Enter your password",
@@ -188,7 +192,9 @@
     "completed": "Completed",
     "cancelled": "Cancelled",
     "draft": "Draft",
-    "published": "Published"
+    "published": "Published",
+    "primary": "Primary",
+    "verified": "Verified"
   },
   "messages": {
     "form_saved": "Form saved successfully",

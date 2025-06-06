@@ -1,6 +1,7 @@
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../components/ui/Tabs';
 import { UserIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 export type UserManagementTab = 'users' | 'roles';
 
@@ -17,6 +18,7 @@ const UserManagementTabs: React.FC<UserManagementTabsProps> = ({
   className,
   children,
 }) => {
+  const { t } = useTranslation();
   const handleValueChange = (value: string) => {
     onTabChange(value as UserManagementTab);
   };
@@ -29,21 +31,21 @@ const UserManagementTabs: React.FC<UserManagementTabsProps> = ({
       className={className}
     >
       <TabsList>
-        <TabsTrigger 
+        <TabsTrigger
           value="users"
           className="flex items-center space-x-2"
-          aria-label="Manage user accounts and permissions"
+          aria-label={t('settings:messages.manage_user_accounts', { defaultValue: 'Manage user accounts and permissions' })}
         >
           <UserIcon className="w-4 h-4" />
-          <span>Users</span>
+          <span>{t('settings:user_management.users')}</span>
         </TabsTrigger>
-        <TabsTrigger 
+        <TabsTrigger
           value="roles"
           className="flex items-center space-x-2"
-          aria-label="Configure roles and access levels"
+          aria-label={t('settings:messages.configure_roles', { defaultValue: 'Configure roles and access levels' })}
         >
           <ShieldCheckIcon className="w-4 h-4" />
-          <span>Roles</span>
+          <span>{t('settings:user_management.roles')}</span>
         </TabsTrigger>
       </TabsList>
       

@@ -2,12 +2,14 @@ import React from 'react';
 import { Payment } from '../types';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
+import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 interface PaymentHistoryProps {
   payments: Payment[];
 }
 
 const PaymentHistory: React.FC<PaymentHistoryProps> = ({ payments }) => {
+  const { t } = useTranslation(['customers', 'tables', 'common']);
   // Helper function to format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -20,10 +22,10 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ payments }) => {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Payment History</CardTitle>
+        <CardTitle>{t('customers:tabs.payments')}</CardTitle>
         <Button variant="secondary" size="sm">
           <i className="bi bi-download mr-2"></i>
-          Export
+          {t('tables:actions.export')}
         </Button>
       </CardHeader>
       <CardContent>

@@ -7,6 +7,7 @@ import { workflowApi, StatusHistoryItem } from '../../../services/api/workflow.a
 import { StatusDictItem, StatusUpdateRequest } from '../types';
 import StatusHistoryModal from './StatusHistoryModal';
 import StatusUpdateModal from './StatusUpdateModal';
+import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 interface CustomerStatusProps {
   cif: string;
@@ -37,6 +38,7 @@ interface ModalState {
 }
 
 const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
+  const { t } = useTranslation(['customers', 'common']);
   // State management
   const [statusDictionaries, setStatusDictionaries] = useState<StatusDictionaries | null>(null);
   const [currentStatuses, setCurrentStatuses] = useState<CurrentStatuses>({});
@@ -153,7 +155,7 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
   const getStatusInfo = (statusType: keyof CurrentStatuses) => {
     const currentStatus = currentStatuses[statusType];
     if (!currentStatus || !statusDictionaries) {
-      return { name: 'No Status', color: '#6B7280' };
+      return { name: t('customers:status.no_status'), color: '#6B7280' };
     }
 
     // const dictKey = statusType === 'processingState' ? 'processingState' : statusType;
@@ -162,7 +164,7 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
     // console.log(dictionary)
     // console.log(statusItem)
     return {
-      name: currentStatus.status?.name || 'Unknown',
+      name: currentStatus.status?.name || t('customers:status.unknown'),
       color: currentStatus.status?.color || '#6B7280'
     };
   };
@@ -325,12 +327,12 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
     return (
       <Card className="col-span-2">
         <CardHeader>
-          <CardTitle>Customer Status</CardTitle>
+          <CardTitle>{t('customers:status.customer_status')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
             <Spinner size="md" />
-            <span className="ml-2 text-neutral-600">Loading status data...</span>
+            <span className="ml-2 text-neutral-600">{t('customers:status.loading_status_data')}</span>
           </div>
         </CardContent>
       </Card>
@@ -341,10 +343,10 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
     return (
       <Card className="col-span-2">
         <CardHeader>
-          <CardTitle>Customer Status</CardTitle>
+          <CardTitle>{t('customers:status.customer_status')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <Alert variant="danger" title="Error Loading Status Data">
+          <Alert variant="danger" title={t('customers:status.error_loading_status_data')}>
             {error}
           </Alert>
         </CardContent>
@@ -356,21 +358,21 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
     <>
       <Card className="col-span-2">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Customer Status</CardTitle>
+          <CardTitle>{t('customers:status.customer_status')}</CardTitle>
           <Button variant="secondary" size="sm" onClick={handleUpdateClick}>
             <i className="bi bi-pencil mr-2"></i>
-            Update
+            {t('customers:status.update')}
           </Button>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-5 gap-4">
             {/* Customer Status */}
-            <div 
+            <div
               className="bg-neutral-50 rounded-md p-4 text-center border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors"
               onClick={() => handleStatusClick('customer')}
             >
-              <div className="text-xs text-neutral-600 mb-2 font-medium">Customer Status</div>
-              <div 
+              <div className="text-xs text-neutral-600 mb-2 font-medium">{t('customers:status.customer_status_label')}</div>
+              <div
                 className="font-bold text-sm"
                 style={{ color: getStatusInfo('customer').color }}
               >
@@ -379,12 +381,12 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
             </div>
             
             {/* Collateral Status */}
-            <div 
+            <div
               className="bg-neutral-50 rounded-md p-4 text-center border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors"
               onClick={() => handleStatusClick('collateral')}
             >
-              <div className="text-xs text-neutral-600 mb-2 font-medium">Collateral Status</div>
-              <div 
+              <div className="text-xs text-neutral-600 mb-2 font-medium">{t('customers:status.collateral_status')}</div>
+              <div
                 className="font-bold text-sm"
                 style={{ color: getStatusInfo('collateral').color }}
               >
@@ -393,12 +395,12 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
             </div>
             
             {/* Processing State */}
-            <div 
+            <div
               className="bg-neutral-50 rounded-md p-4 text-center border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors"
               onClick={() => handleStatusClick('processingState')}
             >
-              <div className="text-xs text-neutral-600 mb-2 font-medium">Processing State</div>
-              <div 
+              <div className="text-xs text-neutral-600 mb-2 font-medium">{t('customers:status.processing_state')}</div>
+              <div
                 className="font-bold text-sm"
                 style={{ color: getStatusInfo('processingState').color }}
               >
@@ -407,12 +409,12 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
             </div>
             
             {/* Lending Violation */}
-            <div 
+            <div
               className="bg-neutral-50 rounded-md p-4 text-center border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors"
               onClick={() => handleStatusClick('lendingViolation')}
             >
-              <div className="text-xs text-neutral-600 mb-2 font-medium">Lending Violation</div>
-              <div 
+              <div className="text-xs text-neutral-600 mb-2 font-medium">{t('customers:status.lending_violation')}</div>
+              <div
                 className="font-bold text-sm"
                 style={{ color: getStatusInfo('lendingViolation').color }}
               >
@@ -421,12 +423,12 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
             </div>
             
             {/* Recovery Ability */}
-            <div 
+            <div
               className="bg-neutral-50 rounded-md p-4 text-center border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors"
               onClick={() => handleStatusClick('recoveryAbility')}
             >
-              <div className="text-xs text-neutral-600 mb-2 font-medium">Recovery Ability</div>
-              <div 
+              <div className="text-xs text-neutral-600 mb-2 font-medium">{t('customers:status.recovery_ability')}</div>
+              <div
                 className="font-bold text-sm"
                 style={{ color: getStatusInfo('recoveryAbility').color }}
               >
