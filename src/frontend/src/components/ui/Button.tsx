@@ -1,6 +1,7 @@
 import React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../../utils/cn';
+import { useNamespacedTranslation } from '../../i18n';
 
 const buttonVariants = cva(
   'inline-flex items-center justify-center rounded-md font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed',
@@ -40,6 +41,8 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, loading, leftIcon, rightIcon, children, disabled, ...props }, ref) => {
+    const { t } = useNamespacedTranslation('common');
+    
     return (
       <button
         className={cn(buttonVariants({ variant, size, className }))}
@@ -69,7 +72,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            Loading...
+            {t('actions.loading')}
           </>
         ) : (
           <>

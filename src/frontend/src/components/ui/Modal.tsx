@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { cn } from '../../utils/cn';
+import { useNamespacedTranslation } from '../../i18n';
 
 interface ModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ const Modal: React.FC<ModalProps> = ({
   closeOnEsc = true,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  const { t } = useNamespacedTranslation('common');
 
   useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
@@ -92,7 +94,7 @@ const Modal: React.FC<ModalProps> = ({
             className="absolute right-4 top-4 rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
             onClick={onClose}
           >
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{t('buttons.close')}</span>
             <svg
               className="h-5 w-5"
               xmlns="http://www.w3.org/2000/svg"
@@ -154,11 +156,15 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onConfirm,
   title,
   description,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  confirmText,
+  cancelText,
   variant = 'danger',
   loading = false,
 }) => {
+  const { t } = useNamespacedTranslation('common');
+  
+  const defaultConfirmText = confirmText || t('buttons.confirm');
+  const defaultCancelText = cancelText || t('buttons.cancel');
   const variantClasses = {
     danger: 'bg-danger-500 hover:bg-danger-600 focus:ring-danger-500',
     warning: 'bg-warning-500 hover:bg-warning-600 focus:ring-warning-500',
@@ -207,7 +213,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           onClick={onClose}
           disabled={loading}
         >
-          {cancelText}
+          {defaultCancelText}
         </button>
         <button
           type="button"
@@ -219,7 +225,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           onClick={onConfirm}
           disabled={loading}
         >
-          {loading ? 'Loading...' : confirmText}
+          {loading ? t('actions.loading') : defaultConfirmText}
         </button>
       </ModalFooter>
     </Modal>

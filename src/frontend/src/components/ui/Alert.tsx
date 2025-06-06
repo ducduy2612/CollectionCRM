@@ -1,6 +1,7 @@
 import React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../../utils/cn';
+import { useNamespacedTranslation } from '../../i18n';
 
 const alertVariants = cva(
   'relative p-4 mb-4 rounded-md border flex items-start',
@@ -45,6 +46,7 @@ export interface AlertProps
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   ({ className, variant, title, icon, onClose, children, ...props }, ref) => {
+    const { t } = useNamespacedTranslation('common');
     const defaultIcons = {
       primary: (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -98,7 +100,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
             type="button"
             className="ml-auto -mx-1.5 -my-1.5 rounded-lg p-1.5 inline-flex h-8 w-8 items-center justify-center hover:bg-black/5 focus:outline-none focus:ring-2 focus:ring-offset-2"
             onClick={onClose}
-            aria-label="Close alert"
+            aria-label={t('buttons.close')}
           >
             <svg
               className="w-4 h-4"

@@ -4,6 +4,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Avatar } from '../../components/ui/Avatar';
+import { useNamespacedTranslation, useLocalization } from '../../i18n';
 
 const DashboardPage: React.FC = () => {
   return (

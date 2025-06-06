@@ -6,15 +6,21 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Alert } from '../ui/Alert';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
+import { LanguageSwitcher } from '../ui/LanguageSwitcher';
+import { useNamespacedTranslation, useMultipleTranslations } from '../../i18n';
 
-// Login form schema
-const loginSchema = z.object({
-  username: z.string().min(1, 'Username is required'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+// Create login schema with translations
+const createLoginSchema = (t: (key: string) => string) => z.object({
+  username: z.string().min(1, t('validation.username_required')),
+  password: z.string().min(6, t('validation.password_min_length')),
   rememberMe: z.boolean().optional(),
 });
 
-type LoginFormData = z.infer<typeof loginSchema>;
+type LoginFormData = {
+  username: string;
+  password: string;
+  rememberMe?: boolean;
+};
 
 interface LoginFormProps {
   onSubmit: (data: LoginFormData) => Promise<void>;
@@ -23,6 +29,11 @@ interface LoginFormProps {
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, error }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const { t: tAuth } = useNamespacedTranslation('auth');
+  const { t: tForms } = useNamespacedTranslation('forms');
+  const { t: tCommon } = useNamespacedTranslation('common');
+  
+  const loginSchema = createLoginSchema(tForms);
   
   const {
     register,
@@ -49,6 +60,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, error }) => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
+        {/* Language Switcher */}
+        <div className="flex justify-end">
+          <LanguageSwitcher />
+        </div>
+        
         {/* Logo and Title */}
         <div className="text-center">
           <div className="flex justify-center mb-4">
@@ -69,13 +85,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, error }) => {
             </div>
           </div>
           <h2 className="text-3xl font-bold text-neutral-900">Collection CRM</h2>
-          <p className="mt-2 text-sm text-neutral-600">Sign in to your account</p>
+          <p className="mt-2 text-sm text-neutral-600">{tAuth('login.subtitle')}</p>
         </div>
 
         {/* Login Card */}
         <Card>
           <CardHeader>
-            <CardTitle>Sign In</CardTitle>
+            <CardTitle>{tAuth('login.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             {error && (
@@ -88,8 +104,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, error }) => {
               <Input
                 {...register('username')}
                 type="text"
-                label="Username"
-                placeholder="Enter your username"
+                label={tForms('labels.username')}
+                placeholder={tForms('placeholders.username')}
                 error={errors.username?.message}
                 autoComplete="username"
                 leftIcon={
@@ -102,8 +118,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, error }) => {
               <Input
                 {...register('password')}
                 type="password"
-                label="Password"
-                placeholder="Enter your password"
+                label={tForms('labels.password')}
+                placeholder={tForms('placeholders.password')}
                 error={errors.password?.message}
                 autoComplete="current-password"
                 leftIcon={
@@ -120,11 +136,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, error }) => {
                     type="checkbox"
                     className="w-4 h-4 text-primary-600 bg-white border-neutral-300 rounded focus:ring-primary-500 focus:ring-2"
                   />
-                  <span className="ml-2 text-sm text-neutral-700">Remember me</span>
+                  <span className="ml-2 text-sm text-neutral-700">{tAuth('login.remember_me')}</span>
                 </label>
 
                 <a href="#" className="text-sm text-primary-600 hover:text-primary-500">
-                  Forgot password?
+                  {tAuth('login.forgot_password')}
                 </a>
               </div>
 
@@ -135,7 +151,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, error }) => {
                 className="w-full"
                 loading={isLoading}
               >
-                Sign In
+                {tAuth('login.sign_in')}
               </Button>
             </form>
 
@@ -145,7 +161,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, error }) => {
                   <div className="w-full border-t border-neutral-300"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-neutral-500">Or continue with</span>
+                  <span className="px-2 bg-white text-neutral-500">{tAuth('login.or_continue_with')}</span>
                 </div>
               </div>
 
@@ -176,7 +192,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, error }) => {
 
         {/* Footer */}
         <p className="text-center text-sm text-neutral-600">
-          © 2025 Collection CRM. All rights reserved.
+          {tCommon('messages.copyright')}
         </p>
       </div>
     </div>

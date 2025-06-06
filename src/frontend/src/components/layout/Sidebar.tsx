@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../../utils/cn';
+import { useNamespacedTranslation } from '../../i18n';
 
 interface SidebarItem {
   name: string;
@@ -18,6 +19,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ items, collapsed = false, onToggle }) => {
   const location = useLocation();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const { t } = useNamespacedTranslation('navigation');
 
   const isActive = (path: string) => location.pathname === path;
   const isParentActive = (item: SidebarItem) => {
@@ -117,7 +119,7 @@ const Sidebar: React.FC<SidebarProps> = ({ items, collapsed = false, onToggle })
         {/* Sidebar Header */}
         <div className="flex items-center justify-between p-4 border-b border-neutral-200">
           {!collapsed && (
-            <h2 className="text-lg font-semibold text-neutral-800">Menu</h2>
+            <h2 className="text-lg font-semibold text-neutral-800">{t('menu.title')}</h2>
           )}
           {onToggle && (
             <button

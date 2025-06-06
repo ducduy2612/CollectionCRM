@@ -13,6 +13,7 @@ import CustomerList from './components/CustomerList';
 import { bankApi } from '../../services/api/bank.api';
 import { workflowApi } from '../../services/api/workflow.api';
 import { Spinner } from '../../components/ui/Spinner';
+import { useNamespacedTranslation } from '../../i18n';
 
 const CustomersPage: React.FC = () => {
   const { cif } = useParams<{ cif: string }>();
