@@ -3,6 +3,8 @@ import { workflowApi } from '../../../../services/api/workflow.api';
 import { Customer, Loan, ActionType, ActionSubtype, ActionResult } from '../../types';
 import { useTranslation } from '../../../../i18n/hooks/useTranslation';
 
+export type ActionMode = 'loan-level' | 'customer-level';
+
 export interface LoanActionData {
   loanAccountNumber: string;
   selected: boolean;
@@ -34,6 +36,18 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
   // State for loan actions
   const [loanActions, setLoanActions] = useState<{ [key: string]: LoanActionData }>({});
   
+  // Action mode state
+  const [actionMode, setActionMode] = useState<ActionMode>('loan-level');
+  
+  // Customer-level action state
+  const [customerLevelAction, setCustomerLevelAction] = useState({
+    actionResultId: '',
+    fUpdate: '',
+    promiseAmount: '',
+    promiseDate: '',
+    notes: ''
+  });
+  
   // Global notes state
   const [globalNotes, setGlobalNotes] = useState('');
   const [applyGlobalNotes, setApplyGlobalNotes] = useState(false);
@@ -63,6 +77,15 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
         };
       });
       setLoanActions(initialActions);
+      
+      // Initialize customer-level action
+      setCustomerLevelAction({
+        actionResultId: '',
+        fUpdate: tomorrowStr,
+        promiseAmount: '',
+        promiseDate: '',
+        notes: ''
+      });
     }
   }, [isOpen, loans]);
 
@@ -80,6 +103,14 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
       setSelectedActionSubtypeId('');
       setActionSubtypes([]);
       setActionResults([]);
+      setActionMode('loan-level');
+      setCustomerLevelAction({
+        actionResultId: '',
+        fUpdate: '',
+        promiseAmount: '',
+        promiseDate: '',
+        notes: ''
+      });
       setGlobalNotes('');
       setApplyGlobalNotes(false);
       setError(null);
@@ -230,6 +261,44 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
     handleGlobalNotesApply();
   }, [applyGlobalNotes, globalNotes, handleGlobalNotesApply]);
 
+  const handleCustomerLevelFieldChange = useCallback((field: string, value: string) => {
+    setCustomerLevelAction(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  }, []);
+
+  const handleApplyToAllLoans = useCallback(() => {
+    if (!customerLevelAction.actionResultId) return;
+
+    const actionResult = actionResults.find(result => result.result_id === customerLevelAction.actionResultId);
+    const isPromiseToPay = actionResult?.result_code === 'PROMISE_TO_PAY';
+
+    setLoanActions(prev => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach(loanAccountNumber => {
+        const loan = loans.find(l => l.accountNumber === loanAccountNumber);
+        updated[loanAccountNumber] = {
+          ...updated[loanAccountNumber],
+          selected: true, // Auto-select all loans
+          actionResultId: customerLevelAction.actionResultId,
+          fUpdate: customerLevelAction.fUpdate,
+          promiseAmount: isPromiseToPay && loan ?
+            (customerLevelAction.promiseAmount || String(loan.dueAmount)) : '',
+          promiseDate: isPromiseToPay ? customerLevelAction.promiseDate : '',
+          notes: customerLevelAction.notes
+        };
+      });
+      return updated;
+    });
+  }, [customerLevelAction, actionResults, loans]);
+
+  const isCustomerLevelPromiseToPayResult = (): boolean => {
+    if (!customerLevelAction.actionResultId) return false;
+    const actionResult = actionResults.find(result => result.result_id === customerLevelAction.actionResultId);
+    return actionResult?.result_code === 'PROMISE_TO_PAY';
+  };
+
   const validateForm = (): string | null => {
     const selectedActions = Object.values(loanActions).filter(action => action.selected);
     
@@ -339,6 +408,8 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
     selectedActionTypeId,
     selectedActionSubtypeId,
     loanActions,
+    actionMode,
+    customerLevelAction,
     globalNotes,
     applyGlobalNotes,
     loading,
@@ -352,6 +423,7 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
     setGlobalNotes,
     setApplyGlobalNotes,
     setError,
+    setActionMode,
     
     // Handlers
     handleActionTypeChange,
@@ -360,9 +432,12 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
     handleFieldChange,
     handleSelectAll,
     handleSubmit,
+    handleCustomerLevelFieldChange,
+    handleApplyToAllLoans,
     
     // Utilities
     isPromiseToPayResult,
+    isCustomerLevelPromiseToPayResult,
     validateForm
   };
 };

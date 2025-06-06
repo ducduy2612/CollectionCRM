@@ -7,10 +7,12 @@ import { useTranslation } from '../../../i18n/hooks/useTranslation';
 import {
   useRecordActionModal,
   ActionConfigurationSection,
+  ActionModeSelector,
+  CustomerLevelActionForm,
   LoansTable,
   GlobalNotesSection,
   RecordActionModalFooter
-} from './RecordActionModal/';
+} from './RecordActionModal/index';
 
 interface RecordActionModalProps {
   isOpen: boolean;
@@ -37,6 +39,8 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
     selectedActionTypeId,
     selectedActionSubtypeId,
     loanActions,
+    actionMode,
+    customerLevelAction,
     globalNotes,
     applyGlobalNotes,
     loading,
@@ -49,6 +53,7 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
     // Setters
     setGlobalNotes,
     setApplyGlobalNotes,
+    setActionMode,
     
     // Handlers
     handleActionTypeChange,
@@ -57,9 +62,12 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
     handleFieldChange,
     handleSelectAll,
     handleSubmit,
+    handleCustomerLevelFieldChange,
+    handleApplyToAllLoans,
     
     // Utilities
-    isPromiseToPayResult
+    isPromiseToPayResult,
+    isCustomerLevelPromiseToPayResult
   } = useRecordActionModal({ isOpen, customer, loans });
 
   const onSubmitHandler = () => {
@@ -99,27 +107,46 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
               onActionSubtypeChange={handleActionSubtypeChange}
             />
 
-            {/* Loans Table */}
-            <LoansTable
-              loans={loans}
-              loanActions={loanActions}
-              actionResults={actionResults}
-              selectedActionSubtypeId={selectedActionSubtypeId}
-              allSelected={allSelected}
-              someSelected={someSelected}
-              onSelectAll={handleSelectAll}
-              onFieldChange={handleFieldChange}
-              onActionResultChange={handleActionResultChange}
-              isPromiseToPayResult={isPromiseToPayResult}
-            />
+            {/* Action Mode Selector with Content */}
+            <ActionModeSelector
+              mode={actionMode}
+              onModeChange={setActionMode}
+            >
+              {actionMode === 'customer-level' ? (
+                <CustomerLevelActionForm
+                  actionResults={actionResults}
+                  selectedActionSubtypeId={selectedActionSubtypeId}
+                  customerLevelAction={customerLevelAction}
+                  onFieldChange={handleCustomerLevelFieldChange}
+                  onApplyToAllLoans={handleApplyToAllLoans}
+                  isPromiseToPayResult={isCustomerLevelPromiseToPayResult()}
+                />
+              ) : (
+                <>
+                  {/* Loans Table */}
+                  <LoansTable
+                    loans={loans}
+                    loanActions={loanActions}
+                    actionResults={actionResults}
+                    selectedActionSubtypeId={selectedActionSubtypeId}
+                    allSelected={allSelected}
+                    someSelected={someSelected}
+                    onSelectAll={handleSelectAll}
+                    onFieldChange={handleFieldChange}
+                    onActionResultChange={handleActionResultChange}
+                    isPromiseToPayResult={isPromiseToPayResult}
+                  />
 
-            {/* Global Notes Section */}
-            <GlobalNotesSection
-              globalNotes={globalNotes}
-              applyGlobalNotes={applyGlobalNotes}
-              onGlobalNotesChange={setGlobalNotes}
-              onApplyGlobalNotesChange={setApplyGlobalNotes}
-            />
+                  {/* Global Notes Section */}
+                  <GlobalNotesSection
+                    globalNotes={globalNotes}
+                    applyGlobalNotes={applyGlobalNotes}
+                    onGlobalNotesChange={setGlobalNotes}
+                    onApplyGlobalNotesChange={setApplyGlobalNotes}
+                  />
+                </>
+              )}
+            </ActionModeSelector>
           </>
         )}
       </div>
