@@ -1,6 +1,7 @@
 {
   "menu": {
     "dashboard": "Bảng điều khiển",
+    "title": "Menu",
     "customers": "Khách hàng",
     "loans": "Khoản vay",
     "payments": "Thanh toán",

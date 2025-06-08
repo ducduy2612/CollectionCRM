@@ -1,6 +1,7 @@
 {
   "menu": {
     "dashboard": "Dashboard",
+    "title": "Menu",
     "customers": "Customers",
     "loans": "Loans",
     "payments": "Payments",

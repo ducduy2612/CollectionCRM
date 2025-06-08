@@ -97,29 +97,6 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
           </div>
         </div>
       </header>
-
-      {/* Navigation */}
-      <nav className="bg-primary-800 shadow-md">
-        <div className="px-6">
-          <ul className="flex space-x-8">
-            {navigation.map((item) => (
-              <li key={item.name}>
-                <Link
-                  to={item.href}
-                  className={cn(
-                    'inline-flex items-center px-1 py-3 text-sm font-medium border-b-3 transition-colors',
-                    isActive(item.href)
-                      ? 'text-white border-primary-400'
-                      : 'text-primary-200 border-transparent hover:text-white hover:border-primary-300'
-                  )}
-                >
-                  {item.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </nav>
     </>
   );
 };

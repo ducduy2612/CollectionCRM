@@ -16,7 +16,7 @@ interface SidebarProps {
   onToggle?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ items, collapsed = false, onToggle }) => {
+const Sidebar: React.FC<SidebarProps> = ({ items, collapsed = true, onToggle }) => {
   const location = useLocation();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const { t } = useNamespacedTranslation('navigation');
