@@ -9,6 +9,12 @@ export * from './action-subtype-result-mapping.entity';
 export * from './customer-agent.entity';
 export * from './customer-case.entity';
 
+// Contact Information Entities
+export * from './phone.entity';
+export * from './address.entity';
+export * from './email.entity';
+export * from './reference-customer.entity';
+
 // Status Dictionary Entities
 export * from './customer-status-dict.entity';
 export * from './collateral-status-dict.entity';
