@@ -28,6 +28,7 @@
     "address": "Địa chỉ",
     "city": "Thành phố",
     "state": "Tỉnh/Thành",
+    "district": "Quận/Huyện",
     "postal_code": "Mã bưu điện",
     "country": "Quốc gia",
     "date_of_birth": "Ngày sinh",
@@ -57,7 +58,34 @@
     "system_info": "Thông tin hệ thống",
     "source_system": "Hệ thống nguồn",
     "last_sync": "Đồng bộ lần cuối",
-    "follow_up": "Theo dõi"
+    "follow_up": "Theo dõi",
+    "phone_type": "Loại điện thoại",
+    "phone_number": "Số điện thoại",
+    "email_address": "Địa chỉ email",
+    "address_type": "Loại địa chỉ",
+    "address_line1": "Địa chỉ dòng 1",
+    "address_line2": "Địa chỉ dòng 2"
+  },
+  "phone_types": {
+    "mobile": "Di động",
+    "home": "Nhà riêng",
+    "work": "Cơ quan",
+    "other": "Khác"
+  },
+  "address_types": {
+    "home": "Nhà riêng",
+    "work": "Cơ quan",
+    "other": "Khác"
+  },
+  "placeholders": {
+    "phone_number": "Nhập số điện thoại",
+    "email_address": "Nhập địa chỉ email",
+    "address_line1": "Nhập địa chỉ dòng 1",
+    "address_line2": "Nhập địa chỉ dòng 2 (tùy chọn)",
+    "city": "Nhập thành phố",
+    "state": "Nhập tỉnh/thành",
+    "district": "Nhập quận/huyện",
+    "country": "Nhập quốc gia"
   },
   "status": {
     "customer_status": "Trạng thái khách hàng",
@@ -181,7 +209,12 @@
     "customer_not_found": "Không tìm thấy khách hàng.",
     "under_development": "Đang phát triển",
     "no_notes": "Không có ghi chú",
-    "failed_to_load_action_types": "Không thể tải loại hành động"
+    "failed_to_load_action_types": "Không thể tải loại hành động",
+    "delete_requires_admin_role": "Chỉ có ADMIN hoặc SUPERVISOR mới có thể xóa thông tin liên hệ",
+    "contact_not_found": "Không tìm thấy thông tin liên hệ",
+    "delete_failed": "Xóa thông tin liên hệ thất bại",
+    "save_failed": "Lưu thông tin liên hệ thất bại",
+    "required_fields_missing": "Thiếu các trường bắt buộc"
   },
   "action_search": {
     "title": "Tìm kiếm lịch sử hành động",

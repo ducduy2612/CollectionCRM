@@ -23,6 +23,91 @@ export interface Address {
   isVerified: boolean;
 }
 
+// =============================================
+// WORKFLOW SERVICE CONTACT TYPES
+// =============================================
+
+export interface WorkflowPhone {
+  id: string;
+  type: string;
+  number: string;
+  isPrimary: boolean;
+  isVerified: boolean;
+  verificationDate?: string;
+  createdAt: string;
+  updatedAt: string;
+  cif: string;
+  createdBy: string;
+  updatedBy: string;
+}
+
+export interface WorkflowEmail {
+  id: string;
+  address: string;
+  isPrimary: boolean;
+  isVerified: boolean;
+  verificationDate?: string;
+  createdAt: string;
+  updatedAt: string;
+  cif: string;
+  createdBy: string;
+  updatedBy: string;
+}
+
+export interface WorkflowAddress {
+  id: string;
+  type: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state?: string;
+  district?: string;
+  country: string;
+  isPrimary: boolean;
+  isVerified: boolean;
+  verificationDate?: string;
+  createdAt: string;
+  updatedAt: string;
+  cif: string;
+  createdBy: string;
+  updatedBy: string;
+}
+
+export interface WorkflowContactInfo {
+  phones: WorkflowPhone[];
+  addresses: WorkflowAddress[];
+  emails: WorkflowEmail[];
+}
+
+// Contact form data interfaces
+export interface PhoneFormData {
+  type: string;
+  number: string;
+  isPrimary?: boolean;
+  isVerified?: boolean;
+  verificationDate?: string;
+}
+
+export interface EmailFormData {
+  address: string;
+  isPrimary?: boolean;
+  isVerified?: boolean;
+  verificationDate?: string;
+}
+
+export interface AddressFormData {
+  type: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state?: string;
+  district?: string;
+  country: string;
+  isPrimary?: boolean;
+  isVerified?: boolean;
+  verificationDate?: string;
+}
+
 export interface ContactInfo {
   phones: Phone[];
   emails: Email[];

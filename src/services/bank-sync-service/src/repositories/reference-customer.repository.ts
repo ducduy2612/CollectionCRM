@@ -98,6 +98,80 @@ export const ReferenceCustomerRepository = AppDataSource.getRepository(Reference
   },
 
   /**
+   * Find reference customers by primary CIF with contact information
+   * @param primaryCif Primary customer CIF
+   * @returns Array of reference customers with their contact information
+   */
+  async findByPrimaryCifWithContacts(primaryCif: string): Promise<ReferenceCustomer[]> {
+    try {
+      return await this.find({
+        where: { primaryCif },
+        relations: ['phones', 'addresses', 'emails'],
+        order: { createdAt: 'DESC' }
+      });
+    } catch (error) {
+      console.error(`Error finding reference customers with contacts by primary CIF ${primaryCif}:`, error);
+      throw new Error(`Failed to find reference customers with contacts by primary CIF: ${(error as Error).message}`);
+    }
+  },
+
+  /**
+   * Find reference customer by ID with contact information
+   * @param id Reference customer ID
+   * @returns Reference customer with contact information
+   */
+  async findByIdWithContacts(id: string): Promise<ReferenceCustomer | undefined> {
+    try {
+      const referenceCustomer = await this.findOne({
+        where: { id },
+        relations: ['phones', 'addresses', 'emails']
+      });
+      return referenceCustomer || undefined;
+    } catch (error) {
+      console.error(`Error finding reference customer with contacts by ID ${id}:`, error);
+      throw new Error(`Failed to find reference customer with contacts by ID: ${(error as Error).message}`);
+    }
+  },
+
+  /**
+   * Search reference customers based on criteria
+   * @param criteria Search criteria
+   * @returns Paginated result of reference customers
+   */
+  async searchReferenceCustomers(criteria: ReferenceSearchCriteria): Promise<PaginatedResult<ReferenceCustomer>> {
+    try {
+      const queryBuilder = this.createQueryBuilder('referenceCustomer');
+      
+      // Apply filters
+      if (criteria.relationshipType) {
+        queryBuilder.andWhere('referenceCustomer.relationship_type = :relationshipType', { relationshipType: criteria.relationshipType });
+      }
+      
+      if (criteria.name) {
+        queryBuilder.andWhere('referenceCustomer.name ILIKE :name', { name: `%${criteria.name}%` });
+      }
+      
+      if (criteria.nationalId) {
+        queryBuilder.andWhere('referenceCustomer.national_id = :nationalId', { nationalId: criteria.nationalId });
+      }
+      
+      // Get total count
+      const total = await queryBuilder.getCount();
+      
+      // Apply pagination
+      const paginatedQuery = baseSyncRepository.applyPagination(queryBuilder, criteria);
+      
+      // Get paginated results
+      const referenceCustomers = await paginatedQuery.getMany();
+      
+      return baseSyncRepository.createPaginatedResult(referenceCustomers, total, criteria);
+    } catch (error) {
+      console.error(`Error searching reference customers:`, error);
+      throw new Error(`Failed to search reference customers: ${(error as Error).message}`);
+    }
+  },
+
+  /**
    * Find reference customers by relationship type
    * @param relationshipType Relationship type
    * @param criteria Search criteria

@@ -159,7 +159,7 @@ const CustomersPage: React.FC = () => {
       {/* Tab Content */}
       {activeTab === 'overview' && (
         <div className="grid grid-cols-2 gap-6">
-          {customer && <ContactInformation phones={customer.phones} emails={customer.emails} addresses={customer.addresses} />}
+          {customer && <ContactInformation cif={cif} phones={customer.phones} emails={customer.emails} addresses={customer.addresses} />}
           {loans && loans.length > 0 && <LoanSummary loans={loans} />}
           {/* ActionHistory is rendered above and shown via CSS */}
           <div /> {/* Placeholder to maintain grid layout */}
