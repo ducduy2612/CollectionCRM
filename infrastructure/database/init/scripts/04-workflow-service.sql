@@ -90,8 +90,7 @@ CREATE TABLE workflow_service.agents (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by VARCHAR(50),
-    updated_by VARCHAR(50),
-    CONSTRAINT fk_agents_user_id FOREIGN KEY (user_id) REFERENCES auth_service.users(id) ON DELETE SET NULL ON UPDATE CASCADE
+    updated_by VARCHAR(50)
 );
 
 COMMENT ON TABLE workflow_service.agents IS 'Stores information about collection agents and their teams';
@@ -206,8 +205,6 @@ CREATE TABLE workflow_service.action_records (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by VARCHAR(50) NOT NULL,
     updated_by VARCHAR(50) NOT NULL,
-    CONSTRAINT fk_action_customer FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif),
-    CONSTRAINT fk_action_loan FOREIGN KEY (loan_account_number) REFERENCES bank_sync_service.loans(account_number),
     CONSTRAINT fk_action_agent FOREIGN KEY (agent_id) REFERENCES workflow_service.agents(id),
     CONSTRAINT fk_action_type FOREIGN KEY (action_type_id) REFERENCES workflow_service.action_types(id),
     CONSTRAINT fk_action_subtype FOREIGN KEY (action_subtype_id) REFERENCES workflow_service.action_subtypes(id),
@@ -263,7 +260,6 @@ CREATE TABLE workflow_service.customer_agents (
     is_current BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT fk_customer_agent_customer FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif),
     CONSTRAINT fk_customer_agent_call_agent FOREIGN KEY (assigned_call_agent_id) REFERENCES workflow_service.agents(id),
     CONSTRAINT fk_customer_agent_field_agent FOREIGN KEY (assigned_field_agent_id) REFERENCES workflow_service.agents(id)
 ) PARTITION BY RANGE (start_date);
@@ -317,7 +313,6 @@ CREATE TABLE workflow_service.customer_cases (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by VARCHAR(50),
     updated_by VARCHAR(50),
-    CONSTRAINT fk_customer_case_customer FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif),
     CONSTRAINT fk_customer_case_call_agent FOREIGN KEY (assigned_call_agent_id) REFERENCES workflow_service.agents(id),
     CONSTRAINT fk_customer_case_field_agent FOREIGN KEY (assigned_field_agent_id) REFERENCES workflow_service.agents(id)
 );
@@ -463,7 +458,6 @@ CREATE TABLE workflow_service.customer_status (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by VARCHAR(50) NOT NULL,
     updated_by VARCHAR(50) NOT NULL,
-    CONSTRAINT fk_customer_status_customer FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif),
     CONSTRAINT fk_customer_status_agent FOREIGN KEY (agent_id) REFERENCES workflow_service.agents(id),
     CONSTRAINT fk_customer_status_dict FOREIGN KEY (status_id) REFERENCES workflow_service.customer_status_dict(id)
 );
@@ -483,8 +477,6 @@ CREATE TABLE workflow_service.collateral_status (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by VARCHAR(50) NOT NULL,
     updated_by VARCHAR(50) NOT NULL,
-    CONSTRAINT fk_collateral_status_customer FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif),
-    CONSTRAINT fk_collateral_status_collateral FOREIGN KEY (collateral_number) REFERENCES bank_sync_service.collaterals(collateral_number),
     CONSTRAINT fk_collateral_status_agent FOREIGN KEY (agent_id) REFERENCES workflow_service.agents(id),
     CONSTRAINT fk_collateral_status_dict FOREIGN KEY (status_id) REFERENCES workflow_service.collateral_status_dict(id)
 );
@@ -504,7 +496,6 @@ CREATE TABLE workflow_service.processing_state_status (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by VARCHAR(50) NOT NULL,
     updated_by VARCHAR(50) NOT NULL,
-    CONSTRAINT fk_processing_state_status_customer FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif),
     CONSTRAINT fk_processing_state_status_agent FOREIGN KEY (agent_id) REFERENCES workflow_service.agents(id),
     CONSTRAINT fk_processing_state_status_state FOREIGN KEY (state_id) REFERENCES workflow_service.processing_state_dict(id),
     CONSTRAINT fk_processing_state_status_substate FOREIGN KEY (substate_id) REFERENCES workflow_service.processing_substate_dict(id)
@@ -524,7 +515,6 @@ CREATE TABLE workflow_service.lending_violation_status (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by VARCHAR(50) NOT NULL,
     updated_by VARCHAR(50) NOT NULL,
-    CONSTRAINT fk_lending_violation_status_customer FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif),
     CONSTRAINT fk_lending_violation_status_agent FOREIGN KEY (agent_id) REFERENCES workflow_service.agents(id),
     CONSTRAINT fk_lending_violation_status_dict FOREIGN KEY (status_id) REFERENCES workflow_service.lending_violation_status_dict(id)
 );
@@ -543,7 +533,6 @@ CREATE TABLE workflow_service.recovery_ability_status (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by VARCHAR(50) NOT NULL,
     updated_by VARCHAR(50) NOT NULL,
-    CONSTRAINT fk_recovery_ability_status_customer FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif),
     CONSTRAINT fk_recovery_ability_status_agent FOREIGN KEY (agent_id) REFERENCES workflow_service.agents(id),
     CONSTRAINT fk_recovery_ability_status_dict FOREIGN KEY (status_id) REFERENCES workflow_service.recovery_ability_status_dict(id)
 );
