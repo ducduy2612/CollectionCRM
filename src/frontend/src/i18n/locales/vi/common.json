@@ -46,7 +46,8 @@
     "pause": "Tạm dừng",
     "resume": "Tiếp tục",
     "stop": "Dừng",
-    "start": "Bắt đầu"
+    "start": "Bắt đầu",
+    "selectFile": "Chọn Tệp"
   },
   "actions": {
     "loading": "Đang tải...",
@@ -155,5 +156,6 @@
     "customers": "khách hàng",
     "loans": "khoản vay",
     "payments": "thanh toán"
-  }
+  },
+  "selectFile": "Chọn Tệp"
 }

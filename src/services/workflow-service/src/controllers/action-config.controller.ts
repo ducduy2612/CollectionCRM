@@ -35,7 +35,7 @@ export class ActionConfigController {
       
       const id = await ActionConfigRepository.addActionType(
         config,
-        req.user?.userId || 'ADMIN'
+        req.user?.username || 'ADMIN'
       );
       
       logger.info({ id, code, name }, 'Action type added successfully');
@@ -78,7 +78,7 @@ export class ActionConfigController {
       
       const id = await ActionConfigRepository.addActionSubtype(
         config,
-        req.user?.userId || 'ADMIN'
+        req.user?.username || 'ADMIN'
       );
       
       logger.info({ id, code, name }, 'Action subtype added successfully');
@@ -121,7 +121,7 @@ export class ActionConfigController {
       
       const id = await ActionConfigRepository.addActionResult(
         config,
-        req.user?.userId || 'ADMIN'
+        req.user?.username || 'ADMIN'
       );
       
       logger.info({ id, code, name }, 'Action result added successfully');
@@ -158,7 +158,7 @@ export class ActionConfigController {
       const id = await ActionConfigRepository.mapTypeToSubtype(
         type_code,
         subtype_code,
-        req.user?.userId || 'ADMIN'
+        req.user?.username || 'ADMIN'
       );
       
       logger.info({ id, type_code, subtype_code }, 'Type-subtype mapping created successfully');
@@ -195,7 +195,7 @@ export class ActionConfigController {
       const id = await ActionConfigRepository.mapSubtypeToResult(
         subtype_code,
         result_code,
-        req.user?.userId || 'ADMIN'
+        req.user?.username || 'ADMIN'
       );
       
       logger.info({ id, subtype_code, result_code }, 'Subtype-result mapping created successfully');
@@ -298,7 +298,7 @@ export class ActionConfigController {
       
       const success = await ActionConfigRepository.deactivateActionType(
         typeCode,
-        req.user?.userId || 'ADMIN'
+        req.user?.username || 'ADMIN'
       );
       
       logger.info({ typeCode, success }, 'Action type deactivation attempted');
@@ -324,7 +324,7 @@ export class ActionConfigController {
       
       const success = await ActionConfigRepository.deactivateActionSubtype(
         subtypeCode,
-        req.user?.userId || 'ADMIN'
+        req.user?.username || 'ADMIN'
       );
       
       logger.info({ subtypeCode, success }, 'Action subtype deactivation attempted');
@@ -350,7 +350,7 @@ export class ActionConfigController {
       
       const success = await ActionConfigRepository.deactivateActionResult(
         resultCode,
-        req.user?.userId || 'ADMIN'
+        req.user?.username || 'ADMIN'
       );
       
       logger.info({ resultCode, success }, 'Action result deactivation attempted');
@@ -386,7 +386,7 @@ export class ActionConfigController {
       const success = await ActionConfigRepository.removeTypeSubtypeMapping(
         type_code,
         subtype_code,
-        req.user?.userId || 'ADMIN'
+        req.user?.username || 'ADMIN'
       );
       
       logger.info({ type_code, subtype_code, success }, 'Type-subtype mapping removal attempted');
@@ -422,7 +422,7 @@ export class ActionConfigController {
       const success = await ActionConfigRepository.removeSubtypeResultMapping(
         subtype_code,
         result_code,
-        req.user?.userId || 'ADMIN'
+        req.user?.username || 'ADMIN'
       );
       
       logger.info({ subtype_code, result_code, success }, 'Subtype-result mapping removal attempted');

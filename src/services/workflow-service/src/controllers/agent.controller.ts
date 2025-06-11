@@ -77,8 +77,8 @@ export class AgentController {
         type,
         team,
         isActive: true,
-        createdBy: req.user?.userId || 'system',
-        updatedBy: req.user?.userId || 'system'
+        createdBy: req.user?.username || 'system',
+        updatedBy: req.user?.username || 'system'
       });
       
       logger.info({ agentId: agent.id }, 'Agent created successfully');
@@ -124,7 +124,7 @@ export class AgentController {
         type,
         team,
         isActive,
-        updatedBy: req.user?.userId || 'system'
+        updatedBy: req.user?.username || 'system'
       });
       
       logger.info({ agentId: id }, 'Agent updated successfully');

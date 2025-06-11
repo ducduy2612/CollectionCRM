@@ -320,7 +320,7 @@ export class ActionController {
         id,
         actionResult as string,
         notes,
-        req.user?.userId || 'system'
+        req.user?.username || 'system'
       );
       
       logger.info({ actionId: id }, 'Action result updated successfully');

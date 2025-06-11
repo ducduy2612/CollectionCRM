@@ -345,6 +345,8 @@ CREATE TABLE workflow_service.customer_agents (
     is_current BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_by VARCHAR(50) NOT NULL,
+    updated_by VARCHAR(50) NOT NULL,
     CONSTRAINT fk_customer_agent_call_agent FOREIGN KEY (assigned_call_agent_id) REFERENCES workflow_service.agents(id),
     CONSTRAINT fk_customer_agent_field_agent FOREIGN KEY (assigned_field_agent_id) REFERENCES workflow_service.agents(id)
 ) PARTITION BY RANGE (start_date);

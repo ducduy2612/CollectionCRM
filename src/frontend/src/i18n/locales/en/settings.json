@@ -227,5 +227,42 @@
     "value_too_small": "Value is too small",
     "password_letters_numbers": "Password must contain both letters and numbers",
     "select_valid_role": "Please select a valid role"
+  },
+  "customerAssignmentUpload": {
+    "title": "Customer Assignment Upload",
+    "description": "Upload a CSV file to bulk assign customers to call and field agents. The system will validate agent names and create assignments accordingly.",
+    "downloadTemplate": "Download CSV Template",
+    "dropZone": {
+      "title": "Drop your CSV file here",
+      "subtitle": "or click to browse files"
+    },
+    "requirements": {
+      "title": "File Requirements:",
+      "format": "CSV format only (.csv)",
+      "size": "Maximum file size: 10MB",
+      "columns": "Required columns: CIF, AssignedCallAgentName, AssignedFieldAgentName",
+      "agents": "At least one agent name must be provided per row",
+      "validation": "Agent names will be validated against existing agents"
+    },
+    "success": {
+      "title": "Upload Successful!",
+      "processed": "Records Processed",
+      "created": "Assignments Created",
+      "successRate": "Success Rate",
+      "message": "All assignments have been successfully created and are now active in the system."
+    },
+    "guide": {
+      "title": "CSV Format Guide",
+      "columns": "Required Columns:",
+      "columnName": "Column Name",
+      "description": "Description",
+      "required": "Required",
+      "example": "Example CSV Content:",
+      "notes": "Important Notes:",
+      "note1": "Agent names must exactly match existing agent names in the system",
+      "note2": "Empty cells are allowed for optional agent assignments",
+      "note3": "Duplicate CIF entries will be processed as separate assignment updates",
+      "note4": "The system will validate all data before creating assignments"
+    }
   }
 }

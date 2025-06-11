@@ -46,7 +46,8 @@
     "pause": "Pause",
     "resume": "Resume",
     "stop": "Stop",
-    "start": "Start"
+    "start": "Start",
+    "selectFile": "Select File"
   },
   "actions": {
     "loading": "Loading...",
@@ -155,5 +156,6 @@
     "customers": "customers",
     "loans": "loans",
     "payments": "payments"
-  }
+  },
+  "selectFile": "Select File"
 }

@@ -204,8 +204,8 @@ export class ReferenceCustomerController {
         companyName,
         registrationNumber,
         taxId,
-        createdBy: req.user?.userId || 'system',
-        updatedBy: req.user?.userId || 'system'
+        createdBy: req.user?.username || 'system',
+        updatedBy: req.user?.username || 'system'
       });
       
       logger.info({ referenceCustomerId: referenceCustomer.id, primaryCif, refCif }, 'Reference customer created successfully');
@@ -252,7 +252,7 @@ export class ReferenceCustomerController {
         companyName,
         registrationNumber,
         taxId,
-        updatedBy: req.user?.userId || 'system'
+        updatedBy: req.user?.username || 'system'
       });
       
       logger.info({ referenceCustomerId: id }, 'Reference customer updated successfully');

@@ -104,8 +104,8 @@ export class AssignmentController {
         cif,
         assignedCallAgentId,
         assignedFieldAgentId,
-        createdBy: req.user?.userId || 'system',
-        updatedBy: req.user?.userId || 'system'
+        createdBy: req.user?.username || 'system',
+        updatedBy: req.user?.username || 'system'
       });
       
       logger.info({ assignmentId: assignment.id, cif }, 'Assignment created successfully');
@@ -173,7 +173,7 @@ export class AssignmentController {
       const assignment = await CustomerAgentRepository.updateAssignment(id, {
         assignedCallAgentId,
         assignedFieldAgentId,
-        updatedBy: req.user?.userId || 'system'
+        updatedBy: req.user?.username || 'system'
       });
       
       logger.info({ assignmentId: id }, 'Assignment updated successfully');
@@ -317,8 +317,8 @@ export class AssignmentController {
             cif: row.cif,
             assignedCallAgentId,
             assignedFieldAgentId,
-            createdBy: req.user?.userId || 'system',
-            updatedBy: req.user?.userId || 'system'
+            createdBy: req.user?.username || 'system',
+            updatedBy: req.user?.username || 'system'
           });
         } catch (error) {
           processingErrors.push(`Line ${row.lineNumber}: ${error instanceof Error ? error.message : 'Unknown error'}`);

@@ -305,9 +305,20 @@ class AxiosProxyService {
       let axiosConfig: AxiosRequestConfig = {
         method: req.method,
         headers: {},
-        data: req.body,
-        responseType: 'arraybuffer', // Use arraybuffer to handle binary responses
+        responseType: 'json', // Default to JSON for API responses
       };
+
+      // Handle multipart/form-data (file uploads)
+      const contentType = req.headers['content-type'];
+      if (contentType && contentType.includes('multipart/form-data')) {
+        // For file uploads, pass the raw request as stream
+        axiosConfig.data = req;
+        axiosConfig.maxBodyLength = Infinity;
+        axiosConfig.maxContentLength = Infinity;
+      } else {
+        // For regular requests, use req.body
+        axiosConfig.data = req.body;
+      }
       
       // Process request through middleware chain
       for (const middleware of this.requestMiddlewares.getAll()) {
@@ -325,14 +336,10 @@ class AxiosProxyService {
       // Send the response
       res.status(response.status);
       
-      // Handle different content types appropriately
-      const contentType = response.headers['content-type'];
-      if (contentType && contentType.includes('application/json')) {
-        // Parse JSON response
-        const jsonData = JSON.parse(response.data.toString());
-        res.json(jsonData);
+      // Handle response data
+      if (typeof response.data === 'object') {
+        res.json(response.data);
       } else {
-        // Send raw response
         res.send(response.data);
       }
     } catch (error) {

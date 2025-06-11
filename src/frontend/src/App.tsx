@@ -15,6 +15,7 @@ import DashboardPage from './pages/dashboard/DashboardPage';
 import CustomersPage from './pages/customers/CustomersPage';
 import SettingsPage from './pages/settings/SettingsPage';
 import UserManagementPage from './pages/settings/UserManagementPage';
+import CustomerAssignmentUploadPage from './pages/settings/CustomerAssignmentUploadPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 // Components
@@ -51,6 +52,7 @@ function App() {
               
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/settings/user-management" element={<UserManagementPage />} />
+              <Route path="/settings/customer-assignment" element={<CustomerAssignmentUploadPage />} />
             </Route>
 
             {/* Redirect root to dashboard */}

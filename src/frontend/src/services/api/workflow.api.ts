@@ -317,6 +317,36 @@ export const workflowApi = {
     return response.data.data;
   },
 
+  // Create bulk assignments from CSV
+  createBulkAssignments: async (file: File): Promise<{
+    assignments: any[];
+    count: number;
+    processed: number;
+  }> => {
+    const formData = new FormData();
+    formData.append('csvFile', file);
+    
+    const response = await apiClient.post<WorkflowApiResponse<{
+      assignments: any[];
+      count: number;
+      processed: number;
+    }>>(
+      '/workflow/assignments/bulk',
+      formData,
+      {
+        headers: {
+          'Content-Type': undefined, // Let browser set multipart/form-data with boundary
+        },
+      }
+    );
+    
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to create bulk assignments');
+    }
+    
+    return response.data.data;
+  },
+
   // =============================================
   // STATUS DICTIONARY API FUNCTIONS
   // =============================================

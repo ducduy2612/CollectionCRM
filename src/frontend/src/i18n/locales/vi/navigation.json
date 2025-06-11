@@ -86,7 +86,8 @@
     "show_more": "Hiển thị thêm",
     "show_less": "Hiển thị ít hơn",
     "view_all": "Xem tất cả",
-    "hide_all": "Ẩn tất cả"
+    "hide_all": "Ẩn tất cả",
+    "logout": "Đăng xuất"
   },
   "tooltips": {
     "dashboard_tooltip": "Xem tổng quan hệ thống và các chỉ số chính",

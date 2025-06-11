@@ -227,5 +227,42 @@
     "value_too_small": "Giá trị quá nhỏ",
     "password_letters_numbers": "Mật khẩu phải chứa cả chữ cái và số",
     "select_valid_role": "Vui lòng chọn vai trò hợp lệ"
+  },
+  "customerAssignmentUpload": {
+    "title": "Tải Lên Phân Công Khách Hàng",
+    "description": "Tải lên tệp CSV để phân công hàng loạt khách hàng cho nhân viên gọi điện và nhân viên thực địa. Hệ thống sẽ xác thực tên nhân viên và tạo phân công tương ứng.",
+    "downloadTemplate": "Tải Xuống Mẫu CSV",
+    "dropZone": {
+      "title": "Thả tệp CSV của bạn vào đây",
+      "subtitle": "hoặc nhấp để duyệt tệp"
+    },
+    "requirements": {
+      "title": "Yêu Cầu Tệp:",
+      "format": "Chỉ định dạng CSV (.csv)",
+      "size": "Kích thước tệp tối đa: 10MB",
+      "columns": "Các cột bắt buộc: CIF, AssignedCallAgentName, AssignedFieldAgentName",
+      "agents": "Ít nhất một tên nhân viên phải được cung cấp cho mỗi hàng",
+      "validation": "Tên nhân viên sẽ được xác thực với các nhân viên hiện có"
+    },
+    "success": {
+      "title": "Tải Lên Thành Công!",
+      "processed": "Bản Ghi Đã Xử Lý",
+      "created": "Phân Công Đã Tạo",
+      "successRate": "Tỷ Lệ Thành Công",
+      "message": "Tất cả phân công đã được tạo thành công và hiện đang hoạt động trong hệ thống."
+    },
+    "guide": {
+      "title": "Hướng Dẫn Định Dạng CSV",
+      "columns": "Các Cột Bắt Buộc:",
+      "columnName": "Tên Cột",
+      "description": "Mô Tả",
+      "required": "Bắt Buộc",
+      "example": "Nội Dung CSV Mẫu:",
+      "notes": "Ghi Chú Quan Trọng:",
+      "note1": "Tên nhân viên phải khớp chính xác với tên nhân viên hiện có trong hệ thống",
+      "note2": "Các ô trống được phép cho phân công nhân viên tùy chọn",
+      "note3": "Các mục CIF trùng lặp sẽ được xử lý như các cập nhật phân công riêng biệt",
+      "note4": "Hệ thống sẽ xác thực tất cả dữ liệu trước khi tạo phân công"
+    }
   }
 }
