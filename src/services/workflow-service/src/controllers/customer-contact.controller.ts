@@ -65,8 +65,8 @@ export class CustomerContactController {
         isPrimary: isPrimary || false,
         isVerified: isVerified || false,
         verificationDate: verificationDate ? new Date(verificationDate) : null,
-        createdBy: req.user?.userId || 'system',
-        updatedBy: req.user?.userId || 'system'
+        createdBy: req.user?.username || 'system',
+        updatedBy: req.user?.username || 'system'
       });
       
       logger.info({ phoneId: phone.id, cif }, 'Phone created successfully');
@@ -99,7 +99,7 @@ export class CustomerContactController {
         isPrimary,
         isVerified,
         verificationDate: verificationDate ? new Date(verificationDate) : undefined,
-        updatedBy: req.user?.userId || 'system'
+        updatedBy: req.user?.username || 'system'
       });
       
       logger.info({ phoneId }, 'Phone updated successfully');
@@ -215,8 +215,8 @@ export class CustomerContactController {
         isPrimary: isPrimary || false,
         isVerified: isVerified || false,
         verificationDate: verificationDate ? new Date(verificationDate) : null,
-        createdBy: req.user?.userId || 'system',
-        updatedBy: req.user?.userId || 'system'
+        createdBy: req.user?.username || 'system',
+        updatedBy: req.user?.username || 'system'
       });
       
       logger.info({ addressId: address.id, cif }, 'Address created successfully');
@@ -265,7 +265,7 @@ export class CustomerContactController {
         isPrimary,
         isVerified,
         verificationDate: verificationDate ? new Date(verificationDate) : undefined,
-        updatedBy: req.user?.userId || 'system'
+        updatedBy: req.user?.username || 'system'
       });
       
       logger.info({ addressId }, 'Address updated successfully');
@@ -375,8 +375,8 @@ export class CustomerContactController {
         isPrimary: isPrimary || false,
         isVerified: isVerified || false,
         verificationDate: verificationDate ? new Date(verificationDate) : null,
-        createdBy: req.user?.userId || 'system',
-        updatedBy: req.user?.userId || 'system'
+        createdBy: req.user?.username || 'system',
+        updatedBy: req.user?.username || 'system'
       });
       
       logger.info({ emailId: email.id, cif }, 'Email created successfully');
@@ -421,7 +421,7 @@ export class CustomerContactController {
         isPrimary,
         isVerified,
         verificationDate: verificationDate ? new Date(verificationDate) : undefined,
-        updatedBy: req.user?.userId || 'system'
+        updatedBy: req.user?.username || 'system'
       });
       
       logger.info({ emailId }, 'Email updated successfully');

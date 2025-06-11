@@ -49,9 +49,9 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
     switch (type) {
       case 'customer': return t('customers:status_update.customer_status');
       case 'collateral': return t('customers:status_update.collateral_status');
-      case 'processing_state': return t('customers:status_update.processing_state');
-      case 'lending_violation': return t('customers:status_update.lending_violation');
-      case 'recovery_ability': return t('customers:status_update.recovery_ability');
+      case 'processingState': return t('customers:status_update.processing_state');
+      case 'lendingViolation': return t('customers:status_update.lending_violation');
+      case 'recoveryAbility': return t('customers:status_update.recovery_ability');
       default: return t('customers:fields.status');
     }
   };
@@ -69,6 +69,22 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
       return stateName;
     }
     return t('customers:status.unknown');
+  };
+
+  // Get state name for processingState items
+  const getStateName = (item: StatusHistoryItem): string => {
+    if ('stateId' in item) {
+      return statusDict[item.stateId]?.name || t('customers:status.unknown');
+    }
+    return t('customers:status.unknown');
+  };
+
+  // Get substate name for processingState items
+  const getSubstateName = (item: StatusHistoryItem): string => {
+    if ('stateId' in item && item.substateId) {
+      return statusDict[item.substateId]?.name || '-';
+    }
+    return '-';
   };
 
   // Get status color
@@ -181,7 +197,7 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead 
+                  <TableHead
                     className="cursor-pointer hover:bg-neutral-100 select-none"
                     onClick={() => handleSort('actionDate')}
                   >
@@ -190,15 +206,30 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
                       <SortIcon field="actionDate" />
                     </div>
                   </TableHead>
-                  <TableHead 
-                    className="cursor-pointer hover:bg-neutral-100 select-none"
-                    onClick={() => handleSort('status')}
-                  >
-                    <div className="flex items-center gap-2">
-                      {t('customers:status_history.status')}
-                      <SortIcon field="status" />
-                    </div>
-                  </TableHead>
+                  {statusType === 'processingState' ? (
+                    <>
+                      <TableHead
+                        className="cursor-pointer hover:bg-neutral-100 select-none"
+                        onClick={() => handleSort('status')}
+                      >
+                        <div className="flex items-center gap-2">
+                          {t('customers:status_history.state')}
+                          <SortIcon field="status" />
+                        </div>
+                      </TableHead>
+                      <TableHead>{t('customers:status_history.substate')}</TableHead>
+                    </>
+                  ) : (
+                    <TableHead
+                      className="cursor-pointer hover:bg-neutral-100 select-none"
+                      onClick={() => handleSort('status')}
+                    >
+                      <div className="flex items-center gap-2">
+                        {t('customers:status_history.status')}
+                        <SortIcon field="status" />
+                      </div>
+                    </TableHead>
+                  )}
                   <TableHead>{t('customers:status_history.agent')}</TableHead>
                   <TableHead>{t('customers:status_history.notes')}</TableHead>
                 </TableRow>
@@ -211,14 +242,32 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
                         {formatDate(item.actionDate)}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant="secondary"
-                        style={{ backgroundColor: `${getStatusColor(item)}20`, color: getStatusColor(item) }}
-                      >
-                        {getStatusName(item)}
-                      </Badge>
-                    </TableCell>
+                    {statusType === 'processingState' ? (
+                      <>
+                        <TableCell>
+                          <Badge
+                            variant="secondary"
+                            style={{ backgroundColor: `${getStatusColor(item)}20`, color: getStatusColor(item) }}
+                          >
+                            {getStateName(item)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            {getSubstateName(item)}
+                          </div>
+                        </TableCell>
+                      </>
+                    ) : (
+                      <TableCell>
+                        <Badge
+                          variant="secondary"
+                          style={{ backgroundColor: `${getStatusColor(item)}20`, color: getStatusColor(item) }}
+                        >
+                          {getStatusName(item)}
+                        </Badge>
+                      </TableCell>
+                    )}
                     <TableCell>
                       <div className="text-sm">
                         {item.agent?.name || t('customers:status_history.unknown_agent')}

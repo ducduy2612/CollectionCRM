@@ -40,6 +40,8 @@ export interface StatusHistoryItem {
   agentId: string;
   actionDate: string;
   statusId: string;
+  stateId?: string;
+  substateId?: string;
   notes: string | null;
   agent: {
     id: string;
@@ -56,7 +58,7 @@ export interface StatusHistoryItem {
     isActive: boolean;
     userId: string;
   };
-  status: {
+  status?: {
     id: string;
     createdAt: string;
     updatedAt: string;
@@ -69,7 +71,34 @@ export interface StatusHistoryItem {
     isActive: boolean;
     displayOrder: number;
   };
+  state?: {
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    createdBy: string;
+    updatedBy: string;
+    code: string;
+    name: string;
+    description: string;
+    color: string;
+    isActive: boolean;
+    displayOrder: number;
+  };
+  substate?: {
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    createdBy: string;
+    updatedBy: string;
+    code: string;
+    name: string;
+    description: string;
+    color: string;
+    isActive: boolean;
+    displayOrder: number;
+  }
 }
+
 
 export interface StatusHistoryResponse {
   items: StatusHistoryItem[];
@@ -84,6 +113,8 @@ export interface StatusHistoryResponse {
 export interface RecordStatusRequest {
   cif: string;
   statusId: string;
+  stateId?: string;
+  substateId?: string;
   actionDate?: string;
   notes?: string;
 }

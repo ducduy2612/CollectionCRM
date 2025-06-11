@@ -118,7 +118,7 @@ export const PhoneRepository = AppDataSource.getRepository(Phone).extend({
    */
   async updatePhone(id: string, phoneData: Partial<Phone>): Promise<Phone> {
     try {
-      const phone = await this.findById(id);
+      const phone = await this.findOneBy({ id });
       
       if (!phone) {
         throw Errors.create(

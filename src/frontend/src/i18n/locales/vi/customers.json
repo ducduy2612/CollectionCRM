@@ -214,7 +214,9 @@
     "contact_not_found": "Không tìm thấy thông tin liên hệ",
     "delete_failed": "Xóa thông tin liên hệ thất bại",
     "save_failed": "Lưu thông tin liên hệ thất bại",
-    "required_fields_missing": "Thiếu các trường bắt buộc"
+    "required_fields_missing": "Thiếu các trường bắt buộc",
+    "duplicate_phone_type": "Số điện thoại với loại này đã tồn tại cho khách hàng này. Vui lòng chọn loại khác hoặc cập nhật số hiện có.",
+    "duplicate_address_type": "Địa chỉ với loại này đã tồn tại cho khách hàng này. Vui lòng chọn loại khác hoặc cập nhật địa chỉ hiện có."
   },
   "action_search": {
     "title": "Tìm kiếm lịch sử hành động",
@@ -318,6 +320,8 @@
     "no_history": "Không có lịch sử trạng thái",
     "date": "Ngày",
     "status": "Trạng thái",
+    "state": "Trạng thái",
+    "substate": "Trạng thái phụ",
     "agent": "Nhân viên",
     "notes": "Ghi chú",
     "unknown_agent": "Nhân viên không xác định",

@@ -17,6 +17,7 @@ interface StatusDictionaries {
   customer: StatusDictItem[];
   collateral: StatusDictItem[];
   processingState: StatusDictItem[];
+  processingSubstate: StatusDictItem[];
   lendingViolation: StatusDictItem[];
   recoveryAbility: StatusDictItem[];
 }
@@ -47,6 +48,7 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
   const [modalState, setModalState] = useState<ModalState>({ showHistory: false, showUpdate: false, statusType: null });
   const [statusHistory, setStatusHistory] = useState<StatusHistoryItem[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [processingSubstates, setProcessingSubstates] = useState<StatusDictItem[]>([]);
 
   // Load status dictionaries on component mount
   const loadStatusDictionaries = useCallback(async () => {
@@ -56,12 +58,14 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
         customerDict,
         collateralDict,
         processingStateDict,
+        processingSubstateDict,
         lendingViolationDict,
         recoveryAbilityDict
       ] = await Promise.all([
         workflowApi.getCustomerStatusDict(),
         workflowApi.getCollateralStatusDict(),
         workflowApi.getProcessingStateDict(),
+        workflowApi.getProcessingSubstateDict(),
         workflowApi.getLendingViolationStatusDict(),
         workflowApi.getRecoveryAbilityStatusDict()
       ]);
@@ -71,9 +75,11 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
         customer: customerDict,
         collateral: collateralDict,
         processingState: processingStateDict,
+        processingSubstate: processingSubstateDict,
         lendingViolation: lendingViolationDict,
         recoveryAbility: recoveryAbilityDict
       });
+      setProcessingSubstates(processingSubstateDict);
     } catch (err) {
       console.error('Error loading status dictionaries:', err);
       throw new Error(`Failed to load status dictionaries: ${err instanceof Error ? err.message : 'Unknown error'}`);
@@ -114,6 +120,8 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
       ]);
 
       console.log('Current statuses loaded successfully');
+      console.log(processingStateHistory.items?.[0] )
+      console.log(customerHistory.items?.[0] )
       setCurrentStatuses({
         customer: customerHistory.items?.[0] || undefined,
         collateral: collateralHistory.items?.[0] || undefined,
@@ -158,14 +166,9 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
       return { name: t('customers:status.no_status'), color: '#6B7280' };
     }
 
-    // const dictKey = statusType === 'processingState' ? 'processingState' : statusType;
-    // const dictionary = statusDictionaries[dictKey as keyof StatusDictionaries];
-    // const statusItem = dictionary.find(item => item.id === currentStatus.status_id);
-    // console.log(dictionary)
-    // console.log(statusItem)
     return {
-      name: currentStatus.status?.name || t('customers:status.unknown'),
-      color: currentStatus.status?.color || '#6B7280'
+      name: currentStatus.status?.name || currentStatus.state?.name || t('customers:status.unknown'),
+      color: currentStatus.status?.color || currentStatus.state?.color || '#6B7280'
     };
   };
 
@@ -244,6 +247,8 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
           await workflowApi.recordProcessingStateStatus({
             cif: data.cif,
             statusId: data.statusId,
+            stateId: data.statusId,
+            substateId: data.substateId,
             actionDate: data.actionDate,
             notes: data.notes
           });
@@ -308,10 +313,19 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
     
     if (!dictionary || !Array.isArray(dictionary)) return {};
     
-    return dictionary.reduce((acc, item) => {
+    const result = dictionary.reduce((acc, item) => {
       acc[item.id] = item;
       return acc;
     }, {} as Record<string, StatusDictItem>);
+
+    // For processingState, also include processingSubstate dictionary
+    if (modalState.statusType === 'processingState' && statusDictionaries.processingSubstate) {
+      statusDictionaries.processingSubstate.forEach(item => {
+        result[item.id] = item;
+      });
+    }
+
+    return result;
   };
 
   // Get status options for update modal
@@ -458,6 +472,7 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
           onClose={closeUpdateModal}
           statusType={modalState.statusType}
           statusOptions={getStatusOptionsForUpdate()}
+          substateOptions={modalState.statusType === 'processingState' ? processingSubstates : undefined}
           cif={cif}
           onSubmit={handleStatusUpdate}
         />

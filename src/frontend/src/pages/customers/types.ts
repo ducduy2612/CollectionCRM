@@ -499,6 +499,7 @@ export interface StatusUpdateRequest {
   cif: string;
   statusType: 'customer' | 'collateral' | 'processingState' | 'lendingViolation' | 'recoveryAbility';
   statusId: string;
+  stateId?: string; // For processing state only
   substateId?: string; // For processing state only
   collateralId?: string; // For collateral status only
   notes?: string;

@@ -228,7 +228,14 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ cif, phones, em
       } else if (err.response?.status === 404) {
         errorMessage = t('customers:messages.contact_not_found');
       } else if (err.response?.status >= 500) {
-        errorMessage = t('common:messages.server_error');
+        const backendMessage = err.response?.data?.message;
+        if (backendMessage?.includes('duplicate key value violates unique constraint') && backendMessage?.includes('phones_cif_type_key')) {
+          errorMessage = t('customers:messages.duplicate_phone_type');
+        } else if (backendMessage?.includes('duplicate key value violates unique constraint') && backendMessage?.includes('addresses_cif_type_key')) {
+          errorMessage = t('customers:messages.duplicate_address_type');
+        } else {
+          errorMessage = t('common:messages.server_error');
+        }
       }
       
       // Create a new error with user-friendly message
@@ -303,12 +310,6 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ cif, phones, em
                   </div>
                 </div>
                 <div className={`w-2 h-8 rounded-full ${index === 0 ? 'bg-green-500' : index === 1 ? 'bg-yellow-500' : 'bg-red-500'} mr-3`}></div>
-                {index < 2 && (
-                  <div className="text-xs text-neutral-600 bg-neutral-100 px-2 py-1 rounded mr-3 whitespace-nowrap">
-                    <i className="bi bi-clock"></i>
-                    {t('customers:fields.preferred_contact')}: {index === 0 ? '9-11 AM' : '6-8 PM'}
-                  </div>
-                )}
                 <div className="flex gap-2">
                   <Button size="sm" variant="primary">
                     <i className="bi bi-telephone mr-1"></i>

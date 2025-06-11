@@ -57,7 +57,34 @@
     "system_info": "System Information",
     "source_system": "Source System",
     "last_sync": "Last Synced",
-    "follow_up": "Follow-up"
+    "follow_up": "Follow-up",
+    "phone_type": "Phone Type",
+    "phone_number": "Phone Number",
+    "email_address": "Email Address",
+    "address_type": "Address Type",
+    "address_line1": "Address Line 1",
+    "address_line2": "Address Line 2"
+  },
+  "phone_types": {
+    "mobile": "Mobile",
+    "home": "Home",
+    "work": "Work",
+    "other": "Other"
+  },
+  "address_types": {
+    "home": "Home",
+    "work": "Work",
+    "other": "Other"
+  },
+  "placeholders": {
+    "phone_number": "Input phone number",
+    "email_address": "Input email",
+    "address_line1": "Input address line 1",
+    "address_line2": "Input address line 2 (Optional)",
+    "city": "Input city",
+    "state": "Input state",
+    "district": "Input district",
+    "country": "Input country"
   },
   "status": {
     "customer_status": "Customer Status",
@@ -181,7 +208,14 @@
     "customer_not_found": "Customer not found.",
     "under_development": "Under development",
     "no_notes": "No notes provided",
-    "failed_to_load_action_types": "Failed to load action types"
+    "failed_to_load_action_types": "Failed to load action types",
+    "save_failed": "Failed to save contact information",
+    "required_fields_missing": "Required fields are missing",
+    "contact_not_found": "Contact not found",
+    "delete_failed": "Failed to delete contact",
+    "delete_requires_admin_role": "Delete operation requires admin role",
+    "duplicate_phone_type": "A phone number with this type already exists for this customer. Please choose a different type or update the existing one.",
+    "duplicate_address_type": "An address with this type already exists for this customer. Please choose a different type or update the existing one."
   },
   "action_search": {
     "title": "Search Action History",
@@ -285,6 +319,8 @@
     "no_history": "No status history available",
     "date": "Date",
     "status": "Status",
+    "state": "State",
+    "substate": "Substate",
     "agent": "Agent",
     "notes": "Notes",
     "unknown_agent": "Unknown Agent",

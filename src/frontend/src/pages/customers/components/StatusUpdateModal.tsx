@@ -9,7 +9,7 @@ import { useTranslation } from '../../../i18n/hooks/useTranslation';
 interface StatusUpdateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  statusType: 'customer' | 'collateral' | 'processing_state' | 'lending_violation' | 'recovery_ability';
+  statusType: 'customer' | 'collateral' | 'processingState' | 'lendingViolation' | 'recoveryAbility';
   statusOptions: StatusDictItem[];
   substateOptions?: StatusDictItem[]; // Only for processing_state
   cif: string;
@@ -19,6 +19,7 @@ interface StatusUpdateModalProps {
 
 interface FormData {
   statusId: string;
+  stateId?: string;
   substateId?: string;
   notes: string;
   actionDate: string;
@@ -44,6 +45,7 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
   const { t } = useTranslation();
   const [formData, setFormData] = useState<FormData>({
     statusId: '',
+    stateId: '',
     substateId: '',
     notes: '',
     actionDate: new Date().toISOString().slice(0, 16) // Format for datetime-local input
@@ -57,6 +59,7 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
     if (isOpen) {
       setFormData({
         statusId: '',
+        stateId: '',
         substateId: '',
         notes: '',
         actionDate: new Date().toISOString().slice(0, 16)
@@ -72,9 +75,9 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
     switch (type) {
       case 'customer': return t('customers:status_update.customer_status');
       case 'collateral': return t('customers:status_update.collateral_status');
-      case 'processing_state': return t('customers:status_update.processing_state');
-      case 'lending_violation': return t('customers:status_update.lending_violation');
-      case 'recovery_ability': return t('customers:status_update.recovery_ability');
+      case 'processingState': return t('customers:status_update.processing_state');
+      case 'lendingViolation': return t('customers:status_update.lending_violation');
+      case 'recoveryAbility': return t('customers:status_update.recovery_ability');
       default: return t('customers:fields.status');
     }
   };
@@ -104,7 +107,7 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
       newErrors.statusId = t('customers:status_update.validation.status_required');
     }
 
-    if (statusType === 'processing_state' && substateOptions && substateOptions.length > 0 && !formData.substateId?.trim()) {
+    if (statusType === 'processingState' && substateOptions && substateOptions.length > 0 && !formData.substateId?.trim()) {
       newErrors.substateId = t('customers:status_update.validation.substate_required');
     }
 
@@ -146,7 +149,8 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
       };
 
       // Add substate for processing_state
-      if (statusType === 'processing_state' && formData.substateId) {
+      if (statusType === 'processingState' && formData.substateId) {
+        submitData.stateId = formData.statusId;
         submitData.substateId = formData.substateId;
       }
 
@@ -154,7 +158,7 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
       if (statusType === 'collateral' && collateralId) {
         submitData.collateralId = collateralId;
       }
-
+      console.log(submitData);
       await onSubmit(submitData);
       onClose();
     } catch (error) {
@@ -212,7 +216,7 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
         />
 
         {/* Substate Selection (only for processing_state) */}
-        {statusType === 'processing_state' && substateSelectOptions.length > 0 && (
+        {statusType === 'processingState' && substateSelectOptions.length > 0 && (
           <Select
             label={t('customers:status_update.processing_substate')}
             options={substateSelectOptions}

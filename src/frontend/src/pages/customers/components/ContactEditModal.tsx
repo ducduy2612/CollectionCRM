@@ -171,7 +171,7 @@ const ContactEditModal: React.FC<ContactEditModalProps> = ({
         </label>
         <Select
           value={formData.type || ''}
-          onChange={(value) => handleInputChange('type', value)}
+          onChange={(e) => handleInputChange('type', e.target.value)}
           options={[
             { value: 'MOBILE', label: t('customers:phone_types.mobile') },
             { value: 'HOME', label: t('customers:phone_types.home') },
@@ -261,7 +261,7 @@ const ContactEditModal: React.FC<ContactEditModalProps> = ({
         </label>
         <Select
           value={formData.type || ''}
-          onChange={(value) => handleInputChange('type', value)}
+          onChange={(e) => handleInputChange('type', e.target.value)}
           options={[
             { value: 'HOME', label: t('customers:address_types.home') },
             { value: 'WORK', label: t('customers:address_types.work') },
