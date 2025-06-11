@@ -11,9 +11,9 @@ import {
   Badge,
   Spinner,
   Modal
-} from '../../../components/ui';
-import { authApi, RoleResponse, RoleUsersResponse } from '../../../services/api/auth.api';
-import { useTranslation } from '../../../i18n/hooks/useTranslation';
+} from '../../../../components/ui';
+import { authApi, RoleResponse, RoleUsersResponse } from '../../../../services/api/auth.api';
+import { useTranslation } from '../../../../i18n/hooks/useTranslation';
 
 // Icons as SVG components
 const SearchIcon = () => (

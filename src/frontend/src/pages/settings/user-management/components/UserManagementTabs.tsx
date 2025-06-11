@@ -1,7 +1,7 @@
 import React from 'react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../components/ui/Tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../../components/ui/Tabs';
 import { UserIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
-import { useTranslation } from '../../../i18n/hooks/useTranslation';
+import { useTranslation } from '../../../../i18n/hooks/useTranslation';
 
 export type UserManagementTab = 'users' | 'roles';
 

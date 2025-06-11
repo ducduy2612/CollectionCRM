@@ -12,8 +12,8 @@ import {
   Badge,
   Spinner,
   LoadingOverlay
-} from '../../../components/ui';
-import { authApi, UserResponse, UserFilters, PaginationParams } from '../../../services/api/auth.api';
+} from '../../../../components/ui';
+import { authApi, UserResponse, UserFilters, PaginationParams } from '../../../../services/api/auth.api';
 
 // Icons as SVG components
 const SearchIcon = () => (

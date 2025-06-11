@@ -4,6 +4,8 @@ import { AgentRepository } from '../repositories/agent.repository';
 import { Errors, OperationType, SourceSystemType } from '../utils/errors';
 import { ResponseUtil } from '../utils/response';
 import { logger } from '../utils/logger';
+import csv from 'csv-parser';
+import { Readable } from 'stream';
 
 /**
  * Assignment controller
@@ -204,6 +206,154 @@ export class AssignmentController {
       );
     } catch (error) {
       logger.error({ error, path: req.path }, 'Error getting assignment history');
+      next(error);
+    }
+  }
+
+  /**
+   * Bulk assignment from CSV file
+   * @route POST /assignments/bulk
+   */
+  async bulkAssignment(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (!req.file) {
+        throw Errors.create(
+          Errors.Validation.REQUIRED_FIELD_MISSING,
+          'CSV file is required',
+          OperationType.VALIDATION,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      const csvData: any[] = [];
+      const errors: string[] = [];
+      let lineNumber = 1; // Start from 1 to account for header
+
+      // Parse CSV data
+      await new Promise<void>((resolve, reject) => {
+        const stream = Readable.from(req.file!.buffer.toString());
+        
+        stream
+          .pipe(csv({
+            mapHeaders: ({ header }) => header.trim().toLowerCase()
+          }))
+          .on('data', (row) => {
+            lineNumber++;
+            
+            // Validate required columns
+            const cif = row.cif?.trim();
+            const assignedCallAgentName = row.assignedcallagentname?.trim();
+            const assignedFieldAgentName = row.assignedfieldagentname?.trim();
+
+            if (!cif) {
+              errors.push(`Line ${lineNumber}: CIF is required`);
+              return;
+            }
+
+            if (!assignedCallAgentName && !assignedFieldAgentName) {
+              errors.push(`Line ${lineNumber}: At least one agent name is required`);
+              return;
+            }
+
+            csvData.push({
+              cif,
+              assignedCallAgentName,
+              assignedFieldAgentName,
+              lineNumber
+            });
+          })
+          .on('end', resolve)
+          .on('error', reject);
+      });
+
+      if (errors.length > 0) {
+        throw Errors.create(
+          Errors.Validation.INVALID_FORMAT,
+          `CSV validation errors: ${errors.join(', ')}`,
+          OperationType.VALIDATION,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      if (csvData.length === 0) {
+        throw Errors.create(
+          Errors.Validation.INVALID_FORMAT,
+          'No valid data found in CSV file',
+          OperationType.VALIDATION,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      // Process assignments
+      const assignments = [];
+      const processingErrors: string[] = [];
+
+      for (const row of csvData) {
+        try {
+          let assignedCallAgentId = null;
+          let assignedFieldAgentId = null;
+
+          // Look up call agent by name if provided
+          if (row.assignedCallAgentName) {
+            const callAgent = await AgentRepository.findByName(row.assignedCallAgentName);
+            if (!callAgent) {
+              processingErrors.push(`Line ${row.lineNumber}: Call agent '${row.assignedCallAgentName}' not found`);
+              continue;
+            }
+            assignedCallAgentId = callAgent.id;
+          }
+
+          // Look up field agent by name if provided
+          if (row.assignedFieldAgentName) {
+            const fieldAgent = await AgentRepository.findByName(row.assignedFieldAgentName);
+            if (!fieldAgent) {
+              processingErrors.push(`Line ${row.lineNumber}: Field agent '${row.assignedFieldAgentName}' not found`);
+              continue;
+            }
+            assignedFieldAgentId = fieldAgent.id;
+          }
+
+          assignments.push({
+            cif: row.cif,
+            assignedCallAgentId,
+            assignedFieldAgentId,
+            createdBy: req.user?.userId || 'system',
+            updatedBy: req.user?.userId || 'system'
+          });
+        } catch (error) {
+          processingErrors.push(`Line ${row.lineNumber}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      }
+
+      if (processingErrors.length > 0) {
+        throw Errors.create(
+          Errors.Validation.INVALID_FORMAT,
+          `Processing errors: ${processingErrors.join(', ')}`,
+          OperationType.VALIDATION,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      // Create bulk assignments
+      const createdAssignments = await CustomerAgentRepository.createBulkAssignments(assignments);
+
+      logger.info({
+        count: createdAssignments.length,
+        userId: req.user?.userId
+      }, 'Bulk assignments created successfully');
+
+      return ResponseUtil.success(
+        res,
+        {
+          assignments: createdAssignments,
+          count: createdAssignments.length,
+          processed: csvData.length
+        },
+        'Bulk assignments created successfully',
+        201
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error creating bulk assignments');
       next(error);
     }
   }

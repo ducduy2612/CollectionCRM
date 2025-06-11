@@ -1,0 +1,1 @@
+export { default as SystemConfiguration } from './components/SystemConfiguration';

@@ -1,0 +1,1 @@
+export { default as FudAutoConfig } from './components/FudAutoConfig';

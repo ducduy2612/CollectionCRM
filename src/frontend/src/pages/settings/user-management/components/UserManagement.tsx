@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '../../../components/ui/Card';
-import { Button } from '../../../components/ui/Button';
-import { Alert } from '../../../components/ui/Alert';
-import { TabsContent } from '../../../components/ui/Tabs';
+import { Card, CardHeader, CardTitle, CardContent } from '../../../../components/ui/Card';
+import { Button } from '../../../../components/ui/Button';
+import { Alert } from '../../../../components/ui/Alert';
+import { TabsContent } from '../../../../components/ui/Tabs';
 import { UserIcon, ShieldCheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import UserManagementTabs from './UserManagementTabs';
 import UserList from './UserList';
@@ -11,7 +11,7 @@ import UserModal from './UserModal';
 import RoleModal from './RoleModal';
 import UserSessionsModal from './UserSessionsModal';
 import RoleUsersModal from './RoleUsersModal';
-import { UserResponse, RoleResponse } from '../../../services/api/auth.api';
+import { UserResponse, RoleResponse } from '../../../../services/api/auth.api';
 
 export type UserManagementTab = 'users' | 'roles';
 

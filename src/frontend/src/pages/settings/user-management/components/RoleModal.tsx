@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Input, Button, Alert } from '../../../components/ui';
-import { authApi, RoleResponse, RoleData, UpdateRoleData, PermissionData } from '../../../services/api/auth.api';
-import { useTranslation } from '../../../i18n/hooks/useTranslation';
+import { Modal, Input, Button, Alert } from '../../../../components/ui';
+import { authApi, RoleResponse, RoleData, UpdateRoleData, PermissionData } from '../../../../services/api/auth.api';
+import { useTranslation } from '../../../../i18n/hooks/useTranslation';
 
 // Available permissions based on backend format (resource:action)
 const AVAILABLE_PERMISSIONS = [

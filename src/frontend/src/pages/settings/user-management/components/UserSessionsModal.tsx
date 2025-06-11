@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Alert, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../../components/ui';
-import { ConfirmDialog } from '../../../components/ui/Modal';
-import { authApi, UserResponse, UserSession } from '../../../services/api/auth.api';
+import { Modal, Button, Alert, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../../../components/ui';
+import { ConfirmDialog } from '../../../../components/ui/Modal';
+import { authApi, UserResponse, UserSession } from '../../../../services/api/auth.api';
 
 // Icons
 const RefreshIcon = () => (

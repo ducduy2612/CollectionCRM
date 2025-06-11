@@ -1,0 +1,1 @@
+export { default as ActionsConfig } from './components/ActionsConfig';

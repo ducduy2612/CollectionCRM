@@ -73,6 +73,24 @@ export const AgentRepository = AppDataSource.getRepository(Agent).extend({
   },
 
   /**
+   * Find an agent by name
+   * @param name Agent name
+   * @returns The agent if found, undefined otherwise
+   */
+  async findByName(name: string): Promise<Agent | null> {
+    try {
+      return await this.findOneBy({ name });
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { name, operation: 'findByName' }
+      );
+    }
+  },
+
+  /**
    * Search agents based on criteria
    * @param criteria Search criteria
    * @returns Paginated result of agents

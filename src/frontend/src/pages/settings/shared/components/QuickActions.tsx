@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card } from '../../../components/ui/Card';
+import { Card } from '../../../../components/ui/Card';
 import {
   PlusCircleIcon,
   ArrowUpTrayIcon,
@@ -7,7 +7,7 @@ import {
   ShieldCheckIcon,
   BoltIcon
 } from '@heroicons/react/24/outline';
-import { useTranslation } from '../../../i18n/hooks/useTranslation';
+import { useTranslation } from '../../../../i18n/hooks/useTranslation';
 
 interface QuickAction {
   id: string;

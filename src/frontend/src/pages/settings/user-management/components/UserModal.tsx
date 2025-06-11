@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Input, Select, Button, Alert } from '../../../components/ui';
-import { authApi, UserResponse, UserData, UpdateUserData, RoleResponse } from '../../../services/api/auth.api';
-import { useTranslation } from '../../../i18n/hooks/useTranslation';
+import { Modal, Input, Select, Button, Alert } from '../../../../components/ui';
+import { authApi, UserResponse, UserData, UpdateUserData, RoleResponse } from '../../../../services/api/auth.api';
+import { useTranslation } from '../../../../i18n/hooks/useTranslation';
 
 // Icons
 const EyeIcon = () => (

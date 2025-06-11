@@ -204,5 +204,53 @@ export const CustomerAgentRepository = AppDataSource.getRepository(CustomerAgent
         { id, assignmentData, operation: 'updateAssignment' }
       );
     }
+  },
+
+  /**
+   * Create multiple customer agent assignments in bulk
+   * @param assignments Array of assignment data
+   * @returns Array of created assignments
+   */
+  async createBulkAssignments(assignments: Partial<CustomerAgent>[]): Promise<CustomerAgent[]> {
+    try {
+      // Start a transaction
+      return await AppDataSource.transaction(async (transactionalEntityManager: any) => {
+        const createdAssignments: CustomerAgent[] = [];
+        
+        for (const assignment of assignments) {
+          // Find current assignment if exists
+          const currentAssignment = await transactionalEntityManager.findOneBy(CustomerAgent, {
+            cif: assignment.cif,
+            isCurrent: true
+          });
+          
+          // If there's a current assignment, mark it as not current
+          if (currentAssignment) {
+            currentAssignment.isCurrent = false;
+            currentAssignment.endDate = new Date();
+            await transactionalEntityManager.save(CustomerAgent, currentAssignment);
+          }
+          
+          // Create new assignment
+          const newAssignment = transactionalEntityManager.create(CustomerAgent, {
+            ...assignment,
+            startDate: new Date(),
+            isCurrent: true
+          });
+          
+          const savedAssignment = await transactionalEntityManager.save(CustomerAgent, newAssignment);
+          createdAssignments.push(savedAssignment);
+        }
+        
+        return createdAssignments;
+      });
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { assignments, operation: 'createBulkAssignments' }
+      );
+    }
   }
 });

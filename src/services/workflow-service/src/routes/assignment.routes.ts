@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { AssignmentController } from '../controllers/assignment.controller';
 import { requireAuth, requireRoles, agentContextMiddleware } from '../middleware/auth.middleware';
 import { validatePagination } from '../middleware/validation.middleware';
+import { uploadCSV } from '../middleware/upload.middleware';
 
 const router = Router();
 const assignmentController = new AssignmentController();
@@ -29,6 +30,20 @@ router.post(
   requireRoles(['ADMIN', 'SUPERVISOR']),
   agentContextMiddleware,
   assignmentController.createAssignment
+);
+
+/**
+ * @route POST /assignments/bulk
+ * @desc Bulk assignment from CSV file
+ * @access Private - Requires authentication and supervisor role
+ */
+router.post(
+  '/bulk',
+  requireAuth,
+  requireRoles(['ADMIN', 'SUPERVISOR']),
+  agentContextMiddleware,
+  uploadCSV.single('csvFile'),
+  assignmentController.bulkAssignment
 );
 
 /**
