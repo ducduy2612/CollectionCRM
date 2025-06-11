@@ -87,7 +87,7 @@ export const CustomerAgentRepository = AppDataSource.getRepository(CustomerAgent
       queryBuilder
         .skip((page - 1) * pageSize)
         .take(pageSize)
-        .orderBy('assignment.start_date', 'DESC');
+        .orderBy('assignment.startDate', 'DESC');
       
       // Get paginated results
       const assignments = await queryBuilder.getMany();
@@ -114,7 +114,7 @@ export const CustomerAgentRepository = AppDataSource.getRepository(CustomerAgent
         .leftJoinAndSelect('assignment.assignedCallAgent', 'callAgent')
         .leftJoinAndSelect('assignment.assignedFieldAgent', 'fieldAgent')
         .where('assignment.cif = :cif', { cif })
-        .orderBy('assignment.start_date', 'DESC')
+        .orderBy('assignment.startDate', 'DESC')
         .getMany();
     } catch (error) {
       throw Errors.wrap(

@@ -1,255 +1,210 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
-import { Badge } from '../../components/ui/Badge';
-import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
-import { Avatar } from '../../components/ui/Avatar';
-import { useNamespacedTranslation, useLocalization } from '../../i18n';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import { useNamespacedTranslation } from '../../i18n';
+import {
+  dashboardApi,
+  DashboardPerformance,
+  RecentActivity
+} from '../../services/api/dashboard.api';
+import {
+  workflowApi,
+  Assignment
+} from '../../services/api/workflow.api';
+import { bankApi } from '../../services/api/bank.api';
+import {
+  PerformanceMetrics,
+  PriorityCustomers,
+  RecentActivities
+} from './components';
 
 const DashboardPage: React.FC = () => {
+  const { user } = useAuth();
+  const { t } = useNamespacedTranslation('dashboard');
+  
+  // State for performance metrics
+  const [performance, setPerformance] = useState<DashboardPerformance | null>(null);
+  const [performanceLoading, setPerformanceLoading] = useState(true);
+  const [performanceError, setPerformanceError] = useState<string | null>(null);
+  
+  // State for assigned customers
+  const [assignedCustomers, setAssignedCustomers] = useState<Assignment[]>([]);
+  const [customersLoading, setCustomersLoading] = useState(true);
+  const [customersError, setCustomersError] = useState<string | null>(null);
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [customerSearchLoading, setCustomerSearchLoading] = useState(false);
+  
+  // State for recent activities
+  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
+  const [activitiesLoading, setActivitiesLoading] = useState(true);
+  const [activitiesError, setActivitiesError] = useState<string | null>(null);
+
+  // Load dashboard performance metrics
+  const loadPerformanceMetrics = async () => {
+    try {
+      setPerformanceLoading(true);
+      setPerformanceError(null);
+      const data = await dashboardApi.getDashboardPerformance();
+      setPerformance(data);
+    } catch (error) {
+      console.error('Failed to load performance metrics:', error);
+      setPerformanceError('Failed to load performance metrics. Please try again.');
+    } finally {
+      setPerformanceLoading(false);
+    }
+  };
+
+  // Load assigned customers
+  const loadAssignedCustomers = async (search?: string) => {
+    try {
+      if (search !== undefined) {
+        setCustomerSearchLoading(true);
+      } else {
+        setCustomersLoading(true);
+      }
+      setCustomersError(null);
+      
+      // Get current user's agent ID
+      if (!user?.id) {
+        throw new Error('User not authenticated');
+      }
+      
+      // First get the agent ID from user ID
+      const agent = await workflowApi.getAgentByUserId(user.id);
+      
+      // Then get the agent's assignments
+      const assignmentData = await workflowApi.getAgentAssignments(agent.id, {
+        cif: search || undefined,
+        isCurrent: true,
+        pageSize: 10
+      });
+      
+      if (assignmentData.assignments.length === 0) {
+        setAssignedCustomers([]);
+        return;
+      }
+      
+      // Extract all CIFs from assignments
+      const cifs = assignmentData.assignments.map(assignment => assignment.cif);
+      
+      // Use searchCustomers to get all customer data in one call
+      // We'll search by CIF using the first CIF and then filter the results
+      const customerSearchResults = await bankApi.searchCustomers({
+        pageSize: 100 // Get more results to ensure we capture all customers
+      });
+      
+      // Create a map of CIF to customer data for quick lookup
+      const customerMap = new Map();
+      customerSearchResults.customers.forEach(customer => {
+        if (customer.cif && cifs.includes(customer.cif)) {
+          customerMap.set(customer.cif, customer);
+        }
+      });
+      
+      // Combine assignments with customer data
+      const assignmentsWithCustomers: Assignment[] = assignmentData.assignments.map(assignment => {
+        const customer = customerMap.get(assignment.cif);
+        if (customer) {
+          return {
+            ...assignment,
+            customer: {
+              cif: customer.cif,
+              name: customer.name,
+              companyName: customer.companyName,
+              segment: customer.segment || 'Unknown',
+              status: customer.status || 'Unknown'
+            }
+          };
+        }
+        return assignment;
+      });
+      
+      setAssignedCustomers(assignmentsWithCustomers);
+    } catch (error) {
+      console.error('Failed to load assigned customers:', error);
+      setCustomersError('Failed to load assigned customers. Please try again.');
+    } finally {
+      setCustomersLoading(false);
+      setCustomerSearchLoading(false);
+    }
+  };
+
+  // Load recent activities
+  const loadRecentActivities = async () => {
+    try {
+      setActivitiesLoading(true);
+      setActivitiesError(null);
+      const data = await dashboardApi.getRecentActivities({ limit: 10 });
+      setRecentActivities(data);
+    } catch (error) {
+      console.error('Failed to load recent activities:', error);
+      setActivitiesError('Failed to load recent activities. Please try again.');
+    } finally {
+      setActivitiesLoading(false);
+    }
+  };
+
+  // Handle customer search
+  const handleCustomerSearch = () => {
+    loadAssignedCustomers(customerSearch);
+  };
+
+  // Handle search input key press
+  const handleSearchKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleCustomerSearch();
+    }
+  };
+
+  // Handle customer search input change
+  const handleCustomerSearchChange = (value: string) => {
+    setCustomerSearch(value);
+  };
+
+  // Load all data on component mount
+  useEffect(() => {
+    loadPerformanceMetrics();
+    loadAssignedCustomers();
+    loadRecentActivities();
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-neutral-900">Agent Dashboard</h1>
+        <h1 className="text-3xl font-bold text-neutral-900">
+          Agent Dashboard
+          {user && <span className="text-lg font-normal text-neutral-600 ml-2">- {user.name}</span>}
+        </h1>
       </div>
 
       {/* Performance Summary */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Today's Performance</CardTitle>
-          <Button variant="secondary" size="sm">
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-4-4m4 4l4-4m-6 4V4" />
-            </svg>
-            Export
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div className="text-center p-4 bg-neutral-50 rounded-lg">
-              <div className="text-2xl font-bold text-primary-600 mb-1">24</div>
-              <div className="text-sm text-neutral-600">Calls Made</div>
-            </div>
-            <div className="text-center p-4 bg-neutral-50 rounded-lg">
-              <div className="text-2xl font-bold text-primary-600 mb-1">18</div>
-              <div className="text-sm text-neutral-600">Successful Contacts</div>
-            </div>
-            <div className="text-center p-4 bg-neutral-50 rounded-lg">
-              <div className="text-2xl font-bold text-primary-600 mb-1">5</div>
-              <div className="text-sm text-neutral-600">Promises to Pay</div>
-            </div>
-            <div className="text-center p-4 bg-neutral-50 rounded-lg">
-              <div className="text-2xl font-bold text-primary-600 mb-1">₫25M</div>
-              <div className="text-sm text-neutral-600">Amount Promised</div>
-            </div>
-            <div className="text-center p-4 bg-neutral-50 rounded-lg">
-              <div className="text-2xl font-bold text-primary-600 mb-1">75%</div>
-              <div className="text-sm text-neutral-600">Contact Rate</div>
-            </div>
-            <div className="text-center p-4 bg-neutral-50 rounded-lg">
-              <div className="text-2xl font-bold text-primary-600 mb-1">28%</div>
-              <div className="text-sm text-neutral-600">Promise Rate</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <PerformanceMetrics
+        performance={performance}
+        loading={performanceLoading}
+        error={performanceError}
+        onRefresh={loadPerformanceMetrics}
+      />
 
-      {/* Priority Customers */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Priority Customers</CardTitle>
-          <div className="flex gap-2">
-            <Button variant="secondary" size="sm">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              Filter
-            </Button>
-            <Button variant="secondary" size="sm">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
-              </svg>
-              Sort
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex mb-4">
-            <Input
-              placeholder="Search customers..."
-              className="flex-1 rounded-r-none"
-            />
-            <Button className="rounded-l-none">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </Button>
-          </div>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-neutral-200">
-                  <th className="text-left py-3 px-4 font-medium text-neutral-900">Customer Name</th>
-                  <th className="text-left py-3 px-4 font-medium text-neutral-900">CIF</th>
-                  <th className="text-left py-3 px-4 font-medium text-neutral-900">DPD</th>
-                  <th className="text-right py-3 px-4 font-medium text-neutral-900">Outstanding</th>
-                  <th className="text-left py-3 px-4 font-medium text-neutral-900">Priority</th>
-                  <th className="text-left py-3 px-4 font-medium text-neutral-900">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b border-neutral-100 hover:bg-neutral-50 cursor-pointer">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center">
-                      <Avatar initials="NVA" size="sm" className="mr-3" />
-                      Nguyen Van A
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">CIF123456</td>
-                  <td className="py-3 px-4">45</td>
-                  <td className="py-3 px-4 text-right font-mono">₫150,000,000</td>
-                  <td className="py-3 px-4">
-                    <Badge variant="danger">High</Badge>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="primary">View</Button>
-                      <Button size="sm" variant="secondary">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                        </svg>
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-                <tr className="border-b border-neutral-100 hover:bg-neutral-50 cursor-pointer">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center">
-                      <Avatar initials="TTB" size="sm" className="mr-3" />
-                      Tran Thi B
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">CIF789012</td>
-                  <td className="py-3 px-4">30</td>
-                  <td className="py-3 px-4 text-right font-mono">₫85,000,000</td>
-                  <td className="py-3 px-4">
-                    <Badge variant="warning">Medium</Badge>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="primary">View</Button>
-                      <Button size="sm" variant="secondary">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                        </svg>
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-                <tr className="border-b border-neutral-100 hover:bg-neutral-50 cursor-pointer">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center">
-                      <Avatar initials="LVC" size="sm" className="mr-3" />
-                      Le Van C
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">CIF345678</td>
-                  <td className="py-3 px-4">15</td>
-                  <td className="py-3 px-4 text-right font-mono">₫45,000,000</td>
-                  <td className="py-3 px-4">
-                    <Badge variant="success">Low</Badge>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="primary">View</Button>
-                      <Button size="sm" variant="secondary">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                        </svg>
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Assigned Customers */}
+      <PriorityCustomers
+        customers={assignedCustomers}
+        loading={customersLoading}
+        error={customersError}
+        searchValue={customerSearch}
+        searchLoading={customerSearchLoading}
+        onRefresh={() => loadAssignedCustomers()}
+        onSearchChange={handleCustomerSearchChange}
+        onSearch={handleCustomerSearch}
+        onSearchKeyPress={handleSearchKeyPress}
+      />
 
       {/* Recent Activities */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Recent Activities</CardTitle>
-          <Button variant="secondary" size="sm">View All</Button>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-neutral-200">
-                  <th className="text-left py-3 px-4 font-medium text-neutral-900">Time</th>
-                  <th className="text-left py-3 px-4 font-medium text-neutral-900">Customer</th>
-                  <th className="text-left py-3 px-4 font-medium text-neutral-900">Action Type</th>
-                  <th className="text-left py-3 px-4 font-medium text-neutral-900">Result</th>
-                  <th className="text-left py-3 px-4 font-medium text-neutral-900">Details</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b border-neutral-100">
-                  <td className="py-3 px-4">10:45 AM</td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center">
-                      <Avatar initials="NVA" size="sm" className="mr-3" />
-                      Nguyen Van A
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <Badge variant="primary">Call</Badge>
-                  </td>
-                  <td className="py-3 px-4">
-                    <Badge variant="success">Promise to Pay</Badge>
-                  </td>
-                  <td className="py-3 px-4">Promised ₫50M by 05/10</td>
-                </tr>
-                <tr className="border-b border-neutral-100">
-                  <td className="py-3 px-4">10:30 AM</td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center">
-                      <Avatar initials="TTB" size="sm" className="mr-3" />
-                      Tran Thi B
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <Badge variant="primary">Call</Badge>
-                  </td>
-                  <td className="py-3 px-4">
-                    <Badge variant="secondary">No Answer</Badge>
-                  </td>
-                  <td className="py-3 px-4">Will try again tomorrow</td>
-                </tr>
-                <tr className="border-b border-neutral-100">
-                  <td className="py-3 px-4">10:15 AM</td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center">
-                      <Avatar initials="LVC" size="sm" className="mr-3" />
-                      Le Van C
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <Badge variant="success">SMS</Badge>
-                  </td>
-                  <td className="py-3 px-4">
-                    <Badge variant="secondary">Sent</Badge>
-                  </td>
-                  <td className="py-3 px-4">Payment reminder</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      <RecentActivities
+        activities={recentActivities}
+        loading={activitiesLoading}
+        error={activitiesError}
+        onRefresh={loadRecentActivities}
+      />
     </div>
   );
 };

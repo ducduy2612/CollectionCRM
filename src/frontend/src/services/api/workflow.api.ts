@@ -151,8 +151,28 @@ export interface CasesResponse {
   };
 }
 
+export interface Assignment {
+  id: string;
+  cif: string;
+  assignedCallAgentId: string | null;
+  assignedFieldAgentId: string | null;
+  isCurrent: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+  // Customer data will be joined from bank service
+  customer?: {
+    cif: string;
+    name: string;
+    companyName?: string;
+    segment: string;
+    status: string;
+  };
+}
+
 export interface AssignmentsResponse {
-  assignments: any[];
+  assignments: Assignment[];
   pagination: {
     page: number;
     pageSize: number;
@@ -280,6 +300,19 @@ export const workflowApi = {
     
     if (!response.data.success) {
       throw new Error(response.data.message || 'Failed to record bulk actions');
+    }
+    
+    return response.data.data;
+  },
+
+  // Get agent by user ID
+  getAgentByUserId: async (userId: string): Promise<{ id: string; name: string; email: string; type: string; team: string }> => {
+    const response = await apiClient.get<WorkflowApiResponse<{ id: string; name: string; email: string; type: string; team: string }>>(
+      `/workflow/agents/by-user/${userId}`
+    );
+    
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch agent by user ID');
     }
     
     return response.data.data;
