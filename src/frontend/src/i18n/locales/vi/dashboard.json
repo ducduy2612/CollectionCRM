@@ -151,6 +151,8 @@
     "widget_added": "Widget đã thêm thành công",
     "widget_removed": "Widget đã xóa thành công",
     "no_recent_activity": "Không có hoạt động gần đây để hiển thị",
+    "no_recent_activities": "Không tìm thấy hoạt động gần đây",
+    "recent_activities": "Hoạt động gần đây",
     "no_alerts": "Không có cảnh báo nào lúc này"
   }
 }

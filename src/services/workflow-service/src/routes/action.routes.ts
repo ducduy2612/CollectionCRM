@@ -57,6 +57,18 @@ router.get(
 );
 
 /**
+ * @route GET /actions/agent/:agentId
+ * @desc Get agent actions
+ * @access Private - Requires authentication
+ */
+router.get(
+  '/agent/:agentId',
+  requireAuth,
+  validatePagination,
+  actionController.getAgentActions
+);
+
+/**
  * @route PUT /actions/:id/result
  * @desc Update action result
  * @access Private - Requires authentication

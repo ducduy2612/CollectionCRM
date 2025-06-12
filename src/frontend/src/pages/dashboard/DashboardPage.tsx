@@ -2,15 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNamespacedTranslation } from '../../i18n';
 import {
-  dashboardApi,
-  DashboardPerformance,
-  RecentActivity
-} from '../../services/api/dashboard.api';
-import {
   workflowApi,
   Assignment
 } from '../../services/api/workflow.api';
 import { bankApi } from '../../services/api/bank.api';
+import { CustomerAction } from '../customers/types';
 import {
   PerformanceMetrics,
   PriorityCustomers,
@@ -21,11 +17,6 @@ const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const { t } = useNamespacedTranslation('dashboard');
   
-  // State for performance metrics
-  const [performance, setPerformance] = useState<DashboardPerformance | null>(null);
-  const [performanceLoading, setPerformanceLoading] = useState(true);
-  const [performanceError, setPerformanceError] = useState<string | null>(null);
-  
   // State for assigned customers
   const [assignedCustomers, setAssignedCustomers] = useState<Assignment[]>([]);
   const [customersLoading, setCustomersLoading] = useState(true);
@@ -34,27 +25,38 @@ const DashboardPage: React.FC = () => {
   const [customerSearchLoading, setCustomerSearchLoading] = useState(false);
   
   // State for recent activities
-  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
+  const [recentActivities, setRecentActivities] = useState<CustomerAction[]>([]);
   const [activitiesLoading, setActivitiesLoading] = useState(true);
   const [activitiesError, setActivitiesError] = useState<string | null>(null);
+  const [activitiesPagination, setActivitiesPagination] = useState({
+    page: 1,
+    pageSize: 10,
+    totalPages: 1,
+    totalItems: 0
+  });
+  
+  // State for agent info (to avoid duplicate API calls)
+  const [agentId, setAgentId] = useState<string | null>(null);
 
-  // Load dashboard performance metrics
-  const loadPerformanceMetrics = async () => {
+  // Load agent information
+  const loadAgentInfo = async () => {
     try {
-      setPerformanceLoading(true);
-      setPerformanceError(null);
-      const data = await dashboardApi.getDashboardPerformance();
-      setPerformance(data);
+      if (!user?.id) {
+        throw new Error('User not authenticated');
+      }
+      
+      // Get the agent ID from user ID
+      const agent = await workflowApi.getAgentByUserId(user.id);
+      setAgentId(agent.id);
+      return agent.id;
     } catch (error) {
-      console.error('Failed to load performance metrics:', error);
-      setPerformanceError('Failed to load performance metrics. Please try again.');
-    } finally {
-      setPerformanceLoading(false);
+      console.error('Failed to load agent info:', error);
+      throw error;
     }
   };
 
   // Load assigned customers
-  const loadAssignedCustomers = async (search?: string) => {
+  const loadAssignedCustomers = async (search?: string, currentAgentId?: string) => {
     try {
       if (search !== undefined) {
         setCustomerSearchLoading(true);
@@ -63,16 +65,14 @@ const DashboardPage: React.FC = () => {
       }
       setCustomersError(null);
       
-      // Get current user's agent ID
-      if (!user?.id) {
-        throw new Error('User not authenticated');
+      // Use provided agent ID or get from state
+      const agentIdToUse = currentAgentId || agentId;
+      if (!agentIdToUse) {
+        throw new Error('Agent ID not available');
       }
       
-      // First get the agent ID from user ID
-      const agent = await workflowApi.getAgentByUserId(user.id);
-      
-      // Then get the agent's assignments
-      const assignmentData = await workflowApi.getAgentAssignments(agent.id, {
+      // Get the agent's assignments
+      const assignmentData = await workflowApi.getAgentAssignments(agentIdToUse, {
         cif: search || undefined,
         isCurrent: true,
         pageSize: 10
@@ -129,12 +129,25 @@ const DashboardPage: React.FC = () => {
   };
 
   // Load recent activities
-  const loadRecentActivities = async () => {
+  const loadRecentActivities = async (currentAgentId?: string, page: number = 1) => {
     try {
       setActivitiesLoading(true);
       setActivitiesError(null);
-      const data = await dashboardApi.getRecentActivities({ limit: 10 });
-      setRecentActivities(data);
+      
+      // Use provided agent ID or get from state
+      const agentIdToUse = currentAgentId || agentId;
+      if (!agentIdToUse) {
+        throw new Error('Agent ID not available');
+      }
+      
+      // Get the agent's recent actions
+      const actionsData = await workflowApi.getAgentActions(agentIdToUse, {
+        pageSize: 10,
+        page: page
+      });
+      
+      setRecentActivities(actionsData.actions);
+      setActivitiesPagination(actionsData.pagination);
     } catch (error) {
       console.error('Failed to load recent activities:', error);
       setActivitiesError('Failed to load recent activities. Please try again.');
@@ -142,7 +155,6 @@ const DashboardPage: React.FC = () => {
       setActivitiesLoading(false);
     }
   };
-
   // Handle customer search
   const handleCustomerSearch = () => {
     loadAssignedCustomers(customerSearch);
@@ -160,11 +172,27 @@ const DashboardPage: React.FC = () => {
     setCustomerSearch(value);
   };
 
+  // Handle activities page change
+  const handleActivitiesPageChange = (page: number) => {
+    loadRecentActivities(agentId || undefined, page);
+  };
+
   // Load all data on component mount
   useEffect(() => {
-    loadPerformanceMetrics();
-    loadAssignedCustomers();
-    loadRecentActivities();
+    const initializeDashboard = async () => {
+      try {
+        // Load agent info first, then use it for other calls
+        const currentAgentId = await loadAgentInfo();
+        
+        // Load data that depends on agent ID
+        loadAssignedCustomers(undefined, currentAgentId);
+        loadRecentActivities(currentAgentId);
+      } catch (error) {
+        console.error('Failed to initialize dashboard:', error);
+      }
+    };
+    
+    initializeDashboard();
   }, []);
 
   return (
@@ -178,12 +206,7 @@ const DashboardPage: React.FC = () => {
       </div>
 
       {/* Performance Summary */}
-      <PerformanceMetrics
-        performance={performance}
-        loading={performanceLoading}
-        error={performanceError}
-        onRefresh={loadPerformanceMetrics}
-      />
+      <PerformanceMetrics />
 
       {/* Assigned Customers */}
       <PriorityCustomers
@@ -192,7 +215,7 @@ const DashboardPage: React.FC = () => {
         error={customersError}
         searchValue={customerSearch}
         searchLoading={customerSearchLoading}
-        onRefresh={() => loadAssignedCustomers()}
+        onRefresh={() => loadAssignedCustomers(undefined, agentId || undefined)}
         onSearchChange={handleCustomerSearchChange}
         onSearch={handleCustomerSearch}
         onSearchKeyPress={handleSearchKeyPress}
@@ -203,7 +226,9 @@ const DashboardPage: React.FC = () => {
         activities={recentActivities}
         loading={activitiesLoading}
         error={activitiesError}
-        onRefresh={loadRecentActivities}
+        pagination={activitiesPagination}
+        onRefresh={() => loadRecentActivities(agentId || undefined)}
+        onPageChange={handleActivitiesPageChange}
       />
     </div>
   );

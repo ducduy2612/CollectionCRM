@@ -38,6 +38,7 @@
     "assigned_to": "Assigned To",
     "created_by": "Created By",
     "modified_by": "Modified By",
+    "customer": "Customer",
     "customer_id": "Customer ID",
     "account_number": "Account Number",
     "loan_account_number": "Loan",

@@ -45,7 +45,7 @@ const extractUserFromHeaders = (req: Request): void => {
 export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
   // Try to extract user from headers if not already set
   extractUserFromHeaders(req);
-  console.log('Im here 1')
+  console.log('workflow-service auth middleware required auth')
   // If no user, return authentication error
   if (!req.user) {
     return res.status(401).json({

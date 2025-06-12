@@ -53,7 +53,6 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
   // Load status dictionaries on component mount
   const loadStatusDictionaries = useCallback(async () => {
     try {
-      console.log('Loading status dictionaries...');
       const [
         customerDict,
         collateralDict,
@@ -70,7 +69,6 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
         workflowApi.getRecoveryAbilityStatusDict()
       ]);
 
-      console.log('Status dictionaries loaded successfully');
       setStatusDictionaries({
         customer: customerDict,
         collateral: collateralDict,
@@ -89,7 +87,6 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
   // Load current status data for the customer
   const loadCurrentStatuses = useCallback(async () => {
     try {
-      console.log(`Loading current statuses for CIF: ${cif}`);
       const [
         customerHistory,
         collateralHistory,
@@ -120,8 +117,6 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
       ]);
 
       console.log('Current statuses loaded successfully');
-      console.log(processingStateHistory.items?.[0] )
-      console.log(customerHistory.items?.[0] )
       setCurrentStatuses({
         customer: customerHistory.items?.[0] || undefined,
         collateral: collateralHistory.items?.[0] || undefined,
@@ -129,7 +124,6 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
         lendingViolation: lendingViolationHistory.items?.[0] || undefined,
         recoveryAbility: recoveryAbilityHistory.items?.[0] || undefined
       });
-      console.log(currentStatuses.customer)
     } catch (err) {
       console.error('Error loading current statuses:', err);
       throw new Error(`Failed to load current status data: ${err instanceof Error ? err.message : 'Unknown error'}`);

@@ -12,5 +12,5 @@ export const AppDataSource = new DataSource({
   schema: 'workflow_service', // Specify the schema name
   entities: [__dirname + '/../entities/**/*.entity{.ts,.js}'],
   synchronize: false, // Use migrations in production
-  logging: env.isDevelopment()
+  logging: false
 });

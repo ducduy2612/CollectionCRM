@@ -7,12 +7,7 @@ import { Input } from '../../../components/ui/Input';
 import { Avatar } from '../../../components/ui/Avatar';
 import { Spinner } from '../../../components/ui/Spinner';
 import { Alert } from '../../../components/ui/Alert';
-import {
-  formatCurrency,
-  getPriorityBadgeVariant
-} from '../../../services/api/dashboard.api';
 import { Assignment } from '../../../services/api/workflow.api';
-import { getCustomerInitials, getCustomerDisplayName } from '../../../utils/customer.utils';
 
 interface PriorityCustomersProps {
   customers: Assignment[];

@@ -245,19 +245,39 @@ export interface ActionType {
 }
 
 export interface ActionSubtype {
-  subtype_id: string;
-  subtype_code: string;
-  subtype_name: string;
-  subtype_description: string;
-  display_order: number;
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+  code: string;
+  name: string;
+  description: string;
+  isActive: boolean;
+  displayOrder: number;
+  subtype_id?: string;
+  subtype_code?: string;
+  subtype_name?: string;
+  subtype_description?: string;
+  display_order?: number;
 }
 
 export interface ActionResult {
-  result_id: string;
-  result_code: string;
-  result_name: string;
-  result_description: string;
-  display_order: number;
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+  code: string;
+  name: string;
+  description: string;
+  isActive: boolean;
+  displayOrder: number;
+  result_id?: string;
+  result_code?: string;
+  result_name?: string;
+  result_description?: string;
+  display_order?: number;
 }
 
 export interface CustomerAction {

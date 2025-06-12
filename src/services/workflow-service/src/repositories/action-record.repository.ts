@@ -182,6 +182,76 @@ export const ActionRecordRepository = AppDataSource.getRepository(ActionRecord).
   },
 
   /**
+   * Find action records by agent ID
+   * @param agentId Agent ID
+   * @param criteria Search criteria
+   * @returns Paginated result of action records
+   */
+  async findByAgentId(agentId: string, criteria: Omit<ActionRecordSearchCriteria, 'agentName'>): Promise<PaginatedResponse<ActionRecord>> {
+    try {
+      const queryBuilder = this.createQueryBuilder('action')
+        .leftJoinAndSelect('action.agent', 'agent')
+        .leftJoinAndSelect('action.actionType', 'actionType')
+        .leftJoinAndSelect('action.actionSubtype', 'actionSubtype')
+        .leftJoinAndSelect('action.actionResult', 'actionResult')
+        .where('action.agent_id = :agentId', { agentId });
+      
+      // Apply filters
+      if (criteria.cif) {
+        queryBuilder.andWhere('action.cif = :cif', { cif: criteria.cif });
+      }
+      
+      if (criteria.loanAccountNumber) {
+        queryBuilder.andWhere('action.loan_account_number = :loanAccountNumber', { loanAccountNumber: criteria.loanAccountNumber });
+      }
+      
+      if (criteria.actionType) {
+        queryBuilder.andWhere('actionType.code = :actionType', { actionType: criteria.actionType });
+      }
+      
+      if (criteria.actionSubtype) {
+        queryBuilder.andWhere('actionSubtype.code = :actionSubtype', { actionSubtype: criteria.actionSubtype });
+      }
+      
+      if (criteria.actionResult) {
+        queryBuilder.andWhere('actionResult.code = :actionResult', { actionResult: criteria.actionResult });
+      }
+      
+      if (criteria.startDate) {
+        queryBuilder.andWhere('action.action_date >= :startDate', { startDate: criteria.startDate });
+      }
+      
+      if (criteria.endDate) {
+        queryBuilder.andWhere('action.action_date <= :endDate', { endDate: criteria.endDate });
+      }
+      
+      // Get total count
+      const total = await queryBuilder.getCount();
+      
+      // Apply pagination
+      const page = criteria.page || 1;
+      const pageSize = criteria.pageSize || 10;
+      
+      queryBuilder
+        .skip((page - 1) * pageSize)
+        .take(pageSize)
+        .orderBy('action.actionDate', 'DESC');
+      
+      // Get paginated results
+      const actions = await queryBuilder.getMany();
+      
+      return ResponseUtil.paginate(actions, total, page, pageSize);
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { agentId, criteria, operation: 'findByAgentId' }
+      );
+    }
+  },
+
+  /**
    * Create a new action record
    * @param action Action record data
    * @returns The created action record

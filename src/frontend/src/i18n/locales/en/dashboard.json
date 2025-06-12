@@ -151,6 +151,8 @@
     "widget_added": "Widget added successfully",
     "widget_removed": "Widget removed successfully",
     "no_recent_activity": "No recent activity to display",
+    "no_recent_activities": "No recent activities found",
+    "recent_activities": "Recent Activities",
     "no_alerts": "No alerts at this time"
   }
 }

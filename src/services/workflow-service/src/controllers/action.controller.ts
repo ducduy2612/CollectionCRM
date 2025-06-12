@@ -299,6 +299,41 @@ export class ActionController {
   }
   
   /**
+   * Get agent actions
+   * @route GET /actions/agent/:agentId
+   */
+  async getAgentActions(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { agentId } = req.params;
+      const { cif, loanAccountNumber, actionType, actionSubtype, actionResult, startDate, endDate, page = 1, pageSize = 10 } = req.query;
+      
+      const result = await ActionRecordRepository.findByAgentId(agentId, {
+        cif: cif as string,
+        loanAccountNumber: loanAccountNumber as string,
+        actionType: actionType as string,
+        actionSubtype: actionSubtype as string,
+        actionResult: actionResult as string,
+        startDate: startDate ? new Date(startDate as string) : undefined,
+        endDate: endDate ? new Date(endDate as string) : undefined,
+        page: Number(page),
+        pageSize: Math.min(Number(pageSize), 100)
+      });
+      
+      return ResponseUtil.success(
+        res,
+        {
+          actions: result.items,
+          pagination: result.pagination
+        },
+        'Agent actions retrieved successfully'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error getting agent actions');
+      next(error);
+    }
+  }
+  
+  /**
    * Update action result
    * @route PUT /actions/:id/result
    */

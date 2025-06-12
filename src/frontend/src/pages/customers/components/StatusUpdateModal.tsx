@@ -64,7 +64,6 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
         notes: '',
         actionDate: new Date().toISOString().slice(0, 16)
       });
-      console.log(statusOptions)
       setErrors({});
       setIsSubmitting(false);
     }
@@ -158,7 +157,6 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
       if (statusType === 'collateral' && collateralId) {
         submitData.collateralId = collateralId;
       }
-      console.log(submitData);
       await onSubmit(submitData);
       onClose();
     } catch (error) {

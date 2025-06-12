@@ -399,14 +399,10 @@ router.delete(
   ],
   async (req: express.Request, res: express.Response) => {
     try {
-      // Debug logging
-      console.log('DELETE /roles/:id/users - Request body:', req.body);
-      console.log('DELETE /roles/:id/users - Content-Type:', req.headers['content-type']);
       
       // Validate request
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        console.log('Validation errors:', errors.array());
         return res.status(400).json({
           success: false,
           data: null,
@@ -422,14 +418,9 @@ router.delete(
       const roleId = req.params.id;
       const { userIds } = req.body;
       
-      console.log('Role ID:', roleId);
-      console.log('User IDs:', userIds);
-
       // Remove users from role
       try {
-        console.log('Calling roleService.removeUsersFromRole...');
         const removedUsers = await roleService.removeUsersFromRole(roleId, userIds);
-        console.log('Service call successful, removed users:', removedUsers);
 
         // Return successful response
         return res.status(200).json({
@@ -442,8 +433,6 @@ router.delete(
           errors: []
         });
       } catch (error: any) {
-        console.log('Service call failed with error:', error.message);
-        console.log('Error stack:', error.stack);
         return res.status(400).json({
           success: false,
           data: null,

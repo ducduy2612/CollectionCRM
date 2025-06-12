@@ -66,7 +66,7 @@ export const CustomerAgentRepository = AppDataSource.getRepository(CustomerAgent
       const queryBuilder = this.createQueryBuilder('assignment')
         .leftJoinAndSelect('assignment.assignedCallAgent', 'callAgent')
         .leftJoinAndSelect('assignment.assignedFieldAgent', 'fieldAgent')
-        .where('assignment.assigned_call_agent_id = :agentId OR assignment.assigned_field_agent_id = :agentId', { agentId });
+        .where('(assignment.assigned_call_agent_id = :agentId OR assignment.assigned_field_agent_id = :agentId)', { agentId });
       
       // Apply filters
       if (criteria.cif) {
