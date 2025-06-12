@@ -489,7 +489,7 @@ BEGIN
     LEFT JOIN workflow_service.action_records ar ON ares.id = ar.action_result_id
     GROUP BY ares.id, ares.code, ares.name, ares.is_active
     
-    ORDER BY config_type, config_code;
+    ORDER BY config_type, code;
 END;
 $$ LANGUAGE plpgsql;
 

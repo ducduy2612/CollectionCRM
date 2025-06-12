@@ -156,6 +156,28 @@ router.get(
 );
 
 /**
+ * @route GET /action-config/action-subtypes
+ * @desc get all active action subtypes
+ * @access Private - Requires authentication
+ */
+router.get(
+  '/action-config/action-subtypes',
+  requireAuth,
+  actionConfigController.getAllActionSubtypes
+);
+
+/**
+ * @route GET /action-config/action-results
+ * @desc get all active action results
+ * @access Private - Requires authentication
+ */
+router.get(
+  '/action-config/action-results',
+  requireAuth,
+  actionConfigController.getAllActionResults
+);
+
+/**
  * @route GET /action-config/types/:typeCode/subtypes
  * @desc Get available subtypes for a type
  * @access Private - Requires authentication

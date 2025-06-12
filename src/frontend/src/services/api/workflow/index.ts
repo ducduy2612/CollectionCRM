@@ -3,12 +3,14 @@ export * from './types';
 
 // Re-export all API modules
 export { actionsApi } from './actions.api';
+export { actionConfigApi } from './action-config.api';
 export { agentsApi } from './agents.api';
 export { statusApi } from './status.api';
 export { contactsApi } from './contacts.api';
 
 // Import all APIs to create the combined workflowApi object for backward compatibility
 import { actionsApi } from './actions.api';
+import { actionConfigApi } from './action-config.api';
 import { agentsApi } from './agents.api';
 import { statusApi } from './status.api';
 import { contactsApi } from './contacts.api';
@@ -17,6 +19,9 @@ import { contactsApi } from './contacts.api';
 export const workflowApi = {
   // Actions API
   ...actionsApi,
+  
+  // Action Config API
+  ...actionConfigApi,
   
   // Agents API
   ...agentsApi,
