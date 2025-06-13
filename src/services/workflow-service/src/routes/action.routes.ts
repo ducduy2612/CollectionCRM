@@ -121,6 +121,42 @@ router.post(
 );
 
 /**
+ * @route PUT /action-config/action-types/:typeCode
+ * @desc Update existing action type
+ * @access Private - Requires authentication
+ */
+router.put(
+  '/action-config/action-types/:typeCode',
+  requireAuth,
+  requireRoles(['ADMIN']),
+  actionConfigController.updateActionType
+);
+
+/**
+ * @route PUT /action-config/action-subtypes/:subtypeCode
+ * @desc Update existing action subtype
+ * @access Private - Requires authentication
+ */
+router.put(
+  '/action-config/action-subtypes/:subtypeCode',
+  requireAuth,
+  requireRoles(['ADMIN']),
+  actionConfigController.updateActionSubtype
+);
+
+/**
+ * @route PUT /action-config/action-results/:resultCode
+ * @desc Update existing action result
+ * @access Private - Requires authentication
+ */
+router.put(
+  '/action-config/action-results/:resultCode',
+  requireAuth,
+  requireRoles(['ADMIN']),
+  actionConfigController.updateActionResult
+);
+
+/**
  * @route POST /action-config/mappings/type-subtype
  * @desc Map action type to subtype
  * @access Private - Requires authentication

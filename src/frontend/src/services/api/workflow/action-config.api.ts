@@ -22,6 +22,7 @@ export interface ActionResultConfig {
   name: string;
   description?: string;
   display_order?: number;
+  is_promise?: boolean;
 }
 
 export interface TypeSubtypeMapping {
@@ -97,6 +98,17 @@ export const actionConfigApi = {
     }
   },
 
+  updateActionType: async (typeCode: string, config: Partial<ActionTypeConfig>): Promise<{ success: boolean }> => {
+    const response = await apiClient.put<WorkflowApiResponse<{ success: boolean }>>(
+      `/workflow/actions/action-config/action-types/${typeCode}`,
+      config
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to update action type');
+    }
+    return response.data.data;
+  },
+
   // Action Subtypes Management
   addActionSubtype: async (config: ActionSubtypeConfig): Promise<ActionSubtype> => {
     const response = await apiClient.post<WorkflowApiResponse<ActionSubtype>>(
@@ -152,6 +164,17 @@ export const actionConfigApi = {
     }
   },
 
+  updateActionSubtype: async (subtypeCode: string, config: Partial<ActionSubtypeConfig>): Promise<{ success: boolean }> => {
+    const response = await apiClient.put<WorkflowApiResponse<{ success: boolean }>>(
+      `/workflow/actions/action-config/action-subtypes/${subtypeCode}`,
+      config
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to update action subtype');
+    }
+    return response.data.data;
+  },
+
   // Action Results Management
   addActionResult: async (config: ActionResultConfig): Promise<ActionResult> => {
     const response = await apiClient.post<WorkflowApiResponse<ActionResult>>(
@@ -205,6 +228,17 @@ export const actionConfigApi = {
         throw new Error('Failed to deactivate action result');
       }
     }
+  },
+
+  updateActionResult: async (resultCode: string, config: Partial<ActionResultConfig>): Promise<{ success: boolean }> => {
+    const response = await apiClient.put<WorkflowApiResponse<{ success: boolean }>>(
+      `/workflow/actions/action-config/action-results/${resultCode}`,
+      config
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to update action result');
+    }
+    return response.data.data;
   },
 
   // Mappings Management

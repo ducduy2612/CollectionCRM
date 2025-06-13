@@ -224,6 +224,7 @@ CREATE TABLE workflow_service.action_results (
     description TEXT,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     display_order INTEGER DEFAULT 0,
+    is_promise BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by VARCHAR(50) NOT NULL,

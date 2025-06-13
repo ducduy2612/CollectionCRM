@@ -297,7 +297,7 @@
       "select_result": "Chọn kết quả",
       "enter_notes": "Nhập ghi chú",
       "enter_global_notes": "Nhập ghi chú để áp dụng cho tất cả khoản vay đã chọn",
-      "enter_amount": "Nhập số tiền",
+      "enter_amount": "Nhập số tiền (để trống = số tiền đến hạn)",
       "required": "Bắt buộc",
       "na": "Không áp dụng"
     },

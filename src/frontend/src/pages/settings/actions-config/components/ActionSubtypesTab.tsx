@@ -99,7 +99,19 @@ const ActionSubtypesTab: React.FC<ActionSubtypesTabProps> = ({
         display_order: parseInt(formData.display_order) || 0
       };
 
-      await actionConfigApi.addActionSubtype(config);
+      if (editingItem) {
+        // Update existing action subtype
+        const updateConfig: Partial<ActionSubtypeConfig> = {
+          name: formData.name,
+          description: formData.description,
+          display_order: parseInt(formData.display_order) || 0
+        };
+        await actionConfigApi.updateActionSubtype(editingItem.code, updateConfig);
+      } else {
+        // Add new action subtype
+        await actionConfigApi.addActionSubtype(config);
+      }
+      
       onSuccess(`Action subtype ${editingItem ? 'updated' : 'added'} successfully`);
       setShowModal(false);
       resetForm();

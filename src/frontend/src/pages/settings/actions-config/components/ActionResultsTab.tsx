@@ -24,6 +24,7 @@ interface FormData {
   name: string;
   description: string;
   display_order: string;
+  is_promise: boolean;
 }
 
 const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
@@ -39,7 +40,8 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
     code: '',
     name: '',
     description: '',
-    display_order: '0'
+    display_order: '0',
+    is_promise: false
   });
 
   const resetForm = () => {
@@ -47,7 +49,8 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
       code: '',
       name: '',
       description: '',
-      display_order: '0'
+      display_order: '0',
+      is_promise: false
     });
   };
 
@@ -62,7 +65,8 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
       code: item.code,
       name: item.name,
       description: item.description || '',
-      display_order: item.displayOrder.toString()
+      display_order: item.displayOrder.toString(),
+      is_promise: Boolean(item.isPromise)
     });
     setEditingItem(item);
     setShowModal(true);
@@ -96,10 +100,24 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
         code: formData.code,
         name: formData.name,
         description: formData.description,
-        display_order: parseInt(formData.display_order) || 0
+        display_order: parseInt(formData.display_order) || 0,
+        is_promise: formData.is_promise
       };
 
-      await actionConfigApi.addActionResult(config);
+      if (editingItem) {
+        // Update existing action result
+        const updateConfig: Partial<ActionResultConfig> = {
+          name: formData.name,
+          description: formData.description,
+          display_order: parseInt(formData.display_order) || 0,
+          is_promise: formData.is_promise
+        };
+        await actionConfigApi.updateActionResult(editingItem.code, updateConfig);
+      } else {
+        // Add new action result
+        await actionConfigApi.addActionResult(config);
+      }
+      
       onSuccess(`Action result ${editingItem ? 'updated' : 'added'} successfully`);
       setShowModal(false);
       resetForm();
@@ -138,6 +156,7 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
               <th>Name</th>
               <th>Description</th>
               <th>Display Order</th>
+              <th>Is Promise</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -149,6 +168,11 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
                 <td className="font-medium">{result.name}</td>
                 <td className="text-neutral-600">{result.description}</td>
                 <td>{result.displayOrder}</td>
+                <td>
+                  <Badge variant={result.isPromise ? 'warning' : 'secondary'}>
+                    {result.isPromise ? 'Yes' : 'No'}
+                  </Badge>
+                </td>
                 <td>
                   <Badge variant={result.isActive ? 'success' : 'secondary'}>
                     {result.isActive ? 'Active' : 'Inactive'}
@@ -231,6 +255,21 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
               onChange={(e) => setFormData(prev => ({ ...prev, display_order: e.target.value }))}
               placeholder="0"
             />
+          </div>
+          
+          <div>
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={formData.is_promise}
+                onChange={(e) => setFormData(prev => ({ ...prev, is_promise: e.target.checked }))}
+                className="rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm font-medium text-neutral-700">Is Promise</span>
+            </label>
+            <p className="text-xs text-neutral-500 mt-1">
+              Mark this result as a promise for future follow-up
+            </p>
           </div>
           
           <div className="flex justify-end space-x-3 pt-4">

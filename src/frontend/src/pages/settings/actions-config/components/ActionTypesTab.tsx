@@ -99,7 +99,19 @@ const ActionTypesTab: React.FC<ActionTypesTabProps> = ({
         display_order: parseInt(formData.display_order) || 0
       };
 
-      await actionConfigApi.addActionType(config);
+      if (editingItem) {
+        // Update existing action type
+        const updateConfig: Partial<ActionTypeConfig> = {
+          name: formData.name,
+          description: formData.description,
+          display_order: parseInt(formData.display_order) || 0
+        };
+        await actionConfigApi.updateActionType(editingItem.code, updateConfig);
+      } else {
+        // Add new action type
+        await actionConfigApi.addActionType(config);
+      }
+      
       onSuccess(`Action type ${editingItem ? 'updated' : 'added'} successfully`);
       setShowModal(false);
       resetForm();

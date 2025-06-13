@@ -139,6 +139,133 @@ export class ActionConfigController {
   }
 
   /**
+   * Update existing action type
+   * @route PUT /action-config/action-types/:typeCode
+   */
+  async updateActionType(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { typeCode } = req.params;
+      const { name, description, display_order } = req.body;
+      
+      const config: Partial<ActionTypeConfig> = {};
+      if (name !== undefined) config.name = name;
+      if (description !== undefined) config.description = description;
+      if (display_order !== undefined) config.display_order = display_order;
+      
+      if (Object.keys(config).length === 0) {
+        throw Errors.create(
+          Errors.Validation.REQUIRED_FIELD_MISSING,
+          'At least one field must be provided for update',
+          OperationType.VALIDATION,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+      
+      const success = await ActionConfigRepository.updateActionType(
+        typeCode,
+        config,
+        req.user?.username || 'ADMIN'
+      );
+      
+      logger.info({ typeCode, config, success }, 'Action type update attempted');
+      
+      return ResponseUtil.success(
+        res,
+        { success },
+        success ? 'Action type updated successfully' : 'Action type update failed'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error updating action type');
+      next(error);
+    }
+  }
+
+  /**
+   * Update existing action subtype
+   * @route PUT /action-config/action-subtypes/:subtypeCode
+   */
+  async updateActionSubtype(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { subtypeCode } = req.params;
+      const { name, description, display_order } = req.body;
+      
+      const config: Partial<ActionSubtypeConfig> = {};
+      if (name !== undefined) config.name = name;
+      if (description !== undefined) config.description = description;
+      if (display_order !== undefined) config.display_order = display_order;
+      
+      if (Object.keys(config).length === 0) {
+        throw Errors.create(
+          Errors.Validation.REQUIRED_FIELD_MISSING,
+          'At least one field must be provided for update',
+          OperationType.VALIDATION,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+      
+      const success = await ActionConfigRepository.updateActionSubtype(
+        subtypeCode,
+        config,
+        req.user?.username || 'ADMIN'
+      );
+      
+      logger.info({ subtypeCode, config, success }, 'Action subtype update attempted');
+      
+      return ResponseUtil.success(
+        res,
+        { success },
+        success ? 'Action subtype updated successfully' : 'Action subtype update failed'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error updating action subtype');
+      next(error);
+    }
+  }
+
+  /**
+   * Update existing action result
+   * @route PUT /action-config/action-results/:resultCode
+   */
+  async updateActionResult(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { resultCode } = req.params;
+      const { name, description, display_order, is_promise } = req.body;
+      
+      const config: Partial<ActionResultConfig> = {};
+      if (name !== undefined) config.name = name;
+      if (description !== undefined) config.description = description;
+      if (display_order !== undefined) config.display_order = display_order;
+      if (is_promise !== undefined) config.is_promise = is_promise;
+      
+      if (Object.keys(config).length === 0) {
+        throw Errors.create(
+          Errors.Validation.REQUIRED_FIELD_MISSING,
+          'At least one field must be provided for update',
+          OperationType.VALIDATION,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+      
+      const success = await ActionConfigRepository.updateActionResult(
+        resultCode,
+        config,
+        req.user?.username || 'ADMIN'
+      );
+      
+      logger.info({ resultCode, config, success }, 'Action result update attempted');
+      
+      return ResponseUtil.success(
+        res,
+        { success },
+        success ? 'Action result updated successfully' : 'Action result update failed'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error updating action result');
+      next(error);
+    }
+  }
+
+  /**
    * Map action type to subtype
    * @route POST /action-config/mappings/type-subtype
    */

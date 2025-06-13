@@ -48,17 +48,117 @@ CREATE OR REPLACE FUNCTION workflow_service.add_action_result(
     p_name VARCHAR(100),
     p_description TEXT DEFAULT NULL,
     p_display_order INTEGER DEFAULT 0,
+    p_is_promise BOOLEAN DEFAULT FALSE,
     p_created_by VARCHAR(50) DEFAULT 'ADMIN'
 )
 RETURNS UUID AS $$
 DECLARE
     v_id UUID;
 BEGIN
-    INSERT INTO workflow_service.action_results (code, name, description, display_order, created_by, updated_by)
-    VALUES (p_code, p_name, p_description, p_display_order, p_created_by, p_created_by)
+    INSERT INTO workflow_service.action_results (code, name, description, display_order, is_promise, created_by, updated_by)
+    VALUES (p_code, p_name, p_description, p_display_order, p_is_promise, p_created_by, p_created_by)
     RETURNING id INTO v_id;
     
     RETURN v_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to update existing action type
+CREATE OR REPLACE FUNCTION workflow_service.update_action_type(
+    p_code VARCHAR(50),
+    p_name VARCHAR(100) DEFAULT NULL,
+    p_description TEXT DEFAULT NULL,
+    p_display_order INTEGER DEFAULT NULL,
+    p_updated_by VARCHAR(50) DEFAULT 'ADMIN'
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    v_type_id UUID;
+BEGIN
+    -- Get type ID and verify it exists and is active
+    SELECT id INTO v_type_id FROM workflow_service.action_types WHERE code = p_code AND is_active = TRUE;
+    IF v_type_id IS NULL THEN
+        RAISE EXCEPTION 'Action type with code % not found or inactive', p_code;
+    END IF;
+    
+    -- Update only the fields that are provided (not NULL)
+    UPDATE workflow_service.action_types
+    SET
+        name = COALESCE(p_name, name),
+        description = COALESCE(p_description, description),
+        display_order = COALESCE(p_display_order, display_order),
+        updated_at = NOW(),
+        updated_by = p_updated_by
+    WHERE id = v_type_id;
+    
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to update existing action subtype
+CREATE OR REPLACE FUNCTION workflow_service.update_action_subtype(
+    p_code VARCHAR(50),
+    p_name VARCHAR(100) DEFAULT NULL,
+    p_description TEXT DEFAULT NULL,
+    p_display_order INTEGER DEFAULT NULL,
+    p_updated_by VARCHAR(50) DEFAULT 'ADMIN'
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    v_subtype_id UUID;
+BEGIN
+    -- Get subtype ID and verify it exists and is active
+    SELECT id INTO v_subtype_id FROM workflow_service.action_subtypes WHERE code = p_code AND is_active = TRUE;
+    IF v_subtype_id IS NULL THEN
+        RAISE EXCEPTION 'Action subtype with code % not found or inactive', p_code;
+    END IF;
+    
+    -- Update only the fields that are provided (not NULL)
+    UPDATE workflow_service.action_subtypes
+    SET
+        name = COALESCE(p_name, name),
+        description = COALESCE(p_description, description),
+        display_order = COALESCE(p_display_order, display_order),
+        updated_at = NOW(),
+        updated_by = p_updated_by
+    WHERE id = v_subtype_id;
+    
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to update existing action result
+CREATE OR REPLACE FUNCTION workflow_service.update_action_result(
+    p_code VARCHAR(50),
+    p_name VARCHAR(100) DEFAULT NULL,
+    p_description TEXT DEFAULT NULL,
+    p_display_order INTEGER DEFAULT NULL,
+    p_is_promise BOOLEAN DEFAULT NULL,
+    p_updated_by VARCHAR(50) DEFAULT 'ADMIN'
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    v_result_id UUID;
+BEGIN
+    -- Get result ID and verify it exists and is active
+    SELECT id INTO v_result_id FROM workflow_service.action_results WHERE code = p_code AND is_active = TRUE;
+    IF v_result_id IS NULL THEN
+        RAISE EXCEPTION 'Action result with code % not found or inactive', p_code;
+    END IF;
+    
+    -- Update only the fields that are provided (not NULL)
+    -- For boolean fields, we need to handle the case where false should be updated
+    UPDATE workflow_service.action_results
+    SET
+        name = COALESCE(p_name, name),
+        description = COALESCE(p_description, description),
+        display_order = COALESCE(p_display_order, display_order),
+        is_promise = COALESCE(p_is_promise, is_promise),
+        updated_at = NOW(),
+        updated_by = p_updated_by
+    WHERE id = v_result_id;
+    
+    RETURN TRUE;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -171,7 +271,8 @@ RETURNS TABLE (
     result_code VARCHAR(50),
     result_name VARCHAR(100),
     result_description TEXT,
-    display_order INTEGER
+    display_order INTEGER,
+    is_promise BOOLEAN
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -180,7 +281,8 @@ BEGIN
         ar.code,
         ar.name,
         ar.description,
-        ar.display_order
+        ar.display_order,
+        ar.is_promise
     FROM workflow_service.action_results ar
     INNER JOIN workflow_service.action_subtype_result_mappings asrm ON ar.id = asrm.action_result_id
     INNER JOIN workflow_service.action_subtypes ast ON asrm.action_subtype_id = ast.id
@@ -505,6 +607,9 @@ COMMENT ON FUNCTION workflow_service.get_configuration_usage_stats() IS 'Returns
 COMMENT ON FUNCTION workflow_service.add_action_type(VARCHAR, VARCHAR, TEXT, INTEGER, VARCHAR) IS 'Adds a new action type for admin configuration';
 COMMENT ON FUNCTION workflow_service.add_action_subtype(VARCHAR, VARCHAR, TEXT, INTEGER, VARCHAR) IS 'Adds a new action subtype for admin configuration';
 COMMENT ON FUNCTION workflow_service.add_action_result(VARCHAR, VARCHAR, TEXT, INTEGER, VARCHAR) IS 'Adds a new action result for admin configuration';
+COMMENT ON FUNCTION workflow_service.update_action_type(VARCHAR, VARCHAR, TEXT, INTEGER, VARCHAR) IS 'Updates an existing action type for admin configuration';
+COMMENT ON FUNCTION workflow_service.update_action_subtype(VARCHAR, VARCHAR, TEXT, INTEGER, VARCHAR) IS 'Updates an existing action subtype for admin configuration';
+COMMENT ON FUNCTION workflow_service.update_action_result(VARCHAR, VARCHAR, TEXT, INTEGER, BOOLEAN, VARCHAR) IS 'Updates an existing action result for admin configuration';
 COMMENT ON FUNCTION workflow_service.map_type_to_subtype(VARCHAR, VARCHAR, VARCHAR) IS 'Maps an action type to a subtype';
 COMMENT ON FUNCTION workflow_service.map_subtype_to_result(VARCHAR, VARCHAR, VARCHAR) IS 'Maps an action subtype to a result';
 COMMENT ON FUNCTION workflow_service.get_subtypes_for_type(VARCHAR) IS 'Gets available subtypes for a given action type';

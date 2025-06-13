@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 
 // Providers
 import { AuthProvider } from './providers/AuthProvider';
+import { ToastProvider } from './components/ui/ToastProvider';
 
 // Layout components
 import MainLayout from './layouts/MainLayout';
@@ -37,33 +38,35 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router>
-          <Routes>
-            {/* Auth routes */}
-            <Route element={<AuthLayout />}>
-              <Route path="/login" element={<LoginPage />} />
-            </Route>
+        <ToastProvider>
+          <Router>
+            <Routes>
+              {/* Auth routes */}
+              <Route element={<AuthLayout />}>
+                <Route path="/login" element={<LoginPage />} />
+              </Route>
 
-            {/* Protected routes */}
-            <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-              <Route path="/dashboard" element={<DashboardPage />} />
-              
-              <Route path="/customers" element={<CustomersPage />} />
-              <Route path="/customers/:cif" element={<CustomersPage />} />
-              
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/settings/user-management" element={<UserManagementPage />} />
-              <Route path="/settings/actions-config" element={<ActionsConfigPage />} />
-              <Route path="/settings/customer-assignment" element={<CustomerAssignmentUploadPage />} />
-            </Route>
+              {/* Protected routes */}
+              <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+                <Route path="/dashboard" element={<DashboardPage />} />
+                
+                <Route path="/customers" element={<CustomersPage />} />
+                <Route path="/customers/:cif" element={<CustomersPage />} />
+                
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/settings/user-management" element={<UserManagementPage />} />
+                <Route path="/settings/actions-config" element={<ActionsConfigPage />} />
+                <Route path="/settings/customer-assignment" element={<CustomerAssignmentUploadPage />} />
+              </Route>
 
-            {/* Redirect root to dashboard */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              {/* Redirect root to dashboard */}
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-            {/* 404 route */}
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </Router>
+              {/* 404 route */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Router>
+        </ToastProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

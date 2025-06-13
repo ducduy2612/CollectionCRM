@@ -25,6 +25,10 @@ export class ActionResult extends BaseEntity {
   @Index()
   displayOrder: number;
 
+  @Column({ name: 'is_promise', default: 0 })
+  @Index()
+  isPromise: boolean;
+
   @OneToMany(() => ActionSubtypeResultMapping, mapping => mapping.actionResult)
   subtypeMappings: ActionSubtypeResultMapping[];
 }

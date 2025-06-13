@@ -24,6 +24,7 @@ export interface ActionResultConfig {
   name: string;
   description?: string;
   display_order?: number;
+  is_promise?: boolean;
 }
 
 export interface SubtypeForType {
@@ -122,12 +123,13 @@ export class ActionConfigRepository {
   ): Promise<string> {
     try {
       const result = await AppDataSource.query(
-        'SELECT workflow_service.add_action_result($1, $2, $3, $4, $5) as id',
+        'SELECT workflow_service.add_action_result($1, $2, $3, $4, $5, $6) as id',
         [
           config.code,
           config.name,
           config.description || null,
           config.display_order || 0,
+          config.is_promise || false,
           createdBy
         ]
       );
@@ -138,6 +140,97 @@ export class ActionConfigRepository {
         OperationType.DATABASE,
         SourceSystemType.WORKFLOW_SERVICE,
         { config, createdBy, operation: 'addActionResult' }
+      );
+    }
+  }
+
+  /**
+   * Update existing action type
+   */
+  static async updateActionType(
+    typeCode: string,
+    config: Partial<ActionTypeConfig>,
+    updatedBy: string = 'ADMIN'
+  ): Promise<boolean> {
+    try {
+      const result = await AppDataSource.query(
+        'SELECT workflow_service.update_action_type($1, $2, $3, $4, $5) as success',
+        [
+          typeCode,
+          config.name || null,
+          config.description || null,
+          config.display_order || null,
+          updatedBy
+        ]
+      );
+      return result[0].success;
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { typeCode, config, updatedBy, operation: 'updateActionType' }
+      );
+    }
+  }
+
+  /**
+   * Update existing action subtype
+   */
+  static async updateActionSubtype(
+    subtypeCode: string,
+    config: Partial<ActionSubtypeConfig>,
+    updatedBy: string = 'ADMIN'
+  ): Promise<boolean> {
+    try {
+      const result = await AppDataSource.query(
+        'SELECT workflow_service.update_action_subtype($1, $2, $3, $4, $5) as success',
+        [
+          subtypeCode,
+          config.name || null,
+          config.description || null,
+          config.display_order || null,
+          updatedBy
+        ]
+      );
+      return result[0].success;
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { subtypeCode, config, updatedBy, operation: 'updateActionSubtype' }
+      );
+    }
+  }
+
+  /**
+   * Update existing action result
+   */
+  static async updateActionResult(
+    resultCode: string,
+    config: Partial<ActionResultConfig>,
+    updatedBy: string = 'ADMIN'
+  ): Promise<boolean> {
+    try {
+      const result = await AppDataSource.query(
+        'SELECT workflow_service.update_action_result($1, $2, $3, $4, $5, $6) as success',
+        [
+          resultCode,
+          config.name || null,
+          config.description || null,
+          config.display_order || null,
+          config.is_promise || false,
+          updatedBy
+        ]
+      );
+      return result[0].success;
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { resultCode, config, updatedBy, operation: 'updateActionResult' }
       );
     }
   }

@@ -114,7 +114,9 @@ export const LoansTable: React.FC<LoansTableProps> = ({
                     onChange={(e) => onFieldChange(loan.accountNumber, 'promiseAmount', e.target.value)}
                     disabled={!isPromiseToPay}
                     placeholder={isPromiseToPay 
-                      ? t('customers:record_action.placeholders.required') 
+                      ? (typeof loan.dueAmount === 'string' 
+                        ? parseFloat(loan.dueAmount).toLocaleString() 
+                        : loan.dueAmount.toLocaleString())
                       : t('customers:record_action.placeholders.na')}
                     className="min-w-[120px]"
                   />
