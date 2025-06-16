@@ -34,9 +34,6 @@ CREATE TYPE loan_status AS ENUM ('OPEN', 'CLOSED');
 -- Payment status
 CREATE TYPE payment_status AS ENUM ('PENDING', 'COMPLETED', 'FAILED', 'REVERSED');
 
--- Agent type
-CREATE TYPE agent_type AS ENUM ('AGENT', 'SUPERVISOR', 'ADMIN');
-
 -- Collection workflow specific types
 -- Action types and subtypes
 CREATE TYPE action_type AS ENUM ('CALL', 'VISIT', 'EMAIL', 'SMS', 'LETTER');

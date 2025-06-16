@@ -2,15 +2,6 @@ import { Entity, Column, Index } from 'typeorm';
 import { BaseEntity } from './base.entity';
 
 /**
- * Agent types enum
- */
-export enum AgentType {
-  AGENT = 'AGENT',
-  SUPERVISOR = 'SUPERVISOR',
-  ADMIN = 'ADMIN'
-}
-
-/**
  * Agent entity
  */
 @Entity('agents', { schema: 'workflow_service' })
@@ -28,13 +19,9 @@ export class Agent extends BaseEntity {
   @Column({ nullable: true })
   phone: string;
 
-  @Column({
-    type: 'enum',
-    enum: AgentType,
-    default: AgentType.AGENT
-  })
+  @Column()
   @Index()
-  type: AgentType;
+  type: string;
 
   @Column()
   @Index()

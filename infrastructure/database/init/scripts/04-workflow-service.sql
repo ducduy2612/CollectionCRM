@@ -168,7 +168,7 @@ CREATE TABLE workflow_service.agents (
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     phone VARCHAR(20),
-    type agent_type NOT NULL,
+    type VARCHAR(20) NOT NULL,
     team VARCHAR(30) NOT NULL,
     user_id UUID,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,

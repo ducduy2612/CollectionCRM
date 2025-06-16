@@ -1,6 +1,6 @@
 import { EachMessagePayload } from 'kafkajs';
 import { AppDataSource } from '../../config/data-source';
-import { Agent, AgentType } from '../../entities/agent.entity';
+import { Agent } from '../../entities/agent.entity';
 import { logger } from '../../utils/logger';
 import { KAFKA_TOPICS } from '../config';
 import { UserCreatedEvent, UserUpdatedEvent, UserDeactivatedEvent } from '../types/events';
@@ -81,29 +81,12 @@ export class UserEventHandler {
       // Default values
       newAgent.team = 'Default Team'; // This could be determined based on user role or other logic
       
-      // If the role is 'admin' or 'supervisor', set the agent type accordingly
-      if (event.role.toLowerCase().includes('admin')) {
-        newAgent.type = AgentType.ADMIN;
-        logger.info({
-          message: 'Setting agent type to ADMIN based on role',
-          userId: event.userId,
-          role: event.role
-        });
-      } else if (event.role.toLowerCase().includes('supervisor')) {
-        newAgent.type = AgentType.SUPERVISOR;
-        logger.info({
-          message: 'Setting agent type to SUPERVISOR based on role',
-          userId: event.userId,
-          role: event.role
-        });
-      } else {
-        newAgent.type = AgentType.AGENT;
-        logger.info({
-          message: 'Setting agent type to AGENT based on role',
-          userId: event.userId,
-          role: event.role
-        });
-      }
+      newAgent.type = event.role;
+      logger.info({
+        message: 'Setting agent type based on role',
+        userId: event.userId,
+        role: event.role
+      });
       
       // Save the new agent
       const savedAgent = await this.agentRepository.save(newAgent);
@@ -149,15 +132,8 @@ export class UserEventHandler {
 
       // Update agent type if role has changed
       if (event.role) {
-        let newAgentType: AgentType;
         
-        if (event.role.toLowerCase().includes('admin')) {
-          newAgentType = AgentType.ADMIN;
-        } else if (event.role.toLowerCase().includes('supervisor')) {
-          newAgentType = AgentType.SUPERVISOR;
-        } else {
-          newAgentType = AgentType.AGENT;
-        }
+        let newAgentType = event.role;
         
         if (agent.type !== newAgentType) {
           agent.type = newAgentType;

@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { AgentRepository } from '../repositories/agent.repository';
-import { Agent, AgentType } from '../entities/agent.entity';
 import { Errors, OperationType, SourceSystemType } from '../utils/errors';
 import { ResponseUtil } from '../utils/response';
 import { logger } from '../utils/logger';
@@ -18,7 +17,7 @@ export class AgentController {
       const { type, team, isActive, page = 1, pageSize = 10 } = req.query;
       
       const result = await AgentRepository.searchAgents({
-        type: type as AgentType,
+        type: type as string,
         team: team as string,
         isActive: isActive === 'true' ? true : isActive === 'false' ? false : undefined,
         page: Number(page),

@@ -1,5 +1,6 @@
 import { roleRepository } from '../repositories/role.repository';
 import { Role, RoleCreateData, RoleUpdateData, RoleResponse } from '../models/role.model';
+import { publishUserUpdatedEvent } from '../kafka';
 
 /**
  * Role service for role management operations
@@ -184,7 +185,27 @@ export class RoleService {
    * @param userIds - Array of user IDs
    */
   public async assignRoleToUsers(id: string, userIds: string[]): Promise<number> {
-    return roleRepository.assignRoleToUsers(id, userIds);
+    // Get role information for the event
+    const role = await roleRepository.findById(id);
+    if (!role) {
+      throw new Error('Role not found');
+    }
+
+    const result = await roleRepository.assignRoleToUsers(id, userIds);
+
+    // Publish USER_UPDATED events for each user that got the role assigned
+    for (const userId of userIds) {
+      try {
+        await publishUserUpdatedEvent(userId, {
+          role: role.name
+        });
+      } catch (error) {
+        console.error(`Failed to publish user updated event for user ${userId}`, error);
+        // Don't throw error here, as the role assignment was successful
+      }
+    }
+
+    return result;
   }
 
   /**
@@ -198,6 +219,19 @@ export class RoleService {
     
     // Remove the role from users
     await roleRepository.removeUsersFromRole(id, userIds);
+    
+    // Publish USER_UPDATED events for each user that had the role removed
+    for (const userId of userIds) {
+      try {
+        await publishUserUpdatedEvent(userId, {
+          // Note: We're not setting a specific role here since the user's role was removed
+          // The consuming services should handle this appropriately
+        });
+      } catch (error) {
+        console.error(`Failed to publish user updated event for user ${userId}`, error);
+        // Don't throw error here, as the role removal was successful
+      }
+    }
     
     // Return the users that were removed
     return usersToRemove;
