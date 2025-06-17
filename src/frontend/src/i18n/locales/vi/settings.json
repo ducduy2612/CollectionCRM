@@ -212,7 +212,13 @@
     "edit_role_description": "Cập nhật quyền hạn và cài đặt vai trò",
     "enter_role_name": "Nhập tên vai trò",
     "role_name_cannot_change": "Tên vai trò không thể thay đổi sau khi tạo",
-    "selected_permissions": "Đã chọn {{selected}} trong {{total}} quyền hạn"
+    "selected_permissions": "Đã chọn {{selected}} trong {{total}} quyền hạn",
+    "user_management": "Quản lý người dùng",
+    "action_config": "Cấu hình hành động",
+    "FUD_config": "Cấu hình FUD",
+    "campaign_management": "Cấu hình chiến dịch",
+    "customer_assignment": "Phân chia khách hàng",
+    "system_admin": "Quản lý hệ thống"
   },
   "validation": {
     "required_field": "Trường này là bắt buộc",

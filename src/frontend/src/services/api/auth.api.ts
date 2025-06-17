@@ -231,7 +231,6 @@ export const authApi = {
     const response = await apiClient.post<AuthApiResponse<ValidateTokenResponseData>>('/auth/token/validate', {
       token
     });
-    
     if (!response.data.success || !response.data.data.valid) {
       throw new Error('Token is invalid');
     }
@@ -248,7 +247,9 @@ export const authApi = {
       id: userData.id,
       name: userName,
       email: userData.email,
+      username: userData.username,
       role: userData.roles[0] || 'USER', // Take first role as primary
+      permissions: userData.permissions || [],
       initials: userInitials
     };
   },

@@ -54,9 +54,36 @@ function App() {
                 <Route path="/customers/:cif" element={<CustomersPage />} />
                 
                 <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/settings/user-management" element={<UserManagementPage />} />
-                <Route path="/settings/actions-config" element={<ActionsConfigPage />} />
-                <Route path="/settings/customer-assignment" element={<CustomerAssignmentUploadPage />} />
+                
+                {/* User Management - requires user_management permissions */}
+                <Route
+                  path="/settings/user-management"
+                  element={
+                    <ProtectedRoute requiredPermissions={["user_management"]}>
+                      <UserManagementPage />
+                    </ProtectedRoute>
+                  }
+                />
+                
+                {/* Actions Config - requires action_config permission */}
+                <Route
+                  path="/settings/actions-config"
+                  element={
+                    <ProtectedRoute requiredPermissions={["action_config"]}>
+                      <ActionsConfigPage />
+                    </ProtectedRoute>
+                  }
+                />
+                
+                {/* Customer Assignment - requires customer_assignment permission */}
+                <Route
+                  path="/settings/customer-assignment"
+                  element={
+                    <ProtectedRoute requiredPermissions={["customer_assignment"]}>
+                      <CustomerAssignmentUploadPage />
+                    </ProtectedRoute>
+                  }
+                />
               </Route>
 
               {/* Redirect root to dashboard */}

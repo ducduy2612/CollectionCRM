@@ -129,6 +129,7 @@ export class UserService {
       // Publish user updated event
       try {
         await publishUserUpdatedEvent(id, {
+          username: existingUser.username,
           email: updateData.email,
           role: updateData.role
         });

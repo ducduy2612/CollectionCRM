@@ -100,11 +100,43 @@ const CustomerAssignmentUpload: React.FC = () => {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
+      
+      let errorMessage = 'Upload failed';
+      let errorDetails = 'An unexpected error occurred';
+      
+      if (error) {
+        // Handle different error types
+        if (error.response) {
+          // Server responded with error status
+          const status = error.response.status;
+          const data = error.response.data;
+          
+          if (status >= 400 && status < 500) {
+            errorMessage = 'Client Error';
+            errorDetails = data?.message || data?.error || `Request failed with status ${status}`;
+          } else if (status >= 500) {
+            errorMessage = 'Server Error';
+            errorDetails = data?.message || data?.error || 'Internal server error occurred';
+          } else {
+            errorMessage = 'Request Failed';
+            errorDetails = data?.message || data?.error || `Request failed with status ${status}`;
+          }
+        } else if (error.request) {
+          // Network error - request was made but no response received
+          errorMessage = 'Network Error';
+          errorDetails = 'Unable to connect to the server. Please check your internet connection and try again.';
+        } else if (error.message) {
+          // Other error with message
+          errorMessage = 'Upload Error';
+          errorDetails = error.message;
+        }
+      }
+      
       setUploadError({
-        message: 'Upload failed',
-        details: error instanceof Error ? error.message : 'An unexpected error occurred'
+        message: errorMessage,
+        details: errorDetails
       });
     } finally {
       setIsUploading(false);

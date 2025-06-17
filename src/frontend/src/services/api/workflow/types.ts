@@ -218,7 +218,39 @@ export interface AgentInfo {
 }
 
 export interface AssignmentHistoryResponse {
-  history: any[];
+  history: AssignmentHistoryItem[];
+}
+
+export interface AssignmentHistoryItem {
+  id: string;
+  cif: string;
+  assignedCallAgentId: string | null;
+  assignedFieldAgentId: string | null;
+  startDate: string;
+  endDate: string | null;
+  isCurrent: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+  assignedCallAgent?: {
+    id: string;
+    name: string;
+    email: string;
+    employeeId: string;
+    type: string;
+    team: string;
+    isActive: boolean;
+  } | null;
+  assignedFieldAgent?: {
+    id: string;
+    name: string;
+    email: string;
+    employeeId: string;
+    type: string;
+    team: string;
+    isActive: boolean;
+  } | null;
 }
 
 export interface BulkAssignmentResponse {

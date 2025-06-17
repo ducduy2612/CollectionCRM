@@ -141,8 +141,17 @@ export const CustomerAgentRepository = AppDataSource.getRepository(CustomerAgent
           isCurrent: true
         });
         
-        // If there's a current assignment, mark it as not current
+        // If there's a current assignment, check if agent assignment has changed
         if (currentAssignment) {
+          const callAgentChanged = currentAssignment.assignedCallAgentId !== assignment.assignedCallAgentId;
+          const fieldAgentChanged = currentAssignment.assignedFieldAgentId !== assignment.assignedFieldAgentId;
+          
+          // If no agent assignment has changed, return the existing assignment
+          if (!callAgentChanged && !fieldAgentChanged) {
+            return currentAssignment;
+          }
+          
+          // Mark current assignment as not current since agents have changed
           currentAssignment.isCurrent = false;
           currentAssignment.endDate = new Date();
           await transactionalEntityManager.save(CustomerAgent, currentAssignment);
@@ -224,8 +233,18 @@ export const CustomerAgentRepository = AppDataSource.getRepository(CustomerAgent
             isCurrent: true
           });
           
-          // If there's a current assignment, mark it as not current
+          // If there's a current assignment, check if agent assignment has changed
           if (currentAssignment) {
+            const callAgentChanged = currentAssignment.assignedCallAgentId !== assignment.assignedCallAgentId;
+            const fieldAgentChanged = currentAssignment.assignedFieldAgentId !== assignment.assignedFieldAgentId;
+            
+            // If no agent assignment has changed, use the existing assignment
+            if (!callAgentChanged && !fieldAgentChanged) {
+              createdAssignments.push(currentAssignment);
+              continue;
+            }
+            
+            // Mark current assignment as not current since agents have changed
             currentAssignment.isCurrent = false;
             currentAssignment.endDate = new Date();
             await transactionalEntityManager.save(CustomerAgent, currentAssignment);

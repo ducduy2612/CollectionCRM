@@ -66,6 +66,11 @@
     "address_line1": "Địa chỉ dòng 1",
     "address_line2": "Địa chỉ dòng 2"
   },
+  "labels": {
+    "assignment_period": "Thời gian phân công",
+    "call_agent": "Nhân viên gọi điện",
+    "field_agent": "Nhân viên thực địa"
+  },
   "phone_types": {
     "mobile": "Di động",
     "home": "Nhà riêng",
@@ -168,7 +173,8 @@
     "communications": "Giao tiếp",
     "legal": "Pháp lý",
     "actions": "Hành động",
-    "references": "Tham chiếu"
+    "references": "Tham chiếu",
+    "assignment_history": "Lịch sử phân công"
   },
   "filters": {
     "all_customers": "Tất cả khách hàng",
@@ -216,7 +222,9 @@
     "save_failed": "Lưu thông tin liên hệ thất bại",
     "required_fields_missing": "Thiếu các trường bắt buộc",
     "duplicate_phone_type": "Số điện thoại với loại này đã tồn tại cho khách hàng này. Vui lòng chọn loại khác hoặc cập nhật số hiện có.",
-    "duplicate_address_type": "Địa chỉ với loại này đã tồn tại cho khách hàng này. Vui lòng chọn loại khác hoặc cập nhật địa chỉ hiện có."
+    "duplicate_address_type": "Địa chỉ với loại này đã tồn tại cho khách hàng này. Vui lòng chọn loại khác hoặc cập nhật địa chỉ hiện có.",
+    "failed_to_load_assignments": "Không thể tải lịch sử phân công",
+    "no_assignment_history": "Không có lịch sử phân công"
   },
   "action_search": {
     "title": "Tìm kiếm lịch sử hành động",

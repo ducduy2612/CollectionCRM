@@ -5,7 +5,9 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  username: string;
   role: string;
+  permissions: string[];
   initials: string;
   avatar?: string;
 }
@@ -39,7 +41,6 @@ export const useAuthState = () => {
     try {
       setIsLoading(true);
       const response = await authApi.login({ username, password });
-      
       // Store tokens
       localStorage.setItem('accessToken', response.token);
       if (response.refreshToken) {
@@ -51,7 +52,9 @@ export const useAuthState = () => {
         id: response.user.id,
         name: response.user.name,
         email: response.user.email,
+        username: response.user.username,
         role: response.user.roles[0] || 'USER',
+        permissions: response.user.permissions || [],
         initials: response.user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()
       };
       
@@ -130,13 +133,14 @@ export const useAuthState = () => {
           // Then verify token and get fresh user data in the background
           try {
             const userData = await authApi.getCurrentUser();
-            
             // Convert API user data to our User interface if needed
             const userInfo: User = {
               id: userData.id,
               name: userData.name,
               email: userData.email,
+              username: userData.username,
               role: userData.role,
+              permissions: userData.permissions || [],
               initials: userData.initials || userData.name.split(' ').map((n: string) => n[0]).join('').toUpperCase(),
               avatar: userData.avatar
             };
@@ -157,7 +161,9 @@ export const useAuthState = () => {
                   id: userData.id,
                   name: userData.name,
                   email: userData.email,
+                  username: userData.username,
                   role: userData.role,
+                  permissions: userData.permissions || [],
                   initials: userData.initials || userData.name.split(' ').map((n: string) => n[0]).join('').toUpperCase(),
                   avatar: userData.avatar
                 };

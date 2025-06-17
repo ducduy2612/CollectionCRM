@@ -1055,3 +1055,84 @@ WHERE at.is_active = TRUE
 ORDER BY at.display_order, at.name, ast.display_order, ast.name, ar.display_order, ar.name;
 
 COMMENT ON VIEW workflow_service.v_action_configuration IS 'View showing the complete action configuration hierarchy with all valid combinations';
+
+-- =============================================
+-- STORED PROCEDURES
+-- =============================================
+
+-- Procedure to populate customer_cases from bank_sync_service.customers
+CREATE OR REPLACE FUNCTION workflow_service.populate_customer_cases_from_bank_sync()
+RETURNS TABLE(
+    inserted_count INTEGER,
+    skipped_count INTEGER,
+    total_processed INTEGER
+) AS $$
+DECLARE
+    v_inserted_count INTEGER := 0;
+    v_skipped_count INTEGER := 0;
+    v_total_processed INTEGER := 0;
+BEGIN
+    -- Insert new customer cases for CIFs that don't exist in workflow_service.customer_cases
+    INSERT INTO workflow_service.customer_cases (
+        cif,
+        assigned_call_agent_id,
+        assigned_field_agent_id,
+        f_update,
+        master_notes,
+        created_by,
+        updated_by
+    )
+    SELECT
+        bsc.cif,
+        NULL, -- assigned_call_agent_id - default to NULL
+        NULL, -- assigned_field_agent_id - default to NULL
+        NULL, -- f_update - default to NULL
+        NULL, -- master_notes - default to NULL
+        'SYSTEM', -- created_by
+        'SYSTEM'  -- updated_by
+    FROM bank_sync_service.customers bsc
+    WHERE bsc.cif NOT IN (
+        SELECT wcc.cif
+        FROM workflow_service.customer_cases wcc
+        WHERE wcc.cif IS NOT NULL
+    )
+    AND bsc.cif IS NOT NULL; -- Ensure we don't insert NULL CIFs
+    
+    -- Get the number of rows inserted
+    GET DIAGNOSTICS v_inserted_count = ROW_COUNT;
+    
+    -- Count total customers in bank_sync_service
+    SELECT COUNT(*) INTO v_total_processed
+    FROM bank_sync_service.customers
+    WHERE cif IS NOT NULL;
+    
+    -- Calculate skipped count
+    v_skipped_count := v_total_processed - v_inserted_count;
+    
+    -- Return the results
+    RETURN QUERY SELECT v_inserted_count, v_skipped_count, v_total_processed;
+    
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION workflow_service.populate_customer_cases_from_bank_sync() IS 'Populates workflow_service.customer_cases with CIFs from bank_sync_service.customers that do not already exist. Returns counts of inserted, skipped, and total processed records.';
+
+-- Simple procedure wrapper for easier calling (without return values)
+CREATE OR REPLACE FUNCTION workflow_service.sync_customer_cases()
+RETURNS void AS $$
+DECLARE
+    result_record RECORD;
+BEGIN
+    -- Call the main function and capture results
+    SELECT * INTO result_record
+    FROM workflow_service.populate_customer_cases_from_bank_sync();
+    
+    -- Log the results
+    RAISE NOTICE 'Customer cases sync completed: % inserted, % skipped, % total processed',
+        result_record.inserted_count,
+        result_record.skipped_count,
+        result_record.total_processed;
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION workflow_service.sync_customer_cases() IS 'Simple wrapper to sync customer cases from bank sync service. Logs results to console.';

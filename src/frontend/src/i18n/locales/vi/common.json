@@ -157,5 +157,11 @@
     "loans": "khoản vay",
     "payments": "thanh toán"
   },
-  "selectFile": "Chọn Tệp"
+  "selectFile": "Chọn Tệp",
+  "labels": {
+    "current": "Hiện tại",
+    "unassigned": "Chưa phân công",
+    "created_at": "Tạo lúc",
+    "updated_at": "Cập nhật lúc"
+  }
 }

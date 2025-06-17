@@ -157,5 +157,11 @@
     "loans": "loans",
     "payments": "payments"
   },
-  "selectFile": "Select File"
+  "selectFile": "Select File",
+  "labels": {
+    "current": "Current",
+    "unassigned": "Unassigned",
+    "created_at": "Created At",
+    "updated_at": "Updated At"
+  }
 }

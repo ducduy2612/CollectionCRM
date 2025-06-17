@@ -65,6 +65,11 @@
     "address_line1": "Address Line 1",
     "address_line2": "Address Line 2"
   },
+  "labels": {
+    "assignment_period": "Assignment Period",
+    "call_agent": "Call Agent",
+    "field_agent": "Field Agent"
+  },
   "phone_types": {
     "mobile": "Mobile",
     "home": "Home",
@@ -167,7 +172,8 @@
     "communications": "Communications",
     "legal": "Legal",
     "actions": "Actions",
-    "references": "References"
+    "references": "References",
+    "assignment_history": "Assignment History"
   },
   "filters": {
     "all_customers": "All Customers",
@@ -215,7 +221,9 @@
     "delete_failed": "Failed to delete contact",
     "delete_requires_admin_role": "Delete operation requires admin role",
     "duplicate_phone_type": "A phone number with this type already exists for this customer. Please choose a different type or update the existing one.",
-    "duplicate_address_type": "An address with this type already exists for this customer. Please choose a different type or update the existing one."
+    "duplicate_address_type": "An address with this type already exists for this customer. Please choose a different type or update the existing one.",
+    "failed_to_load_assignments": "Failed to load assignment history",
+    "no_assignment_history": "No assignment history available"
   },
   "action_search": {
     "title": "Search Action History",

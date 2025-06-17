@@ -28,6 +28,7 @@ interface SettingsCardProps {
     type: 'active' | 'inactive' | 'warning';
     label: string;
   };
+  disabled?: boolean;
 }
 
 const getIconComponent = (iconName: string) => {
@@ -50,12 +51,15 @@ const SettingsCard: React.FC<SettingsCardProps> = ({
   stats,
   actionText,
   actionLink,
-  status
+  status,
+  disabled = false
 }) => {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    navigate(actionLink);
+    if (!disabled) {
+      navigate(actionLink);
+    }
   };
 
   const getStatusColor = (type: string) => {
@@ -72,8 +76,12 @@ const SettingsCard: React.FC<SettingsCardProps> = ({
   };
 
   return (
-    <Card 
-      className="cursor-pointer transition-all duration-200 hover:transform hover:-translate-y-1 hover:shadow-lg border border-neutral-200 p-8"
+    <Card
+      className={`transition-all duration-200 border border-neutral-200 p-8 ${
+        disabled
+          ? 'opacity-50 cursor-not-allowed'
+          : 'cursor-pointer hover:transform hover:-translate-y-1 hover:shadow-lg'
+      }`}
       onClick={handleCardClick}
     >
       {/* Card Header */}
@@ -106,19 +114,27 @@ const SettingsCard: React.FC<SettingsCardProps> = ({
       {/* Action and Status */}
       <div className="flex items-center justify-between">
         <a
-          href={actionLink}
-          className="text-primary-600 hover:text-primary-700 font-medium text-sm flex items-center gap-2 transition-colors"
+          href={disabled ? '#' : actionLink}
+          className={`font-medium text-sm flex items-center gap-2 transition-colors ${
+            disabled
+              ? 'text-neutral-400 cursor-not-allowed'
+              : 'text-primary-600 hover:text-primary-700'
+          }`}
           onClick={(e) => {
             e.stopPropagation();
-            handleCardClick();
+            if (!disabled) {
+              handleCardClick();
+            } else {
+              e.preventDefault();
+            }
           }}
         >
           {actionText}
           <ArrowRightIcon className="w-4 h-4" />
         </a>
         <div className="flex items-center gap-2 text-xs">
-          <span className={`w-2 h-2 rounded-full ${getStatusColor(status.type)}`}></span>
-          <span className="text-neutral-600">{status.label}</span>
+          <span className={`w-2 h-2 rounded-full ${getStatusColor(disabled ? 'inactive' : status.type)}`}></span>
+          <span className="text-neutral-600">{disabled ? 'No Access' : status.label}</span>
         </div>
       </div>
     </Card>

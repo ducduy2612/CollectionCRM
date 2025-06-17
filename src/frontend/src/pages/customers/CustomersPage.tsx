@@ -7,6 +7,7 @@ import ContactInformation from './components/ContactInformation';
 import LoanSummary from './components/LoanSummary';
 import ActionHistory from './components/ActionHistory';
 import PaymentHistory from './components/PaymentHistory';
+import AssignmentHistory from './components/AssignmentHistory';
 import CustomerStatusComponent from './components/CustomerStatus';
 import ActionPanel from './components/ActionPanel';
 import CustomerList from './components/CustomerList';
@@ -108,6 +109,11 @@ const CustomersPage: React.FC = () => {
     />
   ), [cif, handleLastContactDateChange]);
 
+  // Memoize the AssignmentHistory component to prevent unnecessary re-renders and API calls
+  const assignmentHistoryComponent = useMemo(() => (
+    cif ? <AssignmentHistory cif={cif} /> : null
+  ), [cif]);
+
   // If no CIF is provided, show the customer list
   if (!cif) {
     return (
@@ -161,9 +167,8 @@ const CustomersPage: React.FC = () => {
         <div className="grid grid-cols-2 gap-6">
           {customer && <ContactInformation cif={cif} phones={customer.phones} emails={customer.emails} addresses={customer.addresses} />}
           {loans && loans.length > 0 && <LoanSummary loans={loans} />}
-          {/* ActionHistory is rendered above and shown via CSS */}
-          <div /> {/* Placeholder to maintain grid layout */}
           {payments && payments.length > 0 && <PaymentHistory payments={payments} />}
+          {assignmentHistoryComponent}
         </div>
       )}
 

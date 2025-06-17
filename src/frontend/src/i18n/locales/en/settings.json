@@ -212,7 +212,13 @@
     "edit_role_description": "Update role permissions and settings",
     "enter_role_name": "Enter role name",
     "role_name_cannot_change": "Role name cannot be changed after creation",
-    "selected_permissions": "Selected {{selected}} of {{total}} permissions"
+    "selected_permissions": "Selected {{selected}} of {{total}} permissions",
+    "user_management": "User Management",
+    "action_config": "Action Config",
+    "FUD_config": "FUD Config",
+    "campaign_management": "Campaign Management",
+    "customer_assignment": "Customer Assignment",
+    "system_admin": "System Admin"
   },
   "validation": {
     "required_field": "This field is required",

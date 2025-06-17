@@ -108,7 +108,7 @@ export class UserEventHandler {
    * @param event - User updated event
    */
   private async handleUserUpdated(event: UserUpdatedEvent): Promise<void> {
-    logger.info({ message: 'Processing user updated event', userId: event.userId });
+    logger.info({ message: 'Processing user updated event', event });
 
     try {
       // Find the agent linked to this user
@@ -117,13 +117,59 @@ export class UserEventHandler {
       });
 
       if (!agent) {
-        logger.info({ message: 'No agent found for updated user', userId: event.userId });
+        logger.info({ message: 'No agent found for updated user, creating new agent', userId: event.userId });
+        
+        // Automatically create a new agent for the user (similar to handleUserCreated)
+        const newAgent = new Agent();
+        
+        // Generate an employee ID based on the user ID (e.g., EMP-{first 8 chars of userId})
+        newAgent.employeeId = `EMP-${event.userId.substring(0, 8)}`;
+        
+        // Set agent properties from the user event
+        newAgent.name = event.username || 'Unknown User';
+        newAgent.email = event.email || '';
+        newAgent.userId = event.userId;
+        
+        // Default values
+        newAgent.team = 'Default Team'; // This could be determined based on user role or other logic
+        
+        if (event.role) {
+          newAgent.type = event.role;
+        }
+        
+        // Handle user activation status
+        if (event.isActive !== undefined) {
+          newAgent.isActive = event.isActive;
+        }
+        
+        logger.info({
+          message: 'Setting agent properties for updated user',
+          userId: event.userId,
+          role: event.role,
+          isActive: event.isActive
+        });
+        
+        // Save the new agent
+        const savedAgent = await this.agentRepository.save(newAgent);
+        
+        logger.info({
+          message: 'New agent created and linked to updated user',
+          userId: event.userId,
+          agentId: savedAgent.id,
+          employeeId: savedAgent.employeeId
+        });
+        
         return;
       }
 
       // Update agent information if needed
       // For example, if the user's email changed, we might want to update the agent's email
       let updated = false;
+
+      if (event.username && agent.name !== event.username) {
+        agent.name = event.username;
+        updated = true;
+      }
 
       if (event.email && agent.email !== event.email) {
         agent.email = event.email;
@@ -149,9 +195,9 @@ export class UserEventHandler {
         }
       }
 
-      // Handle user deactivation if isActive is set to false
-      if (event.isActive === false && agent.isActive) {
-        agent.isActive = false;
+      // Handle user activation if isActive is set to true
+      if (event.isActive && agent.isActive === false) {
+        agent.isActive = true;
         updated = true;
       }
 

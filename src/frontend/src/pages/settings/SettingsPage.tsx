@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '../../components/ui/Button';
 import { CogIcon, ArrowPathIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { QuickActions, SettingsCard } from './shared';
+import { useAuth } from '../../hooks/useAuth';
 
 interface SettingsStat {
   value: string;
@@ -20,10 +21,12 @@ interface SettingsCardData {
     type: 'active' | 'inactive' | 'warning';
     label: string;
   };
+  requiredPermission?: string;
 }
 
 const SettingsPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   const handleRefresh = () => {
     setLoading(true);
@@ -36,6 +39,14 @@ const SettingsPage: React.FC = () => {
   const handleSaveAll = () => {
     // Handle save all changes
     console.log('Saving all changes...');
+  };
+
+  // Helper function to check if user has permission
+  const hasPermission = (requiredPermission: string): boolean => {
+    if (!user || !user.permissions) return false;
+    return user.permissions.some(permission =>
+      permission.startsWith(requiredPermission + ':') || permission === requiredPermission
+    );
   };
 
   const settingsCards: SettingsCardData[] = [
@@ -51,7 +62,8 @@ const SettingsPage: React.FC = () => {
       ],
       actionText: 'Manage Users',
       actionLink: '/settings/user-management',
-      status: { type: 'active', label: 'Active' }
+      status: { type: 'active', label: 'Active' },
+      requiredPermission: 'user_management'
     },
     {
       id: 'actions-config',
@@ -65,7 +77,8 @@ const SettingsPage: React.FC = () => {
       ],
       actionText: 'Configure Actions',
       actionLink: '/settings/actions-config',
-      status: { type: 'active', label: 'Running' }
+      status: { type: 'active', label: 'Running' },
+      requiredPermission: 'action_config'
     },
     {
       id: 'fud-auto-config',
@@ -79,7 +92,8 @@ const SettingsPage: React.FC = () => {
       ],
       actionText: 'Configure FUD',
       actionLink: '/settings/fud-auto-config',
-      status: { type: 'active', label: 'Automated' }
+      status: { type: 'active', label: 'Automated' },
+      requiredPermission: 'FUD_config:edit'
     },
     {
       id: 'queue-campaign-config',
@@ -93,7 +107,8 @@ const SettingsPage: React.FC = () => {
       ],
       actionText: 'Manage Queues',
       actionLink: '/settings/queue-campaign',
-      status: { type: 'active', label: 'Processing' }
+      status: { type: 'active', label: 'Processing' },
+      requiredPermission: 'campaign_management'
     },
     {
       id: 'customer-assignment-upload',
@@ -107,7 +122,8 @@ const SettingsPage: React.FC = () => {
       ],
       actionText: 'Upload Data',
       actionLink: '/settings/customer-assignment',
-      status: { type: 'active', label: 'Ready' }
+      status: { type: 'active', label: 'Ready' },
+      requiredPermission: 'customer_assignment'
     },
     {
       id: 'system-configuration',
@@ -121,7 +137,8 @@ const SettingsPage: React.FC = () => {
       ],
       actionText: 'System Config',
       actionLink: '/settings/system-config',
-      status: { type: 'active', label: 'Healthy' }
+      status: { type: 'active', label: 'Healthy' },
+      requiredPermission: 'system_admin'
     }
   ];
 
@@ -158,7 +175,11 @@ const SettingsPage: React.FC = () => {
       {/* Settings Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {settingsCards.map((card) => (
-          <SettingsCard key={card.id} {...card} />
+          <SettingsCard
+            key={card.id}
+            {...card}
+            disabled={card.requiredPermission ? !hasPermission(card.requiredPermission) : false}
+          />
         ))}
       </div>
     </div>

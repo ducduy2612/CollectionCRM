@@ -6,41 +6,32 @@ import { useTranslation } from '../../../../i18n/hooks/useTranslation';
 // Available permissions based on backend format (resource:action)
 const AVAILABLE_PERMISSIONS = [
   // User Management
-  'users:create',
-  'users:read',
-  'users:update',
-  'users:delete',
+  'user_management:user', // right to create/update users
+  'user_management:role', // right to create/update roles
   
-  // Role Management
-  'roles:create',
-  'roles:read',
-  'roles:update',
-  'roles:delete',
+  // Action Config
+  'action_config:all', // right to config action codes
   
-  // Customer Management
-  'customers:create',
-  'customers:read',
-  'customers:update',
-  'customers:delete',
+  // FUD Auto Config
+  'FUD_config:enable',// enable FUD auto for user
+  'FUD_config:edit', // right to set up FUD rules
   
-  // Workflow Management
-  'workflows:create',
-  'workflows:read',
-  'workflows:update',
-  'workflows:delete',
+  // Queue campaign management
+  'campaign_management:all',
   
-  // System Access
-  'admin:access',
-  'supervisor:access'
+  // Customer assignment
+  'customer_assignment:all',
+
+  // System admin
+  'system_admin:all'
 ];
 
 // Helper function to format permission labels for display
 const formatPermissionLabel = (permission: string): string => {
   if (permission.includes(':')) {
     const [resource, action] = permission.split(':');
-    const resourceLabel = resource.charAt(0).toUpperCase() + resource.slice(1);
     const actionLabel = action.charAt(0).toUpperCase() + action.slice(1);
-    return `${actionLabel} ${resourceLabel}`;
+    return `${actionLabel}`;
   }
   // Fallback for any non-standard permissions
   return permission.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
@@ -56,12 +47,6 @@ const convertPermissionsToBackendFormat = (permissions: string[]): PermissionDat
     // Fallback for any non-standard permissions
     return { resource: permission, action: 'access' };
   });
-};
-
-// Helper function to convert backend permissions to frontend format
-const convertPermissionsFromBackendFormat = (permissions: string[]) => {
-  // Backend returns permissions as "resource:action" strings, so no conversion needed
-  return permissions;
 };
 
 interface RoleModalProps {
@@ -283,11 +268,12 @@ const RoleModal: React.FC<RoleModalProps> = ({
 
   // Group permissions by category for better organization
   const permissionGroups = {
-    [t('settings:titles.user_management')]: ['users:create', 'users:read', 'users:update', 'users:delete'],
-    [t('settings:user_management.roles')]: ['roles:create', 'roles:read', 'roles:update', 'roles:delete'],
-    [t('settings:messages.customer_management', { defaultValue: 'Customer Management' })]: ['customers:create', 'customers:read', 'customers:update', 'customers:delete'],
-    [t('settings:messages.workflow_management', { defaultValue: 'Workflow Management' })]: ['workflows:create', 'workflows:read', 'workflows:update', 'workflows:delete'],
-    [t('settings:messages.system_access', { defaultValue: 'System Access' })]: ['admin:access', 'supervisor:access']
+    [t('settings:messages.user_management')]: ['user_management:user','user_management:role'],
+    [t('settings:messages.action_config')]: ['action_config:all'],
+    [t('settings:messages.FUD_config')]: ['FUD_config:enable','FUD_config:edit'],
+    [t('settings:messages.campaign_management')]: ['campaign_management:all'],
+    [t('settings:messages.customer_assignment')]: ['customer_assignment:all'],
+    [t('settings:messages.system_admin')]: ['system_admin:all']
   };
 
   return (
