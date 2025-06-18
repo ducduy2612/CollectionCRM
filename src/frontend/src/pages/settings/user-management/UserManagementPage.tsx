@@ -1,11 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { Button } from '../../components/ui/Button';
-import { CustomerAssignmentUpload } from './customer-assignment-upload';
-import { useTranslation } from '../../i18n/hooks/useTranslation';
+import { Button } from '../../../components/ui/Button';
+import { UserManagement } from './components/UserManagement';
+import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
-const CustomerAssignmentUploadPage: React.FC = () => {
+const UserManagementPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation(['settings', 'common']);
 
@@ -28,18 +28,18 @@ const CustomerAssignmentUploadPage: React.FC = () => {
             {t('settings:messages.back_to_settings')}
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900">{t('settings:customerAssignmentUpload.title')}</h1>
+            <h1 className="text-3xl font-bold text-neutral-900">{t('settings:titles.user_management')}</h1>
             <p className="text-neutral-600 mt-1">
-              {t('settings:customerAssignmentUpload.description')}
+              {t('settings:messages.user_management_description')}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Customer Assignment Upload Component */}
-      <CustomerAssignmentUpload />
+      {/* User Management Component */}
+      <UserManagement />
     </div>
   );
 };
 
-export default CustomerAssignmentUploadPage;
+export default UserManagementPage;

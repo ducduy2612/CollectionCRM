@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
@@ -15,9 +14,12 @@ import LoginPage from './pages/auth/LoginPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import CustomersPage from './pages/customers/CustomersPage';
 import SettingsPage from './pages/settings/SettingsPage';
-import UserManagementPage from './pages/settings/UserManagementPage';
-import ActionsConfigPage from './pages/settings/ActionsConfigPage';
-import CustomerAssignmentUploadPage from './pages/settings/CustomerAssignmentUploadPage';
+import UserManagementPage from './pages/settings/user-management/UserManagementPage';
+import ActionsConfigPage from './pages/settings/actions-config/ActionsConfigPage';
+import FudAutoConfigPage from './pages/settings/fud-auto-config/FudAutoConfigPage';
+import QueueCampaignConfigPage from './pages/settings/queue-campaign-config/QueueCampaignConfigPage';
+import SystemConfigurationPage from './pages/settings/system-configuration/SystemConfigurationPage';
+import CustomerAssignmentUploadPage from './pages/settings/customer-assignment-upload/CustomerAssignmentUploadPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 // Components
@@ -71,6 +73,36 @@ function App() {
                   element={
                     <ProtectedRoute requiredPermissions={["action_config"]}>
                       <ActionsConfigPage />
+                    </ProtectedRoute>
+                  }
+                />
+                
+                {/* FUD Auto Config - requires FUD_config:edit permission */}
+                <Route
+                  path="/settings/fud-auto-config"
+                  element={
+                    <ProtectedRoute requiredPermissions={["FUD_config:edit"]}>
+                      <FudAutoConfigPage />
+                    </ProtectedRoute>
+                  }
+                />
+                
+                {/* Queue Campaign Config - requires campaign_management permission */}
+                <Route
+                  path="/settings/queue-campaign"
+                  element={
+                    <ProtectedRoute requiredPermissions={["campaign_management"]}>
+                      <QueueCampaignConfigPage />
+                    </ProtectedRoute>
+                  }
+                />
+                
+                {/* System Configuration - requires system_admin permission */}
+                <Route
+                  path="/settings/system-config"
+                  element={
+                    <ProtectedRoute requiredPermissions={["system_admin"]}>
+                      <SystemConfigurationPage />
                     </ProtectedRoute>
                   }
                 />

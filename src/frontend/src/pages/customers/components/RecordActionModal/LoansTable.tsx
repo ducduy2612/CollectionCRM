@@ -60,7 +60,6 @@ export const LoansTable: React.FC<LoansTableProps> = ({
             <TableHead>{t('customers:record_action.due_amount')}</TableHead>
             <TableHead>{t('customers:record_action.dpd')}</TableHead>
             <TableHead>{t('customers:record_action.action_result')}</TableHead>
-            <TableHead>{t('customers:record_action.follow_up_date')}</TableHead>
             <TableHead>{t('customers:record_action.promise_amount')}</TableHead>
             <TableHead>{t('customers:record_action.promise_date')}</TableHead>
             <TableHead>{t('customers:record_action.notes')}</TableHead>
@@ -96,14 +95,6 @@ export const LoansTable: React.FC<LoansTableProps> = ({
                     placeholder={t('customers:record_action.placeholders.select_result')}
                     disabled={!selectedActionSubtypeId}
                     className="min-w-[150px]"
-                  />
-                </TableCell>
-                <TableCell>
-                  <Input
-                    type="date"
-                    value={action?.fUpdate || ''}
-                    onChange={(e) => onFieldChange(loan.accountNumber, 'fUpdate', e.target.value)}
-                    className="min-w-[140px]"
                   />
                 </TableCell>
                 <TableCell>

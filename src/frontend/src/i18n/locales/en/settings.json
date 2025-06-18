@@ -270,5 +270,50 @@
       "note3": "Duplicate CIF entries will be processed as separate assignment updates",
       "note4": "The system will validate all data before creating assignments"
     }
+  },
+  "fud_auto_config": {
+    "title": "FUD Auto Configuration",
+    "description": "Configure automated Follow-Up Date calculation rules based on action results. Set up intelligent scheduling for collection activities.",
+    "add_rule": "Add Rule",
+    "no_configurations": "No FUD rules configured yet. Click 'Add Rule' to create your first configuration.",
+    "delete_confirmation": "Are you sure you want to delete this FUD configuration rule? This action cannot be undone.",
+    "same_day": "Same day",
+    "next_day": "Next day",
+    "previous_day": "Previous day",
+    "days_after": "{{days}} days after",
+    "days_before": "{{days}} days before",
+    "table": {
+      "action_result": "Action Result",
+      "calculation_type": "Calculation Base",
+      "days_offset": "Days Offset",
+      "priority": "Priority",
+      "status": "Status"
+    },
+    "calculation_types": {
+      "promise_date": "Promise Date",
+      "action_date": "Action Date"
+    },
+    "modal": {
+      "create_title": "Create FUD Rule",
+      "edit_title": "Edit FUD Rule"
+    },
+    "form": {
+      "action_result": "Action Result",
+      "select_action_result": "Select an action result...",
+      "calculation_type": "Calculation Base",
+      "calculation_type_promise_help": "FUD will be calculated from the promise date (if available), otherwise from action date",
+      "calculation_type_action_help": "FUD will be calculated from the action date",
+      "days_offset": "Days Offset",
+      "days_offset_help": "Number of days to add to the base date. Use negative numbers for dates before.",
+      "priority": "Priority",
+      "priority_help": "Higher priority rules take precedence (0-1000)",
+      "is_active": "Enable this rule"
+    },
+    "validation": {
+      "action_result_required": "Please select an action result",
+      "calculation_type_required": "Please select a calculation type",
+      "days_offset_range": "Days offset must be between -365 and 365",
+      "priority_range": "Priority must be between 0 and 1000"
+    }
   }
 }

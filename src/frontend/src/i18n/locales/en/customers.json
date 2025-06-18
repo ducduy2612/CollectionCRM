@@ -319,7 +319,16 @@
     "messages": {
       "failed_to_load_action_types": "Failed to load action types",
       "partial_success": "{{successful}} actions recorded successfully, {{failed}} failed."
-    }
+    },
+    "confirm_fud_title": "Confirm Follow Up Dates",
+    "confirm_fud_description": "Please review and confirm the calculated Follow Up Dates before recording the actions",
+    "fud_calculated_explanation": "The system has calculated optimal Follow Up Dates based on your action configurations. You can edit any date before confirming.",
+    "original_fud": "Original FUD",
+    "calculated_fud": "Calculated FUD", 
+    "final_fud": "Final FUD",
+    "final_fud_all_loans": "Final Follow Up Date for All Loans",
+    "final_fud_explanation": "This Follow Up Date will be applied to all selected loans. You can edit it before confirming.",
+    "confirm_and_record": "Confirm & Record Actions"
   },
   "status_history": {
     "title": "{{statusType}} History",

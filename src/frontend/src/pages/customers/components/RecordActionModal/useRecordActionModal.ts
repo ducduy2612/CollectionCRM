@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { workflowApi } from '../../../../services/api/workflow.api';
+import { fudAutoConfigApi } from '../../../../services/api/workflow/fud-auto-config.api';
 import { Customer, Loan, ActionType, ActionSubtype, ActionResult } from '../../types';
 import { useTranslation } from '../../../../i18n/hooks/useTranslation';
 
@@ -32,6 +33,7 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
   // Customer-level action selections
   const [selectedActionTypeId, setSelectedActionTypeId] = useState('');
   const [selectedActionSubtypeId, setSelectedActionSubtypeId] = useState('');
+  
 
   // State for loan actions
   const [loanActions, setLoanActions] = useState<{ [key: string]: LoanActionData }>({});
@@ -56,6 +58,11 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Confirmation state - shows calculated FUD for user confirmation
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [calculatedActions, setCalculatedActions] = useState<any[]>([]);
+  const [finalFudDate, setFinalFudDate] = useState('');
 
   // Initialize loan actions when modal opens
   useEffect(() => {
@@ -114,6 +121,9 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
       setGlobalNotes('');
       setApplyGlobalNotes(false);
       setError(null);
+      setShowConfirmation(false);
+      setCalculatedActions([]);
+      setFinalFudDate('');
     }
   }, [isOpen]);
 
@@ -168,8 +178,8 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
       Object.keys(updated).forEach(loanAccountNumber => {
         updated[loanAccountNumber] = {
           ...updated[loanAccountNumber],
-          actionResultId: '', // Reset result
-          promiseAmount: '', // Reset promise fields
+          actionResultId: '',
+          promiseAmount: '',
           promiseDate: ''
         };
       });
@@ -184,7 +194,9 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
     setSelectedActionSubtypeId(actionSubtypeId);
 
     // Load results for this subtype
-    await loadActionResults(actionSubtype.subtype_code);
+    if (actionSubtype.subtype_code) {
+      await loadActionResults(actionSubtype.subtype_code);
+    }
 
     // Reset loan actions when subtype changes
     setLoanActions(prev => {
@@ -192,8 +204,8 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
       Object.keys(updated).forEach(loanAccountNumber => {
         updated[loanAccountNumber] = {
           ...updated[loanAccountNumber],
-          actionResultId: '', // Reset result
-          promiseAmount: '', // Reset promise fields
+          actionResultId: '',
+          promiseAmount: '',
           promiseDate: ''
         };
       });
@@ -212,7 +224,8 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
         ...prev[loanAccountNumber],
         actionResultId,
         promiseAmount: isPromiseToPay && loan ? String(loan.dueAmount) : '',
-        promiseDate: isPromiseToPay ? prev[loanAccountNumber].promiseDate : ''
+        promiseDate: isPromiseToPay ? prev[loanAccountNumber].promiseDate : '',
+        fUpdate: ''
       }
     }));
   }, [actionResults, loans]);
@@ -226,6 +239,7 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
       }
     }));
   }, []);
+
 
   const handleSelectAll = useCallback((checked: boolean) => {
     setLoanActions(prev => {
@@ -272,7 +286,7 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
     if (!customerLevelAction.actionResultId) return;
 
     const actionResult = actionResults.find(result => result.result_id === customerLevelAction.actionResultId);
-    const isPromiseToPay = actionResult?.result_code || false;
+    const isPromiseToPay = actionResult?.is_promise || false;
 
     setLoanActions(prev => {
       const updated = { ...prev };
@@ -280,9 +294,9 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
         const loan = loans.find(l => l.accountNumber === loanAccountNumber);
         updated[loanAccountNumber] = {
           ...updated[loanAccountNumber],
-          selected: true, // Auto-select all loans
+          selected: true,
           actionResultId: customerLevelAction.actionResultId,
-          fUpdate: customerLevelAction.fUpdate,
+          fUpdate: '',
           promiseAmount: isPromiseToPay && loan ?
             (customerLevelAction.promiseAmount || String(loan.dueAmount)) : '',
           promiseDate: isPromiseToPay ? customerLevelAction.promiseDate : '',
@@ -291,12 +305,77 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
       });
       return updated;
     });
+
+    // Switch to loan-level mode after applying
+    setActionMode('loan-level');
   }, [customerLevelAction, actionResults, loans]);
 
   const isCustomerLevelPromiseToPayResult = (): boolean => {
     if (!customerLevelAction.actionResultId) return false;
     const actionResult = actionResults.find(result => result.result_id === customerLevelAction.actionResultId);
     return actionResult?.is_promise || false;
+  };
+
+  // Function to calculate FUD for selected actions using bulk API
+  const calculateFudForActions = async (actions: any[]) => {
+    try {
+      // Prepare bulk calculation request with loan account number as identifier
+      const calculations = actions.map((action, index) => ({
+        action_result_id: action.actionResultId,
+        action_date: new Date().toISOString(),
+        promise_date: action.promiseDate || undefined,
+        loan_account_number: action.loanAccountNumber, // Add this for matching
+        request_index: index // Add index for guaranteed unique matching
+      }));
+
+      // Make bulk API call
+      const bulkResult = await fudAutoConfigApi.calculateBulkFudDates({
+        calculations
+      });
+
+      // Map results back to actions using both action_result_id and loan_account_number
+      const actionsWithCalculatedFud = actions.map((action, index) => {
+        const result = bulkResult.results.find(r => {
+          const req = r.original_request as any;
+          return req?.loan_account_number === action.loanAccountNumber &&
+                 req?.request_index === index;
+        });
+        
+        let calculatedFud = action.fUpdate; // Default to manual value
+        
+        if (result && result.auto_calculated && result.fud_date) {
+          calculatedFud = new Date(result.fud_date).toISOString().split('T')[0];
+        }
+        
+        // Find action result name
+        const actionResult = actionResults.find(ar => ar.result_id === action.actionResultId);
+        const actionResultName = actionResult?.result_name || action.actionResultId;
+        
+        return {
+          ...action,
+          calculatedFud,
+          originalFud: action.fUpdate,
+          actionResultName
+        };
+      });
+      
+      return actionsWithCalculatedFud;
+    } catch (error) {
+      console.error('Error calculating bulk FUD:', error);
+      
+      // Fallback to manual values if bulk calculation fails
+      return actions.map(action => {
+        const actionResult = actionResults.find(ar => ar.result_id === action.actionResultId);
+        const actionResultName = actionResult?.result_name || action.actionResultId;
+        
+        return {
+          ...action,
+          calculatedFud: action.fUpdate,
+          originalFud: action.fUpdate,
+          actionResultName
+        };
+      });
+    }
   };
 
   const validateForm = (): string | null => {
@@ -322,7 +401,7 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
       // Validate promise fields if result is PROMISE_TO_PAY
       const actionResult = actionResults.find(result => result.result_id === action.actionResultId);
       
-      if (actionResult?.result_code) {
+      if (actionResult?.is_promise) {
         if (!action.promiseAmount || parseFloat(action.promiseAmount) <= 0) {
           return t('customers:record_action.validation.promise_amount_required');
         }
@@ -335,7 +414,8 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
     return null;
   };
 
-  const handleSubmit = async (onSuccess?: () => void, onClose?: () => void) => {
+  // Step 1: Initial submit - calculate FUD and show confirmation
+  const handleSubmit = async () => {
     const validationError = validateForm();
     if (validationError) {
       setError(validationError);
@@ -348,7 +428,39 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
 
       const selectedActions = Object.values(loanActions).filter(action => action.selected);
 
-      const bulkActions = selectedActions.map(action => {
+      // Calculate FUD for all selected actions
+      const actionsWithFud = await calculateFudForActions(selectedActions);
+      
+      // Find the minimum calculated FUD date
+      const minFudDate = actionsWithFud.reduce((min, action) => {
+        if (!min) return action.calculatedFud;
+        if (!action.calculatedFud) return min;
+        
+        // Compare dates properly - earlier date is smaller
+        const minDate = new Date(min);
+        const actionDate = new Date(action.calculatedFud);
+        
+        return actionDate < minDate ? action.calculatedFud : min;
+      }, '');
+      
+      setCalculatedActions(actionsWithFud);
+      setFinalFudDate(minFudDate);
+      setShowConfirmation(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('customers:messages.failed_to_load_action_types'));
+      console.error('Error calculating FUD:', err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Step 2: Final confirm - submit with user-confirmed FUD values
+  const handleFinalConfirm = async (onSuccess?: () => void, onClose?: () => void) => {
+    try {
+      setSubmitting(true);
+      setError(null);
+
+      const bulkActions = calculatedActions.map(action => {
         const loan = loans.find(l => l.accountNumber === action.loanAccountNumber);
         
         return {
@@ -362,7 +474,7 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
           promiseAmount: action.promiseAmount ? parseFloat(action.promiseAmount) : undefined,
           dueAmount: loan ? (typeof loan.dueAmount === 'string' ? parseFloat(loan.dueAmount) : loan.dueAmount) : undefined,
           dpd: loan?.dpd || 0,
-          fUpdate: action.fUpdate,
+          fUpdate: finalFudDate, // Use the final confirmed FUD
           notes: action.notes || undefined
         };
       });
@@ -388,10 +500,14 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
     }
   };
 
+  // Update final FUD date
+  const updateFinalFudDate = (newFudDate: string) => {
+    setFinalFudDate(newFudDate);
+  };
+
   const isPromiseToPayResult = (loanAccountNumber: string): boolean => {
     const action = loanActions[loanAccountNumber];
     if (!action?.actionResultId) return false;
-    console.log(actionResults)
     const actionResult = actionResults.find(result => result.result_id === action.actionResultId);
     return actionResult?.is_promise || false;
   };
@@ -418,12 +534,16 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
     selectedCount,
     allSelected,
     someSelected,
+    showConfirmation,
+    calculatedActions,
+    finalFudDate,
     
     // Setters
     setGlobalNotes,
     setApplyGlobalNotes,
     setError,
     setActionMode,
+    setShowConfirmation,
     
     // Handlers
     handleActionTypeChange,
@@ -432,8 +552,10 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
     handleFieldChange,
     handleSelectAll,
     handleSubmit,
+    handleFinalConfirm,
     handleCustomerLevelFieldChange,
     handleApplyToAllLoans,
+    updateFinalFudDate,
     
     // Utilities
     isPromiseToPayResult,

@@ -13,6 +13,7 @@ import {
   GlobalNotesSection,
   RecordActionModalFooter
 } from './RecordActionModal/index';
+import { FudConfirmationModal } from './RecordActionModal/FudConfirmationModal';
 
 interface RecordActionModalProps {
   isOpen: boolean;
@@ -43,17 +44,21 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
     customerLevelAction,
     globalNotes,
     applyGlobalNotes,
+    finalFudDate,
     loading,
     submitting,
     error,
     selectedCount,
     allSelected,
     someSelected,
+    showConfirmation,
+    calculatedActions,
     
     // Setters
     setGlobalNotes,
     setApplyGlobalNotes,
     setActionMode,
+    setShowConfirmation,
     
     // Handlers
     handleActionTypeChange,
@@ -62,8 +67,10 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
     handleFieldChange,
     handleSelectAll,
     handleSubmit,
+    handleFinalConfirm,
     handleCustomerLevelFieldChange,
     handleApplyToAllLoans,
+    updateFinalFudDate,
     
     // Utilities
     isPromiseToPayResult,
@@ -71,7 +78,11 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
   } = useRecordActionModal({ isOpen, customer, loans });
 
   const onSubmitHandler = () => {
-    handleSubmit(onSuccess, onClose);
+    handleSubmit();
+  };
+
+  const onFinalConfirmHandler = () => {
+    handleFinalConfirm(onSuccess, onClose);
   };
 
   return (
@@ -157,6 +168,17 @@ const RecordActionModal: React.FC<RecordActionModalProps> = ({
         selectedCount={selectedCount}
         onClose={onClose}
         onSubmit={onSubmitHandler}
+      />
+
+      {/* FUD Confirmation Modal */}
+      <FudConfirmationModal
+        isOpen={showConfirmation}
+        onClose={() => setShowConfirmation(false)}
+        onConfirm={onFinalConfirmHandler}
+        calculatedActions={calculatedActions}
+        submitting={submitting}
+        finalFudDate={finalFudDate}
+        onUpdateFinalFud={updateFinalFudDate}
       />
     </Modal>
   );

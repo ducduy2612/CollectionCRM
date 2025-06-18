@@ -1,5 +1,6 @@
 import React from 'react';
 import { Select, SelectOption } from '../../../../components/ui/Select';
+import { Input } from '../../../../components/ui/Input';
 import { ActionType, ActionSubtype } from '../../types';
 import { useTranslation } from '../../../../i18n/hooks/useTranslation';
 

@@ -7,6 +7,7 @@ export { actionConfigApi } from './action-config.api';
 export { agentsApi } from './agents.api';
 export { statusApi } from './status.api';
 export { contactsApi } from './contacts.api';
+export { fudAutoConfigApi } from './fud-auto-config.api';
 
 // Import all APIs to create the combined workflowApi object for backward compatibility
 import { actionsApi } from './actions.api';
@@ -14,6 +15,7 @@ import { actionConfigApi } from './action-config.api';
 import { agentsApi } from './agents.api';
 import { statusApi } from './status.api';
 import { contactsApi } from './contacts.api';
+import { fudAutoConfigApi } from './fud-auto-config.api';
 
 // Combined API object that maintains backward compatibility with the original workflowApi
 export const workflowApi = {
@@ -30,7 +32,10 @@ export const workflowApi = {
   ...statusApi,
   
   // Contacts API
-  ...contactsApi
+  ...contactsApi,
+  
+  // FUD Auto Config API
+  ...fudAutoConfigApi
 };
 
 // Default export for convenience

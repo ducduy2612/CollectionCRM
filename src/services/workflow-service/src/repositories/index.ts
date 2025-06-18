@@ -1,6 +1,7 @@
 export * from './agent.repository';
 export * from './action-record.repository';
 export * from './action-config.repository';
+export * from './fud-auto-config.repository';
 export * from './customer-agent.repository';
 export * from './customer-case.repository';
 export * from './customer-status.repository';

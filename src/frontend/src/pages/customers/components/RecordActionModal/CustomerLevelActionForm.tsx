@@ -47,7 +47,7 @@ export const CustomerLevelActionForm: React.FC<CustomerLevelActionFormProps> = (
           {t('customers:record_action.customer_level_form_description')}
         </p>
         
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
               {t('customers:record_action.action_result')}
@@ -61,19 +61,8 @@ export const CustomerLevelActionForm: React.FC<CustomerLevelActionFormProps> = (
             />
           </div>
           
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              {t('customers:record_action.follow_up_date')}
-            </label>
-            <Input
-              type="date"
-              value={customerLevelAction.fUpdate}
-              onChange={(e) => onFieldChange('fUpdate', e.target.value)}
-            />
-          </div>
-          
           {isPromiseToPayResult && (
-            <>
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
                   {t('customers:record_action.promise_amount')}
@@ -97,10 +86,10 @@ export const CustomerLevelActionForm: React.FC<CustomerLevelActionFormProps> = (
                   onChange={(e) => onFieldChange('promiseDate', e.target.value)}
                 />
               </div>
-            </>
+            </div>
           )}
           
-          <div className="col-span-2">
+          <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
               {t('customers:record_action.notes')}
             </label>

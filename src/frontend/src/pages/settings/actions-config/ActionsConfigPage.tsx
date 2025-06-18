@@ -1,11 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { Button } from '../../components/ui/Button';
-import { UserManagement } from './user-management';
-import { useTranslation } from '../../i18n/hooks/useTranslation';
+import { Button } from '../../../components/ui/Button';
+import { ActionsConfig } from './components/ActionsConfig';
+import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
-const UserManagementPage: React.FC = () => {
+const ActionsConfigPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation(['settings', 'common']);
 
@@ -23,23 +23,23 @@ const UserManagementPage: React.FC = () => {
             size="sm"
             onClick={handleGoBack}
             leftIcon={<ArrowLeftIcon className="w-4 h-4" />}
-            aria-label={t('settings:messages.back_to_settings')}
+            aria-label="Back to Settings"
           >
-            {t('settings:messages.back_to_settings')}
+            Back to Settings
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900">{t('settings:titles.user_management')}</h1>
+            <h1 className="text-3xl font-bold text-neutral-900">Actions Configuration</h1>
             <p className="text-neutral-600 mt-1">
-              {t('settings:messages.user_management_description')}
+              Configure action types, subtypes, results, and their mappings for collection workflows
             </p>
           </div>
         </div>
       </div>
 
-      {/* User Management Component */}
-      <UserManagement />
+      {/* Actions Config Component */}
+      <ActionsConfig />
     </div>
   );
 };
 
-export default UserManagementPage;
+export default ActionsConfigPage;

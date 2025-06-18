@@ -158,6 +158,7 @@
     "payments": "payments"
   },
   "selectFile": "Select File",
+  "cancel": "Cancel",
   "labels": {
     "current": "Current",
     "unassigned": "Unassigned",

@@ -1,11 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { Button } from '../../components/ui/Button';
-import { ActionsConfig } from './actions-config';
-import { useTranslation } from '../../i18n/hooks/useTranslation';
+import { Button } from '../../../components/ui/Button';
+import { CustomerAssignmentUpload } from './components/CustomerAssignmentUpload';
+import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
-const ActionsConfigPage: React.FC = () => {
+const CustomerAssignmentUploadPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation(['settings', 'common']);
 
@@ -23,23 +23,23 @@ const ActionsConfigPage: React.FC = () => {
             size="sm"
             onClick={handleGoBack}
             leftIcon={<ArrowLeftIcon className="w-4 h-4" />}
-            aria-label="Back to Settings"
+            aria-label={t('settings:messages.back_to_settings')}
           >
-            Back to Settings
+            {t('settings:messages.back_to_settings')}
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900">Actions Configuration</h1>
+            <h1 className="text-3xl font-bold text-neutral-900">{t('settings:customerAssignmentUpload.title')}</h1>
             <p className="text-neutral-600 mt-1">
-              Configure action types, subtypes, results, and their mappings for collection workflows
+              {t('settings:customerAssignmentUpload.description')}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Actions Config Component */}
-      <ActionsConfig />
+      {/* Customer Assignment Upload Component */}
+      <CustomerAssignmentUpload />
     </div>
   );
 };
 
-export default ActionsConfigPage;
+export default CustomerAssignmentUploadPage;

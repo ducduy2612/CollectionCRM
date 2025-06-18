@@ -8,6 +8,7 @@ export * from './action-type-subtype-mapping.entity';
 export * from './action-subtype-result-mapping.entity';
 export * from './customer-agent.entity';
 export * from './customer-case.entity';
+export * from './fud-auto-config.entity';
 
 // Contact Information Entities
 export * from './phone.entity';
