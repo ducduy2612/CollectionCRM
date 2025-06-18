@@ -159,6 +159,7 @@
   },
   "selectFile": "Select File",
   "cancel": "Cancel",
+  "activities": "Activities",
   "labels": {
     "current": "Current",
     "unassigned": "Unassigned",

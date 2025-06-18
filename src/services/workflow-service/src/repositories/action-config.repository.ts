@@ -488,6 +488,24 @@ export class ActionConfigRepository {
  * Repository for ActionType entity
  */
 export const ActionTypeRepository = AppDataSource.getRepository(ActionType).extend({
+   /**
+   * Find all action types
+   */
+   async findAll(): Promise<ActionType[]> {
+    try {
+      return await this.find({
+        order: { displayOrder: 'ASC', name: 'ASC' }
+      });
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { operation: 'findAll' }
+      );
+    }
+  },
+  
   /**
    * Find all active action types
    */
@@ -529,6 +547,23 @@ export const ActionTypeRepository = AppDataSource.getRepository(ActionType).exte
  */
 export const ActionSubtypeRepository = AppDataSource.getRepository(ActionSubtype).extend({
   /**
+   * Find all action subtypes
+   */
+    async findAll(): Promise<ActionSubtype[]> {
+      try {
+        return await this.find({
+          order: { displayOrder: 'ASC', name: 'ASC' }
+        });
+      } catch (error) {
+        throw Errors.wrap(
+          error as Error,
+          OperationType.DATABASE,
+          SourceSystemType.WORKFLOW_SERVICE,
+          { operation: 'findAll' }
+        );
+      }
+    },
+  /**
    * Find all active action subtypes
    */
   async findAllActive(): Promise<ActionSubtype[]> {
@@ -568,6 +603,24 @@ export const ActionSubtypeRepository = AppDataSource.getRepository(ActionSubtype
  * Repository for ActionResult entity
  */
 export const ActionResultRepository = AppDataSource.getRepository(ActionResult).extend({
+  /**
+   * Find all action results
+   */
+  async findAll(): Promise<ActionResult[]> {
+    try {
+      return await this.find({
+        order: { displayOrder: 'ASC', name: 'ASC' }
+      });
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { operation: 'findAll' }
+      );
+    }
+  },
+
   /**
    * Find all active action results
    */

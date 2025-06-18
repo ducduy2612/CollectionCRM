@@ -64,7 +64,7 @@ export const actionsApi = {
   getActionTypes: async (): Promise<ActionType[]> => {
     console.log('calling actionsApi - getActionTypes');
     const response = await apiClient.get<WorkflowApiResponse<ActionType[]>>(
-      '/workflow/actions/action-config/action-types'
+      '/workflow/actions/action-config/action-types/active'
     );
     if (!response.data.success) {
       throw new Error(response.data.message || 'Failed to fetch action types');

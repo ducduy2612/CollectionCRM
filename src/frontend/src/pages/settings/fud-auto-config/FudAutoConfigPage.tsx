@@ -124,7 +124,7 @@ const FudAutoConfigPage: React.FC = () => {
           variant="danger"
           title={t('common:error')}
           message={error}
-          onDismiss={() => setError(null)}
+          onClose={() => setError(null)}
         />
       )}
 
@@ -150,7 +150,7 @@ const FudAutoConfigPage: React.FC = () => {
                   {t('settings:fud_auto_config.table.status')}
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                  {t('common:actions')}
+                  {t('settings:fud_auto_config.table.action')}
                 </th>
               </tr>
             </thead>
@@ -190,8 +190,8 @@ const FudAutoConfigPage: React.FC = () => {
                           : 'bg-gray-100 text-gray-800'
                       }`}>
                         {config.is_active 
-                          ? t('common:active')
-                          : t('common:inactive')
+                          ? t('common:status.active')
+                          : t('common:status.inactive')
                         }
                       </span>
                     </td>
@@ -202,7 +202,7 @@ const FudAutoConfigPage: React.FC = () => {
                         onClick={() => handleEdit(config)}
                         leftIcon={<PencilIcon className="w-4 h-4" />}
                       >
-                        {t('common:edit')}
+                        {t('common:buttons.edit')}
                       </Button>
                       <Button
                         variant="ghost"
@@ -212,7 +212,7 @@ const FudAutoConfigPage: React.FC = () => {
                         leftIcon={<TrashIcon className="w-4 h-4" />}
                         className="text-red-600 hover:text-red-700"
                       >
-                        {t('common:delete')}
+                        {t('common:buttons.delete')}
                       </Button>
                     </td>
                   </tr>

@@ -590,7 +590,7 @@ export class ActionConfigController {
    */
   async getAllActionTypes(req: Request, res: Response, next: NextFunction) {
     try {
-      const actionTypes = await ActionTypeRepository.findAllActive();
+      const actionTypes = await ActionTypeRepository.findAll();
       
       return ResponseUtil.success(
         res,
@@ -609,7 +609,7 @@ export class ActionConfigController {
    */
   async getAllActionSubtypes(req: Request, res: Response, next: NextFunction) {
     try {
-      const actionSubtypes = await ActionSubtypeRepository.findAllActive();
+      const actionSubtypes = await ActionSubtypeRepository.findAll();
       
       return ResponseUtil.success(
         res,
@@ -627,6 +627,63 @@ export class ActionConfigController {
    * @route GET /action-config/action-results
    */
   async getAllActionResults(req: Request, res: Response, next: NextFunction) {
+    try {
+      const actionResults = await ActionResultRepository.findAll();
+      
+      return ResponseUtil.success(
+        res,
+        actionResults,
+        'Action results retrieved successfully'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error getting action results');
+      next(error);
+    }
+  }
+
+  /**
+   * Get all active action types
+   * @route GET /action-config/action-types/active
+   */
+  async getAllActiveActionTypes(req: Request, res: Response, next: NextFunction) {
+    try {
+      const actionTypes = await ActionTypeRepository.findAllActive();
+      
+      return ResponseUtil.success(
+        res,
+        actionTypes,
+        'Action types retrieved successfully'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error getting action types');
+      next(error);
+    }
+  }
+
+  /**
+   * Get all active action subtypes
+   * @route GET /action-config/action-subtypes/active
+   */
+  async getAllActiveActionSubtypes(req: Request, res: Response, next: NextFunction) {
+    try {
+      const actionSubtypes = await ActionSubtypeRepository.findAllActive();
+      
+      return ResponseUtil.success(
+        res,
+        actionSubtypes,
+        'Action subtypes retrieved successfully'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error getting action subtypes');
+      next(error);
+    }
+  }
+
+  /**
+   * Get all active action results
+   * @route GET /action-config/action-results/active
+   */
+  async getAllActiveActionResults(req: Request, res: Response, next: NextFunction) {
     try {
       const actionResults = await ActionResultRepository.findAllActive();
       

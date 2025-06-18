@@ -182,7 +182,7 @@ router.post(
 
 /**
  * @route GET /action-config/action-types
- * @desc get all active action type
+ * @desc get all action type
  * @access Private - Requires authentication
  */
 router.get(
@@ -193,7 +193,7 @@ router.get(
 
 /**
  * @route GET /action-config/action-subtypes
- * @desc get all active action subtypes
+ * @desc get all action subtypes
  * @access Private - Requires authentication
  */
 router.get(
@@ -204,13 +204,46 @@ router.get(
 
 /**
  * @route GET /action-config/action-results
- * @desc get all active action results
+ * @desc get all action results
  * @access Private - Requires authentication
  */
 router.get(
   '/action-config/action-results',
   requireAuth,
   actionConfigController.getAllActionResults
+);
+
+/**
+ * @route GET /action-config/action-types
+ * @desc get all active action type
+ * @access Private - Requires authentication
+ */
+router.get(
+  '/action-config/action-types/active',
+  requireAuth,
+  actionConfigController.getAllActiveActionTypes
+);
+
+/**
+ * @route GET /action-config/action-subtypes
+ * @desc get all active action subtypes
+ * @access Private - Requires authentication
+ */
+router.get(
+  '/action-config/action-subtypes/active',
+  requireAuth,
+  actionConfigController.getAllActiveActionSubtypes
+);
+
+/**
+ * @route GET /action-config/action-results
+ * @desc get all active action results
+ * @access Private - Requires authentication
+ */
+router.get(
+  '/action-config/action-results/active',
+  requireAuth,
+  actionConfigController.getAllActiveActionResults
 );
 
 /**

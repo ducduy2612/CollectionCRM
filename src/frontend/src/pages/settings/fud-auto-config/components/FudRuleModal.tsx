@@ -343,7 +343,7 @@ const FudRuleModal: React.FC<FudRuleModalProps> = ({
             variant="primary"
             loading={state.loading}
           >
-            {mode === 'create' ? t('common:create') : t('common:update')}
+            {mode === 'create' ? t('common:buttons.create') : t('common:buttons.update')}
           </Button>
         </div>
       </form>

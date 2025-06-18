@@ -1,5 +1,5 @@
 import React from 'react';
-import { QueueCampaignConfig } from './components/QueueCampaignConfig';
+import QueueCampaignConfig from './components/QueueCampaignConfig';
 
 const QueueCampaignConfigPage: React.FC = () => {
   return <QueueCampaignConfig />;

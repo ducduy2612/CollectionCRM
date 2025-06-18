@@ -14,6 +14,7 @@ import {
   LoadingOverlay
 } from '../../../../components/ui';
 import { authApi, UserResponse, UserFilters, PaginationParams } from '../../../../services/api/auth.api';
+import { useTranslation } from '../../../../i18n/hooks/useTranslation';
 
 // Icons as SVG components
 const SearchIcon = () => (
@@ -104,6 +105,7 @@ const UserList: React.FC<UserListProps> = ({
   onDeleteUser,
   refreshTrigger
 }) => {
+  const { t } = useTranslation(['settings', 'common']);
   const [state, setState] = useState<UserListState>({
     users: [],
     loading: false,
@@ -185,7 +187,7 @@ const UserList: React.FC<UserListProps> = ({
     } catch (error) {
       setState(prev => ({
         ...prev,
-        error: error instanceof Error ? error.message : 'Failed to load users',
+        error: error instanceof Error ? error.message : t('common:messages.operation_failed'),
         loading: false
       }));
     }
@@ -255,7 +257,7 @@ const UserList: React.FC<UserListProps> = ({
     } catch (error) {
       setState(prev => ({
         ...prev,
-        error: error instanceof Error ? error.message : 'Failed to update user status'
+        error: error instanceof Error ? error.message : t('settings:messages.operation_failed')
       }));
     } finally {
       setActionLoading(null);
@@ -341,11 +343,11 @@ const UserList: React.FC<UserListProps> = ({
           <div className="flex-1 max-w-md">
             <Input
               type="text"
-              placeholder="Search by username or email..."
+              placeholder={t('settings:user_management.search_placeholder')}
               value={state.searchQuery}
               onChange={handleSearchChange}
               leftIcon={<SearchIcon />}
-              aria-label="Search users"
+              aria-label={t('settings:user_management.search_users')}
             />
           </div>
 
@@ -355,23 +357,23 @@ const UserList: React.FC<UserListProps> = ({
               value={state.roleFilter}
               onChange={handleRoleFilterChange}
               options={[
-                { value: '', label: 'All Roles' },
+                { value: '', label: t('settings:user_management.all_roles') },
                 ...roles
               ]}
-              placeholder="Filter by role"
-              aria-label="Filter by role"
+              placeholder={t('settings:user_management.filter_by_role')}
+              aria-label={t('settings:user_management.filter_by_role')}
             />
             
             <Select
               value={state.statusFilter}
               onChange={handleStatusFilterChange}
               options={[
-                { value: '', label: 'All Status' },
-                { value: 'active', label: 'Active' },
-                { value: 'inactive', label: 'Inactive' }
+                { value: '', label: t('settings:user_management.all_status') },
+                { value: 'active', label: t('common:status.active') },
+                { value: 'inactive', label: t('common:status.inactive') }
               ]}
-              placeholder="Filter by status"
-              aria-label="Filter by status"
+              placeholder={t('settings:user_management.filter_by_status')}
+              aria-label={t('settings:user_management.filter_by_status')}
             />
           </div>
         </div>
@@ -380,9 +382,13 @@ const UserList: React.FC<UserListProps> = ({
         <div className="text-sm text-neutral-600">
           {state.totalItems > 0 && (
             <span>
-              Showing {((state.currentPage - 1) * state.pageSize) + 1} to{' '}
-              {Math.min(state.currentPage * state.pageSize, state.totalItems)} of{' '}
-              {state.totalItems} users
+              {t('settings:user_management.showing_results', {
+                replace: {
+                  start: ((state.currentPage - 1) * state.pageSize) + 1,
+                  end: Math.min(state.currentPage * state.pageSize, state.totalItems),
+                  total: state.totalItems
+                }
+              })}
             </span>
           )}
         </div>
@@ -397,17 +403,17 @@ const UserList: React.FC<UserListProps> = ({
 
       {/* Users Table */}
       <div className="relative">
-        <LoadingOverlay show={state.loading} label="Loading users..." />
+        <LoadingOverlay show={state.loading} label={t('settings:user_management.loading_users')} />
         
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="hidden md:table-cell">Last Login</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>{t('settings:user_fields.full_name')}</TableHead>
+              <TableHead>{t('settings:user_fields.email')}</TableHead>
+              <TableHead>{t('settings:user_fields.role')}</TableHead>
+              <TableHead>{t('settings:user_fields.status')}</TableHead>
+              <TableHead className="hidden md:table-cell">{t('settings:user_fields.last_login')}</TableHead>
+              <TableHead className="text-right">{t('common:activities')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -415,8 +421,8 @@ const UserList: React.FC<UserListProps> = ({
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-8 text-neutral-500">
                   {state.searchQuery || state.roleFilter || state.statusFilter
-                    ? 'No users found matching your criteria'
-                    : 'No users found'
+                    ? t('settings:user_management.no_users_found_filtered')
+                    : t('settings:user_management.no_users_found')
                   }
                 </TableCell>
               </TableRow>
@@ -446,7 +452,7 @@ const UserList: React.FC<UserListProps> = ({
                       variant={user.is_active ? 'success' : 'neutral'} 
                       size="sm"
                     >
-                      {user.is_active ? 'Active' : 'Inactive'}
+                      {user.is_active ? t('common:status.active') : t('common:status.inactive')}
                     </Badge>
                   </TableCell>
                   <TableCell className="hidden md:table-cell text-neutral-600">
@@ -458,7 +464,7 @@ const UserList: React.FC<UserListProps> = ({
                         variant="ghost"
                         size="icon"
                         onClick={() => handleEditUser(user)}
-                        aria-label={`Edit ${getUserDisplayName(user)}`}
+                        aria-label={t('settings:user_management.edit_user_aria', { replace: { name: getUserDisplayName(user) } })}
                       >
                         <EditIcon />
                       </Button>
@@ -468,7 +474,12 @@ const UserList: React.FC<UserListProps> = ({
                         size="icon"
                         onClick={() => handleToggleUserStatus(user)}
                         loading={actionLoading === `toggle-${user.id}`}
-                        aria-label={`${user.is_active ? 'Deactivate' : 'Activate'} ${getUserDisplayName(user)}`}
+                        aria-label={t('settings:user_management.toggle_user_aria', { 
+                          replace: {
+                            action: user.is_active ? t('settings:user_management.deactivate_user') : t('settings:user_management.activate_user'),
+                            name: getUserDisplayName(user)
+                          }
+                        })}
                       >
                         <PowerIcon />
                       </Button>
@@ -477,7 +488,7 @@ const UserList: React.FC<UserListProps> = ({
                         variant="ghost"
                         size="icon"
                         onClick={() => handleViewSessions(user)}
-                        aria-label={`View sessions for ${getUserDisplayName(user)}`}
+                        aria-label={t('settings:user_management.view_sessions_aria', { replace: { name: getUserDisplayName(user) } })}
                       >
                         <EyeIcon />
                       </Button>
@@ -487,7 +498,7 @@ const UserList: React.FC<UserListProps> = ({
                         size="icon"
                         onClick={() => handleDeleteUser(user)}
                         className="text-danger-600 hover:text-danger-700 hover:bg-danger-50"
-                        aria-label={`Delete ${getUserDisplayName(user)}`}
+                        aria-label={t('settings:user_management.delete_user_aria', { replace: { name: getUserDisplayName(user) } })}
                       >
                         <TrashIcon />
                       </Button>
@@ -504,7 +515,7 @@ const UserList: React.FC<UserListProps> = ({
       {state.totalPages > 1 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-neutral-600">Rows per page:</span>
+            <span className="text-sm text-neutral-600">{t('settings:user_management.rows_per_page')}:</span>
             <Select
               value={state.pageSize.toString()}
               onChange={handlePageSizeChange}
@@ -514,7 +525,7 @@ const UserList: React.FC<UserListProps> = ({
                 { value: '25', label: '25' },
                 { value: '50', label: '50' }
               ]}
-              aria-label="Rows per page"
+              aria-label={t('settings:user_management.rows_per_page')}
             />
           </div>
 
@@ -525,9 +536,9 @@ const UserList: React.FC<UserListProps> = ({
               onClick={() => handlePageChange(state.currentPage - 1)}
               disabled={state.currentPage === 1}
               leftIcon={<ChevronLeftIcon />}
-              aria-label="Previous page"
+              aria-label={t('settings:user_management.previous_page')}
             >
-              Previous
+              {t('common:buttons.previous')}
             </Button>
 
             <div className="flex items-center gap-1">
@@ -537,7 +548,7 @@ const UserList: React.FC<UserListProps> = ({
                   variant={page === state.currentPage ? 'primary' : 'ghost'}
                   size="sm"
                   onClick={() => handlePageChange(page)}
-                  aria-label={`Go to page ${page}`}
+                  aria-label={t('settings:user_management.go_to_page', { replace: { page } })}
                   aria-current={page === state.currentPage ? 'page' : undefined}
                 >
                   {page}
@@ -551,9 +562,9 @@ const UserList: React.FC<UserListProps> = ({
               onClick={() => handlePageChange(state.currentPage + 1)}
               disabled={state.currentPage === state.totalPages}
               rightIcon={<ChevronRightIcon />}
-              aria-label="Next page"
+              aria-label={t('settings:user_management.next_page')}
             >
-              Next
+              {t('common:buttons.next')}
             </Button>
           </div>
         </div>

@@ -41,6 +41,7 @@ export interface AlertProps
     VariantProps<typeof alertVariants> {
   title?: string;
   icon?: React.ReactNode;
+  message?: string;
   onClose?: () => void;
 }
 

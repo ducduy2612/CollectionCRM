@@ -15,6 +15,7 @@ import ActionSubtypesTab from './ActionSubtypesTab';
 import ActionResultsTab from './ActionResultsTab';
 import MappingsTab from './MappingsTab';
 import StatsTab from './StatsTab';
+import { useTranslation } from '../../../../i18n/hooks/useTranslation';
 
 type ActionConfigTab = 'types' | 'subtypes' | 'results' | 'mappings' | 'stats';
 
@@ -34,6 +35,7 @@ interface ActionConfigState {
 }
 
 const ActionsConfig: React.FC = () => {
+  const { t } = useTranslation(['settings', 'common']);
   const [state, setState] = useState<ActionConfigState>({
     activeTab: 'types',
     loading: false,
@@ -90,7 +92,7 @@ const ActionsConfig: React.FC = () => {
     } catch (error) {
       setState(prev => ({ 
         ...prev, 
-        error: error instanceof Error ? error.message : 'Failed to load data'
+        error: error instanceof Error ? error.message : t('common:messages.operation_failed')
       }));
     } finally {
       setState(prev => ({ ...prev, loading: false }));
@@ -131,7 +133,7 @@ const ActionsConfig: React.FC = () => {
           <div className="flex items-center justify-between w-full">
             <CardTitle className="flex items-center space-x-2">
               <BoltIcon className="w-6 h-6 text-primary-600" />
-              <span>Actions Configuration</span>
+              <span>{t('settings:actions_config.title')}</span>
             </CardTitle>
             <Button
               variant="secondary"
@@ -139,7 +141,7 @@ const ActionsConfig: React.FC = () => {
               onClick={handleRefresh}
               loading={state.loading}
             >
-              Refresh
+              {t('settings:actions_config.refresh')}
             </Button>
           </div>
         </CardHeader>
@@ -167,11 +169,11 @@ const ActionsConfig: React.FC = () => {
 
           <Tabs defaultValue="types" value={state.activeTab} onValueChange={(value) => handleTabChange(value as ActionConfigTab)}>
             <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="types">Types</TabsTrigger>
-              <TabsTrigger value="subtypes">Subtypes</TabsTrigger>
-              <TabsTrigger value="results">Results</TabsTrigger>
-              <TabsTrigger value="mappings">Mappings</TabsTrigger>
-              <TabsTrigger value="stats">Statistics</TabsTrigger>
+              <TabsTrigger value="types">{t('settings:actions_config.tabs.types')}</TabsTrigger>
+              <TabsTrigger value="subtypes">{t('settings:actions_config.tabs.subtypes')}</TabsTrigger>
+              <TabsTrigger value="results">{t('settings:actions_config.tabs.results')}</TabsTrigger>
+              <TabsTrigger value="mappings">{t('settings:actions_config.tabs.mappings')}</TabsTrigger>
+              <TabsTrigger value="stats">{t('settings:actions_config.tabs.statistics')}</TabsTrigger>
             </TabsList>
 
             <div className="mt-6">

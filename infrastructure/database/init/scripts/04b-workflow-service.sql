@@ -76,9 +76,9 @@ DECLARE
     v_type_id UUID;
 BEGIN
     -- Get type ID and verify it exists and is active
-    SELECT id INTO v_type_id FROM workflow_service.action_types WHERE code = p_code AND is_active = TRUE;
+    SELECT id INTO v_type_id FROM workflow_service.action_types WHERE code = p_code;
     IF v_type_id IS NULL THEN
-        RAISE EXCEPTION 'Action type with code % not found or inactive', p_code;
+        RAISE EXCEPTION 'Action type with code % not found', p_code;
     END IF;
     
     -- Update only the fields that are provided (not NULL)
@@ -88,7 +88,8 @@ BEGIN
         description = COALESCE(p_description, description),
         display_order = COALESCE(p_display_order, display_order),
         updated_at = NOW(),
-        updated_by = p_updated_by
+        updated_by = p_updated_by,
+        is_active = TRUE
     WHERE id = v_type_id;
     
     RETURN TRUE;
@@ -108,9 +109,9 @@ DECLARE
     v_subtype_id UUID;
 BEGIN
     -- Get subtype ID and verify it exists and is active
-    SELECT id INTO v_subtype_id FROM workflow_service.action_subtypes WHERE code = p_code AND is_active = TRUE;
+    SELECT id INTO v_subtype_id FROM workflow_service.action_subtypes WHERE code = p_code;
     IF v_subtype_id IS NULL THEN
-        RAISE EXCEPTION 'Action subtype with code % not found or inactive', p_code;
+        RAISE EXCEPTION 'Action subtype with code % not found', p_code;
     END IF;
     
     -- Update only the fields that are provided (not NULL)
@@ -120,7 +121,8 @@ BEGIN
         description = COALESCE(p_description, description),
         display_order = COALESCE(p_display_order, display_order),
         updated_at = NOW(),
-        updated_by = p_updated_by
+        updated_by = p_updated_by,
+        is_active = TRUE
     WHERE id = v_subtype_id;
     
     RETURN TRUE;
@@ -141,9 +143,9 @@ DECLARE
     v_result_id UUID;
 BEGIN
     -- Get result ID and verify it exists and is active
-    SELECT id INTO v_result_id FROM workflow_service.action_results WHERE code = p_code AND is_active = TRUE;
+    SELECT id INTO v_result_id FROM workflow_service.action_results WHERE code = p_code;
     IF v_result_id IS NULL THEN
-        RAISE EXCEPTION 'Action result with code % not found or inactive', p_code;
+        RAISE EXCEPTION 'Action result with code % not found', p_code;
     END IF;
     
     -- Update only the fields that are provided (not NULL)
@@ -155,7 +157,8 @@ BEGIN
         display_order = COALESCE(p_display_order, display_order),
         is_promise = COALESCE(p_is_promise, is_promise),
         updated_at = NOW(),
-        updated_by = p_updated_by
+        updated_by = p_updated_by,
+        is_active = TRUE
     WHERE id = v_result_id;
     
     RETURN TRUE;
@@ -329,7 +332,7 @@ $$ LANGUAGE plpgsql;
 -- DATA PRESERVATION AND INTEGRITY FUNCTIONS
 -- =============================================
 
--- Function to safely deactivate action type (prevents if used in existing records)
+-- Function to safely deactivate action type 
 CREATE OR REPLACE FUNCTION workflow_service.deactivate_action_type(
     p_type_code VARCHAR(50),
     p_updated_by VARCHAR(50) DEFAULT 'ADMIN'
@@ -345,17 +348,6 @@ BEGIN
         RAISE EXCEPTION 'Action type with code % not found or already inactive', p_type_code;
     END IF;
     
-    -- Check if type is used in existing action records
-    SELECT COUNT(*) INTO v_record_count 
-    FROM workflow_service.action_records 
-    WHERE action_type_id = v_type_id;
-    
-    IF v_record_count > 0 THEN
-        RAISE EXCEPTION 'Cannot deactivate action type %. It is used in % existing action records. Historical data must be preserved.', 
-            p_type_code, v_record_count;
-    END IF;
-    
-    -- Safe to deactivate - no existing records use this type
     UPDATE workflow_service.action_types 
     SET is_active = FALSE, updated_at = NOW(), updated_by = p_updated_by
     WHERE id = v_type_id;
@@ -369,7 +361,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Function to safely deactivate action subtype (prevents if used in existing records)
+-- Function to safely deactivate action subtype
 CREATE OR REPLACE FUNCTION workflow_service.deactivate_action_subtype(
     p_subtype_code VARCHAR(50),
     p_updated_by VARCHAR(50) DEFAULT 'ADMIN'
@@ -385,17 +377,6 @@ BEGIN
         RAISE EXCEPTION 'Action subtype with code % not found or already inactive', p_subtype_code;
     END IF;
     
-    -- Check if subtype is used in existing action records
-    SELECT COUNT(*) INTO v_record_count 
-    FROM workflow_service.action_records 
-    WHERE action_subtype_id = v_subtype_id;
-    
-    IF v_record_count > 0 THEN
-        RAISE EXCEPTION 'Cannot deactivate action subtype %. It is used in % existing action records. Historical data must be preserved.', 
-            p_subtype_code, v_record_count;
-    END IF;
-    
-    -- Safe to deactivate - no existing records use this subtype
     UPDATE workflow_service.action_subtypes 
     SET is_active = FALSE, updated_at = NOW(), updated_by = p_updated_by
     WHERE id = v_subtype_id;
@@ -413,7 +394,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Function to safely deactivate action result (prevents if used in existing records)
+-- Function to safely deactivate action result 
 CREATE OR REPLACE FUNCTION workflow_service.deactivate_action_result(
     p_result_code VARCHAR(50),
     p_updated_by VARCHAR(50) DEFAULT 'ADMIN'
@@ -429,17 +410,6 @@ BEGIN
         RAISE EXCEPTION 'Action result with code % not found or already inactive', p_result_code;
     END IF;
     
-    -- Check if result is used in existing action records
-    SELECT COUNT(*) INTO v_record_count 
-    FROM workflow_service.action_records 
-    WHERE action_result_id = v_result_id;
-    
-    IF v_record_count > 0 THEN
-        RAISE EXCEPTION 'Cannot deactivate action result %. It is used in % existing action records. Historical data must be preserved.', 
-            p_result_code, v_record_count;
-    END IF;
-    
-    -- Safe to deactivate - no existing records use this result
     UPDATE workflow_service.action_results 
     SET is_active = FALSE, updated_at = NOW(), updated_by = p_updated_by
     WHERE id = v_result_id;

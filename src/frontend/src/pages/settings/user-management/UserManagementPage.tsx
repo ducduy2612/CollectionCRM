@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/ui/Button';
-import { UserManagement } from './components/UserManagement';
+import UserManagement from './components/UserManagement';
 import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 const UserManagementPage: React.FC = () => {

@@ -56,7 +56,8 @@
     "interest": "Lãi",
     "total": "Tổng",
     "action_type": "Hành động",
-    "result": "Kết quả"
+    "result": "Kết quả",
+    "actions": "Hành động "
   },
   "actions": {
     "view": "Xem",

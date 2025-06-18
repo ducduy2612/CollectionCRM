@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/ui/Button';
-import { ActionsConfig } from './components/ActionsConfig';
+import ActionsConfig from './components/ActionsConfig';
 import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 const ActionsConfigPage: React.FC = () => {
@@ -25,12 +25,12 @@ const ActionsConfigPage: React.FC = () => {
             leftIcon={<ArrowLeftIcon className="w-4 h-4" />}
             aria-label="Back to Settings"
           >
-            Back to Settings
+            {t('settings:actions_config.back_to_settings')}
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900">Actions Configuration</h1>
+            <h1 className="text-3xl font-bold text-neutral-900">{t('settings:actions_config.title')}</h1>
             <p className="text-neutral-600 mt-1">
-              Configure action types, subtypes, results, and their mappings for collection workflows
+              {t('settings:actions_config.description')}
             </p>
           </div>
         </div>

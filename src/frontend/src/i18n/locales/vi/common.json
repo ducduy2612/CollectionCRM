@@ -158,6 +158,8 @@
     "payments": "thanh toán"
   },
   "selectFile": "Chọn Tệp",
+  "cancel": "Hủy",
+  "activities": "Hoạt động",
   "labels": {
     "current": "Hiện tại",
     "unassigned": "Chưa phân công",

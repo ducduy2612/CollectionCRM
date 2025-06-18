@@ -38,7 +38,25 @@
     "manage_users": "Quản lý người dùng",
     "user_details": "Chi tiết người dùng",
     "user_activity": "Hoạt động người dùng",
-    "login_history": "Lịch sử đăng nhập"
+    "login_history": "Lịch sử đăng nhập",
+    "search_placeholder": "Tìm bằng username hoặc email...",
+    "search_users": "Search users",
+    "all_roles": "All Roles",
+    "all_status": "All Status",
+    "filter_by_role": "Filter by role",
+    "filter_by_status": "Filter by status",
+    "showing_results": "Showing {{start}} to {{end}} of {{total}} users",
+    "loading_users": "Loading users...",
+    "no_users_found": "No users found",
+    "no_users_found_filtered": "No users found matching your criteria",
+    "edit_user_aria": "Edit {{name}}",
+    "toggle_user_aria": "{{action}} {{name}}",
+    "view_sessions_aria": "View sessions for {{name}}",
+    "delete_user_aria": "Delete {{name}}",
+    "rows_per_page": "Rows per page",
+    "previous_page": "Previous page",
+    "next_page": "Next page",
+    "go_to_page": "Go to page {{page}}"
   },
   "user_fields": {
     "username": "Tên đăng nhập",
@@ -269,6 +287,201 @@
       "note2": "Các ô trống được phép cho phân công nhân viên tùy chọn",
       "note3": "Các mục CIF trùng lặp sẽ được xử lý như các cập nhật phân công riêng biệt",
       "note4": "Hệ thống sẽ xác thực tất cả dữ liệu trước khi tạo phân công"
+    }
+  },
+  "actions_config": {
+    "title": "Cấu Hình Hành Động",
+    "description": "Cấu hình loại hành động, loại phụ, kết quả và ánh xạ của chúng cho quy trình thu hồi nợ",
+    "back_to_settings": "Quay lại Cài đặt",
+    "refresh": "Làm mới",
+    "tabs": {
+      "types": "Loại",
+      "subtypes": "Loại phụ",
+      "results": "Kết quả",
+      "mappings": "Ánh xạ",
+      "statistics": "Thống kê"
+    },
+    "types": {
+      "title": "Loại Hành Động",
+      "description": "Quản lý các danh mục hành động chính cho hoạt động thu hồi nợ",
+      "add_type": "Thêm Loại",
+      "no_types": "Chưa có loại hành động nào được cấu hình",
+      "table": {
+        "code": "Mã",
+        "name": "Tên",
+        "description": "Mô tả",
+        "status": "Trạng thái",
+        "subtypes": "Loại phụ",
+        "actions": "Hành động"
+      }
+    },
+    "subtypes": {
+      "title": "Loại Phụ Hành Động",
+      "description": "Xác định các hành động cụ thể trong mỗi loại hành động",
+      "add_subtype": "Thêm Loại Phụ",
+      "no_subtypes": "Chưa có loại phụ hành động nào được cấu hình",
+      "table": {
+        "code": "Mã",
+        "name": "Tên",
+        "type": "Loại",
+        "description": "Mô tả",
+        "status": "Trạng thái",
+        "results": "Kết quả",
+        "actions": "Hành động"
+      }
+    },
+    "results": {
+      "title": "Kết Quả Hành Động",
+      "description": "Xác định các kết quả có thể cho các hành động thu hồi nợ",
+      "add_result": "Thêm Kết Quả",
+      "no_results": "Chưa có kết quả hành động nào được cấu hình",
+      "table": {
+        "code": "Mã",
+        "name": "Tên",
+        "description": "Mô tả",
+        "status": "Trạng thái",
+        "subtypes": "Được dùng bởi Loại phụ",
+        "actions": "Hành động"
+      }
+    },
+    "mappings": {
+      "title": "Ánh Xạ Loại Phụ-Kết Quả",
+      "description": "Cấu hình kết quả nào có sẵn cho mỗi loại phụ hành động",
+      "add_mapping": "Thêm Ánh Xạ",
+      "no_mappings": "Chưa có ánh xạ nào được cấu hình",
+      "filter": {
+        "all_types": "Tất cả Loại",
+        "all_subtypes": "Tất cả Loại phụ"
+      },
+      "table": {
+        "subtype": "Loại phụ",
+        "available_results": "Kết quả có sẵn",
+        "actions": "Hành động"
+      },
+      "type_subtype_title": "Ánh Xạ Loại-Loại Phụ",
+      "subtype_result_title": "Ánh Xạ Loại Phụ-Kết Quả"
+    },
+    "statistics": {
+      "title": "Thống Kê Cấu Hình",
+      "description": "Tổng quan về việc sử dụng cấu hình hành động và các mối quan hệ",
+      "total_types": "Tổng số Loại",
+      "total_subtypes": "Tổng số Loại phụ",
+      "total_results": "Tổng số Kết quả",
+      "total_mappings": "Tổng số Ánh xạ",
+      "active_types": "Loại Đang hoạt động",
+      "active_subtypes": "Loại phụ Đang hoạt động",
+      "active_results": "Kết quả Đang hoạt động",
+      "usage_summary": "Tóm tắt Sử dụng",
+      "most_used_types": "Loại Được dùng nhiều nhất",
+      "most_used_subtypes": "Loại phụ Được dùng nhiều nhất",
+      "most_used_results": "Kết quả Được dùng nhiều nhất",
+      "recent_changes": "Thay đổi Gần đây",
+      "no_stats": "Chưa có thống kê",
+      "action_types": "Loại Hành Động",
+      "action_subtypes": "Loại Phụ Hành Động",
+      "action_results": "Kết Quả Hành Động",
+      "in_use": "Đang Sử Dụng",
+      "can_deactivate": "Có Thể Vô Hiệu Hóa",
+      "configuration_overview": "Tổng Quan Cấu Hình",
+      "total_configurations": "Tổng Số Cấu Hình",
+      "total_active": "Tổng Số Đang Hoạt Động",
+      "total_in_use": "Tổng Số Đang Sử Dụng",
+      "deactivation_status": "Trạng Thái Vô Hiệu Hóa",
+      "can_be_deactivated": "Có Thể Vô Hiệu Hóa",
+      "cannot_deactivate": "Không Thể Vô Hiệu Hóa",
+      "no_usage_data": "Không có dữ liệu sử dụng"
+    },
+    "modal": {
+      "create_type": "Tạo Loại Hành Động",
+      "edit_type": "Chỉnh Sửa Loại Hành Động",
+      "create_subtype": "Tạo Loại Phụ Hành Động",
+      "edit_subtype": "Chỉnh Sửa Loại Phụ Hành Động",
+      "create_result": "Tạo Kết Quả Hành Động",
+      "edit_result": "Chỉnh Sửa Kết Quả Hành Động",
+      "manage_mapping": "Quản Lý Kết Quả Loại Phụ"
+    },
+    "form": {
+      "code": "Mã",
+      "code_placeholder": "Nhập mã duy nhất",
+      "code_help": "Định danh duy nhất cho mục này",
+      "name": "Tên",
+      "name_placeholder": "Nhập tên hiển thị",
+      "description": "Mô tả",
+      "description_placeholder": "Nhập mô tả (tùy chọn)",
+      "select_type": "Chọn loại hành động",
+      "is_active": "Hoạt động",
+      "available_results": "Kết quả có sẵn",
+      "select_results": "Chọn kết quả cho loại phụ này",
+      "display_order": "Thứ Tự Hiển Thị",
+      "is_promise": "Là Lời Hứa",
+      "is_promise_help": "Đánh dấu kết quả này là lời hứa cho việc theo dõi tiếp theo"
+    },
+    "messages": {
+      "type_created": "Tạo loại hành động thành công",
+      "type_updated": "Cập nhật loại hành động thành công",
+      "type_deleted": "Xóa loại hành động thành công",
+      "subtype_created": "Tạo loại phụ hành động thành công",
+      "subtype_updated": "Cập nhật loại phụ hành động thành công",
+      "subtype_deleted": "Xóa loại phụ hành động thành công",
+      "result_created": "Tạo kết quả hành động thành công",
+      "result_updated": "Cập nhật kết quả hành động thành công",
+      "result_deleted": "Xóa kết quả hành động thành công",
+      "mapping_updated": "Cập nhật ánh xạ thành công",
+      "confirm_delete": "Bạn có chắc chắn muốn xóa mục này?",
+      "cannot_delete_in_use": "Không thể xóa mục đang được sử dụng"
+    },
+    "validation": {
+      "code_required": "Mã là bắt buộc",
+      "name_required": "Tên là bắt buộc",
+      "type_required": "Loại là bắt buộc",
+      "code_exists": "Mã này đã tồn tại",
+      "select_at_least_one": "Chọn ít nhất một kết quả"
+    }
+  },
+  "fud_auto_config": {
+    "title": "Cấu Hình FUD Tự Động",
+    "description": "Cấu hình quy tắc tính toán Ngày Theo Dõi Tiếp Theo (FUD) tự động dựa trên kết quả hành động. Thiết lập lịch trình thông minh cho các hoạt động thu hồi nợ.",
+    "add_rule": "Thêm Quy Tắc",
+    "no_configurations": "Chưa có quy tắc FUD nào được cấu hình. Nhấp 'Thêm Quy Tắc' để tạo cấu hình đầu tiên.",
+    "delete_confirmation": "Bạn có chắc chắn muốn xóa quy tắc cấu hình FUD này? Hành động này không thể hoàn tác.",
+    "same_day": "Cùng ngày",
+    "next_day": "Ngày tiếp theo",
+    "previous_day": "Ngày trước đó",
+    "days_after": "{{days}} ngày sau",
+    "days_before": "{{days}} ngày trước",
+    "table": {
+      "action_result": "Kết Quả Hành Động",
+      "calculation_type": "Cơ Sở Tính Toán",
+      "days_offset": "Số Ngày Điều Chỉnh",
+      "priority": "Ưu Tiên",
+      "status": "Trạng Thái",
+      "action": "Hành Động"
+    },
+    "calculation_types": {
+      "promise_date": "Ngày Hứa Trả",
+      "action_date": "Ngày Hành Động"
+    },
+    "modal": {
+      "create_title": "Tạo Quy Tắc FUD",
+      "edit_title": "Chỉnh Sửa Quy Tắc FUD"
+    },
+    "form": {
+      "action_result": "Kết Quả Hành Động",
+      "select_action_result": "Chọn kết quả hành động...",
+      "calculation_type": "Cơ Sở Tính Toán",
+      "calculation_type_promise_help": "FUD sẽ được tính từ ngày hứa trả (nếu có), nếu không sẽ tính từ ngày hành động",
+      "calculation_type_action_help": "FUD sẽ được tính từ ngày hành động",
+      "days_offset": "Số Ngày Điều Chỉnh",
+      "days_offset_help": "Số ngày cộng thêm vào ngày cơ sở. Sử dụng số âm cho các ngày trước đó.",
+      "priority": "Ưu Tiên",
+      "priority_help": "Các quy tắc có ưu tiên cao hơn sẽ được ưu tiên (0-1000)",
+      "is_active": "Kích hoạt quy tắc này"
+    },
+    "validation": {
+      "action_result_required": "Vui lòng chọn kết quả hành động",
+      "calculation_type_required": "Vui lòng chọn loại tính toán",
+      "days_offset_range": "Số ngày điều chỉnh phải nằm trong khoảng -365 đến 365",
+      "priority_range": "Ưu tiên phải nằm trong khoảng 0 đến 1000"
     }
   }
 }

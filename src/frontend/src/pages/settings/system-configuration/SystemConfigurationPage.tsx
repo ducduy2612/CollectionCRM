@@ -1,5 +1,5 @@
 import React from 'react';
-import { SystemConfiguration } from './components/SystemConfiguration';
+import SystemConfiguration from './components/SystemConfiguration';
 
 const SystemConfigurationPage: React.FC = () => {
   return <SystemConfiguration />;

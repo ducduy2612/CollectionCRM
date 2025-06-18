@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../../../../components/ui/Button';
 import { Table } from '../../../../components/ui/Table';
 import { Badge } from '../../../../components/ui/Badge';
@@ -32,6 +33,7 @@ const ActionTypesTab: React.FC<ActionTypesTabProps> = ({
   onSuccess,
   onError
 }) => {
+  const { t } = useTranslation(['settings', 'common']);
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<ActionType | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -69,18 +71,18 @@ const ActionTypesTab: React.FC<ActionTypesTabProps> = ({
   };
 
   const handleDelete = async (item: ActionType) => {
-    if (!confirm(`Are you sure you want to deactivate "${item.name}"?`)) {
+    if (!confirm(t('settings:actions_config.messages.confirm_delete'))) {
       return;
     }
 
     try {
       const result = await actionConfigApi.deactivateActionType(item.code);
       if (result.success) {
-        onSuccess('Action type deactivated successfully');
+        onSuccess(t('settings:actions_config.messages.type_deleted'));
       }
     } catch (error) {
       // Extract detailed error message from API response
-      let errorMessage = 'Failed to deactivate action type';
+      let errorMessage = t('settings:actions_config.messages.type_deleted');
       if (error instanceof Error) {
         errorMessage = error.message;
       }
@@ -112,12 +114,12 @@ const ActionTypesTab: React.FC<ActionTypesTabProps> = ({
         await actionConfigApi.addActionType(config);
       }
       
-      onSuccess(`Action type ${editingItem ? 'updated' : 'added'} successfully`);
+      onSuccess(t(`settings:actions_config.messages.type_${editingItem ? 'updated' : 'created'}`));
       setShowModal(false);
       resetForm();
       setEditingItem(null);
     } catch (error) {
-      onError(error instanceof Error ? error.message : 'Failed to save action type');
+      onError(error instanceof Error ? error.message : t('settings:actions_config.messages.type_created'));
     } finally {
       setSubmitting(false);
     }
@@ -133,12 +135,12 @@ const ActionTypesTab: React.FC<ActionTypesTabProps> = ({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-neutral-900">Action Types</h3>
-          <p className="text-sm text-neutral-600">Manage action type configurations</p>
+          <h3 className="text-lg font-semibold text-neutral-900">{t('settings:actions_config.types.title')}</h3>
+          <p className="text-sm text-neutral-600">{t('settings:actions_config.types.description')}</p>
         </div>
         <Button variant="primary" size="sm" onClick={handleAdd}>
           <PlusIcon className="w-4 h-4 mr-2" />
-          Add Type
+          {t('settings:actions_config.types.add_type')}
         </Button>
       </div>
       
@@ -146,12 +148,12 @@ const ActionTypesTab: React.FC<ActionTypesTabProps> = ({
         <Table>
           <thead>
             <tr>
-              <th>Code</th>
-              <th>Name</th>
-              <th>Description</th>
-              <th>Display Order</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th>{t('settings:actions_config.types.table.code')}</th>
+              <th>{t('settings:actions_config.types.table.name')}</th>
+              <th>{t('settings:actions_config.types.table.description')}</th>
+              <th>{t('settings:actions_config.form.display_order', { defaultValue: 'Display Order' })}</th>
+              <th>{t('settings:actions_config.types.table.status')}</th>
+              <th>{t('settings:actions_config.types.table.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -163,7 +165,7 @@ const ActionTypesTab: React.FC<ActionTypesTabProps> = ({
                 <td>{type.displayOrder}</td>
                 <td>
                   <Badge variant={type.isActive ? 'success' : 'secondary'}>
-                    {type.isActive ? 'Active' : 'Inactive'}
+                    {type.isActive ? t('common:status.active') : t('common:status.inactive')}
                   </Badge>
                 </td>
                 <td>
@@ -196,46 +198,46 @@ const ActionTypesTab: React.FC<ActionTypesTabProps> = ({
       <Modal
         isOpen={showModal}
         onClose={handleCloseModal}
-        title={`${editingItem ? 'Edit' : 'Add'} Action Type`}
+        title={t(`settings:actions_config.modal.${editingItem ? 'edit' : 'create'}_type`)}
       >
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Code *
+              {t('settings:actions_config.form.code')} *
             </label>
             <Input
               value={formData.code}
               onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value }))}
-              placeholder="Enter code"
+              placeholder={t('settings:actions_config.form.code_placeholder')}
               disabled={!!editingItem} // Don't allow editing code
             />
           </div>
           
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Name *
+              {t('settings:actions_config.form.name')} *
             </label>
             <Input
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              placeholder="Enter name"
+              placeholder={t('settings:actions_config.form.name_placeholder')}
             />
           </div>
           
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Description
+              {t('settings:actions_config.form.description')}
             </label>
             <Input
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Enter description"
+              placeholder={t('settings:actions_config.form.description_placeholder')}
             />
           </div>
           
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Display Order
+              {t('settings:actions_config.form.display_order', { defaultValue: 'Display Order' })}
             </label>
             <Input
               type="number"
@@ -250,7 +252,7 @@ const ActionTypesTab: React.FC<ActionTypesTabProps> = ({
               variant="secondary"
               onClick={handleCloseModal}
             >
-              Cancel
+              {t('common:buttons.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -258,7 +260,7 @@ const ActionTypesTab: React.FC<ActionTypesTabProps> = ({
               loading={submitting}
               disabled={!formData.code || !formData.name}
             >
-              {editingItem ? 'Update' : 'Add'}
+              {editingItem ? t('common:buttons.update') : t('common:buttons.add')}
             </Button>
           </div>
         </div>

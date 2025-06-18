@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardHeader, CardTitle, CardContent } from '../../../../components/ui/Card';
 import { Spinner } from '../../../../components/ui/Spinner';
 import { Badge } from '../../../../components/ui/Badge';
@@ -17,6 +18,7 @@ const StatsTab: React.FC<StatsTabProps> = ({
   usageStats,
   loading
 }) => {
+  const { t } = useTranslation(['settings', 'common']);
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -28,7 +30,7 @@ const StatsTab: React.FC<StatsTabProps> = ({
   if (!usageStats || usageStats.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-neutral-600">No statistics available</p>
+        <p className="text-neutral-600">{t('settings:actions_config.statistics.no_stats')}</p>
       </div>
     );
   }
@@ -78,8 +80,8 @@ const StatsTab: React.FC<StatsTabProps> = ({
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-neutral-900">Configuration Statistics</h3>
-        <p className="text-sm text-neutral-600">Overview of configuration usage and statistics</p>
+        <h3 className="text-lg font-semibold text-neutral-900">{t('settings:actions_config.statistics.title')}</h3>
+        <p className="text-sm text-neutral-600">{t('settings:actions_config.statistics.description')}</p>
       </div>
       
       {/* Summary Cards */}
@@ -88,29 +90,29 @@ const StatsTab: React.FC<StatsTabProps> = ({
           <CardHeader>
             <CardTitle className="text-sm flex items-center space-x-2">
               <ChartBarIcon className="w-4 h-4" />
-              <span>Action Types</span>
+              <span>{t('settings:actions_config.statistics.action_types', { defaultValue: 'Action Types' })}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">Total:</span>
+                <span className="text-sm text-neutral-600">{t('settings:actions_config.statistics.total_types')}:</span>
                 <span className="font-semibold">{typeStats.total}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">Active:</span>
+                <span className="text-sm text-neutral-600">{t('settings:actions_config.statistics.active_types')}:</span>
                 <span className="font-semibold text-green-600">{typeStats.active}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">Inactive:</span>
+                <span className="text-sm text-neutral-600">{t('common:status.inactive')}:</span>
                 <span className="font-semibold text-neutral-500">{typeStats.inactive}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">In Use:</span>
+                <span className="text-sm text-neutral-600">{t('settings:actions_config.statistics.in_use', { defaultValue: 'In Use' })}:</span>
                 <span className="font-semibold text-blue-600">{typeStats.inUse}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">Can Deactivate:</span>
+                <span className="text-sm text-neutral-600">{t('settings:actions_config.statistics.can_deactivate', { defaultValue: 'Can Deactivate' })}:</span>
                 <span className="font-semibold text-orange-600">{typeStats.canDeactivate}</span>
               </div>
             </div>
@@ -121,29 +123,29 @@ const StatsTab: React.FC<StatsTabProps> = ({
           <CardHeader>
             <CardTitle className="text-sm flex items-center space-x-2">
               <ChartBarIcon className="w-4 h-4" />
-              <span>Action Subtypes</span>
+              <span>{t('settings:actions_config.statistics.action_subtypes', { defaultValue: 'Action Subtypes' })}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">Total:</span>
+                <span className="text-sm text-neutral-600">{t('settings:actions_config.statistics.total_subtypes')}:</span>
                 <span className="font-semibold">{subtypeStats.total}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">Active:</span>
+                <span className="text-sm text-neutral-600">{t('settings:actions_config.statistics.active_subtypes')}:</span>
                 <span className="font-semibold text-green-600">{subtypeStats.active}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">Inactive:</span>
+                <span className="text-sm text-neutral-600">{t('common:status.inactive')}:</span>
                 <span className="font-semibold text-neutral-500">{subtypeStats.inactive}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">In Use:</span>
+                <span className="text-sm text-neutral-600">{t('settings:actions_config.statistics.in_use', { defaultValue: 'In Use' })}:</span>
                 <span className="font-semibold text-blue-600">{subtypeStats.inUse}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">Can Deactivate:</span>
+                <span className="text-sm text-neutral-600">{t('settings:actions_config.statistics.can_deactivate', { defaultValue: 'Can Deactivate' })}:</span>
                 <span className="font-semibold text-orange-600">{subtypeStats.canDeactivate}</span>
               </div>
             </div>
@@ -154,29 +156,29 @@ const StatsTab: React.FC<StatsTabProps> = ({
           <CardHeader>
             <CardTitle className="text-sm flex items-center space-x-2">
               <ChartBarIcon className="w-4 h-4" />
-              <span>Action Results</span>
+              <span>{t('settings:actions_config.statistics.action_results', { defaultValue: 'Action Results' })}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">Total:</span>
+                <span className="text-sm text-neutral-600">{t('settings:actions_config.statistics.total_results')}:</span>
                 <span className="font-semibold">{resultStats.total}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">Active:</span>
+                <span className="text-sm text-neutral-600">{t('settings:actions_config.statistics.active_results')}:</span>
                 <span className="font-semibold text-green-600">{resultStats.active}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">Inactive:</span>
+                <span className="text-sm text-neutral-600">{t('common:status.inactive')}:</span>
                 <span className="font-semibold text-neutral-500">{resultStats.inactive}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">In Use:</span>
+                <span className="text-sm text-neutral-600">{t('settings:actions_config.statistics.in_use', { defaultValue: 'In Use' })}:</span>
                 <span className="font-semibold text-blue-600">{resultStats.inUse}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">Can Deactivate:</span>
+                <span className="text-sm text-neutral-600">{t('settings:actions_config.statistics.can_deactivate', { defaultValue: 'Can Deactivate' })}:</span>
                 <span className="font-semibold text-orange-600">{resultStats.canDeactivate}</span>
               </div>
             </div>
@@ -188,24 +190,24 @@ const StatsTab: React.FC<StatsTabProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Configuration Overview</CardTitle>
+            <CardTitle className="text-sm">{t('settings:actions_config.statistics.configuration_overview', { defaultValue: 'Configuration Overview' })}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">Total Configurations:</span>
+                <span className="text-sm text-neutral-600">{t('settings:actions_config.statistics.total_configurations', { defaultValue: 'Total Configurations' })}:</span>
                 <span className="font-semibold">
                   {typeStats.total + subtypeStats.total + resultStats.total}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">Total Active:</span>
+                <span className="text-sm text-neutral-600">{t('settings:actions_config.statistics.total_active', { defaultValue: 'Total Active' })}:</span>
                 <span className="font-semibold text-green-600">
                   {typeStats.active + subtypeStats.active + resultStats.active}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">Total In Use:</span>
+                <span className="text-sm text-neutral-600">{t('settings:actions_config.statistics.total_in_use', { defaultValue: 'Total In Use' })}:</span>
                 <span className="font-semibold text-blue-600">
                   {typeStats.inUse + subtypeStats.inUse + resultStats.inUse}
                 </span>
@@ -218,19 +220,19 @@ const StatsTab: React.FC<StatsTabProps> = ({
           <CardHeader>
             <CardTitle className="text-sm flex items-center space-x-2">
               <ExclamationTriangleIcon className="w-4 h-4" />
-              <span>Deactivation Status</span>
+              <span>{t('settings:actions_config.statistics.deactivation_status', { defaultValue: 'Deactivation Status' })}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">Can Be Deactivated:</span>
+                <span className="text-sm text-neutral-600">{t('settings:actions_config.statistics.can_be_deactivated', { defaultValue: 'Can Be Deactivated' })}:</span>
                 <span className="font-semibold text-orange-600">
                   {typeStats.canDeactivate + subtypeStats.canDeactivate + resultStats.canDeactivate}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-neutral-600">Cannot Deactivate:</span>
+                <span className="text-sm text-neutral-600">{t('settings:actions_config.statistics.cannot_deactivate', { defaultValue: 'Cannot Deactivate' })}:</span>
                 <span className="font-semibold text-red-600">
                   {(typeStats.total - typeStats.canDeactivate) + 
                    (subtypeStats.total - subtypeStats.canDeactivate) + 
@@ -246,7 +248,7 @@ const StatsTab: React.FC<StatsTabProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Most Used Types</CardTitle>
+            <CardTitle className="text-sm">{t('settings:actions_config.statistics.most_used_types')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -261,7 +263,7 @@ const StatsTab: React.FC<StatsTabProps> = ({
                           variant={item.can_be_deactivated ? 'secondary' : 'danger'}
                           className="text-xs"
                         >
-                          {item.can_be_deactivated ? 'Can Deactivate' : 'In Use'}
+                          {item.can_be_deactivated ? t('settings:actions_config.statistics.can_deactivate', { defaultValue: 'Can Deactivate' }) : t('settings:actions_config.statistics.in_use', { defaultValue: 'In Use' })}
                         </Badge>
                       </div>
                     </div>
@@ -271,7 +273,7 @@ const StatsTab: React.FC<StatsTabProps> = ({
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-neutral-500">No usage data available</p>
+                <p className="text-sm text-neutral-500">{t('settings:actions_config.statistics.no_usage_data', { defaultValue: 'No usage data available' })}</p>
               )}
             </div>
           </CardContent>
@@ -279,7 +281,7 @@ const StatsTab: React.FC<StatsTabProps> = ({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Most Used Subtypes</CardTitle>
+            <CardTitle className="text-sm">{t('settings:actions_config.statistics.most_used_subtypes')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -294,7 +296,7 @@ const StatsTab: React.FC<StatsTabProps> = ({
                           variant={item.can_be_deactivated ? 'secondary' : 'danger'}
                           className="text-xs"
                         >
-                          {item.can_be_deactivated ? 'Can Deactivate' : 'In Use'}
+                          {item.can_be_deactivated ? t('settings:actions_config.statistics.can_deactivate', { defaultValue: 'Can Deactivate' }) : t('settings:actions_config.statistics.in_use', { defaultValue: 'In Use' })}
                         </Badge>
                       </div>
                     </div>
@@ -304,7 +306,7 @@ const StatsTab: React.FC<StatsTabProps> = ({
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-neutral-500">No usage data available</p>
+                <p className="text-sm text-neutral-500">{t('settings:actions_config.statistics.no_usage_data', { defaultValue: 'No usage data available' })}</p>
               )}
             </div>
           </CardContent>
@@ -312,7 +314,7 @@ const StatsTab: React.FC<StatsTabProps> = ({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Most Used Results</CardTitle>
+            <CardTitle className="text-sm">{t('settings:actions_config.statistics.most_used_results')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -327,7 +329,7 @@ const StatsTab: React.FC<StatsTabProps> = ({
                           variant={item.can_be_deactivated ? 'secondary' : 'danger'}
                           className="text-xs"
                         >
-                          {item.can_be_deactivated ? 'Can Deactivate' : 'In Use'}
+                          {item.can_be_deactivated ? t('settings:actions_config.statistics.can_deactivate', { defaultValue: 'Can Deactivate' }) : t('settings:actions_config.statistics.in_use', { defaultValue: 'In Use' })}
                         </Badge>
                       </div>
                     </div>
@@ -337,7 +339,7 @@ const StatsTab: React.FC<StatsTabProps> = ({
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-neutral-500">No usage data available</p>
+                <p className="text-sm text-neutral-500">{t('settings:actions_config.statistics.no_usage_data', { defaultValue: 'No usage data available' })}</p>
               )}
             </div>
           </CardContent>

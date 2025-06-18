@@ -56,7 +56,8 @@
     "interest": "Interest",
     "total": "Total",
     "action_type": "Action Type",
-    "result": "Result"
+    "result": "Result",
+    "actions": "Actions"
   },
   "actions": {
     "view": "View",

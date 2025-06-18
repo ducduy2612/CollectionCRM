@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../../../../components/ui/Button';
 import { Table } from '../../../../components/ui/Table';
 import { Badge } from '../../../../components/ui/Badge';
@@ -33,6 +34,7 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
   onSuccess,
   onError
 }) => {
+  const { t } = useTranslation(['settings', 'common']);
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<ActionResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -73,18 +75,18 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
   };
 
   const handleDelete = async (item: ActionResult) => {
-    if (!confirm(`Are you sure you want to deactivate "${item.name}"?`)) {
+    if (!confirm(t('settings:actions_config.messages.confirm_delete'))) {
       return;
     }
 
     try {
       const result = await actionConfigApi.deactivateActionResult(item.code);
       if (result.success) {
-        onSuccess('Action result deactivated successfully');
+        onSuccess(t('settings:actions_config.messages.result_deleted'));
       }
     } catch (error) {
       // Extract detailed error message from API response
-      let errorMessage = 'Failed to deactivate action result';
+      let errorMessage = t('settings:actions_config.messages.result_deleted');
       if (error instanceof Error) {
         errorMessage = error.message;
       }
@@ -118,12 +120,12 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
         await actionConfigApi.addActionResult(config);
       }
       
-      onSuccess(`Action result ${editingItem ? 'updated' : 'added'} successfully`);
+      onSuccess(t(`settings:actions_config.messages.result_${editingItem ? 'updated' : 'created'}`));
       setShowModal(false);
       resetForm();
       setEditingItem(null);
     } catch (error) {
-      onError(error instanceof Error ? error.message : 'Failed to save action result');
+      onError(error instanceof Error ? error.message : t('settings:actions_config.messages.result_created'));
     } finally {
       setSubmitting(false);
     }
@@ -139,12 +141,12 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-neutral-900">Action Results</h3>
-          <p className="text-sm text-neutral-600">Manage action result configurations</p>
+          <h3 className="text-lg font-semibold text-neutral-900">{t('settings:actions_config.results.title')}</h3>
+          <p className="text-sm text-neutral-600">{t('settings:actions_config.results.description')}</p>
         </div>
         <Button variant="primary" size="sm" onClick={handleAdd}>
           <PlusIcon className="w-4 h-4 mr-2" />
-          Add Result
+          {t('settings:actions_config.results.add_result')}
         </Button>
       </div>
       
@@ -152,13 +154,13 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
         <Table>
           <thead>
             <tr>
-              <th>Code</th>
-              <th>Name</th>
-              <th>Description</th>
-              <th>Display Order</th>
-              <th>Is Promise</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th>{t('settings:actions_config.results.table.code')}</th>
+              <th>{t('settings:actions_config.results.table.name')}</th>
+              <th>{t('settings:actions_config.results.table.description')}</th>
+              <th>{t('settings:actions_config.form.display_order', { defaultValue: 'Display Order' })}</th>
+              <th>{t('settings:actions_config.form.is_promise', { defaultValue: 'Is Promise' })}</th>
+              <th>{t('settings:actions_config.results.table.status')}</th>
+              <th>{t('settings:actions_config.results.table.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -170,12 +172,12 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
                 <td>{result.displayOrder}</td>
                 <td>
                   <Badge variant={result.isPromise ? 'warning' : 'secondary'}>
-                    {result.isPromise ? 'Yes' : 'No'}
+                    {result.isPromise ? t('common:buttons.yes') : t('common:buttons.no')}
                   </Badge>
                 </td>
                 <td>
                   <Badge variant={result.isActive ? 'success' : 'secondary'}>
-                    {result.isActive ? 'Active' : 'Inactive'}
+                    {result.isActive ? t('common:status.active') : t('common:status.inactive')}
                   </Badge>
                 </td>
                 <td>
@@ -208,46 +210,46 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
       <Modal
         isOpen={showModal}
         onClose={handleCloseModal}
-        title={`${editingItem ? 'Edit' : 'Add'} Action Result`}
+        title={t(`settings:actions_config.modal.${editingItem ? 'edit' : 'create'}_result`)}
       >
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Code *
+              {t('settings:actions_config.form.code')} *
             </label>
             <Input
               value={formData.code}
               onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value }))}
-              placeholder="Enter code"
+              placeholder={t('settings:actions_config.form.code_placeholder')}
               disabled={!!editingItem} // Don't allow editing code
             />
           </div>
           
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Name *
+              {t('settings:actions_config.form.name')} *
             </label>
             <Input
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              placeholder="Enter name"
+              placeholder={t('settings:actions_config.form.name_placeholder')}
             />
           </div>
           
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Description
+              {t('settings:actions_config.form.description')}
             </label>
             <Input
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Enter description"
+              placeholder={t('settings:actions_config.form.description_placeholder')}
             />
           </div>
           
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Display Order
+              {t('settings:actions_config.form.display_order', { defaultValue: 'Display Order' })}
             </label>
             <Input
               type="number"
@@ -265,10 +267,10 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
                 onChange={(e) => setFormData(prev => ({ ...prev, is_promise: e.target.checked }))}
                 className="rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
               />
-              <span className="text-sm font-medium text-neutral-700">Is Promise</span>
+              <span className="text-sm font-medium text-neutral-700">{t('settings:actions_config.form.is_promise', { defaultValue: 'Is Promise' })}</span>
             </label>
             <p className="text-xs text-neutral-500 mt-1">
-              Mark this result as a promise for future follow-up
+              {t('settings:actions_config.form.is_promise_help', { defaultValue: 'Mark this result as a promise for future follow-up' })}
             </p>
           </div>
           
@@ -277,7 +279,7 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
               variant="secondary"
               onClick={handleCloseModal}
             >
-              Cancel
+              {t('common:buttons.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -285,7 +287,7 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
               loading={submitting}
               disabled={!formData.code || !formData.name}
             >
-              {editingItem ? 'Update' : 'Add'}
+              {editingItem ? t('common:buttons.update') : t('common:buttons.add')}
             </Button>
           </div>
         </div>

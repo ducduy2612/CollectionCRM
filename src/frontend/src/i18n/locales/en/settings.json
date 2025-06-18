@@ -38,7 +38,25 @@
     "manage_users": "Manage Users",
     "user_details": "User Details",
     "user_activity": "User Activity",
-    "login_history": "Login History"
+    "login_history": "Login History",
+    "search_placeholder": "Search by username or email...",
+    "search_users": "Search users",
+    "all_roles": "All Roles",
+    "all_status": "All Status",
+    "filter_by_role": "Filter by role",
+    "filter_by_status": "Filter by status",
+    "showing_results": "Showing {{start}} to {{end}} of {{total}} users",
+    "loading_users": "Loading users...",
+    "no_users_found": "No users found",
+    "no_users_found_filtered": "No users found matching your criteria",
+    "edit_user_aria": "Edit {{name}}",
+    "toggle_user_aria": "{{action}} {{name}}",
+    "view_sessions_aria": "View sessions for {{name}}",
+    "delete_user_aria": "Delete {{name}}",
+    "rows_per_page": "Rows per page",
+    "previous_page": "Previous page",
+    "next_page": "Next page",
+    "go_to_page": "Go to page {{page}}"
   },
   "user_fields": {
     "username": "Username",
@@ -287,7 +305,8 @@
       "calculation_type": "Calculation Base",
       "days_offset": "Days Offset",
       "priority": "Priority",
-      "status": "Status"
+      "status": "Status",
+      "action": "Action"
     },
     "calculation_types": {
       "promise_date": "Promise Date",
@@ -314,6 +333,155 @@
       "calculation_type_required": "Please select a calculation type",
       "days_offset_range": "Days offset must be between -365 and 365",
       "priority_range": "Priority must be between 0 and 1000"
+    }
+  },
+  "actions_config": {
+    "title": "Actions Configuration",
+    "description": "Configure action types, subtypes, results, and their mappings for collection workflows",
+    "back_to_settings": "Back to Settings",
+    "refresh": "Refresh",
+    "tabs": {
+      "types": "Types",
+      "subtypes": "Subtypes",
+      "results": "Results",
+      "mappings": "Mappings",
+      "statistics": "Statistics"
+    },
+    "types": {
+      "title": "Action Types",
+      "description": "Manage primary action categories for collection activities",
+      "add_type": "Add Type",
+      "no_types": "No action types configured yet",
+      "table": {
+        "code": "Code",
+        "name": "Name",
+        "description": "Description",
+        "status": "Status",
+        "subtypes": "Subtypes",
+        "actions": "Actions"
+      }
+    },
+    "subtypes": {
+      "title": "Action Subtypes",
+      "description": "Define specific actions within each action type",
+      "add_subtype": "Add Subtype",
+      "no_subtypes": "No action subtypes configured yet",
+      "table": {
+        "code": "Code",
+        "name": "Name",
+        "type": "Type",
+        "description": "Description",
+        "status": "Status",
+        "results": "Results",
+        "actions": "Actions"
+      }
+    },
+    "results": {
+      "title": "Action Results",
+      "description": "Define possible outcomes for collection actions",
+      "add_result": "Add Result",
+      "no_results": "No action results configured yet",
+      "table": {
+        "code": "Code",
+        "name": "Name",
+        "description": "Description",
+        "status": "Status",
+        "subtypes": "Used by Subtypes",
+        "actions": "Actions"
+      }
+    },
+    "mappings": {
+      "title": "Subtype-Result Mappings",
+      "description": "Configure which results are available for each action subtype",
+      "add_mapping": "Add Mapping",
+      "no_mappings": "No mappings configured yet",
+      "filter": {
+        "all_types": "All Types",
+        "all_subtypes": "All Subtypes"
+      },
+      "table": {
+        "subtype": "Subtype",
+        "available_results": "Available Results",
+        "actions": "Actions"
+      },
+      "type_subtype_title": "Type-Subtype Mappings",
+      "subtype_result_title": "Subtype-Result Mappings"
+    },
+    "statistics": {
+      "title": "Configuration Statistics",
+      "description": "Overview of action configuration usage and relationships",
+      "total_types": "Total Types",
+      "total_subtypes": "Total Subtypes",
+      "total_results": "Total Results",
+      "total_mappings": "Total Mappings",
+      "active_types": "Active Types",
+      "active_subtypes": "Active Subtypes",
+      "active_results": "Active Results",
+      "usage_summary": "Usage Summary",
+      "most_used_types": "Most Used Types",
+      "most_used_subtypes": "Most Used Subtypes",
+      "most_used_results": "Most Used Results",
+      "recent_changes": "Recent Changes",
+      "no_stats": "No statistics available",
+      "action_types": "Action Types",
+      "action_subtypes": "Action Subtypes",
+      "action_results": "Action Results",
+      "in_use": "In Use",
+      "can_deactivate": "Can Deactivate",
+      "configuration_overview": "Configuration Overview",
+      "total_configurations": "Total Configurations",
+      "total_active": "Total Active",
+      "total_in_use": "Total In Use",
+      "deactivation_status": "Deactivation Status",
+      "can_be_deactivated": "Can Be Deactivated",
+      "cannot_deactivate": "Cannot Deactivate",
+      "no_usage_data": "No usage data available"
+    },
+    "modal": {
+      "create_type": "Create Action Type",
+      "edit_type": "Edit Action Type",
+      "create_subtype": "Create Action Subtype",
+      "edit_subtype": "Edit Action Subtype",
+      "create_result": "Create Action Result",
+      "edit_result": "Edit Action Result",
+      "manage_mapping": "Manage Subtype Results"
+    },
+    "form": {
+      "code": "Code",
+      "code_placeholder": "Enter unique code",
+      "code_help": "Unique identifier for this item",
+      "name": "Name",
+      "name_placeholder": "Enter display name",
+      "description": "Description",
+      "description_placeholder": "Enter description (optional)",
+      "select_type": "Select action type",
+      "is_active": "Active",
+      "available_results": "Available Results",
+      "select_results": "Select results for this subtype",
+      "display_order": "Display Order",
+      "is_promise": "Is Promise",
+      "is_promise_help": "Mark this result as a promise for future follow-up"
+    },
+    "messages": {
+      "type_created": "Action type created successfully",
+      "type_updated": "Action type updated successfully",
+      "type_deleted": "Action type deleted successfully",
+      "subtype_created": "Action subtype created successfully",
+      "subtype_updated": "Action subtype updated successfully",
+      "subtype_deleted": "Action subtype deleted successfully",
+      "result_created": "Action result created successfully",
+      "result_updated": "Action result updated successfully",
+      "result_deleted": "Action result deleted successfully",
+      "mapping_updated": "Mapping updated successfully",
+      "confirm_delete": "Are you sure you want to delete this item?",
+      "cannot_delete_in_use": "Cannot delete item that is currently in use"
+    },
+    "validation": {
+      "code_required": "Code is required",
+      "name_required": "Name is required",
+      "type_required": "Type is required",
+      "code_exists": "This code already exists",
+      "select_at_least_one": "Select at least one result"
     }
   }
 }

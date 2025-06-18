@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   OneToManyMappingInterface,
   MappingTabProps
@@ -12,12 +13,13 @@ const MappingsTab: React.FC<MappingTabProps> = ({
   onSuccess,
   onError
 }) => {
+  const { t } = useTranslation(['settings', 'common']);
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-neutral-900">Configuration Mappings</h3>
+        <h3 className="text-lg font-semibold text-neutral-900">{t('settings:actions_config.mappings.title')}</h3>
         <p className="text-sm text-neutral-600">
-          Click on source items to view and edit their mappings. Add or remove connections by clicking target items.
+          {t('settings:actions_config.mappings.description')}
         </p>
       </div>
       
@@ -28,7 +30,7 @@ const MappingsTab: React.FC<MappingTabProps> = ({
           targetItems={actionSubtypes}
           onSuccess={onSuccess}
           onError={onError}
-          title="Type-Subtype Mappings"
+          title={t('settings:actions_config.mappings.type_subtype_title', { defaultValue: 'Type-Subtype Mappings' })}
         />
         
         <OneToManyMappingInterface
@@ -37,11 +39,12 @@ const MappingsTab: React.FC<MappingTabProps> = ({
           targetItems={actionResults}
           onSuccess={onSuccess}
           onError={onError}
-          title="Subtype-Result Mappings"
+          title={t('settings:actions_config.mappings.subtype_result_title', { defaultValue: 'Subtype-Result Mappings' })}
         />
       </div>
     </div>
   );
+  // Note: loading is not used in this component directly
 };
 
 export default MappingsTab;
