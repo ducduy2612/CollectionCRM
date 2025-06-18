@@ -279,6 +279,7 @@ export interface ActionResult {
   result_description?: string;
   display_order?: number;
   isPromise?: boolean;
+  is_promise?: boolean;
 }
 
 export interface CustomerAction {

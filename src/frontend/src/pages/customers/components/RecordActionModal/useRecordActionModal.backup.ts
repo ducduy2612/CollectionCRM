@@ -289,7 +289,7 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
         // For promise to pay actions, use the minimum promise date
         const promiseToPayActions = selectedLoansWithData.filter(action => {
           const result = actionResults.find(r => r.result_id === action.actionResultId);
-          return result?.is_promise && action.promiseDate;
+          return result?.isPromise && action.promiseDate;
         });
         
         let calculatedFudDate = null;
@@ -358,7 +358,7 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
 
   const handleActionResultChange = useCallback(async (loanAccountNumber: string, actionResultId: string) => {
     const actionResult = actionResults.find(result => result.result_id === actionResultId);
-    const isPromiseToPay = actionResult?.is_promise || false;
+    const isPromiseToPay = actionResult?.isPromise || false;
     const loan = loans.find(l => l.accountNumber === loanAccountNumber);
     
     // Update the loan action

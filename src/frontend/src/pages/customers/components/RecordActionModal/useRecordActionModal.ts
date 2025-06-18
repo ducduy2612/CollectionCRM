@@ -215,7 +215,7 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
 
   const handleActionResultChange = useCallback((loanAccountNumber: string, actionResultId: string) => {
     const actionResult = actionResults.find(result => result.result_id === actionResultId);
-    const isPromiseToPay = actionResult?.isPromise || false;
+    const isPromiseToPay = actionResult?.is_promise || false;
     const loan = loans.find(l => l.accountNumber === loanAccountNumber);
     
     setLoanActions(prev => ({
@@ -286,7 +286,7 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
     if (!customerLevelAction.actionResultId) return;
 
     const actionResult = actionResults.find(result => result.result_id === customerLevelAction.actionResultId);
-    const isPromiseToPay = actionResult?.isPromise || false;
+    const isPromiseToPay = actionResult?.is_promise || false;
 
     setLoanActions(prev => {
       const updated = { ...prev };
@@ -313,7 +313,7 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
   const isCustomerLevelPromiseToPayResult = (): boolean => {
     if (!customerLevelAction.actionResultId) return false;
     const actionResult = actionResults.find(result => result.result_id === customerLevelAction.actionResultId);
-    return actionResult?.isPromise || false;
+    return actionResult?.is_promise || false;
   };
 
   // Function to calculate FUD for selected actions using bulk API
@@ -401,7 +401,7 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
       // Validate promise fields if result is PROMISE_TO_PAY
       const actionResult = actionResults.find(result => result.result_id === action.actionResultId);
       
-      if (actionResult?.isPromise) {
+      if (actionResult?.is_promise) {
         if (!action.promiseAmount || parseFloat(action.promiseAmount) <= 0) {
           return t('customers:record_action.validation.promise_amount_required');
         }
@@ -509,7 +509,7 @@ export const useRecordActionModal = ({ isOpen, customer, loans }: UseRecordActio
     const action = loanActions[loanAccountNumber];
     if (!action?.actionResultId) return false;
     const actionResult = actionResults.find(result => result.result_id === action.actionResultId);
-    return actionResult?.isPromise || false;
+    return actionResult?.is_promise || false;
   };
 
   const selectedCount = Object.values(loanActions).filter(action => action.selected).length;

@@ -62,20 +62,7 @@ export const CustomerLevelActionForm: React.FC<CustomerLevelActionFormProps> = (
           </div>
           
           {isPromiseToPayResult && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  {t('customers:record_action.promise_amount')}
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={customerLevelAction.promiseAmount}
-                  onChange={(e) => onFieldChange('promiseAmount', e.target.value)}
-                  placeholder={t('customers:record_action.placeholders.enter_amount')}
-                />
-              </div>
-              
+            <div className="grid grid-cols-1 gap-4">
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
                   {t('customers:record_action.promise_date')}
