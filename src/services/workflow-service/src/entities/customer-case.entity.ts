@@ -31,6 +31,6 @@ export class CustomerCase extends BaseEntity {
   @Index()
   fUpdate: Date | null;
 
-  @Column({ type: 'text', nullable: true })
-  notes: string | null;
+  @Column({ name: 'master_notes', type: 'text', nullable: true })
+  masterNotes: string | null;
 }

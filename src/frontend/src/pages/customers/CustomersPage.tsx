@@ -150,25 +150,28 @@ const CustomersPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-16">
-      {/* Customer Header */}
-      <CustomerHeader
-        customer={customer}
-        onReferenceClick={() => setActiveTab('references')}
-      />
-
-      {/* Customer Status component */}
-      <CustomerStatusComponent cif={cif || ''} />
+      {/* Customer Header and Status - Side by Side */}
+      <div className="grid grid-cols-3 gap-4 items-stretch">
+        <CustomerHeader
+          customer={customer}
+          onReferenceClick={() => setActiveTab('references')}
+        />
+        {customer && <ContactInformation cif={cif} phones={customer.phones} emails={customer.emails} addresses={customer.addresses} />}
+        <CustomerStatusComponent cif={cif || ''} />
+      </div>
       
       {/* Tabs */}
       <CustomerTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
       {/* Tab Content */}
       {activeTab === 'overview' && (
-        <div className="grid grid-cols-2 gap-4">
-          {customer && <ContactInformation cif={cif} phones={customer.phones} emails={customer.emails} addresses={customer.addresses} />}
-          {loans && loans.length > 0 && <LoanSummary loans={loans} />}
-          {payments && payments.length > 0 && <PaymentHistory payments={payments} />}
-          {assignmentHistoryComponent}
+        <div className="space-y-1">
+          {/* Top row: ContactInformation, LoanSummary, PaymentHistory */}
+          <div className="grid grid-cols-3 gap-4">
+            {loans && loans.length > 0 && <LoanSummary loans={loans} />}
+            {payments && payments.length > 0 && <PaymentHistory payments={payments} />}
+            {assignmentHistoryComponent}
+          </div>
         </div>
       )}
 
@@ -210,6 +213,7 @@ const CustomersPage: React.FC = () => {
       >
         {actionHistoryComponent}
       </div>
+      {/* Bottom row: AssignmentHistory */}
 
       {/* Action Panel */}
       {customer && <ActionPanel customer={customer} lastContactDate={lastContactDate} onActionRecorded={handleActionRecorded} />}
