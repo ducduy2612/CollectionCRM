@@ -8,7 +8,7 @@ This directory contains Dockerfiles for building the various services in the Col
    - Builds the TypeScript code into JavaScript
 
 2. **Production Stage**:
-   - Uses a fresh Node.js 18 Alpine image
+   - Uses a fresh Node.js 20 Alpine image
    - Installs only production dependencies
    - Copies the built code from the build stage
    - Sets up environment variables
