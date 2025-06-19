@@ -345,12 +345,12 @@ export interface StatusDictItem {
   name: string;
   description?: string;
   color?: string; // Hex color code for UI
-  isActive: boolean;
-  displayOrder: number;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  updatedBy: string;
+  is_active: boolean;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  updated_by: string;
 }
 
 /**

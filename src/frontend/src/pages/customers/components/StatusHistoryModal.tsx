@@ -59,7 +59,7 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
   // Get status name from dictionary
   const getStatusName = (item: StatusHistoryItem): string => {
     if ('statusId' in item) {
-      return statusDict[item.statusId]?.name || t('customers:status.unknown');
+      return statusDict[item.statusId]?.name || t('customers:status.unknown1');
     }
     if ('stateId' in item) {
       const stateName = statusDict[item.stateId]?.name || t('customers:status.unknown');

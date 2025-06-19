@@ -149,7 +149,7 @@ const CustomersPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 pb-24">
+    <div className="space-y-4 pb-16">
       {/* Customer Header */}
       <CustomerHeader
         customer={customer}
@@ -164,7 +164,7 @@ const CustomersPage: React.FC = () => {
 
       {/* Tab Content */}
       {activeTab === 'overview' && (
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-4">
           {customer && <ContactInformation cif={cif} phones={customer.phones} emails={customer.emails} addresses={customer.addresses} />}
           {loans && loans.length > 0 && <LoanSummary loans={loans} />}
           {payments && payments.length > 0 && <PaymentHistory payments={payments} />}
@@ -173,19 +173,19 @@ const CustomersPage: React.FC = () => {
       )}
 
       {activeTab === 'loans' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {loans && loans.length > 0 && <LoanSummary loans={loans} />}
         </div>
       )}
 
       {activeTab === 'actions' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* ActionHistory is rendered above and shown via CSS */}
         </div>
       )}
 
       {activeTab === 'payments' && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {payments && payments.length > 0 && <PaymentHistory payments={payments} />}
         </div>
       )}

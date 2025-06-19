@@ -11,5 +11,7 @@ export * from './Select';
 export * from './Spinner';
 export * from './Table';
 export * from './Tabs';
+export * from './Textarea';
 export * from './Toast';
 export * from './ToastProvider';
+export * from './Toggle';

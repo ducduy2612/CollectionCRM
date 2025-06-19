@@ -140,7 +140,7 @@ const LoanSummary: React.FC<LoanSummaryProps> = ({ loans }) => {
       </CardHeader>
       
       <CardContent>
-        <div className="max-h-96 overflow-y-auto">
+        <div className="max-h-72 overflow-y-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -232,27 +232,27 @@ const LoanSummary: React.FC<LoanSummaryProps> = ({ loans }) => {
         
         {/* Totals Section */}
         {loans.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-neutral-200">
-            <div className="grid grid-cols-5 p-3 bg-neutral-50 rounded-md">
+          <div className="mt-3 pt-3 border-t border-neutral-200">
+            <div className="grid grid-cols-5 p-2 bg-neutral-50 rounded-md">
               <div>
-                <div className="text-xs text-neutral-500 mb-1">{t('customers:loan_summary.total_outstanding')}</div>
-                <div className="font-bold text-lg">{formatCurrency(totalOutstanding)}</div>
+                <div className="text-xs text-neutral-500 mb-0.5">{t('customers:loan_summary.total_outstanding')}</div>
+                <div className="font-bold text-base">{formatCurrency(totalOutstanding)}</div>
               </div>
               <div>
-                <div className="text-xs text-neutral-500 mb-1">{t('customers:loan_summary.total_due_amount')}</div>
-                <div className="font-bold text-lg">{formatCurrency(totalDueAmount)}</div>
+                <div className="text-xs text-neutral-500 mb-0.5">{t('customers:loan_summary.total_due_amount')}</div>
+                <div className="font-bold text-base">{formatCurrency(totalDueAmount)}</div>
               </div>
               <div>
-                <div className="text-xs text-neutral-500 mb-1">-</div>
+                <div className="text-xs text-neutral-500 mb-0.5">-</div>
                 <div className="font-semibold">-</div>
               </div>
               <div>
-                <div className="text-xs text-neutral-500 mb-1">-</div>
+                <div className="text-xs text-neutral-500 mb-0.5">-</div>
                 <div className="font-semibold">-</div>
               </div>
               <div>
-                <div className="text-xs text-neutral-500 mb-1">{t('customers:loan_summary.total_loans')}</div>
-                <div className="font-bold text-lg">{loans.length}</div>
+                <div className="text-xs text-neutral-500 mb-0.5">{t('customers:loan_summary.total_loans')}</div>
+                <div className="font-bold text-base">{loans.length}</div>
               </div>
             </div>
           </div>

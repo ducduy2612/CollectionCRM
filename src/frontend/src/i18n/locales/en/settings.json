@@ -340,6 +340,12 @@
     "description": "Configure action types, subtypes, results, and their mappings for collection workflows",
     "back_to_settings": "Back to Settings",
     "refresh": "Refresh",
+    "tab_actions": "Actions",
+    "tab_customer_status": "Customer Status",
+    "tab_collateral_status": "Collateral Status",
+    "tab_lending_violation": "Lending Violation",
+    "tab_recovery_ability": "Recovery Ability",
+    "tab_processing_state": "Processing State",
     "tabs": {
       "types": "Types",
       "subtypes": "Subtypes",
@@ -482,6 +488,316 @@
       "type_required": "Type is required",
       "code_exists": "This code already exists",
       "select_at_least_one": "Select at least one result"
+    }
+  },
+  "customer_status": {
+    "title": "Customer Status Configuration",
+    "description": "Configure customer status codes and their properties for collection workflows",
+    "actions": {
+      "add": "Add Customer Status"
+    },
+    "table": {
+      "code": "Code",
+      "name": "Name",
+      "description": "Description",
+      "color": "Color",
+      "display_order": "Display Order",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "filter": {
+      "show_inactive": "Show inactive statuses"
+    },
+    "summary": "Showing {{total}} customer statuses ({{active}} active, {{inactive}} inactive)",
+    "empty": {
+      "no_statuses": "No customer statuses found",
+      "no_active_statuses": "No active customer statuses found"
+    },
+    "modal": {
+      "add_title": "Add Customer Status",
+      "edit_title": "Edit Customer Status"
+    },
+    "form": {
+      "code": "Status Code",
+      "code_placeholder": "Enter unique status code",
+      "name": "Status Name",
+      "name_placeholder": "Enter status name",
+      "description": "Description",
+      "description_placeholder": "Enter description (optional)",
+      "color": "Color",
+      "display_order": "Display Order"
+    },
+    "validation": {
+      "required_fields": "Code and name are required fields"
+    },
+    "messages": {
+      "add_success": "Customer status added successfully",
+      "update_success": "Customer status updated successfully",
+      "deactivate_success": "Customer status deactivated successfully"
+    },
+    "confirm": {
+      "deactivate": "Are you sure you want to deactivate the status '{{name}}'? This action will set it as inactive."
+    }
+  },
+  "collateral_status": {
+    "title": "Collateral Status Configuration",
+    "description": "Configure collateral status codes and their properties for collection workflows",
+    "actions": {
+      "add": "Add Collateral Status"
+    },
+    "table": {
+      "code": "Code",
+      "name": "Name",
+      "description": "Description",
+      "color": "Color",
+      "display_order": "Display Order",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "filter": {
+      "show_inactive": "Show inactive statuses"
+    },
+    "summary": "Showing {{total}} collateral statuses ({{active}} active, {{inactive}} inactive)",
+    "empty": {
+      "no_statuses": "No collateral statuses found",
+      "no_active_statuses": "No active collateral statuses found"
+    },
+    "modal": {
+      "add_title": "Add Collateral Status",
+      "edit_title": "Edit Collateral Status"
+    },
+    "form": {
+      "code": "Status Code",
+      "code_placeholder": "Enter unique status code",
+      "name": "Status Name",
+      "name_placeholder": "Enter status name",
+      "description": "Description",
+      "description_placeholder": "Enter description (optional)",
+      "color": "Color",
+      "display_order": "Display Order"
+    },
+    "validation": {
+      "required_fields": "Code and name are required fields"
+    },
+    "messages": {
+      "add_success": "Collateral status added successfully",
+      "update_success": "Collateral status updated successfully",
+      "deactivate_success": "Collateral status deactivated successfully"
+    },
+    "confirm": {
+      "deactivate": "Are you sure you want to deactivate the status '{{name}}'? This action will set it as inactive."
+    }
+  },
+  "lending_violation_status": {
+    "title": "Lending Violation Status Configuration",
+    "description": "Configure lending violation status codes and their properties for collection workflows",
+    "actions": {
+      "add": "Add Lending Violation Status"
+    },
+    "table": {
+      "code": "Code",
+      "name": "Name",
+      "description": "Description",
+      "color": "Color",
+      "display_order": "Display Order",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "filter": {
+      "show_inactive": "Show inactive statuses"
+    },
+    "summary": "Showing {{total}} lending violation statuses ({{active}} active, {{inactive}} inactive)",
+    "empty": {
+      "no_statuses": "No lending violation statuses found",
+      "no_active_statuses": "No active lending violation statuses found"
+    },
+    "modal": {
+      "add_title": "Add Lending Violation Status",
+      "edit_title": "Edit Lending Violation Status"
+    },
+    "form": {
+      "code": "Status Code",
+      "code_placeholder": "Enter unique status code",
+      "name": "Status Name",
+      "name_placeholder": "Enter status name",
+      "description": "Description",
+      "description_placeholder": "Enter description (optional)",
+      "color": "Color",
+      "display_order": "Display Order"
+    },
+    "validation": {
+      "required_fields": "Code and name are required fields"
+    },
+    "messages": {
+      "add_success": "Lending violation status added successfully",
+      "update_success": "Lending violation status updated successfully",
+      "deactivate_success": "Lending violation status deactivated successfully"
+    },
+    "confirm": {
+      "deactivate": "Are you sure you want to deactivate the status '{{name}}'? This action will set it as inactive."
+    }
+  },
+  "recovery_ability_status": {
+    "title": "Recovery Ability Status Configuration",
+    "description": "Configure recovery ability status codes and their properties for collection workflows",
+    "actions": {
+      "add": "Add Recovery Ability Status"
+    },
+    "table": {
+      "code": "Code",
+      "name": "Name",
+      "description": "Description",
+      "color": "Color",
+      "display_order": "Display Order",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "filter": {
+      "show_inactive": "Show inactive statuses"
+    },
+    "summary": "Showing {{total}} recovery ability statuses ({{active}} active, {{inactive}} inactive)",
+    "empty": {
+      "no_statuses": "No recovery ability statuses found",
+      "no_active_statuses": "No active recovery ability statuses found"
+    },
+    "modal": {
+      "add_title": "Add Recovery Ability Status",
+      "edit_title": "Edit Recovery Ability Status"
+    },
+    "form": {
+      "code": "Status Code",
+      "code_placeholder": "Enter unique status code",
+      "name": "Status Name",
+      "name_placeholder": "Enter status name",
+      "description": "Description",
+      "description_placeholder": "Enter description (optional)",
+      "color": "Color",
+      "display_order": "Display Order"
+    },
+    "validation": {
+      "required_fields": "Code and name are required fields"
+    },
+    "messages": {
+      "add_success": "Recovery ability status added successfully",
+      "update_success": "Recovery ability status updated successfully",
+      "deactivate_success": "Recovery ability status deactivated successfully"
+    },
+    "confirm": {
+      "deactivate": "Are you sure you want to deactivate the status '{{name}}'? This action will set it as inactive."
+    }
+  },
+  "processing_state": {
+    "title": "Processing State Configuration",
+    "description": "Configure processing states and substates for workflow management",
+    "actions": {
+      "add_state": "Add Processing State",
+      "add_substate": "Add Processing Substate"
+    },
+    "tabs": {
+      "states": "States",
+      "substates": "Substates",
+      "mappings": "State-Substate Mappings",
+      "statistics": "Statistics"
+    },
+    "states": {
+      "title": "Processing States",
+      "description": "Manage primary processing states for workflow management",
+      "table": {
+        "code": "Code",
+        "name": "Name",
+        "description": "Description",
+        "display_order": "Display Order",
+        "status": "Status",
+        "substates": "Substates",
+        "actions": "Actions"
+      },
+      "empty": {
+        "no_states": "No processing states found",
+        "no_active_states": "No active processing states found"
+      }
+    },
+    "substates": {
+      "title": "Processing Substates",
+      "description": "Define specific substates within each processing state",
+      "table": {
+        "code": "Code",
+        "name": "Name",
+        "state": "State",
+        "description": "Description",
+        "display_order": "Display Order",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "empty": {
+        "no_substates": "No processing substates found",
+        "no_active_substates": "No active processing substates found"
+      }
+    },
+    "mappings": {
+      "title": "State-Substate Mappings",
+      "description": "Configure which substates are available for each processing state",
+      "filter": {
+        "all_states": "All States",
+        "select_state": "Select a state..."
+      },
+      "table": {
+        "state": "Processing State",
+        "available_substates": "Available Substates",
+        "actions": "Actions"
+      },
+      "empty": {
+        "no_mappings": "No mappings configured yet"
+      }
+    },
+    "statistics": {
+      "title": "Processing State Statistics",
+      "description": "Overview of processing state configuration usage",
+      "total_states": "Total States",
+      "total_substates": "Total Substates",
+      "active_states": "Active States",
+      "active_substates": "Active Substates",
+      "usage_summary": "Usage Summary",
+      "most_used_states": "Most Used States",
+      "most_used_substates": "Most Used Substates",
+      "no_stats": "No statistics available"
+    },
+    "modal": {
+      "create_state": "Create Processing State",
+      "edit_state": "Edit Processing State",
+      "create_substate": "Create Processing Substate",
+      "edit_substate": "Edit Processing Substate"
+    },
+    "form": {
+      "code": "Code",
+      "code_placeholder": "Enter unique code",
+      "name": "Name",
+      "name_placeholder": "Enter display name",
+      "description": "Description",
+      "description_placeholder": "Enter description (optional)",
+      "display_order": "Display Order",
+      "select_state": "Select processing state",
+      "state": "Processing State",
+      "is_active": "Active"
+    },
+    "filter": {
+      "show_inactive": "Show inactive items"
+    },
+    "summary": "Showing {{total}} items ({{active}} active, {{inactive}} inactive)",
+    "validation": {
+      "code_required": "Code is required",
+      "name_required": "Name is required",
+      "state_required": "Processing state is required",
+      "code_exists": "This code already exists"
+    },
+    "messages": {
+      "state_created": "Processing state created successfully",
+      "state_updated": "Processing state updated successfully",
+      "state_deactivated": "Processing state deactivated successfully",
+      "substate_created": "Processing substate created successfully",
+      "substate_updated": "Processing substate updated successfully",
+      "substate_deactivated": "Processing substate deactivated successfully",
+      "confirm_deactivate": "Are you sure you want to deactivate '{{name}}'?",
+      "cannot_deactivate_in_use": "Cannot deactivate item that is currently in use"
     }
   }
 }

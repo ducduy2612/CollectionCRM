@@ -418,114 +418,42 @@ export const StatusDictRepository = {
    * Get all active customer status entries
    */
   async getActiveCustomerStatuses(): Promise<any[]> {
-    try {
-      const result = await AppDataSource.query(
-        'SELECT id, code, name, description, color, display_order FROM workflow_service.customer_status_dict WHERE is_active = TRUE ORDER BY display_order, name'
-      );
-      return result;
-    } catch (error) {
-      throw Errors.wrap(
-        error as Error,
-        OperationType.DATABASE,
-        SourceSystemType.WORKFLOW_SERVICE,
-        { operation: 'getActiveCustomerStatuses' }
-      );
-    }
+    return this.getAllCustomerStatuses(false);
   },
 
   /**
    * Get all active collateral status entries
    */
   async getActiveCollateralStatuses(): Promise<any[]> {
-    try {
-      const result = await AppDataSource.query(
-        'SELECT id, code, name, description, color, display_order FROM workflow_service.collateral_status_dict WHERE is_active = TRUE ORDER BY display_order, name'
-      );
-      return result;
-    } catch (error) {
-      throw Errors.wrap(
-        error as Error,
-        OperationType.DATABASE,
-        SourceSystemType.WORKFLOW_SERVICE,
-        { operation: 'getActiveCollateralStatuses' }
-      );
-    }
+    return this.getAllCollateralStatuses(false);
   },
 
   /**
    * Get all active processing states
    */
   async getActiveProcessingStates(): Promise<any[]> {
-    try {
-      const result = await AppDataSource.query(
-        'SELECT id, code, name, description, color, display_order FROM workflow_service.processing_state_dict WHERE is_active = TRUE ORDER BY display_order, name'
-      );
-      return result;
-    } catch (error) {
-      throw Errors.wrap(
-        error as Error,
-        OperationType.DATABASE,
-        SourceSystemType.WORKFLOW_SERVICE,
-        { operation: 'getActiveProcessingStates' }
-      );
-    }
+    return this.getAllProcessingStates(false);
   },
 
   /**
    * Get all active processing substates
    */
   async getActiveProcessingSubstates(): Promise<any[]> {
-    try {
-      const result = await AppDataSource.query(
-        'SELECT id, code, name, description, color, display_order FROM workflow_service.processing_substate_dict WHERE is_active = TRUE ORDER BY display_order, name'
-      );
-      return result;
-    } catch (error) {
-      throw Errors.wrap(
-        error as Error,
-        OperationType.DATABASE,
-        SourceSystemType.WORKFLOW_SERVICE,
-        { operation: 'getActiveProcessingSubstates' }
-      );
-    }
+    return this.getAllProcessingSubstates(false);
   },
 
   /**
    * Get all active lending violation statuses
    */
   async getActiveLendingViolationStatuses(): Promise<any[]> {
-    try {
-      const result = await AppDataSource.query(
-        'SELECT id, code, name, description, color, display_order FROM workflow_service.lending_violation_status_dict WHERE is_active = TRUE ORDER BY display_order, name'
-      );
-      return result;
-    } catch (error) {
-      throw Errors.wrap(
-        error as Error,
-        OperationType.DATABASE,
-        SourceSystemType.WORKFLOW_SERVICE,
-        { operation: 'getActiveLendingViolationStatuses' }
-      );
-    }
+    return this.getAllLendingViolationStatuses(false);
   },
 
   /**
    * Get all active recovery ability statuses
    */
   async getActiveRecoveryAbilityStatuses(): Promise<any[]> {
-    try {
-      const result = await AppDataSource.query(
-        'SELECT id, code, name, description, color, display_order FROM workflow_service.recovery_ability_status_dict WHERE is_active = TRUE ORDER BY display_order, name'
-      );
-      return result;
-    } catch (error) {
-      throw Errors.wrap(
-        error as Error,
-        OperationType.DATABASE,
-        SourceSystemType.WORKFLOW_SERVICE,
-        { operation: 'getActiveRecoveryAbilityStatuses' }
-      );
-    }
+    return this.getAllRecoveryAbilityStatuses(false);
   },
 
   /**
@@ -568,6 +496,494 @@ export const StatusDictRepository = {
         OperationType.DATABASE,
         SourceSystemType.WORKFLOW_SERVICE,
         { operation: 'findStatusByCode', statusType, code }
+      );
+    }
+  },
+
+  // =============================================
+  // UPDATE FUNCTIONS
+  // =============================================
+
+  /**
+   * Update customer status
+   */
+  async updateCustomerStatus(code: string, data: {
+    name?: string;
+    description?: string;
+    color?: string;
+    displayOrder?: number;
+    updatedBy: string;
+  }): Promise<any> {
+    try {
+      const setClauses = [];
+      const values = [];
+      let paramCount = 1;
+
+      setClauses.push(`is_active = TRUE`);
+      if (data.name !== undefined) {
+        setClauses.push(`name = $${paramCount++}`);
+        values.push(data.name);
+      }
+      if (data.description !== undefined) {
+        setClauses.push(`description = $${paramCount++}`);
+        values.push(data.description);
+      }
+      if (data.color !== undefined) {
+        setClauses.push(`color = $${paramCount++}`);
+        values.push(data.color);
+      }
+      if (data.displayOrder !== undefined) {
+        setClauses.push(`display_order = $${paramCount++}`);
+        values.push(data.displayOrder);
+      }
+
+      setClauses.push(`updated_at = NOW()`);
+      setClauses.push(`updated_by = $${paramCount++}`);
+      values.push(data.updatedBy);
+      values.push(code);
+
+      const result = await AppDataSource.query(
+        `UPDATE workflow_service.customer_status_dict 
+         SET ${setClauses.join(', ')} 
+         WHERE code = $${paramCount} 
+         RETURNING id, code, name, description, color, display_order, is_active`,
+        values
+      );
+
+      return result.length > 0 ? result[0] : null;
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { operation: 'updateCustomerStatus', code, data }
+      );
+    }
+  },
+
+  /**
+   * Update collateral status
+   */
+  async updateCollateralStatus(code: string, data: {
+    name?: string;
+    description?: string;
+    color?: string;
+    displayOrder?: number;
+    updatedBy: string;
+  }): Promise<any> {
+    try {
+      const setClauses = [];
+      const values = [];
+      let paramCount = 1;
+
+      setClauses.push(`is_active = TRUE`);
+      if (data.name !== undefined) {
+        setClauses.push(`name = $${paramCount++}`);
+        values.push(data.name);
+      }
+      if (data.description !== undefined) {
+        setClauses.push(`description = $${paramCount++}`);
+        values.push(data.description);
+      }
+      if (data.color !== undefined) {
+        setClauses.push(`color = $${paramCount++}`);
+        values.push(data.color);
+      }
+      if (data.displayOrder !== undefined) {
+        setClauses.push(`display_order = $${paramCount++}`);
+        values.push(data.displayOrder);
+      }
+
+      setClauses.push(`updated_at = NOW()`);
+      setClauses.push(`updated_by = $${paramCount++}`);
+      values.push(data.updatedBy);
+      values.push(code);
+
+      const result = await AppDataSource.query(
+        `UPDATE workflow_service.collateral_status_dict 
+         SET ${setClauses.join(', ')} 
+         WHERE code = $${paramCount} 
+         RETURNING id, code, name, description, color, display_order, is_active`,
+        values
+      );
+
+      return result.length > 0 ? result[0] : null;
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { operation: 'updateCollateralStatus', code, data }
+      );
+    }
+  },
+
+  /**
+   * Update processing state
+   */
+  async updateProcessingState(code: string, data: {
+    name?: string;
+    description?: string;
+    color?: string;
+    displayOrder?: number;
+    updatedBy: string;
+  }): Promise<any> {
+    try {
+      const setClauses = [];
+      const values = [];
+      let paramCount = 1;
+
+      setClauses.push(`is_active = TRUE`);
+      if (data.name !== undefined) {
+        setClauses.push(`name = $${paramCount++}`);
+        values.push(data.name);
+      }
+      if (data.description !== undefined) {
+        setClauses.push(`description = $${paramCount++}`);
+        values.push(data.description);
+      }
+      if (data.color !== undefined) {
+        setClauses.push(`color = $${paramCount++}`);
+        values.push(data.color);
+      }
+      if (data.displayOrder !== undefined) {
+        setClauses.push(`display_order = $${paramCount++}`);
+        values.push(data.displayOrder);
+      }
+
+      setClauses.push(`updated_at = NOW()`);
+      setClauses.push(`updated_by = $${paramCount++}`);
+      values.push(data.updatedBy);
+      values.push(code);
+
+      const result = await AppDataSource.query(
+        `UPDATE workflow_service.processing_state_dict 
+         SET ${setClauses.join(', ')} 
+         WHERE code = $${paramCount} 
+         RETURNING id, code, name, description, color, display_order, is_active`,
+        values
+      );
+
+      return result.length > 0 ? result[0] : null;
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { operation: 'updateProcessingState', code, data }
+      );
+    }
+  },
+
+  /**
+   * Update processing substate
+   */
+  async updateProcessingSubstate(code: string, data: {
+    name?: string;
+    description?: string;
+    color?: string;
+    displayOrder?: number;
+    updatedBy: string;
+  }): Promise<any> {
+    try {
+      const setClauses = [];
+      const values = [];
+      let paramCount = 1;
+
+      setClauses.push(`is_active = TRUE`);
+      if (data.name !== undefined) {
+        setClauses.push(`name = $${paramCount++}`);
+        values.push(data.name);
+      }
+      if (data.description !== undefined) {
+        setClauses.push(`description = $${paramCount++}`);
+        values.push(data.description);
+      }
+      if (data.color !== undefined) {
+        setClauses.push(`color = $${paramCount++}`);
+        values.push(data.color);
+      }
+      if (data.displayOrder !== undefined) {
+        setClauses.push(`display_order = $${paramCount++}`);
+        values.push(data.displayOrder);
+      }
+
+      setClauses.push(`updated_at = NOW()`);
+      setClauses.push(`updated_by = $${paramCount++}`);
+      values.push(data.updatedBy);
+      values.push(code);
+
+      const result = await AppDataSource.query(
+        `UPDATE workflow_service.processing_substate_dict 
+         SET ${setClauses.join(', ')} 
+         WHERE code = $${paramCount} 
+         RETURNING id, code, name, description, color, display_order, is_active`,
+        values
+      );
+
+      return result.length > 0 ? result[0] : null;
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { operation: 'updateProcessingSubstate', code, data }
+      );
+    }
+  },
+
+  /**
+   * Update lending violation status
+   */
+  async updateLendingViolationStatus(code: string, data: {
+    name?: string;
+    description?: string;
+    color?: string;
+    displayOrder?: number;
+    updatedBy: string;
+  }): Promise<any> {
+    try {
+      const setClauses = [];
+      const values = [];
+      let paramCount = 1;
+
+      setClauses.push(`is_active = TRUE`);
+      if (data.name !== undefined) {
+        setClauses.push(`name = $${paramCount++}`);
+        values.push(data.name);
+      }
+      if (data.description !== undefined) {
+        setClauses.push(`description = $${paramCount++}`);
+        values.push(data.description);
+      }
+      if (data.color !== undefined) {
+        setClauses.push(`color = $${paramCount++}`);
+        values.push(data.color);
+      }
+      if (data.displayOrder !== undefined) {
+        setClauses.push(`display_order = $${paramCount++}`);
+        values.push(data.displayOrder);
+      }
+
+      setClauses.push(`updated_at = NOW()`);
+      setClauses.push(`updated_by = $${paramCount++}`);
+      values.push(data.updatedBy);
+      values.push(code);
+
+      const result = await AppDataSource.query(
+        `UPDATE workflow_service.lending_violation_status_dict 
+         SET ${setClauses.join(', ')} 
+         WHERE code = $${paramCount} 
+         RETURNING id, code, name, description, color, display_order, is_active`,
+        values
+      );
+
+      return result.length > 0 ? result[0] : null;
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { operation: 'updateLendingViolationStatus', code, data }
+      );
+    }
+  },
+
+  /**
+   * Update recovery ability status
+   */
+  async updateRecoveryAbilityStatus(code: string, data: {
+    name?: string;
+    description?: string;
+    color?: string;
+    displayOrder?: number;
+    updatedBy: string;
+  }): Promise<any> {
+    try {
+      const setClauses = [];
+      const values = [];
+      let paramCount = 1;
+
+      setClauses.push(`is_active = TRUE`);
+      if (data.name !== undefined) {
+        setClauses.push(`name = $${paramCount++}`);
+        values.push(data.name);
+      }
+      if (data.description !== undefined) {
+        setClauses.push(`description = $${paramCount++}`);
+        values.push(data.description);
+      }
+      if (data.color !== undefined) {
+        setClauses.push(`color = $${paramCount++}`);
+        values.push(data.color);
+      }
+      if (data.displayOrder !== undefined) {
+        setClauses.push(`display_order = $${paramCount++}`);
+        values.push(data.displayOrder);
+      }
+
+      setClauses.push(`updated_at = NOW()`);
+      setClauses.push(`updated_by = $${paramCount++}`);
+      values.push(data.updatedBy);
+      values.push(code);
+
+      const result = await AppDataSource.query(
+        `UPDATE workflow_service.recovery_ability_status_dict 
+         SET ${setClauses.join(', ')} 
+         WHERE code = $${paramCount} 
+         RETURNING id, code, name, description, color, display_order, is_active`,
+        values
+      );
+
+      return result.length > 0 ? result[0] : null;
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { operation: 'updateRecoveryAbilityStatus', code, data }
+      );
+    }
+  },
+
+  // =============================================
+  // GET ALL FUNCTIONS (INCLUDING INACTIVE)
+  // =============================================
+
+  /**
+   * Get all customer statuses (optionally including inactive)
+   */
+  async getAllCustomerStatuses(includeInactive: boolean = false): Promise<any[]> {
+    try {
+      const whereClause = includeInactive ? '' : 'WHERE is_active = TRUE';
+      const result = await AppDataSource.query(
+        `SELECT id, code, name, description, color, display_order, is_active 
+         FROM workflow_service.customer_status_dict 
+         ${whereClause} 
+         ORDER BY display_order, name`
+      );
+      return result;
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { operation: 'getAllCustomerStatuses', includeInactive }
+      );
+    }
+  },
+
+  /**
+   * Get all collateral statuses (optionally including inactive)
+   */
+  async getAllCollateralStatuses(includeInactive: boolean = false): Promise<any[]> {
+    try {
+      const whereClause = includeInactive ? '' : 'WHERE is_active = TRUE';
+      const result = await AppDataSource.query(
+        `SELECT id, code, name, description, color, display_order, is_active 
+         FROM workflow_service.collateral_status_dict 
+         ${whereClause} 
+         ORDER BY display_order, name`
+      );
+      return result;
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { operation: 'getAllCollateralStatuses', includeInactive }
+      );
+    }
+  },
+
+  /**
+   * Get all processing states (optionally including inactive)
+   */
+  async getAllProcessingStates(includeInactive: boolean = false): Promise<any[]> {
+    try {
+      const whereClause = includeInactive ? '' : 'WHERE is_active = TRUE';
+      const result = await AppDataSource.query(
+        `SELECT id, code, name, description, color, display_order, is_active 
+         FROM workflow_service.processing_state_dict 
+         ${whereClause} 
+         ORDER BY display_order, name`
+      );
+      return result;
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { operation: 'getAllProcessingStates', includeInactive }
+      );
+    }
+  },
+
+  /**
+   * Get all processing substates (optionally including inactive)
+   */
+  async getAllProcessingSubstates(includeInactive: boolean = false): Promise<any[]> {
+    try {
+      const whereClause = includeInactive ? '' : 'WHERE is_active = TRUE';
+      const result = await AppDataSource.query(
+        `SELECT id, code, name, description, color, display_order, is_active 
+         FROM workflow_service.processing_substate_dict 
+         ${whereClause} 
+         ORDER BY display_order, name`
+      );
+      return result;
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { operation: 'getAllProcessingSubstates', includeInactive }
+      );
+    }
+  },
+
+  /**
+   * Get all lending violation statuses (optionally including inactive)
+   */
+  async getAllLendingViolationStatuses(includeInactive: boolean = false): Promise<any[]> {
+    try {
+      const whereClause = includeInactive ? '' : 'WHERE is_active = TRUE';
+      const result = await AppDataSource.query(
+        `SELECT id, code, name, description, color, display_order, is_active 
+         FROM workflow_service.lending_violation_status_dict 
+         ${whereClause} 
+         ORDER BY display_order, name`
+      );
+      return result;
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { operation: 'getAllLendingViolationStatuses', includeInactive }
+      );
+    }
+  },
+
+  /**
+   * Get all recovery ability statuses (optionally including inactive)
+   */
+  async getAllRecoveryAbilityStatuses(includeInactive: boolean = false): Promise<any[]> {
+    try {
+      const whereClause = includeInactive ? '' : 'WHERE is_active = TRUE';
+      const result = await AppDataSource.query(
+        `SELECT id, code, name, description, color, display_order, is_active 
+         FROM workflow_service.recovery_ability_status_dict 
+         ${whereClause} 
+         ORDER BY display_order, name`
+      );
+      return result;
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { operation: 'getAllRecoveryAbilityStatuses', includeInactive }
       );
     }
   },

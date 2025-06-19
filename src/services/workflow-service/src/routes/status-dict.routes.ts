@@ -33,6 +33,18 @@ router.post(
 );
 
 /**
+ * @route PUT /status-dict/customer-status/:code
+ * @desc Update customer status
+ * @access Private - Requires ADMIN role
+ */
+router.put(
+  '/customer-status/:code',
+  requireAuth,
+  requireRoles(['ADMIN']),
+  statusDictController.updateCustomerStatus
+);
+
+/**
  * @route DELETE /status-dict/customer-status/:code
  * @desc Deactivate customer status
  * @access Private - Requires ADMIN role
@@ -69,6 +81,18 @@ router.post(
   requireAuth,
   requireRoles(['ADMIN']),
   statusDictController.addCollateralStatus
+);
+
+/**
+ * @route PUT /status-dict/collateral-status/:code
+ * @desc Update collateral status
+ * @access Private - Requires ADMIN role
+ */
+router.put(
+  '/collateral-status/:code',
+  requireAuth,
+  requireRoles(['ADMIN']),
+  statusDictController.updateCollateralStatus
 );
 
 /**
@@ -168,6 +192,54 @@ router.delete(
   statusDictController.removeStateSubstateMapping
 );
 
+/**
+ * @route PUT /status-dict/processing-state/:code
+ * @desc Update processing state
+ * @access Private - Requires ADMIN role
+ */
+router.put(
+  '/processing-state/:code',
+  requireAuth,
+  requireRoles(['ADMIN']),
+  statusDictController.updateProcessingState
+);
+
+/**
+ * @route PUT /status-dict/processing-substate/:code
+ * @desc Update processing substate
+ * @access Private - Requires ADMIN role
+ */
+router.put(
+  '/processing-substate/:code',
+  requireAuth,
+  requireRoles(['ADMIN']),
+  statusDictController.updateProcessingSubstate
+);
+
+/**
+ * @route DELETE /status-dict/processing-state/:code
+ * @desc Deactivate processing state
+ * @access Private - Requires ADMIN role
+ */
+router.delete(
+  '/processing-state/:code',
+  requireAuth,
+  requireRoles(['ADMIN']),
+  statusDictController.deactivateProcessingState
+);
+
+/**
+ * @route DELETE /status-dict/processing-substate/:code
+ * @desc Deactivate processing substate
+ * @access Private - Requires ADMIN role
+ */
+router.delete(
+  '/processing-substate/:code',
+  requireAuth,
+  requireRoles(['ADMIN']),
+  statusDictController.deactivateProcessingSubstate
+);
+
 // =============================================
 // LENDING VIOLATION STATUS ROUTES
 // =============================================
@@ -195,6 +267,30 @@ router.post(
   statusDictController.addLendingViolationStatus
 );
 
+/**
+ * @route PUT /status-dict/lending-violation-status/:code
+ * @desc Update lending violation status
+ * @access Private - Requires ADMIN role
+ */
+router.put(
+  '/lending-violation-status/:code',
+  requireAuth,
+  requireRoles(['ADMIN']),
+  statusDictController.updateLendingViolationStatus
+);
+
+/**
+ * @route DELETE /status-dict/lending-violation-status/:code
+ * @desc Deactivate lending violation status
+ * @access Private - Requires ADMIN role
+ */
+router.delete(
+  '/lending-violation-status/:code',
+  requireAuth,
+  requireRoles(['ADMIN']),
+  statusDictController.deactivateLendingViolationStatus
+);
+
 // =============================================
 // RECOVERY ABILITY STATUS ROUTES
 // =============================================
@@ -220,6 +316,30 @@ router.post(
   requireAuth,
   requireRoles(['ADMIN']),
   statusDictController.addRecoveryAbilityStatus
+);
+
+/**
+ * @route PUT /status-dict/recovery-ability-status/:code
+ * @desc Update recovery ability status
+ * @access Private - Requires ADMIN role
+ */
+router.put(
+  '/recovery-ability-status/:code',
+  requireAuth,
+  requireRoles(['ADMIN']),
+  statusDictController.updateRecoveryAbilityStatus
+);
+
+/**
+ * @route DELETE /status-dict/recovery-ability-status/:code
+ * @desc Deactivate recovery ability status
+ * @access Private - Requires ADMIN role
+ */
+router.delete(
+  '/recovery-ability-status/:code',
+  requireAuth,
+  requireRoles(['ADMIN']),
+  statusDictController.deactivateRecoveryAbilityStatus
 );
 
 // =============================================

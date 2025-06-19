@@ -4,6 +4,7 @@ import { Button } from '../../../components/ui/Button';
 import { Spinner } from '../../../components/ui/Spinner';
 import { Alert } from '../../../components/ui/Alert';
 import { workflowApi, StatusHistoryItem } from '../../../services/api/workflow.api';
+import { statusDictApi } from '../../../services/api/workflow/status-dict.api';
 import { StatusDictItem, StatusUpdateRequest } from '../types';
 import StatusHistoryModal from './StatusHistoryModal';
 import StatusUpdateModal from './StatusUpdateModal';
@@ -61,14 +62,13 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
         lendingViolationDict,
         recoveryAbilityDict
       ] = await Promise.all([
-        workflowApi.getCustomerStatusDict(),
-        workflowApi.getCollateralStatusDict(),
-        workflowApi.getProcessingStateDict(),
-        workflowApi.getProcessingSubstateDict(),
-        workflowApi.getLendingViolationStatusDict(),
-        workflowApi.getRecoveryAbilityStatusDict()
+        statusDictApi.getCustomerStatuses(true), // Get all including inactive for history
+        statusDictApi.getCollateralStatuses(true),
+        statusDictApi.getProcessingStates(true),
+        statusDictApi.getProcessingSubstates(true),
+        statusDictApi.getLendingViolationStatuses(true),
+        statusDictApi.getRecoveryAbilityStatuses(true)
       ]);
-
       setStatusDictionaries({
         customer: customerDict,
         collateral: collateralDict,
@@ -325,10 +325,11 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
   // Get status options for update modal
   const getStatusOptionsForUpdate: () => StatusDictItem[] = useCallback(() => {
     if (!statusDictionaries || !modalState.statusType) return [];
-    const dictKey = modalState.statusType
+    const dictKey = modalState.statusType;
+    
     const dictionary = statusDictionaries[dictKey as keyof StatusDictionaries];
     if (!dictionary || !Array.isArray(dictionary)) return [];
-    return dictionary;
+    return dictionary.filter(item => item.is_active !== false);
   }, [statusDictionaries, modalState.statusType]);
 
   if (isLoading) {
@@ -373,13 +374,13 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
           </Button>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-5 gap-4">
+          <div className="grid grid-cols-5 gap-3">
             {/* Customer Status */}
             <div
-              className="bg-neutral-50 rounded-md p-4 text-center border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors"
+              className="bg-neutral-50 rounded-md p-3 text-center border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors"
               onClick={() => handleStatusClick('customer')}
             >
-              <div className="text-xs text-neutral-600 mb-2 font-medium">{t('customers:status.customer_status_label')}</div>
+              <div className="text-xs text-neutral-600 mb-1 font-medium">{t('customers:status.customer_status_label')}</div>
               <div
                 className="font-bold text-sm"
                 style={{ color: getStatusInfo('customer').color }}
@@ -390,10 +391,10 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
             
             {/* Collateral Status */}
             <div
-              className="bg-neutral-50 rounded-md p-4 text-center border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors"
+              className="bg-neutral-50 rounded-md p-3 text-center border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors"
               onClick={() => handleStatusClick('collateral')}
             >
-              <div className="text-xs text-neutral-600 mb-2 font-medium">{t('customers:status.collateral_status')}</div>
+              <div className="text-xs text-neutral-600 mb-1 font-medium">{t('customers:status.collateral_status')}</div>
               <div
                 className="font-bold text-sm"
                 style={{ color: getStatusInfo('collateral').color }}
@@ -404,10 +405,10 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
             
             {/* Processing State */}
             <div
-              className="bg-neutral-50 rounded-md p-4 text-center border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors"
+              className="bg-neutral-50 rounded-md p-3 text-center border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors"
               onClick={() => handleStatusClick('processingState')}
             >
-              <div className="text-xs text-neutral-600 mb-2 font-medium">{t('customers:status.processing_state')}</div>
+              <div className="text-xs text-neutral-600 mb-1 font-medium">{t('customers:status.processing_state')}</div>
               <div
                 className="font-bold text-sm"
                 style={{ color: getStatusInfo('processingState').color }}
@@ -418,10 +419,10 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
             
             {/* Lending Violation */}
             <div
-              className="bg-neutral-50 rounded-md p-4 text-center border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors"
+              className="bg-neutral-50 rounded-md p-3 text-center border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors"
               onClick={() => handleStatusClick('lendingViolation')}
             >
-              <div className="text-xs text-neutral-600 mb-2 font-medium">{t('customers:status.lending_violation')}</div>
+              <div className="text-xs text-neutral-600 mb-1 font-medium">{t('customers:status.lending_violation')}</div>
               <div
                 className="font-bold text-sm"
                 style={{ color: getStatusInfo('lendingViolation').color }}
@@ -432,10 +433,10 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
             
             {/* Recovery Ability */}
             <div
-              className="bg-neutral-50 rounded-md p-4 text-center border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors"
+              className="bg-neutral-50 rounded-md p-3 text-center border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors"
               onClick={() => handleStatusClick('recoveryAbility')}
             >
-              <div className="text-xs text-neutral-600 mb-2 font-medium">{t('customers:status.recovery_ability')}</div>
+              <div className="text-xs text-neutral-600 mb-1 font-medium">{t('customers:status.recovery_ability')}</div>
               <div
                 className="font-bold text-sm"
                 style={{ color: getStatusInfo('recoveryAbility').color }}

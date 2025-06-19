@@ -276,8 +276,8 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ cif, phones, em
         
         <CardContent>
           {/* Phone Numbers */}
-          <div className="contact-section mb-6">
-            <div className="text-sm font-semibold text-neutral-600 mb-3 flex items-center justify-between">
+          <div className="contact-section mb-4">
+            <div className="text-sm font-semibold text-neutral-600 mb-2 flex items-center justify-between">
               <div className="flex items-center">
                 <i className="bi bi-telephone text-primary-500 mr-2"></i>
                 {t('customers:fields.phone')}
@@ -293,12 +293,12 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ cif, phones, em
             </div>
             
             {combinedPhones.map((phone, index) => (
-              <div key={phone.id || index} className="flex items-center p-3 rounded-md mb-3 bg-neutral-50 border border-neutral-200">
-                <div className="w-10 h-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center mr-3 text-base">
+              <div key={phone.id || index} className="flex items-center p-2 rounded-md mb-2 bg-neutral-50 border border-neutral-200">
+                <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center mr-2 text-sm">
                   <i className={`bi ${phone.type === 'MOBILE' ? 'bi-phone' : phone.type === 'WORK' ? 'bi-building' : 'bi-telephone'}`}></i>
                 </div>
                 <div className="flex-1">
-                  <div className="text-xs text-neutral-500 mb-1 flex items-center gap-2">
+                  <div className="text-xs text-neutral-500 mb-0.5 flex items-center gap-2">
                     <span>{phone.type}</span>
                     {phone.isPrimary && <Badge variant="primary" size="sm">{t('forms:options.primary')}</Badge>}
                     {phone.isVerified && <Badge variant="success" size="sm">{t('forms:options.verified')}</Badge>}
@@ -345,8 +345,8 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ cif, phones, em
           </div>
           
           {/* Email Addresses */}
-          <div className="contact-section mb-6">
-            <div className="text-sm font-semibold text-neutral-600 mb-3 flex items-center justify-between">
+          <div className="contact-section mb-4">
+            <div className="text-sm font-semibold text-neutral-600 mb-2 flex items-center justify-between">
               <div className="flex items-center">
                 <i className="bi bi-envelope text-primary-500 mr-2"></i>
                 {t('customers:fields.email')}
@@ -362,12 +362,12 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ cif, phones, em
             </div>
             
             {combinedEmails.map((email, index) => (
-              <div key={email.id || index} className="flex items-center p-3 rounded-md mb-3 bg-neutral-50 border border-neutral-200">
-                <div className="w-10 h-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center mr-3 text-base">
+              <div key={email.id || index} className="flex items-center p-2 rounded-md mb-2 bg-neutral-50 border border-neutral-200">
+                <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center mr-2 text-sm">
                   <i className="bi bi-envelope"></i>
                 </div>
                 <div className="flex-1">
-                  <div className="text-xs text-neutral-500 mb-1 flex items-center gap-2">
+                  <div className="text-xs text-neutral-500 mb-0.5 flex items-center gap-2">
                     <span>{t('customers:contact_methods.email')}</span>
                     {email.isPrimary && <Badge variant="primary" size="sm">{t('forms:options.primary')}</Badge>}
                     {email.isVerified && <Badge variant="success" size="sm">{t('forms:options.verified')}</Badge>}
@@ -408,7 +408,7 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ cif, phones, em
           
           {/* Physical Addresses */}
           <div className="contact-section">
-            <div className="text-sm font-semibold text-neutral-600 mb-3 flex items-center justify-between">
+            <div className="text-sm font-semibold text-neutral-600 mb-2 flex items-center justify-between">
               <div className="flex items-center">
                 <i className="bi bi-geo-alt text-primary-500 mr-2"></i>
                 {t('customers:fields.address')}
@@ -424,12 +424,12 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ cif, phones, em
             </div>
             
             {combinedAddresses.map((address, index) => (
-              <div key={address.id || index} className="flex items-center p-3 rounded-md mb-3 bg-neutral-50 border border-neutral-200">
-                <div className="w-10 h-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center mr-3 text-base">
+              <div key={address.id || index} className="flex items-center p-2 rounded-md mb-2 bg-neutral-50 border border-neutral-200">
+                <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center mr-2 text-sm">
                   <i className={`bi ${address.type === 'HOME' ? 'bi-house' : 'bi-building'}`}></i>
                 </div>
                 <div className="flex-1">
-                  <div className="text-xs text-neutral-500 mb-1 flex items-center gap-2">
+                  <div className="text-xs text-neutral-500 mb-0.5 flex items-center gap-2">
                     <span>{address.type} {t('customers:fields.address')}</span>
                     {address.isPrimary && <Badge variant="primary" size="sm">{t('forms:options.primary')}</Badge>}
                     {address.isVerified && <Badge variant="success" size="sm">{t('forms:options.verified')}</Badge>}

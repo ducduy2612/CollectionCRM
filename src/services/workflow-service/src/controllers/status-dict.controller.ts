@@ -18,17 +18,18 @@ export class StatusDictController {
    */
   async getActiveCustomerStatuses(req: Request, res: Response, next: NextFunction) {
     try {
-      const statuses = await StatusDictRepository.getActiveCustomerStatuses();
+      const includeInactive = req.query.includeInactive === 'true';
+      const statuses = await StatusDictRepository.getAllCustomerStatuses(includeInactive);
       
-      logger.info('Active customer statuses retrieved successfully');
+      logger.info({ includeInactive }, 'Customer statuses retrieved successfully');
       
       return ResponseUtil.success(
         res,
         statuses,
-        'Active customer statuses retrieved successfully'
+        `${includeInactive ? 'All' : 'Active'} customer statuses retrieved successfully`
       );
     } catch (error) {
-      logger.error({ error, path: req.path }, 'Error retrieving active customer statuses');
+      logger.error({ error, path: req.path }, 'Error retrieving customer statuses');
       next(error);
     }
   }
@@ -100,6 +101,47 @@ export class StatusDictController {
     }
   }
 
+  /**
+   * Update customer status
+   * @route PUT /status-dict/customer-status/:code
+   */
+  async updateCustomerStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { code } = req.params;
+      const { name, description, color, displayOrder } = req.body;
+
+      // Check if status exists
+      const existing = await StatusDictRepository.findStatusByCode('customer', code);
+      if (!existing) {
+        throw Errors.create(
+          Errors.Database.RECORD_NOT_FOUND,
+          `Customer status with code ${code} not found`,
+          OperationType.DATABASE,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      const updated = await StatusDictRepository.updateCustomerStatus(code, {
+        name,
+        description,
+        color,
+        displayOrder,
+        updatedBy: req.user?.username || 'ADMIN'
+      });
+
+      logger.info({ code, updated }, 'Customer status updated successfully');
+
+      return ResponseUtil.success(
+        res,
+        updated,
+        'Customer status updated successfully'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error updating customer status');
+      next(error);
+    }
+  }
+
   // =============================================
   // COLLATERAL STATUS MANAGEMENT
   // =============================================
@@ -110,17 +152,18 @@ export class StatusDictController {
    */
   async getActiveCollateralStatuses(req: Request, res: Response, next: NextFunction) {
     try {
-      const statuses = await StatusDictRepository.getActiveCollateralStatuses();
+      const includeInactive = req.query.includeInactive === 'true';
+      const statuses = await StatusDictRepository.getAllCollateralStatuses(includeInactive);
       
-      logger.info('Active collateral statuses retrieved successfully');
+      logger.info({ includeInactive }, 'Collateral statuses retrieved successfully');
       
       return ResponseUtil.success(
         res,
         statuses,
-        'Active collateral statuses retrieved successfully'
+        `${includeInactive ? 'All' : 'Active'} collateral statuses retrieved successfully`
       );
     } catch (error) {
-      logger.error({ error, path: req.path }, 'Error retrieving active collateral statuses');
+      logger.error({ error, path: req.path }, 'Error retrieving collateral statuses');
       next(error);
     }
   }
@@ -192,6 +235,47 @@ export class StatusDictController {
     }
   }
 
+  /**
+   * Update collateral status
+   * @route PUT /status-dict/collateral-status/:code
+   */
+  async updateCollateralStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { code } = req.params;
+      const { name, description, color, displayOrder } = req.body;
+
+      // Check if status exists
+      const existing = await StatusDictRepository.findStatusByCode('collateral', code);
+      if (!existing) {
+        throw Errors.create(
+          Errors.Database.RECORD_NOT_FOUND,
+          `Collateral status with code ${code} not found`,
+          OperationType.DATABASE,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      const updated = await StatusDictRepository.updateCollateralStatus(code, {
+        name,
+        description,
+        color,
+        displayOrder,
+        updatedBy: req.user?.username || 'ADMIN'
+      });
+
+      logger.info({ code, updated }, 'Collateral status updated successfully');
+
+      return ResponseUtil.success(
+        res,
+        updated,
+        'Collateral status updated successfully'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error updating collateral status');
+      next(error);
+    }
+  }
+
   // =============================================
   // PROCESSING STATE MANAGEMENT
   // =============================================
@@ -202,17 +286,18 @@ export class StatusDictController {
    */
   async getActiveProcessingStates(req: Request, res: Response, next: NextFunction) {
     try {
-      const states = await StatusDictRepository.getActiveProcessingStates();
+      const includeInactive = req.query.includeInactive === 'true';
+      const states = await StatusDictRepository.getAllProcessingStates(includeInactive);
       
-      logger.info('Active processing states retrieved successfully');
+      logger.info({ includeInactive }, 'Processing states retrieved successfully');
       
       return ResponseUtil.success(
         res,
         states,
-        'Active processing states retrieved successfully'
+        `${includeInactive ? 'All' : 'Active'} processing states retrieved successfully`
       );
     } catch (error) {
-      logger.error({ error, path: req.path }, 'Error retrieving active processing states');
+      logger.error({ error, path: req.path }, 'Error retrieving processing states');
       next(error);
     }
   }
@@ -223,17 +308,18 @@ export class StatusDictController {
    */
   async getActiveProcessingSubstates(req: Request, res: Response, next: NextFunction) {
     try {
-      const substates = await StatusDictRepository.getActiveProcessingSubstates();
+      const includeInactive = req.query.includeInactive === 'true';
+      const substates = await StatusDictRepository.getAllProcessingSubstates(includeInactive);
       
-      logger.info('Active processing substates retrieved successfully');
+      logger.info({ includeInactive }, 'Processing substates retrieved successfully');
       
       return ResponseUtil.success(
         res,
         substates,
-        'Active processing substates retrieved successfully'
+        `${includeInactive ? 'All' : 'Active'} processing substates retrieved successfully`
       );
     } catch (error) {
-      logger.error({ error, path: req.path }, 'Error retrieving active processing substates');
+      logger.error({ error, path: req.path }, 'Error retrieving processing substates');
       next(error);
     }
   }
@@ -418,6 +504,140 @@ export class StatusDictController {
     }
   }
 
+  /**
+   * Update processing state
+   * @route PUT /status-dict/processing-state/:code
+   */
+  async updateProcessingState(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { code } = req.params;
+      const { name, description, color, displayOrder } = req.body;
+
+      // Check if status exists
+      const existing = await StatusDictRepository.findStatusByCode('processing_state', code);
+      if (!existing) {
+        throw Errors.create(
+          Errors.Database.RECORD_NOT_FOUND,
+          `Processing state with code ${code} not found`,
+          OperationType.DATABASE,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      const updated = await StatusDictRepository.updateProcessingState(code, {
+        name,
+        description,
+        color,
+        displayOrder,
+        updatedBy: req.user?.username || 'ADMIN'
+      });
+
+      logger.info({ code, updated }, 'Processing state updated successfully');
+
+      return ResponseUtil.success(
+        res,
+        updated,
+        'Processing state updated successfully'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error updating processing state');
+      next(error);
+    }
+  }
+
+  /**
+   * Update processing substate
+   * @route PUT /status-dict/processing-substate/:code
+   */
+  async updateProcessingSubstate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { code } = req.params;
+      const { name, description, color, displayOrder } = req.body;
+
+      // Check if status exists
+      const existing = await StatusDictRepository.findStatusByCode('processing_substate', code);
+      if (!existing) {
+        throw Errors.create(
+          Errors.Database.RECORD_NOT_FOUND,
+          `Processing substate with code ${code} not found`,
+          OperationType.DATABASE,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      const updated = await StatusDictRepository.updateProcessingSubstate(code, {
+        name,
+        description,
+        color,
+        displayOrder,
+        updatedBy: req.user?.username || 'ADMIN'
+      });
+
+      logger.info({ code, updated }, 'Processing substate updated successfully');
+
+      return ResponseUtil.success(
+        res,
+        updated,
+        'Processing substate updated successfully'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error updating processing substate');
+      next(error);
+    }
+  }
+
+  /**
+   * Deactivate processing state
+   * @route DELETE /status-dict/processing-state/:code
+   */
+  async deactivateProcessingState(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { code } = req.params;
+
+      const success = await StatusDictRepository.deactivateProcessingState(
+        code,
+        req.user?.username || 'ADMIN'
+      );
+
+      logger.info({ code, success }, 'Processing state deactivation completed');
+
+      return ResponseUtil.success(
+        res,
+        { code, deactivated: success },
+        success ? 'Processing state deactivated successfully' : 'Processing state deactivation failed'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error deactivating processing state');
+      next(error);
+    }
+  }
+
+  /**
+   * Deactivate processing substate
+   * @route DELETE /status-dict/processing-substate/:code
+   */
+  async deactivateProcessingSubstate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { code } = req.params;
+
+      const success = await StatusDictRepository.deactivateProcessingSubstate(
+        code,
+        req.user?.username || 'ADMIN'
+      );
+
+      logger.info({ code, success }, 'Processing substate deactivation completed');
+
+      return ResponseUtil.success(
+        res,
+        { code, deactivated: success },
+        success ? 'Processing substate deactivated successfully' : 'Processing substate deactivation failed'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error deactivating processing substate');
+      next(error);
+    }
+  }
+
   // =============================================
   // LENDING VIOLATION STATUS MANAGEMENT
   // =============================================
@@ -428,17 +648,18 @@ export class StatusDictController {
    */
   async getActiveLendingViolationStatuses(req: Request, res: Response, next: NextFunction) {
     try {
-      const statuses = await StatusDictRepository.getActiveLendingViolationStatuses();
+      const includeInactive = req.query.includeInactive === 'true';
+      const statuses = await StatusDictRepository.getAllLendingViolationStatuses(includeInactive);
       
-      logger.info('Active lending violation statuses retrieved successfully');
+      logger.info({ includeInactive }, 'Lending violation statuses retrieved successfully');
       
       return ResponseUtil.success(
         res,
         statuses,
-        'Active lending violation statuses retrieved successfully'
+        `${includeInactive ? 'All' : 'Active'} lending violation statuses retrieved successfully`
       );
     } catch (error) {
-      logger.error({ error, path: req.path }, 'Error retrieving active lending violation statuses');
+      logger.error({ error, path: req.path }, 'Error retrieving lending violation statuses');
       next(error);
     }
   }
@@ -484,6 +705,73 @@ export class StatusDictController {
     }
   }
 
+  /**
+   * Update lending violation status
+   * @route PUT /status-dict/lending-violation-status/:code
+   */
+  async updateLendingViolationStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { code } = req.params;
+      const { name, description, color, displayOrder } = req.body;
+
+      // Check if status exists
+      const existing = await StatusDictRepository.findStatusByCode('lending_violation', code);
+      if (!existing) {
+        throw Errors.create(
+          Errors.Database.RECORD_NOT_FOUND,
+          `Lending violation status with code ${code} not found`,
+          OperationType.DATABASE,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      const updated = await StatusDictRepository.updateLendingViolationStatus(code, {
+        name,
+        description,
+        color,
+        displayOrder,
+        updatedBy: req.user?.username || 'ADMIN'
+      });
+
+      logger.info({ code, updated }, 'Lending violation status updated successfully');
+
+      return ResponseUtil.success(
+        res,
+        updated,
+        'Lending violation status updated successfully'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error updating lending violation status');
+      next(error);
+    }
+  }
+
+  /**
+   * Deactivate lending violation status
+   * @route DELETE /status-dict/lending-violation-status/:code
+   */
+  async deactivateLendingViolationStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { code } = req.params;
+
+      const success = await StatusDictRepository.deactivateLendingViolationStatus(
+        code,
+        req.user?.username || 'ADMIN'
+      );
+
+      logger.info({ code, success }, 'Lending violation status deactivation completed');
+
+      return ResponseUtil.success(
+        res,
+        { code, deactivated: success },
+        success ? 'Lending violation status deactivated successfully' : 'Lending violation status deactivation failed'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error deactivating lending violation status');
+      next(error);
+    }
+  }
+
   // =============================================
   // RECOVERY ABILITY STATUS MANAGEMENT
   // =============================================
@@ -494,17 +782,18 @@ export class StatusDictController {
    */
   async getActiveRecoveryAbilityStatuses(req: Request, res: Response, next: NextFunction) {
     try {
-      const statuses = await StatusDictRepository.getActiveRecoveryAbilityStatuses();
+      const includeInactive = req.query.includeInactive === 'true';
+      const statuses = await StatusDictRepository.getAllRecoveryAbilityStatuses(includeInactive);
       
-      logger.info('Active recovery ability statuses retrieved successfully');
+      logger.info({ includeInactive }, 'Recovery ability statuses retrieved successfully');
       
       return ResponseUtil.success(
         res,
         statuses,
-        'Active recovery ability statuses retrieved successfully'
+        `${includeInactive ? 'All' : 'Active'} recovery ability statuses retrieved successfully`
       );
     } catch (error) {
-      logger.error({ error, path: req.path }, 'Error retrieving active recovery ability statuses');
+      logger.error({ error, path: req.path }, 'Error retrieving recovery ability statuses');
       next(error);
     }
   }
@@ -546,6 +835,73 @@ export class StatusDictController {
       );
     } catch (error) {
       logger.error({ error, path: req.path }, 'Error adding recovery ability status');
+      next(error);
+    }
+  }
+
+  /**
+   * Update recovery ability status
+   * @route PUT /status-dict/recovery-ability-status/:code
+   */
+  async updateRecoveryAbilityStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { code } = req.params;
+      const { name, description, color, displayOrder } = req.body;
+
+      // Check if status exists
+      const existing = await StatusDictRepository.findStatusByCode('recovery_ability', code);
+      if (!existing) {
+        throw Errors.create(
+          Errors.Database.RECORD_NOT_FOUND,
+          `Recovery ability status with code ${code} not found`,
+          OperationType.DATABASE,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      const updated = await StatusDictRepository.updateRecoveryAbilityStatus(code, {
+        name,
+        description,
+        color,
+        displayOrder,
+        updatedBy: req.user?.username || 'ADMIN'
+      });
+
+      logger.info({ code, updated }, 'Recovery ability status updated successfully');
+
+      return ResponseUtil.success(
+        res,
+        updated,
+        'Recovery ability status updated successfully'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error updating recovery ability status');
+      next(error);
+    }
+  }
+
+  /**
+   * Deactivate recovery ability status
+   * @route DELETE /status-dict/recovery-ability-status/:code
+   */
+  async deactivateRecoveryAbilityStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { code } = req.params;
+
+      const success = await StatusDictRepository.deactivateRecoveryAbilityStatus(
+        code,
+        req.user?.username || 'ADMIN'
+      );
+
+      logger.info({ code, success }, 'Recovery ability status deactivation completed');
+
+      return ResponseUtil.success(
+        res,
+        { code, deactivated: success },
+        success ? 'Recovery ability status deactivated successfully' : 'Recovery ability status deactivation failed'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error deactivating recovery ability status');
       next(error);
     }
   }

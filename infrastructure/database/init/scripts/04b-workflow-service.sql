@@ -804,7 +804,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Function to safely deactivate customer status (prevents if used in existing records)
+-- Function to safely deactivate customer status 
 CREATE OR REPLACE FUNCTION workflow_service.deactivate_customer_status(
     p_status_code VARCHAR(50),
     p_updated_by VARCHAR(50) DEFAULT 'ADMIN'
@@ -820,17 +820,6 @@ BEGIN
         RAISE EXCEPTION 'Customer status with code % not found or already inactive', p_status_code;
     END IF;
     
-    -- Check if status is used in existing status records
-    SELECT COUNT(*) INTO v_record_count
-    FROM workflow_service.customer_status
-    WHERE status_id = v_status_id;
-    
-    IF v_record_count > 0 THEN
-        RAISE EXCEPTION 'Cannot deactivate customer status %. It is used in % existing status records. Historical data must be preserved.',
-            p_status_code, v_record_count;
-    END IF;
-    
-    -- Safe to deactivate - no existing records use this status
     UPDATE workflow_service.customer_status_dict
     SET is_active = FALSE, updated_at = NOW(), updated_by = p_updated_by
     WHERE id = v_status_id;
@@ -839,7 +828,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Function to safely deactivate collateral status (prevents if used in existing records)
+-- Function to safely deactivate collateral status 
 CREATE OR REPLACE FUNCTION workflow_service.deactivate_collateral_status(
     p_status_code VARCHAR(50),
     p_updated_by VARCHAR(50) DEFAULT 'ADMIN'
@@ -855,17 +844,6 @@ BEGIN
         RAISE EXCEPTION 'Collateral status with code % not found or already inactive', p_status_code;
     END IF;
     
-    -- Check if status is used in existing status records
-    SELECT COUNT(*) INTO v_record_count
-    FROM workflow_service.collateral_status
-    WHERE status_id = v_status_id;
-    
-    IF v_record_count > 0 THEN
-        RAISE EXCEPTION 'Cannot deactivate collateral status %. It is used in % existing status records. Historical data must be preserved.',
-            p_status_code, v_record_count;
-    END IF;
-    
-    -- Safe to deactivate - no existing records use this status
     UPDATE workflow_service.collateral_status_dict
     SET is_active = FALSE, updated_at = NOW(), updated_by = p_updated_by
     WHERE id = v_status_id;
@@ -874,7 +852,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Function to safely deactivate processing state (prevents if used in existing records)
+-- Function to safely deactivate processing state
 CREATE OR REPLACE FUNCTION workflow_service.deactivate_processing_state(
     p_state_code VARCHAR(50),
     p_updated_by VARCHAR(50) DEFAULT 'ADMIN'
@@ -890,17 +868,6 @@ BEGIN
         RAISE EXCEPTION 'Processing state with code % not found or already inactive', p_state_code;
     END IF;
     
-    -- Check if state is used in existing status records
-    SELECT COUNT(*) INTO v_record_count
-    FROM workflow_service.processing_state_status
-    WHERE state_id = v_state_id;
-    
-    IF v_record_count > 0 THEN
-        RAISE EXCEPTION 'Cannot deactivate processing state %. It is used in % existing status records. Historical data must be preserved.',
-            p_state_code, v_record_count;
-    END IF;
-    
-    -- Safe to deactivate - no existing records use this state
     UPDATE workflow_service.processing_state_dict
     SET is_active = FALSE, updated_at = NOW(), updated_by = p_updated_by
     WHERE id = v_state_id;
@@ -914,7 +881,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Function to safely deactivate processing substate (prevents if used in existing records)
+-- Function to safely deactivate processing substate
 CREATE OR REPLACE FUNCTION workflow_service.deactivate_processing_substate(
     p_substate_code VARCHAR(50),
     p_updated_by VARCHAR(50) DEFAULT 'ADMIN'
@@ -930,17 +897,6 @@ BEGIN
         RAISE EXCEPTION 'Processing substate with code % not found or already inactive', p_substate_code;
     END IF;
     
-    -- Check if substate is used in existing status records
-    SELECT COUNT(*) INTO v_record_count
-    FROM workflow_service.processing_state_status
-    WHERE substate_id = v_substate_id;
-    
-    IF v_record_count > 0 THEN
-        RAISE EXCEPTION 'Cannot deactivate processing substate %. It is used in % existing status records. Historical data must be preserved.',
-            p_substate_code, v_record_count;
-    END IF;
-    
-    -- Safe to deactivate - no existing records use this substate
     UPDATE workflow_service.processing_substate_dict
     SET is_active = FALSE, updated_at = NOW(), updated_by = p_updated_by
     WHERE id = v_substate_id;
@@ -954,7 +910,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Function to safely deactivate lending violation status (prevents if used in existing records)
+-- Function to safely deactivate lending violation status
 CREATE OR REPLACE FUNCTION workflow_service.deactivate_lending_violation_status(
     p_status_code VARCHAR(50),
     p_updated_by VARCHAR(50) DEFAULT 'ADMIN'
@@ -970,17 +926,6 @@ BEGIN
         RAISE EXCEPTION 'Lending violation status with code % not found or already inactive', p_status_code;
     END IF;
     
-    -- Check if status is used in existing status records
-    SELECT COUNT(*) INTO v_record_count
-    FROM workflow_service.lending_violation_status
-    WHERE status_id = v_status_id;
-    
-    IF v_record_count > 0 THEN
-        RAISE EXCEPTION 'Cannot deactivate lending violation status %. It is used in % existing status records. Historical data must be preserved.',
-            p_status_code, v_record_count;
-    END IF;
-    
-    -- Safe to deactivate - no existing records use this status
     UPDATE workflow_service.lending_violation_status_dict
     SET is_active = FALSE, updated_at = NOW(), updated_by = p_updated_by
     WHERE id = v_status_id;
@@ -989,7 +934,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Function to safely deactivate recovery ability status (prevents if used in existing records)
+-- Function to safely deactivate recovery ability status
 CREATE OR REPLACE FUNCTION workflow_service.deactivate_recovery_ability_status(
     p_status_code VARCHAR(50),
     p_updated_by VARCHAR(50) DEFAULT 'ADMIN'
@@ -1005,17 +950,6 @@ BEGIN
         RAISE EXCEPTION 'Recovery ability status with code % not found or already inactive', p_status_code;
     END IF;
     
-    -- Check if status is used in existing status records
-    SELECT COUNT(*) INTO v_record_count
-    FROM workflow_service.recovery_ability_status
-    WHERE status_id = v_status_id;
-    
-    IF v_record_count > 0 THEN
-        RAISE EXCEPTION 'Cannot deactivate recovery ability status %. It is used in % existing status records. Historical data must be preserved.',
-            p_status_code, v_record_count;
-    END IF;
-    
-    -- Safe to deactivate - no existing records use this status
     UPDATE workflow_service.recovery_ability_status_dict
     SET is_active = FALSE, updated_at = NOW(), updated_by = p_updated_by
     WHERE id = v_status_id;
