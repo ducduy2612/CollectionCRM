@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui
 import { Button } from '../../../components/ui/Button';
 import { Spinner } from '../../../components/ui/Spinner';
 import { Alert } from '../../../components/ui/Alert';
+import { Textarea } from '../../../components/ui/Textarea';
 import { workflowApi, StatusHistoryItem } from '../../../services/api/workflow.api';
 import { statusDictApi } from '../../../services/api/workflow/status-dict.api';
 import { StatusDictItem, StatusUpdateRequest } from '../types';
@@ -50,6 +51,12 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
   const [statusHistory, setStatusHistory] = useState<StatusHistoryItem[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [processingSubstates, setProcessingSubstates] = useState<StatusDictItem[]>([]);
+  
+  // Master notes state
+  const [masterNotes, setMasterNotes] = useState<string>('');
+  const [originalMasterNotes, setOriginalMasterNotes] = useState<string>('');
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
 
   // Load status dictionaries on component mount
   const loadStatusDictionaries = useCallback(async () => {
@@ -83,6 +90,20 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
       throw new Error(`Failed to load status dictionaries: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   }, []);
+
+  // Load master notes for the customer
+  const loadMasterNotes = useCallback(async () => {
+    try {
+      const customerCase = await workflowApi.getCustomerCase(cif);
+      const notes = customerCase.masterNotes || '';
+      setMasterNotes(notes);
+      setOriginalMasterNotes(notes);
+    } catch (err) {
+      console.warn('Error loading master notes:', err);
+      setMasterNotes('');
+      setOriginalMasterNotes('');
+    }
+  }, [cif]);
 
   // Load current status data for the customer
   const loadCurrentStatuses = useCallback(async () => {
@@ -139,7 +160,8 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
       try {
         await Promise.all([
           loadStatusDictionaries(),
-          loadCurrentStatuses()
+          loadCurrentStatuses(),
+          loadMasterNotes()
         ]);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -151,7 +173,7 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
     if (cif) {
       initializeData();
     }
-  }, [cif, loadStatusDictionaries, loadCurrentStatuses]);
+  }, [cif, loadStatusDictionaries, loadCurrentStatuses, loadMasterNotes]);
 
   // Get status display information
   const getStatusInfo = (statusType: keyof CurrentStatuses) => {
@@ -332,9 +354,40 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
     return dictionary.filter(item => item.is_active !== false);
   }, [statusDictionaries, modalState.statusType]);
 
+  // Master notes handlers
+  const handleEditNotes = () => {
+    setIsEditingNotes(true);
+  };
+
+  const handleCancelEditNotes = () => {
+    setMasterNotes(originalMasterNotes);
+    setIsEditingNotes(false);
+  };
+
+  const handleSaveNotes = async () => {
+    if (masterNotes.trim() === originalMasterNotes.trim()) {
+      setIsEditingNotes(false);
+      return;
+    }
+
+    setIsSavingNotes(true);
+    try {
+      await workflowApi.updateMasterNotes(cif, masterNotes.trim());
+      setOriginalMasterNotes(masterNotes.trim());
+      setIsEditingNotes(false);
+    } catch (error) {
+      console.error('Error saving master notes:', error);
+      setError('Failed to save master notes. Please try again.');
+    } finally {
+      setIsSavingNotes(false);
+    }
+  };
+
+  const hasNotesChanged = masterNotes.trim() !== originalMasterNotes.trim();
+
   if (isLoading) {
     return (
-      <Card className="col-span-2">
+      <Card>
         <CardHeader>
           <CardTitle>{t('customers:status.customer_status')}</CardTitle>
         </CardHeader>
@@ -350,7 +403,7 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
 
   if (error) {
     return (
-      <Card className="col-span-2">
+      <Card>
         <CardHeader>
           <CardTitle>{t('customers:status.customer_status')}</CardTitle>
         </CardHeader>
@@ -365,7 +418,7 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
 
   return (
     <>
-      <Card className="col-span-2">
+      <Card className="h-full">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{t('customers:status.customer_status')}</CardTitle>
           <Button variant="secondary" size="sm" onClick={handleUpdateClick}>
@@ -444,6 +497,67 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
                 {getStatusInfo('recoveryAbility').name}
               </div>
             </div>
+          </div>
+
+          {/* Master Notes Section */}
+          <div className="mt-6 pt-6 border-t border-neutral-200">
+            <div className="flex flex-row items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-neutral-900">Master Notes</h3>
+              {!isEditingNotes && (
+                <Button variant="secondary" size="sm" onClick={handleEditNotes}>
+                  <i className="bi bi-pencil mr-2"></i>
+                  Edit
+                </Button>
+              )}
+            </div>
+            {isEditingNotes ? (
+              <div className="space-y-3">
+                <Textarea
+                  value={masterNotes}
+                  onChange={(e) => setMasterNotes(e.target.value)}
+                  placeholder="Enter master notes for this customer..."
+                  rows={4}
+                  className="w-full"
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleCancelEditNotes}
+                    disabled={isSavingNotes}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleSaveNotes}
+                    disabled={isSavingNotes || !hasNotesChanged}
+                  >
+                    {isSavingNotes ? (
+                      <>
+                        <Spinner size="sm" className="mr-2" />
+                        Saving...
+                      </>
+                    ) : (
+                      'Save'
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="min-h-[100px] p-3 bg-neutral-50 rounded-md border">
+                {masterNotes ? (
+                  <div className="whitespace-pre-wrap text-sm text-neutral-800">
+                    {masterNotes}
+                  </div>
+                ) : (
+                  <div className="text-sm text-neutral-500 italic">
+                    No master notes available
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

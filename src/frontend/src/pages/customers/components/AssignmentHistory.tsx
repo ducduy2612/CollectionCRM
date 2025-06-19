@@ -128,93 +128,79 @@ const AssignmentHistory: React.FC<AssignmentHistoryProps> = React.memo(({ cif })
       </CardHeader>
       <CardContent>
         {assignments.length === 0 ? (
-          <div className="text-center py-8 text-neutral-500">
+          <div className="text-center py-4 text-neutral-500">
             <p>{t('customers:messages.no_assignment_history')}</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {assignments.map((assignment, index) => (
-              <div 
-                key={assignment.id || index} 
-                className={`assignment-item p-4 border rounded-lg ${
-                  assignment.isCurrent 
-                    ? 'border-primary-200 bg-primary-50' 
-                    : 'border-neutral-200 bg-white'
-                }`}
-              >
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-sm font-medium text-neutral-600">
-                        {t('customers:labels.assignment_period')}:
-                      </span>
-                      <span className="text-sm text-neutral-800">
+          <div className="max-h-85 overflow-y-auto">
+            <div className="space-y-2">
+              {assignments.map((assignment, index) => (
+                <div 
+                  key={assignment.id || index} 
+                  className={`assignment-item p-3 border rounded-md text-sm ${
+                    assignment.isCurrent 
+                      ? 'border-primary-200 bg-primary-50' 
+                      : 'border-neutral-200 bg-neutral-50'
+                  }`}
+                >
+                  {/* Header row with period and current badge */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-neutral-700">
                         {getAssignmentPeriod(assignment.startDate, assignment.endDate, assignment.isCurrent)}
                       </span>
                       {assignment.isCurrent && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                           {t('common:labels.current')}
                         </span>
                       )}
                     </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Call Agent */}
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <i className="bi bi-telephone text-blue-500"></i>
-                      <span className="text-sm font-medium text-neutral-600">
-                        {t('customers:labels.call_agent')}:
-                      </span>
+                    <div className="text-xs text-neutral-400">
+                      {formatDate(assignment.createdAt)}
                     </div>
-                    <div className="ml-6">
-                      <div className="text-sm text-neutral-800">
-                        {getAgentDisplay(assignment.assignedCallAgent)}
-                      </div>
-                      {assignment.assignedCallAgent && (
-                        <div className="text-xs text-neutral-500">
-                          {assignment.assignedCallAgent.team} • {assignment.assignedCallAgent.type}
+                  </div>
+
+                  {/* Agents info in compact grid */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Call Agent */}
+                    <div className="flex items-start gap-2">
+                      <i className="bi bi-telephone text-blue-500 text-xs mt-0.5 flex-shrink-0"></i>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs text-neutral-600 mb-1">
+                          {t('customers:labels.call_agent')}
                         </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Field Agent */}
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <i className="bi bi-geo-alt text-green-500"></i>
-                      <span className="text-sm font-medium text-neutral-600">
-                        {t('customers:labels.field_agent')}:
-                      </span>
-                    </div>
-                    <div className="ml-6">
-                      <div className="text-sm text-neutral-800">
-                        {getAgentDisplay(assignment.assignedFieldAgent)}
-                      </div>
-                      {assignment.assignedFieldAgent && (
-                        <div className="text-xs text-neutral-500">
-                          {assignment.assignedFieldAgent.team} • {assignment.assignedFieldAgent.type}
+                        <div className="text-sm text-neutral-800 font-medium truncate">
+                          {getAgentDisplay(assignment.assignedCallAgent)}
                         </div>
-                      )}
+                        {assignment.assignedCallAgent && (
+                          <div className="text-xs text-neutral-500 truncate">
+                            {assignment.assignedCallAgent.team} • {assignment.assignedCallAgent.type}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Field Agent */}
+                    <div className="flex items-start gap-2">
+                      <i className="bi bi-geo-alt text-green-500 text-xs mt-0.5 flex-shrink-0"></i>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs text-neutral-600 mb-1">
+                          {t('customers:labels.field_agent')}
+                        </div>
+                        <div className="text-sm text-neutral-800 font-medium truncate">
+                          {getAgentDisplay(assignment.assignedFieldAgent)}
+                        </div>
+                        {assignment.assignedFieldAgent && (
+                          <div className="text-xs text-neutral-500 truncate">
+                            {assignment.assignedFieldAgent.team} • {assignment.assignedFieldAgent.type}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                {/* Assignment metadata */}
-                <div className="mt-3 pt-3 border-t border-neutral-100">
-                  <div className="text-xs text-neutral-400">
-                    {t('common:labels.created_at')}: {formatDate(assignment.createdAt)}
-                    {assignment.updatedAt !== assignment.createdAt && (
-                      <span className="ml-4">
-                        {t('common:labels.updated_at')}: {formatDate(assignment.updatedAt)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </CardContent>

@@ -221,5 +221,34 @@ export const statusApi = {
       throw new Error(response.data.message || 'Failed to record recovery ability status');
     }
     return response.data.data;
+  },
+
+  // =============================================
+  // CUSTOMER CASE API FUNCTIONS
+  // =============================================
+
+  // Get customer case data
+  getCustomerCase: async (cif: string): Promise<{ masterNotes: string | null }> => {
+    console.log('calling statusApi - getCustomerCase');
+    const response = await apiClient.get<WorkflowApiResponse<{ masterNotes: string | null }>>(
+      `/workflow/cases/customer-case/${cif}`
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch customer case');
+    }
+    return response.data.data;
+  },
+
+  // Update master notes for customer case
+  updateMasterNotes: async (cif: string, masterNotes: string): Promise<{ id: string; message: string }> => {
+    console.log('calling statusApi - updateMasterNotes');
+    const response = await apiClient.put<WorkflowApiResponse<{ id: string; message: string }>>(
+      `/workflow/cases/master-notes/${cif}`,
+      { masterNotes }
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to update master notes');
+    }
+    return response.data.data;
   }
 };

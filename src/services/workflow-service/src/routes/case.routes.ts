@@ -146,4 +146,30 @@ router.post(
   caseController.recordCollateralStatus
 );
 
+// =============================================
+// CUSTOMER CASE ROUTES
+// =============================================
+
+/**
+ * @route GET /customer-case/:cif
+ * @desc Get customer case data
+ * @access Private - Requires authentication
+ */
+router.get(
+  '/customer-case/:cif',
+  requireAuth,
+  caseController.getCustomerCase
+);
+
+/**
+ * @route PUT /master-notes/:cif
+ * @desc Update master notes for customer case
+ * @access Private - Requires authentication
+ */
+router.put(
+  '/master-notes/:cif',
+  requireAuth,
+  caseController.updateMasterNotes
+);
+
 export default router;

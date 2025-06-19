@@ -264,7 +264,7 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ cif, phones, em
 
   return (
     <>
-      <Card>
+      <Card className="h-full">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{t('customers:tabs.contact_info')}</CardTitle>
           {error && (

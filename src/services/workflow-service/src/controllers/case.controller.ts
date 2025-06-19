@@ -7,7 +7,8 @@ import {
   LendingViolationStatusRepository,
   RecoveryAbilityStatusRepository,
   ProcessingStateStatusRepository,
-  CollateralStatusRepository
+  CollateralStatusRepository,
+  CustomerCaseRepository
 } from '../repositories';
 
 /**
@@ -362,6 +363,86 @@ export class CaseController {
       );
     } catch (error) {
       logger.error({ error, path: req.path }, 'Error recording collateral status');
+      next(error);
+    }
+  }
+
+  /**
+   * Get customer case data
+   * @route GET /customer-case/:cif
+   */
+  async getCustomerCase(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { cif } = req.params;
+
+      // Validate required fields
+      if (!cif) {
+        throw Errors.create(
+          Errors.Validation.REQUIRED_FIELD_MISSING,
+          'Missing required field: cif',
+          OperationType.VALIDATION,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      const customerCase = await CustomerCaseRepository.findOne({ where: { cif } });
+
+      if (!customerCase) {
+        throw Errors.create(
+          Errors.Validation.REQUIRED_FIELD_MISSING,
+          `Customer case not found for CIF: ${cif}`,
+          OperationType.READ,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      logger.info({ cif }, 'Customer case retrieved successfully');
+
+      return ResponseUtil.success(
+        res,
+        { masterNotes: customerCase.masterNotes },
+        'Customer case retrieved successfully'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error retrieving customer case');
+      next(error);
+    }
+  }
+
+  /**
+   * Update master notes for customer case
+   * @route PUT /master-notes/:cif
+   */
+  async updateMasterNotes(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { cif } = req.params;
+      const { masterNotes } = req.body;
+
+      // Validate required fields
+      if (!cif || masterNotes === undefined) {
+        throw Errors.create(
+          Errors.Validation.REQUIRED_FIELD_MISSING,
+          'Missing required fields: cif, masterNotes',
+          OperationType.VALIDATION,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      const customerCase = await CustomerCaseRepository.updateMasterNotes(
+        cif,
+        masterNotes,
+        req.user?.username || 'system'
+      );
+
+      logger.info({ cif, masterNotes: masterNotes?.length }, 'Master notes updated successfully');
+
+      return ResponseUtil.success(
+        res,
+        customerCase,
+        'Master notes updated successfully'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error updating master notes');
       next(error);
     }
   }
