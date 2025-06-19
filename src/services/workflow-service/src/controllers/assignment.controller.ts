@@ -339,7 +339,7 @@ export class AssignmentController {
 
       logger.info({
         count: createdAssignments.length,
-        userId: req.user?.userId
+        userId: req.user?.id
       }, 'Bulk assignments created successfully');
 
       return ResponseUtil.success(

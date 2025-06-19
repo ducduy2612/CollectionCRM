@@ -84,7 +84,7 @@ export class FudAutoConfigController {
     try {
       const { action_result_id, calculation_type, days_offset, is_active, priority } = req.body;
       console.log(req.user);
-      const userId = req.user?.username || req.user?.userId || 'system';
+      const userId = req.user?.username || req.user?.id || 'system';
 
       // Ensure userId is a valid string
       if (!userId || typeof userId !== 'string') {
@@ -144,7 +144,7 @@ export class FudAutoConfigController {
     try {
       const { id } = req.params;
       const { calculation_type, days_offset, is_active, priority } = req.body;
-      const userId = req.user?.username || req.user?.userId || 'system';
+      const userId = req.user?.username || req.user?.id || 'system';
 
       // Ensure userId is a valid string
       if (!userId || typeof userId !== 'string') {

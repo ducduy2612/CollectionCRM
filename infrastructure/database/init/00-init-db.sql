@@ -37,31 +37,31 @@ END $$;
 
 -- 1. Common setup (extensions, schemas, types)
 \echo 'Running scripts/00-common.sql...'
-\i scripts/00-common.sql
+\i /docker-entrypoint-initdb.d/scripts/00-common.sql
 
 -- 2. Auth Service Schema
 \echo 'Running scripts/01-auth-service.sql...'
-\i scripts/01-auth-service.sql
+\i /docker-entrypoint-initdb.d/scripts/01-auth-service.sql
 
 -- 3. Bank Sync Service Schema
 \echo 'Running scripts/02-bank-sync-service.sql...'
-\i scripts/02-bank-sync-service.sql
+\i /docker-entrypoint-initdb.d/scripts/02-bank-sync-service.sql
 
 -- 4. Payment Service Schema
 \echo 'Running scripts/03-payment-service.sql...'
-\i scripts/03-payment-service.sql
+\i /docker-entrypoint-initdb.d/scripts/03-payment-service.sql
 
 -- 5. Workflow Service Schema
 \echo 'Running scripts/04-workflow-service.sql...'
-\i scripts/04-workflow-service.sql
+\i /docker-entrypoint-initdb.d/scripts/04-workflow-service.sql
 
 -- 6. Functions and Triggers
 \echo 'Running scripts/05-functions-triggers.sql...'
-\i scripts/05-functions-triggers.sql
+\i /docker-entrypoint-initdb.d/scripts/05-functions-triggers.sql
 
 -- 7. Users and Permissions
 \echo 'Running scripts/06-users-permissions.sql...'
-\i scripts/06-users-permissions.sql
+\i /docker-entrypoint-initdb.d/scripts/06-users-permissions.sql
 
 -- =============================================
 -- Verify installation

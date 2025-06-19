@@ -1,0 +1,395 @@
+version: '3.8'
+
+# Production Cache & Message Broker Tier
+# Deploy this on a dedicated server for Redis and Kafka
+
+x-common-config: &common-config
+  restart: unless-stopped
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "50m"
+      max-file: "5"
+
+services:
+  # Redis Primary
+  redis-primary:
+    image: redis:7-alpine
+    <<: *common-config
+    command: >
+      redis-server
+      --maxmemory 2gb
+      --maxmemory-policy allkeys-lru
+      --appendonly yes
+      --appendfilename "redis-prod.aof"
+      --appendfsync everysec
+      --save "900 1"
+      --save "300 10"
+      --save "60 10000"
+      --requirepass ${REDIS_PASSWORD}
+      --tcp-keepalive 300
+      --timeout 0
+      --tcp-backlog 511
+      --databases 16
+      --rdbcompression yes
+      --rdbchecksum yes
+    env_file:
+      - ../../config/redis.prod.env
+    volumes:
+      - redis-prod-data:/data
+      - redis-prod-config:/usr/local/etc/redis
+    ports:
+      - "6379:6379"
+    networks:
+      - collectioncrm-cache-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--pass", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # Redis Replica (for read scaling)
+  redis-replica:
+    image: redis:7-alpine
+    <<: *common-config
+    command: >
+      redis-server
+      --replicaof redis-primary 6379
+      --masterauth ${REDIS_PASSWORD}
+      --requirepass ${REDIS_PASSWORD}
+      --replica-read-only yes
+      --maxmemory 1gb
+      --maxmemory-policy allkeys-lru
+    env_file:
+      - ../../config/redis.prod.env
+    volumes:
+      - redis-replica-data:/data
+    ports:
+      - "6380:6379"
+    depends_on:
+      redis-primary:
+        condition: service_healthy
+    networks:
+      - collectioncrm-cache-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--pass", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Redis Sentinel for High Availability
+  redis-sentinel:
+    image: redis:7-alpine
+    <<: *common-config
+    command: >
+      redis-sentinel /etc/redis/sentinel.conf
+      --sentinel
+    volumes:
+      - ./redis-sentinel/sentinel.conf:/etc/redis/sentinel.conf:ro
+    ports:
+      - "26379:26379"
+    depends_on:
+      - redis-primary
+      - redis-replica
+    networks:
+      - collectioncrm-cache-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  # Zookeeper for Kafka
+  zookeeper-1:
+    image: confluentinc/cp-zookeeper:7.5.0
+    <<: *common-config
+    hostname: zookeeper-1
+    environment:
+      - ZOOKEEPER_SERVER_ID=1
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOOKEEPER_TICK_TIME=2000
+      - ZOOKEEPER_INIT_LIMIT=10
+      - ZOOKEEPER_SYNC_LIMIT=5
+      - ZOOKEEPER_SERVERS=zookeeper-1:2888:3888;zookeeper-2:2888:3888;zookeeper-3:2888:3888
+      - ZOOKEEPER_HEAP_OPTS=-Xmx512m -Xms512m
+    volumes:
+      - zookeeper-1-data:/var/lib/zookeeper/data
+      - zookeeper-1-logs:/var/lib/zookeeper/log
+      - zookeeper-1-secrets:/etc/zookeeper/secrets
+    ports:
+      - "2181:2181"
+    networks:
+      - collectioncrm-cache-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  zookeeper-2:
+    image: confluentinc/cp-zookeeper:7.5.0
+    <<: *common-config
+    hostname: zookeeper-2
+    environment:
+      - ZOOKEEPER_SERVER_ID=2
+      - ZOOKEEPER_CLIENT_PORT=2182
+      - ZOOKEEPER_TICK_TIME=2000
+      - ZOOKEEPER_INIT_LIMIT=10
+      - ZOOKEEPER_SYNC_LIMIT=5
+      - ZOOKEEPER_SERVERS=zookeeper-1:2888:3888;zookeeper-2:2888:3888;zookeeper-3:2888:3888
+      - ZOOKEEPER_HEAP_OPTS=-Xmx512m -Xms512m
+    volumes:
+      - zookeeper-2-data:/var/lib/zookeeper/data
+      - zookeeper-2-logs:/var/lib/zookeeper/log
+      - zookeeper-2-secrets:/etc/zookeeper/secrets
+    ports:
+      - "2182:2182"
+    networks:
+      - collectioncrm-cache-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  zookeeper-3:
+    image: confluentinc/cp-zookeeper:7.5.0
+    <<: *common-config
+    hostname: zookeeper-3
+    environment:
+      - ZOOKEEPER_SERVER_ID=3
+      - ZOOKEEPER_CLIENT_PORT=2183
+      - ZOOKEEPER_TICK_TIME=2000
+      - ZOOKEEPER_INIT_LIMIT=10
+      - ZOOKEEPER_SYNC_LIMIT=5
+      - ZOOKEEPER_SERVERS=zookeeper-1:2888:3888;zookeeper-2:2888:3888;zookeeper-3:2888:3888
+      - ZOOKEEPER_HEAP_OPTS=-Xmx512m -Xms512m
+    volumes:
+      - zookeeper-3-data:/var/lib/zookeeper/data
+      - zookeeper-3-logs:/var/lib/zookeeper/log
+      - zookeeper-3-secrets:/etc/zookeeper/secrets
+    ports:
+      - "2183:2183"
+    networks:
+      - collectioncrm-cache-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Kafka Brokers
+  kafka-1:
+    image: confluentinc/cp-kafka:7.5.0
+    <<: *common-config
+    hostname: kafka-1
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper-1:2181,zookeeper-2:2182,zookeeper-3:2183
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_LISTENERS=INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:19092
+      - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka-1:9092,EXTERNAL://localhost:19092
+      - KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=2
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=3
+      - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=3000
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=false
+      - KAFKA_DELETE_TOPIC_ENABLE=true
+      - KAFKA_LOG_RETENTION_HOURS=168
+      - KAFKA_LOG_SEGMENT_BYTES=1073741824
+      - KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS=300000
+      - KAFKA_HEAP_OPTS=-Xmx1G -Xms1G
+    volumes:
+      - kafka-1-data:/var/lib/kafka/data
+      - kafka-1-secrets:/etc/kafka/secrets
+    depends_on:
+      - zookeeper-1
+      - zookeeper-2
+      - zookeeper-3
+    ports:
+      - "9092:9092"
+      - "19092:19092"
+    networks:
+      - collectioncrm-cache-network
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  kafka-2:
+    image: confluentinc/cp-kafka:7.5.0
+    <<: *common-config
+    hostname: kafka-2
+    environment:
+      - KAFKA_BROKER_ID=2
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper-1:2181,zookeeper-2:2182,zookeeper-3:2183
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_LISTENERS=INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:19093
+      - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka-2:9092,EXTERNAL://localhost:19093
+      - KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=2
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=3
+      - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=3000
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=false
+      - KAFKA_DELETE_TOPIC_ENABLE=true
+      - KAFKA_LOG_RETENTION_HOURS=168
+      - KAFKA_LOG_SEGMENT_BYTES=1073741824
+      - KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS=300000
+      - KAFKA_HEAP_OPTS=-Xmx1G -Xms1G
+    volumes:
+      - kafka-2-data:/var/lib/kafka/data
+      - kafka-2-secrets:/etc/kafka/secrets
+    depends_on:
+      - zookeeper-1
+      - zookeeper-2
+      - zookeeper-3
+    ports:
+      - "19093:19093"
+    networks:
+      - collectioncrm-cache-network
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  kafka-3:
+    image: confluentinc/cp-kafka:7.5.0
+    <<: *common-config
+    hostname: kafka-3
+    environment:
+      - KAFKA_BROKER_ID=3
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper-1:2181,zookeeper-2:2182,zookeeper-3:2183
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_LISTENERS=INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:19094
+      - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka-3:9092,EXTERNAL://localhost:19094
+      - KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=2
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=3
+      - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=3000
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=false
+      - KAFKA_DELETE_TOPIC_ENABLE=true
+      - KAFKA_LOG_RETENTION_HOURS=168
+      - KAFKA_LOG_SEGMENT_BYTES=1073741824
+      - KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS=300000
+      - KAFKA_HEAP_OPTS=-Xmx1G -Xms1G
+    volumes:
+      - kafka-3-data:/var/lib/kafka/data
+      - kafka-3-secrets:/etc/kafka/secrets
+    depends_on:
+      - zookeeper-1
+      - zookeeper-2
+      - zookeeper-3
+    ports:
+      - "19094:19094"
+    networks:
+      - collectioncrm-cache-network
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+volumes:
+  redis-prod-data:
+    driver: local
+  redis-replica-data:
+    driver: local
+  redis-prod-config:
+    driver: local
+  zookeeper-1-data:
+    driver: local
+  zookeeper-1-logs:
+    driver: local
+  zookeeper-1-secrets:
+    driver: local
+  zookeeper-2-data:
+    driver: local
+  zookeeper-2-logs:
+    driver: local
+  zookeeper-2-secrets:
+    driver: local
+  zookeeper-3-data:
+    driver: local
+  zookeeper-3-logs:
+    driver: local
+  zookeeper-3-secrets:
+    driver: local
+  kafka-1-data:
+    driver: local
+  kafka-1-secrets:
+    driver: local
+  kafka-2-data:
+    driver: local
+  kafka-2-secrets:
+    driver: local
+  kafka-3-data:
+    driver: local
+  kafka-3-secrets:
+    driver: local
+
+networks:
+  collectioncrm-cache-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.0.0/16

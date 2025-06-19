@@ -1,0 +1,355 @@
+version: '3.8'
+
+x-common-config: &common-config
+  restart: unless-stopped
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    <<: *common-config
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../config/nginx/staging.conf:/etc/nginx/nginx.conf:ro
+      - ../config/nginx/ssl:/etc/nginx/ssl:ro
+      - ../../src/frontend/dist:/usr/share/nginx/html:ro
+    depends_on:
+      - api-gateway
+    networks:
+      - collectioncrm-network
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ../../
+      dockerfile: docker/production-images/api-gateway.Dockerfile
+    image: collectioncrm/api-gateway:staging
+    <<: *common-config
+    env_file:
+      - ../../src/services/api-gateway/.env.staging
+    environment:
+      - NODE_ENV=staging
+      - PORT=3000
+      - KAFKAJS_NO_PARTITIONER_WARNING=1
+    expose:
+      - "3000"
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      bank-sync-service:
+        condition: service_healthy
+      workflow-service:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - collectioncrm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Authentication Service
+  auth-service:
+    build:
+      context: ../../
+      dockerfile: docker/production-images/auth-service.Dockerfile
+    image: collectioncrm/auth-service:staging
+    <<: *common-config
+    env_file:
+      - ../../src/services/auth-service/.env.staging
+    environment:
+      - NODE_ENV=staging
+      - PORT=3000
+      - KAFKAJS_NO_PARTITIONER_WARNING=1
+    expose:
+      - "3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - collectioncrm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Bank Synchronization Service
+  bank-sync-service:
+    build:
+      context: ../../
+      dockerfile: docker/production-images/bank-sync-service.Dockerfile
+    image: collectioncrm/bank-sync-service:staging
+    <<: *common-config
+    env_file:
+      - ../../src/services/bank-sync-service/.env.staging
+    environment:
+      - NODE_ENV=staging
+      - PORT=3002
+      - KAFKAJS_NO_PARTITIONER_WARNING=1
+    expose:
+      - "3002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - collectioncrm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Workflow Service
+  workflow-service:
+    build:
+      context: ../../
+      dockerfile: docker/production-images/workflow-service.Dockerfile
+    image: collectioncrm/workflow-service:staging
+    <<: *common-config
+    env_file:
+      - ../../src/services/workflow-service/.env.staging
+    environment:
+      - NODE_ENV=staging
+      - PORT=3003
+      - KAFKAJS_NO_PARTITIONER_WARNING=1
+    expose:
+      - "3003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - collectioncrm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    <<: *common-config
+    environment:
+      - POSTGRES_USER=collectioncrm
+      - POSTGRES_PASSWORD=staging_password_123
+      - POSTGRES_DB=collectioncrm_staging
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    env_file:
+      - ../../docker/config/postgres.staging.env
+    volumes:
+      - postgres-staging-data:/var/lib/postgresql/data
+      - ../../infrastructure/database/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5433:5432"  # Different port to avoid conflict with dev
+    networks:
+      - collectioncrm-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-collectioncrm} -d ${DB_NAME:-collectioncrm_staging}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    <<: *common-config
+    command: >
+      redis-server
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --appendonly yes
+      --appendfilename "redis-staging.aof"
+      --save "900 1"
+      --save "300 10"
+      --save "60 10000"
+      --requirepass staging_redis_123
+    env_file:
+      - ../../docker/config/redis.staging.env
+    volumes:
+      - redis-staging-data:/data
+    ports:
+      - "6380:6379"  # Different port to avoid conflict with dev
+    networks:
+      - collectioncrm-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--pass", "staging_redis_123", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Kafka & Zookeeper
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    <<: *common-config
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOOKEEPER_TICK_TIME=2000
+      - ZOOKEEPER_INIT_LIMIT=10
+      - ZOOKEEPER_SYNC_LIMIT=5
+    volumes:
+      - zookeeper-staging-data:/var/lib/zookeeper/data
+      - zookeeper-staging-logs:/var/lib/zookeeper/log
+    networks:
+      - collectioncrm-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    <<: *common-config
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT
+      - KAFKA_LISTENERS=INTERNAL://0.0.0.0:9092
+      - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka:9092
+      - KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=false
+      - KAFKA_LOG_RETENTION_HOURS=168
+      - KAFKA_LOG_SEGMENT_BYTES=1073741824
+      - KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS=300000
+      - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=3000
+    volumes:
+      - kafka-staging-data:/var/lib/kafka/data
+    depends_on:
+      zookeeper:
+        condition: service_started
+    ports:
+      - "9093:9092"  # Different port to avoid conflict with dev
+    networks:
+      - collectioncrm-network
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Kafka UI
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    <<: *common-config
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=staging
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+    ports:
+      - "8090:8080"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - collectioncrm-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+volumes:
+  postgres-staging-data:
+    driver: local
+  redis-staging-data:
+    driver: local
+  zookeeper-staging-data:
+    driver: local
+  zookeeper-staging-logs:
+    driver: local
+  kafka-staging-data:
+    driver: local
+
+networks:
+  collectioncrm-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

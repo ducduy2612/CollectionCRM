@@ -483,7 +483,7 @@ const RoleList: React.FC<RoleListProps> = ({
               <p className="text-neutral-700">
                 {t('settings:messages.confirm_delete_role', {
                   defaultValue: 'Are you sure you want to delete the role "{{roleName}}"? This action cannot be undone.',
-                  roleName: roleToDelete?.name
+                  replace: { roleName: roleToDelete?.name || '' }
                 })}
               </p>
 

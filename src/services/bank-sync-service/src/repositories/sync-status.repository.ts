@@ -26,10 +26,11 @@ export class SyncStatusRepository extends Repository<SyncStatus> {
    */
   async findBySyncId(syncId: string): Promise<SyncStatus | undefined> {
     try {
-      return await this.findOne({ where: { syncId } });
+      const result = await this.findOne({ where: { syncId } });
+      return result || undefined;
     } catch (error) {
       console.error(`Error finding sync status by ID ${syncId}:`, error);
-      throw new Error(`Failed to find sync status by ID: ${error.message}`);
+      throw new Error(`Failed to find sync status by ID: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -43,7 +44,7 @@ export class SyncStatusRepository extends Repository<SyncStatus> {
       return await this.save(syncStatus);
     } catch (error) {
       console.error(`Error creating sync status:`, error);
-      throw new Error(`Failed to create sync status: ${error.message}`);
+      throw new Error(`Failed to create sync status: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -65,7 +66,7 @@ export class SyncStatusRepository extends Repository<SyncStatus> {
       return await this.save(mergedSyncStatus);
     } catch (error) {
       console.error(`Error updating sync status with ID ${syncId}:`, error);
-      throw new Error(`Failed to update sync status: ${error.message}`);
+      throw new Error(`Failed to update sync status: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -127,7 +128,7 @@ export class SyncStatusRepository extends Repository<SyncStatus> {
       };
     } catch (error) {
       console.error('Error searching sync status records:', error);
-      throw new Error(`Failed to search sync status records: ${error.message}`);
+      throw new Error(`Failed to search sync status records: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -139,14 +140,15 @@ export class SyncStatusRepository extends Repository<SyncStatus> {
    */
   async getLatestSyncStatus(entityType: EntityType, sourceSystem: SourceSystemType): Promise<SyncStatus | undefined> {
     try {
-      return await this.createQueryBuilder('syncStatus')
+      const result = await this.createQueryBuilder('syncStatus')
         .where('syncStatus.entity_type = :entityType', { entityType })
         .andWhere('syncStatus.source_system = :sourceSystem', { sourceSystem })
         .orderBy('syncStatus.start_time', 'DESC')
         .getOne();
+      return result || undefined;
     } catch (error) {
       console.error(`Error getting latest sync status for ${entityType} from ${sourceSystem}:`, error);
-      throw new Error(`Failed to get latest sync status: ${error.message}`);
+      throw new Error(`Failed to get latest sync status: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -175,7 +177,7 @@ export class SyncStatusRepository extends Repository<SyncStatus> {
       return stats;
     } catch (error) {
       console.error('Error getting sync statistics:', error);
-      throw new Error(`Failed to get sync statistics: ${error.message}`);
+      throw new Error(`Failed to get sync statistics: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -190,7 +192,7 @@ export class SyncStatusRepository extends Repository<SyncStatus> {
         .getMany();
     } catch (error) {
       console.error('Error finding in-progress syncs:', error);
-      throw new Error(`Failed to find in-progress syncs: ${error.message}`);
+      throw new Error(`Failed to find in-progress syncs: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 }

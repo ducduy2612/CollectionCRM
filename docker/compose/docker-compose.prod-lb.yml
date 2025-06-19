@@ -1,0 +1,209 @@
+version: '3.8'
+
+# Production Load Balancer Tier
+# Deploy this on load balancer servers (can be combined with app servers)
+
+x-common-config: &common-config
+  restart: unless-stopped
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "50m"
+      max-file: "5"
+
+services:
+  # Nginx Load Balancer
+  nginx-lb:
+    image: nginx:alpine
+    <<: *common-config
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../config/nginx/production.conf:/etc/nginx/nginx.conf:ro
+      - ../config/nginx/ssl:/etc/nginx/ssl:ro
+      - ../config/nginx/logs:/var/log/nginx
+      - ../../src/frontend/dist:/usr/share/nginx/html:ro
+    networks:
+      - collectioncrm-external-network
+      - collectioncrm-lb-network
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '1'
+          memory: 512M
+
+  # HAProxy Alternative Load Balancer (Optional)
+  haproxy-lb:
+    image: haproxy:2.8-alpine
+    <<: *common-config
+    ports:
+      - "8080:80"
+      - "8443:443"
+      - "8404:8404"  # Stats page
+    volumes:
+      - ../config/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - ../config/haproxy/ssl:/etc/ssl/certs:ro
+      - ../config/haproxy/logs:/var/log/haproxy
+    networks:
+      - collectioncrm-external-network
+      - collectioncrm-lb-network
+    healthcheck:
+      test: ["CMD", "haproxy", "-c", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Frontend Static Files Server
+  frontend-static:
+    build:
+      context: ../../
+      dockerfile: docker/production-images/frontend.Dockerfile
+    image: collectioncrm/frontend:${APP_VERSION:-latest}
+    <<: *common-config
+    expose:
+      - "80"
+    volumes:
+      - frontend-static-cache:/var/cache/nginx
+    networks:
+      - collectioncrm-lb-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # SSL Certificate Manager (Let's Encrypt)
+  certbot:
+    image: certbot/certbot:latest
+    <<: *common-config
+    volumes:
+      - certbot-data:/etc/letsencrypt
+      - certbot-logs:/var/log/letsencrypt
+      - ../../src/frontend/dist:/var/www/html:ro
+    command: >
+      sh -c "while true; do
+        certbot renew --webroot --webroot-path=/var/www/html --quiet
+        sleep 12h
+      done"
+    networks:
+      - collectioncrm-lb-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+
+  # Log Aggregator (Fluentd)
+  fluentd:
+    image: fluent/fluentd:v1.16-debian
+    <<: *common-config
+    volumes:
+      - ../config/fluentd/fluent.conf:/fluentd/etc/fluent.conf:ro
+      - ../config/nginx/logs:/var/log/nginx:ro
+      - ../config/haproxy/logs:/var/log/haproxy:ro
+      - fluentd-data:/fluentd/log
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    networks:
+      - collectioncrm-lb-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Metrics Exporter for Prometheus
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:0.11.0
+    <<: *common-config
+    command:
+      - -nginx.scrape-uri=http://nginx-lb:80/nginx_status
+    ports:
+      - "9113:9113"
+    depends_on:
+      - nginx-lb
+    networks:
+      - collectioncrm-lb-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+
+  # Health Check Service
+  health-checker:
+    image: alpine:latest
+    <<: *common-config
+    command: >
+      sh -c "while true; do
+        wget --no-verbose --tries=1 --spider http://nginx-lb:80/health || exit 1
+        sleep 30
+      done"
+    depends_on:
+      - nginx-lb
+    networks:
+      - collectioncrm-lb-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 64M
+        reservations:
+          cpus: '0.05'
+          memory: 32M
+
+volumes:
+  frontend-static-cache:
+    driver: local
+  certbot-data:
+    driver: local
+  certbot-logs:
+    driver: local
+  fluentd-data:
+    driver: local
+
+networks:
+  collectioncrm-lb-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.33.0.0/16
+  collectioncrm-external-network:
+    external: true
+    name: collectioncrm-external

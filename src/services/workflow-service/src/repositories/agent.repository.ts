@@ -1,4 +1,4 @@
-import { Agent, AgentType } from '../entities/agent.entity';
+import { Agent } from '../entities/agent.entity';
 import { AppDataSource } from '../config/data-source';
 import { Errors, OperationType, SourceSystemType } from '../utils/errors';
 import { ResponseUtil, PaginatedResponse } from '../utils/response';
@@ -7,7 +7,7 @@ import { ResponseUtil, PaginatedResponse } from '../utils/response';
  * Search criteria for agents
  */
 export interface AgentSearchCriteria {
-  type?: AgentType;
+  type?: string;
   team?: string;
   isActive?: boolean;
   page?: number;

@@ -1,0 +1,198 @@
+version: '3.8'
+
+# Production Database Tier
+# Deploy this on a dedicated database server
+
+x-common-config: &common-config
+  restart: unless-stopped
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "50m"
+      max-file: "5"
+
+services:
+  # PostgreSQL Primary Database
+  postgres-primary:
+    image: postgres:15-alpine
+    <<: *common-config
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+      - POSTGRES_MAX_CONNECTIONS=500
+      - POSTGRES_SHARED_BUFFERS=1GB
+      - POSTGRES_EFFECTIVE_CACHE_SIZE=3GB
+      - POSTGRES_MAINTENANCE_WORK_MEM=256MB
+      - POSTGRES_CHECKPOINT_COMPLETION_TARGET=0.7
+      - POSTGRES_WAL_BUFFERS=64MB
+      - POSTGRES_DEFAULT_STATISTICS_TARGET=100
+      - POSTGRES_RANDOM_PAGE_COST=1.1
+      - POSTGRES_EFFECTIVE_IO_CONCURRENCY=200
+    env_file:
+      - ../../config/postgres.prod.env
+    volumes:
+      - postgres-prod-data:/var/lib/postgresql/data
+      - postgres-prod-backups:/backups
+      - ../../infrastructure/database/init:/docker-entrypoint-initdb.d:ro
+      - ./postgres-config/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./postgres-config/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+    command: >
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c hba_file=/etc/postgresql/pg_hba.conf
+    ports:
+      - "5432:5432"
+    networks:
+      - collectioncrm-db-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+        reservations:
+          cpus: '2'
+          memory: 2G
+
+  # PostgreSQL Read Replica (Optional - for read scaling)
+  postgres-replica:
+    image: postgres:15-alpine
+    <<: *common-config
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - PGUSER=${DB_USER}
+      - POSTGRES_PRIMARY_HOST=postgres-primary
+      - POSTGRES_PRIMARY_PORT=5432
+      - POSTGRES_REPLICA_USER=${REPLICA_USER}
+      - POSTGRES_REPLICA_PASSWORD=${REPLICA_PASSWORD}
+    env_file:
+      - ../../config/postgres.prod.env
+    volumes:
+      - postgres-replica-data:/var/lib/postgresql/data
+      - ./postgres-replica-setup.sh:/docker-entrypoint-initdb.d/replica-setup.sh:ro
+    command: >
+      postgres
+      -c wal_level=replica
+      -c hot_standby=on
+      -c max_wal_senders=10
+      -c max_replication_slots=10
+      -c hot_standby_feedback=on
+    ports:
+      - "5433:5432"
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+    networks:
+      - collectioncrm-db-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # PostgreSQL Connection Pooler (PgBouncer)
+  pgbouncer:
+    image: pgbouncer/pgbouncer:latest
+    <<: *common-config
+    environment:
+      - DATABASES_HOST=postgres-primary
+      - DATABASES_PORT=5432
+      - DATABASES_USER=${DB_USER}
+      - DATABASES_PASSWORD=${DB_PASSWORD}
+      - DATABASES_DBNAME=${DB_NAME}
+      - POOL_MODE=transaction
+      - SERVER_RESET_QUERY=DISCARD ALL
+      - MAX_CLIENT_CONN=1000
+      - DEFAULT_POOL_SIZE=100
+      - MAX_DB_CONNECTIONS=100
+      - MAX_USER_CONNECTIONS=100
+    volumes:
+      - ./pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
+      - ./pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt:ro
+    ports:
+      - "6432:5432"
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+    networks:
+      - collectioncrm-db-network
+    healthcheck:
+      test: ["CMD", "psql", "-h", "localhost", "-p", "5432", "-U", "${DB_USER}", "-d", "pgbouncer", "-c", "SHOW STATS;"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Automated Backup Service
+  postgres-backup:
+    image: prodrigestivill/postgres-backup-local:15
+    <<: *common-config
+    environment:
+      - POSTGRES_HOST=postgres-primary
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_EXTRA_OPTS=-Z6 --schema=public --blobs
+      - SCHEDULE=@daily
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
+      - HEALTHCHECK_PORT=8080
+    volumes:
+      - postgres-prod-backups:/backups
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+    networks:
+      - collectioncrm-db-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
+      interval: 5m
+      timeout: 30s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+volumes:
+  postgres-prod-data:
+    driver: local
+  postgres-replica-data:
+    driver: local
+  postgres-prod-backups:
+    driver: local
+
+networks:
+  collectioncrm-db-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16

@@ -17,8 +17,18 @@ app.use(morgan(env.isDevelopment() ? 'dev' : 'combined')); // Request logging
 app.use(express.json()); // Parse JSON request body
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request body
 
-// Health check route (no auth required)
-app.get(`${env.API_PREFIX}/health`, (req, res) => {
+// Health check routes (no auth required)
+// Simple health check for Docker/K8s
+app.get('/health', (_req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    service: 'Bank Sync Service',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Detailed health check at API prefix
+app.get(`${env.API_PREFIX}/health`, (_req, res) => {
   res.status(200).json({
     status: 'ok',
     service: 'Bank Sync Service',

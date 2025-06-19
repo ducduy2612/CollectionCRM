@@ -113,7 +113,7 @@ export class FudAutoConfigRepository {
     // Validate days_offset if provided
     if (data.days_offset !== undefined && (data.days_offset < -365 || data.days_offset > 365)) {
       throw Errors.create(
-        Errors.Validation.INVALID_RANGE,
+        Errors.Validation.INVALID_VALUE,
         'days_offset must be between -365 and 365',
         OperationType.VALIDATION,
         SourceSystemType.WORKFLOW_SERVICE
@@ -121,7 +121,7 @@ export class FudAutoConfigRepository {
     }
 
     Object.assign(config, data);
-    config.updated_at = new Date();
+    config.updatedAt = new Date();
 
     return this.repository.save(config);
   }

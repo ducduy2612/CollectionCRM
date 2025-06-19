@@ -1,0 +1,268 @@
+version: '3.8'
+
+# Monitoring Stack (Prometheus + Grafana + AlertManager)
+# Can be deployed alongside staging or production environments
+
+x-common-config: &common-config
+  restart: unless-stopped
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  # Prometheus - Metrics Collection
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    <<: *common-config
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../config/prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus-data:/prometheus
+    networks:
+      - collectioncrm-monitoring
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # Grafana - Metrics Visualization
+  grafana:
+    image: grafana/grafana:10.1.0
+    <<: *common-config
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_USERS_ALLOW_ORG_CREATE=false
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ../config/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ../config/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - collectioncrm-monitoring
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # AlertManager - Alert Management
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    <<: *common-config
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=http://localhost:9093'
+    ports:
+      - "9093:9093"
+    volumes:
+      - ../config/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+    networks:
+      - collectioncrm-monitoring
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # Node Exporter - System Metrics
+  node-exporter:
+    image: prom/node-exporter:v1.6.1
+    <<: *common-config
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    networks:
+      - collectioncrm-monitoring
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
+  # Redis Exporter - Redis Metrics
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.55.0
+    <<: *common-config
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    ports:
+      - "9121:9121"
+    networks:
+      - collectioncrm-monitoring
+      - collectioncrm-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
+  # Postgres Exporter - Database Metrics
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.13.2
+    <<: *common-config
+    environment:
+      - DATA_SOURCE_NAME=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}?sslmode=disable
+    ports:
+      - "9187:9187"
+    networks:
+      - collectioncrm-monitoring
+      - collectioncrm-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
+  # Kafka Exporter - Kafka Metrics
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:v1.6.0
+    <<: *common-config
+    command:
+      - --kafka.server=kafka:9092
+    ports:
+      - "9308:9308"
+    networks:
+      - collectioncrm-monitoring
+      - collectioncrm-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
+  # cAdvisor - Container Metrics
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.2
+    <<: *common-config
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    devices:
+      - /dev/kmsg
+    networks:
+      - collectioncrm-monitoring
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Loki - Log Aggregation
+  loki:
+    image: grafana/loki:2.9.0
+    <<: *common-config
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ../config/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki-data:/loki
+    networks:
+      - collectioncrm-monitoring
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Promtail - Log Collection
+  promtail:
+    image: grafana/promtail:2.9.0
+    <<: *common-config
+    command: -config.file=/etc/promtail/config.yml
+    volumes:
+      - ../config/promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    networks:
+      - collectioncrm-monitoring
+    depends_on:
+      - loki
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
+volumes:
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  alertmanager-data:
+    driver: local
+  loki-data:
+    driver: local
+
+networks:
+  collectioncrm-monitoring:
+    driver: bridge
+  collectioncrm-network:
+    external: true

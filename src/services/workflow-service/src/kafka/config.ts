@@ -37,7 +37,7 @@ const kafkaConfig: KafkaConfig = {
   },
   logCreator: () => {
     return ({ namespace, level, label, log }) => {
-      const logMethod = level === 'ERROR' ? 'error' : level === 'WARN' ? 'warn' : 'info';
+      const logMethod = level === 1 ? 'error' : level === 2 ? 'warn' : 'info';
       logger[logMethod]({
         message: `[${label}] ${log.message}`,
         namespace,
@@ -64,6 +64,7 @@ export const defaultProducerConfig: ProducerConfig = {
  * Default consumer configuration
  */
 export const defaultConsumerConfig: ConsumerConfig = {
+  groupId: 'workflow-service-consumer-group',
   allowAutoTopicCreation: true,
   sessionTimeout: 30000,
   heartbeatInterval: 3000

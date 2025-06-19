@@ -28,8 +28,18 @@ app.use(express.json());
 
 const apiBasePath = '/api/v1/auth';
 
-// Health check endpoint
-app.get(`${apiBasePath}/health`, async (req: express.Request, res: express.Response) => {
+// Health check endpoints
+// Simple health check for Docker/K8s
+app.get('/health', async (_req: express.Request, res: express.Response) => {
+  res.status(200).json({
+    status: 'ok',
+    service: 'Auth Service',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Detailed health check at API prefix
+app.get(`${apiBasePath}/health`, async (_req: express.Request, res: express.Response) => {
   try {
     // Check database connection
     await db.raw('SELECT 1');
