@@ -111,6 +111,8 @@ cp src/services/workflow-service/.env.example src/services/workflow-service/.env
 # - JWT secrets
 # - API keys
 # - Kafka connection strings
+# - frontend env.VITE_API_BASE_URL = domain vps http://103.109.37.62/api
+# - Workflow-service env.ALLOWED_ORIGINS = domain vps http://103.109.37.62
 ```
 
 ## Step 4: Nginx Configuration Note
