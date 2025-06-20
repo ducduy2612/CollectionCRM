@@ -35,6 +35,8 @@ services:
       dockerfile: docker/production-images/frontend.Dockerfile
     image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/collectioncrm-frontend:${IMAGE_TAG:-latest}
     <<: *common-config
+    env_file:
+      - ../../src/frontend/.env.staging
     expose:
       - "8080"
     networks:
