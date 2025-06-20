@@ -5,7 +5,8 @@ import { Select, SelectOption } from '../../../components/ui/Select';
 import { Input } from '../../../components/ui/Input';
 import { Spinner } from '../../../components/ui/Spinner';
 import { Alert } from '../../../components/ui/Alert';
-import { workflowApi, ActionType, ActionSubtype, ActionResult } from '../../../services/api/workflow.api';
+import { workflowApi } from '../../../services/api/workflow.api';
+import { ActionType, ActionSubtype, ActionResult } from '../types';
 import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 export interface ActionSearchFilters {
@@ -193,19 +194,23 @@ const ActionSearchModal: React.FC<ActionSearchModalProps> = ({
   const getActionSubtypeOptions = (): SelectOption[] => {
     return [
       { value: '', label: t('customers:action_search.all_subtypes') },
-      ...actionSubtypes.map(subtype => ({
-        value: subtype.subtype_code,
-        label: subtype.subtype_name
-      }))
+      ...actionSubtypes
+        .filter(subtype => subtype.subtype_code && subtype.subtype_name)
+        .map(subtype => ({
+          value: subtype.subtype_code!,
+          label: subtype.subtype_name!
+        }))
     ];
   };
 
   const getActionResultOptions = (): SelectOption[] => {
     return [
       { value: '', label: t('customers:action_search.all_results') },
-      ...actionResults.map(result => ({
-        value: result.result_code,
-        label: result.result_name
+      ...actionResults
+        .filter(result => result.result_code && result.result_name)
+        .map(result => ({
+          value: result.result_code!,
+          label: result.result_name!
       }))
     ];
   };

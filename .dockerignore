@@ -1,0 +1,68 @@
+# Node modules - these are installed fresh in the container
+**/node_modules
+**/.next
+**/dist
+**/build
+
+# Git files
+.git
+.gitignore
+.github
+
+# Documentation
+*.md
+docs/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+**/__tests__
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+coverage/
+.nyc_output/
+
+# Development files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Docker files we don't need in build context
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# CI/CD
+.circleci
+.travis.yml
+jenkins/
+
+# Misc
+.eslintcache
+.stylelintcache
+*.bak
+*.orig

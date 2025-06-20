@@ -31,10 +31,12 @@ export const CustomerLevelActionForm: React.FC<CustomerLevelActionFormProps> = (
   const { t } = useTranslation();
 
   const getActionResultOptions = (): SelectOption[] => {
-    return actionResults.map(result => ({
-      value: result.result_id,
-      label: result.result_name
-    }));
+    return actionResults
+      .filter(result => result.result_id && result.result_name)
+      .map(result => ({
+        value: result.result_id!,
+        label: result.result_name!
+      }));
   };
 
   return (

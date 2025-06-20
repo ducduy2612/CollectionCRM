@@ -445,8 +445,10 @@ const RoleList: React.FC<RoleListProps> = ({
               <p className="text-neutral-700">
                 {t('settings:messages.cannot_delete_role_with_users', {
                   defaultValue: 'Cannot delete the role "{{roleName}}" because it is currently assigned to {{userCount}} user(s).',
-                  roleName: roleToDelete.name,
-                  userCount: state.userCounts[roleToDelete.id]
+                  replace: {
+                    roleName: roleToDelete.name,
+                    userCount: state.userCounts[roleToDelete.id]
+                  }
                 })}
               </p>
               

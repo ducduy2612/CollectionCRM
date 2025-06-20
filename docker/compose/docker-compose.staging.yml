@@ -35,7 +35,7 @@ services:
     build:
       context: ../../
       dockerfile: docker/production-images/api-gateway.Dockerfile
-    image: collectioncrm/api-gateway:staging
+    image: ghcr.io/$GITHUB_REPOSITORY_OWNER/collectioncrm-api-gateway:${IMAGE_TAG:-latest}
     <<: *common-config
     env_file:
       - ../../src/services/api-gateway/.env.staging
@@ -75,7 +75,7 @@ services:
     build:
       context: ../../
       dockerfile: docker/production-images/auth-service.Dockerfile
-    image: collectioncrm/auth-service:staging
+    image: ghcr.io/$GITHUB_REPOSITORY_OWNER/collectioncrm-auth-service:${IMAGE_TAG:-latest}
     <<: *common-config
     env_file:
       - ../../src/services/auth-service/.env.staging
@@ -113,7 +113,7 @@ services:
     build:
       context: ../../
       dockerfile: docker/production-images/bank-sync-service.Dockerfile
-    image: collectioncrm/bank-sync-service:staging
+    image: ghcr.io/$GITHUB_REPOSITORY_OWNER/collectioncrm-bank-sync-service:${IMAGE_TAG:-latest}
     <<: *common-config
     env_file:
       - ../../src/services/bank-sync-service/.env.staging
@@ -149,7 +149,7 @@ services:
     build:
       context: ../../
       dockerfile: docker/production-images/workflow-service.Dockerfile
-    image: collectioncrm/workflow-service:staging
+    image: ghcr.io/$GITHUB_REPOSITORY_OWNER/collectioncrm-workflow-service:${IMAGE_TAG:-latest}
     <<: *common-config
     env_file:
       - ../../src/services/workflow-service/.env.staging

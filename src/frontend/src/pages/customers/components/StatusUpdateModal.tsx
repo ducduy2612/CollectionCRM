@@ -27,6 +27,7 @@ interface FormData {
 
 interface FormErrors {
   statusId?: string;
+  stateId?: string;
   substateId?: string;
   notes?: string;
   actionDate?: string;
@@ -83,7 +84,7 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
 
   // Convert status options to select options
   const statusSelectOptions: SelectOption[] = statusOptions
-    .sort((a, b) => a.displayOrder - b.displayOrder)
+    .sort((a, b) => a.display_order - b.display_order)
     .map(option => ({
       value: option.id,
       label: option.name
@@ -91,7 +92,7 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
 
   const substateSelectOptions: SelectOption[] = substateOptions
     ? substateOptions
-        .sort((a, b) => a.displayOrder - b.displayOrder)
+        .sort((a, b) => a.display_order - b.display_order)
         .map(option => ({
           value: option.id,
           label: option.name

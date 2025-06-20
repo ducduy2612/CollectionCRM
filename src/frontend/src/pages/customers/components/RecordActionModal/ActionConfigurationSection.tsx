@@ -31,10 +31,12 @@ export const ActionConfigurationSection: React.FC<ActionConfigurationSectionProp
   };
 
   const getActionSubtypeOptions = (): SelectOption[] => {
-    return actionSubtypes.map(subtype => ({
-      value: subtype.subtype_id,
-      label: subtype.subtype_name
-    }));
+    return actionSubtypes
+      .filter(subtype => subtype.subtype_id && subtype.subtype_name)
+      .map(subtype => ({
+        value: subtype.subtype_id!,
+        label: subtype.subtype_name!
+      }));
   };
 
   return (
