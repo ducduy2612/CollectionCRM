@@ -13,6 +13,9 @@ This directory contains the SQL initialization scripts for the CollectionCRM dat
   - `04-workflow-service.sql` - Workflow service schema tables, indexes, partitions, and materialized views
   - `05-functions-triggers.sql` - Additional functions and triggers for database maintenance and automation
   - `06-users-permissions.sql` - Users and permissions
+  - `07-seed-admin-user.sql` - Admin user, roles and permissions seed data
+  - `08-seed-admin-agent.sql` - Admin agent seed data for workflow service
+  - `09-seed-bank-sync-data.sql` - Bank sync service sample data (customers, loans, collaterals, addresses)
 
 ## Usage
 

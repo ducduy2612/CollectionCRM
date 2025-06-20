@@ -55,6 +55,14 @@ END $$;
 \echo 'Running scripts/04-workflow-service.sql...'
 \i /docker-entrypoint-initdb.d/scripts/04-workflow-service.sql
 
+-- 5b. Workflow Service Additional Schema
+\echo 'Running scripts/04b-workflow-service.sql...'
+\i /docker-entrypoint-initdb.d/scripts/04b-workflow-service.sql
+
+-- 5c. FUD Auto Config
+\echo 'Running scripts/04c-fud-auto-config.sql...'
+\i /docker-entrypoint-initdb.d/scripts/04c-fud-auto-config.sql
+
 -- 6. Functions and Triggers
 \echo 'Running scripts/05-functions-triggers.sql...'
 \i /docker-entrypoint-initdb.d/scripts/05-functions-triggers.sql
@@ -62,6 +70,18 @@ END $$;
 -- 7. Users and Permissions
 \echo 'Running scripts/06-users-permissions.sql...'
 \i /docker-entrypoint-initdb.d/scripts/06-users-permissions.sql
+
+-- 8. Admin User, Roles and Permissions Seed Data
+\echo 'Running scripts/07-seed-admin-user.sql...'
+\i /docker-entrypoint-initdb.d/scripts/07-seed-admin-user.sql
+
+-- 9. Admin Agent Seed Data
+\echo 'Running scripts/08-seed-admin-agent.sql...'
+\i /docker-entrypoint-initdb.d/scripts/08-seed-admin-agent.sql
+
+-- 10. Bank Sync Service Sample Data
+\echo 'Running scripts/09-seed-bank-sync-data.sql...'
+\i /docker-entrypoint-initdb.d/scripts/09-seed-bank-sync-data.sql
 
 -- =============================================
 -- Verify installation
@@ -85,5 +105,22 @@ SELECT COUNT(*) FROM pg_tables WHERE schemaname = 'workflow_service';
 -- Count materialized views
 \echo 'Materialized views:'
 SELECT schemaname, matviewname FROM pg_matviews ORDER BY schemaname, matviewname;
+
+-- Verify seed data
+\echo 'Seed data verification:'
+\echo 'Admin users:'
+SELECT username, role, is_active FROM auth_service.users WHERE role = 'ADMIN';
+
+\echo 'Admin agents:'
+SELECT employee_id, name, type, team FROM workflow_service.agents WHERE type = 'ADMIN';
+
+\echo 'Sample customers:'
+SELECT COUNT(*) as customer_count FROM bank_sync_service.customers;
+
+\echo 'Sample loans:'
+SELECT COUNT(*) as loan_count FROM bank_sync_service.loans;
+
+\echo 'Sample collaterals:'
+SELECT COUNT(*) as collateral_count FROM bank_sync_service.collaterals;
 
 \echo 'Database initialization completed successfully!'

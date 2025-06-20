@@ -29,41 +29,34 @@ COPY src/frontend ./
 RUN npm run build
 
 # Stage 3: Production - Nginx server
-FROM nginx:alpine AS production
+FROM nginxinc/nginx-unprivileged:stable-alpine AS production
+
+# Temporarily switch to root to install updates and copy files
+USER root
 
 # Install security updates
 RUN apk update && apk upgrade && \
     rm -rf /var/cache/apk/*
 
-# Create non-root user
-RUN addgroup -g 1001 -S nginx-user && \
-    adduser -S nginx-user -u 1001
-
-# Copy built application
-COPY --from=build /app/dist /usr/share/nginx/html
+# Copy built application with proper ownership
+COPY --chown=nginx:nginx --from=build /app/dist /usr/share/nginx/html
 
 # Copy custom nginx configuration
-COPY docker/config/nginx/frontend.conf /etc/nginx/conf.d/default.conf
+COPY --chown=nginx:nginx docker/config/nginx/frontend.conf /etc/nginx/conf.d/default.conf
 
-# Change ownership to non-root user
-RUN chown -R nginx-user:nginx-user /usr/share/nginx/html && \
-    chown -R nginx-user:nginx-user /var/cache/nginx && \
-    chown -R nginx-user:nginx-user /var/log/nginx && \
-    chown -R nginx-user:nginx-user /etc/nginx/conf.d
+# Set proper permissions
+RUN find /usr/share/nginx/html -type d -print0 | xargs -0 chmod 755 && \
+    find /usr/share/nginx/html -type f -print0 | xargs -0 chmod 644
 
-# Create nginx PID directory with proper permissions
-RUN mkdir -p /var/run/nginx && \
-    chown -R nginx-user:nginx-user /var/run/nginx
+# Switch back to nginx user
+USER nginx
 
-# Switch to non-root user
-USER nginx-user
-
-# Expose port
-EXPOSE 80
+# Expose port (unprivileged image uses 8080 by default)
+EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
-# Start nginx
+# Start nginx (CMD is inherited from base image)
 CMD ["nginx", "-g", "daemon off;"]
