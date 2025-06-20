@@ -25,7 +25,10 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy source code
 COPY src/frontend ./
 
-# Build the application
+# Copy staging environment file as .env for build
+COPY src/frontend/.env.staging ./.env
+
+# Build the application with environment variables
 RUN npm run build
 
 # Stage 3: Production - Nginx server
