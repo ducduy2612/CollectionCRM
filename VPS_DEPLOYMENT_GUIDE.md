@@ -60,7 +60,7 @@ docker compose version
 ### 2.2 Login to GitHub Container Registry
 ```bash
 # Save your GitHub username
-export GITHUB_USERNAME="your-github-username"
+export GITHUB_USERNAME="ducduy2612"
 
 # Login to ghcr.io
 echo "YOUR_GITHUB_TOKEN" | docker login ghcr.io -u $GITHUB_USERNAME --password-stdin
@@ -70,8 +70,9 @@ echo "YOUR_GITHUB_TOKEN" | docker login ghcr.io -u $GITHUB_USERNAME --password-s
 
 ### 3.1 Clone Repository
 ```bash
+sudo mkdir -p /opt
 cd /opt
-sudo git clone https://github.com/YOUR_GITHUB_USERNAME/CollectionCRM.git
+sudo git clone https://github.com/ducduy2612/CollectionCRM.git
 sudo chown -R $USER:$USER CollectionCRM
 cd CollectionCRM
 ```
@@ -112,105 +113,13 @@ cp src/services/workflow-service/.env.example src/services/workflow-service/.env
 # - Kafka connection strings
 ```
 
-## Step 4: Configure Nginx
+## Step 4: Nginx Configuration Note
 
-### 4.1 Create Nginx Staging Configuration for IP-based Access
-```bash
-# Create nginx staging config
-cat > docker/config/nginx/staging.conf << 'EOF'
-events {
-    worker_connections 1024;
-}
-
-http {
-    include /etc/nginx/mime.types;
-    default_type application/octet-stream;
-
-    # Logging
-    access_log /var/log/nginx/access.log;
-    error_log /var/log/nginx/error.log;
-
-
-    # Gzip
-    gzip on;
-    gzip_vary on;
-    gzip_min_length 1024;
-    gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
-
-    # Rate limiting
-    limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
-    limit_req_zone $binary_remote_addr zone=auth:10m rate=5r/s;
-
-    # Upstream API Gateway
-    upstream api_gateway {
-        server api-gateway:3000;
-    }
-
-    # Main HTTP server (no SSL)
-    server {
-        listen 80;
-        server_name _;
-
-
-        # Security headers
-        add_header X-Frame-Options "SAMEORIGIN" always;
-        add_header X-Content-Type-Options "nosniff" always;
-        add_header X-XSS-Protection "1; mode=block" always;
-        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-
-        # Frontend files
-        location / {
-            root /usr/share/nginx/html;
-            try_files $uri $uri/ /index.html;
-            
-            # Cache static assets
-            location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-                expires 1y;
-                add_header Cache-Control "public, immutable";
-            }
-        }
-
-        # API routes
-        location /api {
-            limit_req zone=api burst=20 nodelay;
-            
-            proxy_pass http://api_gateway;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection 'upgrade';
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_cache_bypass $http_upgrade;
-            
-            # Timeouts
-            proxy_connect_timeout 60s;
-            proxy_send_timeout 60s;
-            proxy_read_timeout 60s;
-        }
-
-        # Auth routes (stricter rate limiting)
-        location /api/auth {
-            limit_req zone=auth burst=10 nodelay;
-            
-            proxy_pass http://api_gateway;
-            proxy_http_version 1.1;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-
-        # Health check
-        location /health {
-            access_log off;
-            return 200 "healthy\n";
-        }
-    }
-}
-EOF
-```
+The nginx reverse proxy configuration is already included in the repository at `docker/config/nginx/staging-proxy.conf`. This configuration:
+- Routes API requests to the backend services
+- Proxies all other requests to the frontend container
+- Includes rate limiting and security headers
+- No manual configuration needed!
 
 ## Step 5: Prepare Database
 
@@ -230,14 +139,8 @@ REDIS_PASSWORD=your_secure_redis_password_here
 EOF
 ```
 
-### 5.2 Build Frontend
-```bash
-# Build frontend for staging
-cd src/frontend
-npm install
-npm run build
-cd ../..
-```
+### 5.2 Frontend Deployment Note
+The frontend is containerized and will be pulled from GitHub Container Registry as a Docker image. No build step is required on the VPS.
 
 ## Step 6: Deploy Services
 
