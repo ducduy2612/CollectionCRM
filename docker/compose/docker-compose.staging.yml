@@ -222,7 +222,7 @@ services:
     networks:
       - collectioncrm-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-collectioncrm} -d ${DB_NAME:-collectioncrm_staging}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-collectioncrm} -d ${POSTGRES_DB:-collectioncrm_staging}"]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -79,14 +79,14 @@ cd CollectionCRM
 
 ### 3.2 Create Environment Configuration
 ```bash
-# Create .env file from example
-cp docker/compose/.env.example docker/compose/.env
+# Create .env.staging file from example
+cp docker/compose/.env.example docker/compose/.env.staging
 
-# Edit the .env file
-vim docker/compose/.env
+# Edit the .env.staging file
+vim docker/compose/.env.staging
 ```
 
-Update the following in `.env`:
+Update the following in `.env.staging`:
 ```bash
 # GitHub Container Registry Configuration
 GITHUB_REPOSITORY_OWNER=your-github-username
@@ -151,25 +151,25 @@ export GITHUB_REPOSITORY_OWNER=your-github-username
 export IMAGE_TAG=staging  # or latest
 
 # Pull all images
-docker compose -f docker/compose/docker-compose.staging.yml pull
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml pull
 ```
 
 ### 6.2 Start Infrastructure Services First
 ```bash
 # Start database and message broker
-docker compose -f docker/compose/docker-compose.staging.yml up -d postgres redis zookeeper kafka
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml up -d postgres redis zookeeper kafka
 
 # Wait for them to be healthy
-docker compose -f docker/compose/docker-compose.staging.yml ps
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml ps
 
 # Check logs
-docker compose -f docker/compose/docker-compose.staging.yml logs postgres
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml logs postgres
 ```
 
 ### 6.3 Initialize Database
 ```bash
 # Run database migrations
-docker compose -f docker/compose/docker-compose.staging.yml exec postgres psql -U collectioncrm -d collectioncrm_staging -c "
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml exec postgres psql -U collectioncrm -d collectioncrm_staging -c "
 CREATE SCHEMA IF NOT EXISTS auth_service;
 CREATE SCHEMA IF NOT EXISTS bank_sync_service;
 CREATE SCHEMA IF NOT EXISTS workflow_service;
@@ -183,13 +183,13 @@ CREATE SCHEMA IF NOT EXISTS payment_service;
 ### 6.4 Start Application Services
 ```bash
 # Start all services
-docker compose -f docker/compose/docker-compose.staging.yml up -d
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml up -d
 
 # Check status
-docker compose -f docker/compose/docker-compose.staging.yml ps
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml ps
 
 # Monitor logs
-docker compose -f docker/compose/docker-compose.staging.yml logs -f
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml logs -f
 ```
 
 ## Step 7: Verify Deployment
@@ -197,7 +197,7 @@ docker compose -f docker/compose/docker-compose.staging.yml logs -f
 ### 7.1 Check Service Health
 ```bash
 # Check all services are running
-docker compose -f docker/compose/docker-compose.staging.yml ps
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml ps
 
 # Test API Gateway
 curl http://localhost:3000/health
@@ -234,7 +234,7 @@ df -h
 cat > /opt/CollectionCRM/health-check.sh << 'EOF'
 #!/bin/bash
 cd /opt/CollectionCRM
-docker compose -f docker/compose/docker-compose.staging.yml ps --format "table {{.Name}}\t{{.Status}}"
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml ps --format "table {{.Name}}\t{{.Status}}"
 EOF
 
 chmod +x /opt/CollectionCRM/health-check.sh
@@ -251,7 +251,7 @@ mkdir -p $BACKUP_DIR
 DATE=$(date +%Y%m%d_%H%M%S)
 
 cd /opt/CollectionCRM
-docker compose -f docker/compose/docker-compose.staging.yml exec -T postgres \
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml exec -T postgres \
   pg_dump -U collectioncrm collectioncrm_staging | gzip > $BACKUP_DIR/backup_$DATE.sql.gz
 
 # Keep only last 7 days of backups
@@ -270,19 +270,19 @@ echo "0 2 * * * /opt/CollectionCRM/backup-db.sh" | crontab -
 ### Common Operations
 ```bash
 # View logs
-docker compose -f docker/compose/docker-compose.staging.yml logs -f [service-name]
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml logs -f [service-name]
 
 # Restart a service
-docker compose -f docker/compose/docker-compose.staging.yml restart [service-name]
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml restart [service-name]
 
 # Update images
 export GITHUB_REPOSITORY_OWNER=your-github-username
 export IMAGE_TAG=new-tag
-docker compose -f docker/compose/docker-compose.staging.yml pull
-docker compose -f docker/compose/docker-compose.staging.yml up -d
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml pull
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml up -d
 
 # Scale a service
-docker compose -f docker/compose/docker-compose.staging.yml up -d --scale auth-service=2
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml up -d --scale auth-service=2
 
 # Clean up
 docker system prune -a --volumes
@@ -291,17 +291,17 @@ docker system prune -a --volumes
 ### Troubleshooting
 ```bash
 # Check service logs
-docker compose -f docker/compose/docker-compose.staging.yml logs auth-service
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml logs auth-service
 
 # Access service shell
-docker compose -f docker/compose/docker-compose.staging.yml exec auth-service sh
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml exec auth-service sh
 
 # Check resource usage
 docker stats
 
 # Restart everything
-docker compose -f docker/compose/docker-compose.staging.yml down
-docker compose -f docker/compose/docker-compose.staging.yml up -d
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml down
+docker compose --env-file docker/compose/.env.staging -f docker/compose/docker-compose.staging.yml up -d
 ```
 
 ## Security Checklist
