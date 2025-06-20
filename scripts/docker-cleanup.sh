@@ -95,7 +95,7 @@ stop_containers() {
     local containers
     containers=$(execute_cmd "docker ps -q")
     if [[ -n "$containers" ]]; then
-        execute_cmd "docker stop $containers"
+        execute_cmd "docker stop \$(docker ps -q) 2>/dev/null || echo 'No containers to stop'"
         print_success "All containers stopped"
     else
         print_info "No running containers found"
@@ -108,7 +108,7 @@ remove_containers() {
     local containers
     containers=$(execute_cmd "docker ps -aq")
     if [[ -n "$containers" ]]; then
-        execute_cmd "docker rm $containers"
+        execute_cmd "docker rm \$(docker ps -aq) 2>/dev/null || echo 'No containers to remove'"
         print_success "All containers removed"
     else
         print_info "No containers to remove"
@@ -121,7 +121,7 @@ remove_images() {
     local images
     images=$(execute_cmd "docker images -aq")
     if [[ -n "$images" ]]; then
-        execute_cmd "docker rmi $images -f"
+        execute_cmd "docker rmi \$(docker images -aq) -f 2>/dev/null || echo 'No images to remove'"
         print_success "All images removed"
     else
         print_info "No images to remove"
@@ -139,7 +139,7 @@ remove_volumes() {
     local volumes
     volumes=$(execute_cmd "docker volume ls -q")
     if [[ -n "$volumes" ]]; then
-        execute_cmd "docker volume rm $volumes -f"
+        execute_cmd "docker volume rm \$(docker volume ls -q) -f 2>/dev/null || echo 'No volumes to remove'"
         print_success "All volumes removed"
     else
         print_info "No volumes to remove"
