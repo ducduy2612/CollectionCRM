@@ -576,7 +576,7 @@ COMMENT ON FUNCTION workflow_service.get_configuration_usage_stats() IS 'Returns
 -- Add comments for admin functions
 COMMENT ON FUNCTION workflow_service.add_action_type(VARCHAR, VARCHAR, TEXT, INTEGER, VARCHAR) IS 'Adds a new action type for admin configuration';
 COMMENT ON FUNCTION workflow_service.add_action_subtype(VARCHAR, VARCHAR, TEXT, INTEGER, VARCHAR) IS 'Adds a new action subtype for admin configuration';
-COMMENT ON FUNCTION workflow_service.add_action_result(VARCHAR, VARCHAR, TEXT, INTEGER, VARCHAR) IS 'Adds a new action result for admin configuration';
+COMMENT ON FUNCTION workflow_service.add_action_result(VARCHAR, VARCHAR, TEXT, INTEGER, BOOLEAN, VARCHAR) IS 'Adds a new action result for admin configuration';
 COMMENT ON FUNCTION workflow_service.update_action_type(VARCHAR, VARCHAR, TEXT, INTEGER, VARCHAR) IS 'Updates an existing action type for admin configuration';
 COMMENT ON FUNCTION workflow_service.update_action_subtype(VARCHAR, VARCHAR, TEXT, INTEGER, VARCHAR) IS 'Updates an existing action subtype for admin configuration';
 COMMENT ON FUNCTION workflow_service.update_action_result(VARCHAR, VARCHAR, TEXT, INTEGER, BOOLEAN, VARCHAR) IS 'Updates an existing action result for admin configuration';
