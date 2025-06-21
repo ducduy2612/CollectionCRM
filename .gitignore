@@ -25,6 +25,9 @@ dist/
 *.swo
 .DS_Store
 
+# Backups
+backups/
+
 # Logs
 logs/
 *.log

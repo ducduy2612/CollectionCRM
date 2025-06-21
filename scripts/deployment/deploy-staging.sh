@@ -11,7 +11,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 COMPOSE_FILE="$PROJECT_ROOT/docker/compose/docker-compose.staging.yml"
 ENV_FILE="$PROJECT_ROOT/.env.staging"
 BACKUP_DIR="$PROJECT_ROOT/backups/$(date +%Y%m%d_%H%M%S)"
-LOG_FILE="/var/log/collectioncrm/deploy-staging.log"
+LOG_FILE="$PROJECT_ROOT/logs/deploy-staging.log"
 
 # Colors for output
 RED='\033[0;31m'
@@ -93,8 +93,31 @@ backup_current() {
     # Backup environment files
     if [[ -f "$ENV_FILE" ]]; then
         cp "$ENV_FILE" "$BACKUP_DIR/"
-        success "Environment file backed up"
+        success "Docker compose environment file backed up"
     fi
+    
+    # Backup all service .env.staging files
+    log "Backing up service environment files..."
+    mkdir -p "$BACKUP_DIR/service-envs"
+    
+    # List of services with .env.staging files
+    services=("api-gateway" "auth-service" "bank-sync-service" "workflow-service" "payment-service" "campaign-engine")
+    
+    for service in "${services[@]}"; do
+        env_file="$PROJECT_ROOT/src/services/$service/.env.staging"
+        if [[ -f "$env_file" ]]; then
+            cp "$env_file" "$BACKUP_DIR/service-envs/$service.env.staging"
+            log "  - Backed up $service/.env.staging"
+        fi
+    done
+    
+    # Backup frontend .env.staging if exists
+    if [[ -f "$PROJECT_ROOT/src/frontend/.env.staging" ]]; then
+        cp "$PROJECT_ROOT/src/frontend/.env.staging" "$BACKUP_DIR/service-envs/frontend.env.staging"
+        log "  - Backed up frontend/.env.staging"
+    fi
+    
+    success "All environment files backed up"
     
     # Backup docker-compose file
     cp "$COMPOSE_FILE" "$BACKUP_DIR/"

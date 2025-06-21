@@ -15,8 +15,10 @@ services:
     <<: *common-config
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ../config/nginx/staging-proxy.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt/live/xpm-collectioncrm.ddns.net:/etc/nginx/ssl:ro
     depends_on:
       - frontend
       - api-gateway
@@ -208,9 +210,9 @@ services:
     image: postgres:15-alpine
     <<: *common-config
     environment:
-      - POSTGRES_USER=collectioncrm
-      - POSTGRES_PASSWORD=staging_password_123
-      - POSTGRES_DB=collectioncrm_staging
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_DATABASE}
       - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
     env_file:
       - ../../docker/config/postgres.staging.env
@@ -222,7 +224,7 @@ services:
     networks:
       - collectioncrm-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-collectioncrm} -d ${POSTGRES_DB:-collectioncrm_staging}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -248,7 +250,7 @@ services:
       --save "900 1"
       --save "300 10"
       --save "60 10000"
-      --requirepass staging_redis_123
+      --requirepass ${REDIS_PASSWORD}
     env_file:
       - ../../docker/config/redis.staging.env
     volumes:
@@ -258,7 +260,7 @@ services:
     networks:
       - collectioncrm-network
     healthcheck:
-      test: ["CMD", "redis-cli", "--pass", "staging_redis_123", "ping"]
+      test: ["CMD", "redis-cli", "--pass", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 3

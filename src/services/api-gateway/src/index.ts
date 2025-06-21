@@ -20,6 +20,12 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy configuration (important when behind nginx/load balancer)
+if (process.env.TRUST_PROXY === 'true') {
+  app.set('trust proxy', true);
+  logger.info('Trust proxy enabled - will use X-Forwarded-* headers');
+}
+
 // Basic middleware
 app.use(getCorsOptions());
 app.use(helmet());
