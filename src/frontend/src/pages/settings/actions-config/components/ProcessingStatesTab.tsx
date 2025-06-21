@@ -5,12 +5,16 @@ import { Table } from '../../../../components/ui/Table';
 import { Badge } from '../../../../components/ui/Badge';
 import { Modal } from '../../../../components/ui/Modal';
 import { Input } from '../../../../components/ui/Input';
+import { Toggle } from '../../../../components/ui/Toggle';
 import { 
   PlusIcon, 
   PencilIcon, 
-  TrashIcon
+  TrashIcon,
+  EyeIcon,
+  EyeSlashIcon
 } from '@heroicons/react/24/outline';
 import { ProcessingStateDictItem } from '../../../customers/types';
+import { statusDictApi } from '../../../../services/api/workflow/status-dict.api';
 
 interface ProcessingStatesTabProps {
   processingStates: ProcessingStateDictItem[];
@@ -36,6 +40,7 @@ const ProcessingStatesTab: React.FC<ProcessingStatesTabProps> = ({
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<ProcessingStateDictItem | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     code: '',
     name: '',
@@ -75,13 +80,12 @@ const ProcessingStatesTab: React.FC<ProcessingStatesTabProps> = ({
     }
 
     try {
-      // This would need to be implemented in the API
-      // const result = await statusDictApi.deactivateProcessingState(item.code);
-      // if (result.success) {
+      const result = await statusDictApi.deactivateProcessingState(item.code);
+      if (result.success) {
         onSuccess(t('settings:processing_state.messages.state_deactivated'));
-      // }
+      }
     } catch (error) {
-      let errorMessage = t('settings:processing_state.messages.state_deactivated');
+      let errorMessage = t('common:errors.generic');
       if (error instanceof Error) {
         errorMessage = error.message;
       }
@@ -93,13 +97,19 @@ const ProcessingStatesTab: React.FC<ProcessingStatesTabProps> = ({
     setSubmitting(true);
     
     try {
-      // This would need to be implemented in the API
+      const config = {
+        code: formData.code,
+        name: formData.name,
+        description: formData.description || undefined,
+        displayOrder: parseInt(formData.display_order)
+      };
+
       if (editingItem) {
         // Update existing processing state
-        // await statusDictApi.updateProcessingState(editingItem.code, updateConfig);
+        await statusDictApi.updateProcessingState(editingItem.code, config);
       } else {
         // Add new processing state
-        // await statusDictApi.addProcessingState(config);
+        await statusDictApi.addProcessingState(config);
       }
       
       onSuccess(t(`settings:processing_state.messages.state_${editingItem ? 'updated' : 'created'}`));
@@ -107,7 +117,7 @@ const ProcessingStatesTab: React.FC<ProcessingStatesTabProps> = ({
       resetForm();
       setEditingItem(null);
     } catch (error) {
-      onError(error instanceof Error ? error.message : t('settings:processing_state.messages.state_created'));
+      onError(error instanceof Error ? error.message : t('common:errors.generic'));
     } finally {
       setSubmitting(false);
     }
@@ -118,6 +128,11 @@ const ProcessingStatesTab: React.FC<ProcessingStatesTabProps> = ({
     resetForm();
     setEditingItem(null);
   };
+
+  // Filter states based on active/inactive toggle
+  const filteredStates = processingStates.filter(state => 
+    showInactive ? true : state.is_active
+  );
 
   return (
     <div className="space-y-6">
@@ -130,6 +145,28 @@ const ProcessingStatesTab: React.FC<ProcessingStatesTabProps> = ({
           <PlusIcon className="w-4 h-4 mr-2" />
           {t('settings:processing_state.actions.add_state')}
         </Button>
+      </div>
+      
+      {/* Filter and Summary */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Toggle
+            checked={showInactive}
+            onChange={setShowInactive}
+            size="sm"
+          />
+          <span className="text-sm text-neutral-600 flex items-center space-x-1">
+            {showInactive ? <EyeIcon className="w-4 h-4" /> : <EyeSlashIcon className="w-4 h-4" />}
+            <span>{t('settings:processing_state.filter.show_inactive')}</span>
+          </span>
+        </div>
+        <div className="text-sm text-neutral-600">
+          {t('settings:processing_state.summary', { 
+            total: filteredStates.length,
+            active: processingStates.filter(s => s.is_active).length,
+            inactive: processingStates.filter(s => !s.is_active).length
+          })}
+        </div>
       </div>
       
       <div className="bg-white rounded-lg border">
@@ -145,40 +182,51 @@ const ProcessingStatesTab: React.FC<ProcessingStatesTabProps> = ({
             </tr>
           </thead>
           <tbody>
-            {processingStates.map((state) => (
-              <tr key={state.id}>
-                <td className="font-mono text-sm">{state.code}</td>
-                <td className="font-medium">{state.name}</td>
-                <td className="text-neutral-600">{state.description}</td>
-                <td>{state.display_order}</td>
-                <td>
-                  <Badge variant={state.is_active ? 'success' : 'secondary'}>
-                    {state.is_active ? t('common:status.active') : t('common:status.inactive')}
-                  </Badge>
+            {filteredStates.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-4 text-center text-neutral-500">
+                  {showInactive 
+                    ? t('settings:processing_state.empty.no_states')
+                    : t('settings:processing_state.empty.no_active_states')
+                  }
                 </td>
-                <td>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(state)}
-                    >
-                      <PencilIcon className="w-4 h-4" />
-                    </Button>
-                    {state.is_active && (
+              </tr>
+            ) : (
+              filteredStates.map((state) => (
+                <tr key={state.id}>
+                  <td className="font-mono text-sm">{state.code}</td>
+                  <td className="font-medium">{state.name}</td>
+                  <td className="text-neutral-600">{state.description}</td>
+                  <td>{state.display_order}</td>
+                  <td>
+                    <Badge variant={state.is_active ? 'success' : 'secondary'}>
+                      {state.is_active ? t('common:status.active') : t('common:status.inactive')}
+                    </Badge>
+                  </td>
+                  <td>
+                    <div className="flex items-center space-x-2">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(state)}
-                        className="text-red-600 hover:text-red-700"
+                        onClick={() => handleEdit(state)}
                       >
-                        <TrashIcon className="w-4 h-4" />
+                        <PencilIcon className="w-4 h-4" />
                       </Button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
+                      {state.is_active && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(state)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </Table>
       </div>

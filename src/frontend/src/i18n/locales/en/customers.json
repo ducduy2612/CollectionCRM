@@ -366,6 +366,7 @@
     "collateral_id": "Collateral ID",
     "updating": "Updating...",
     "update_status": "Update Status",
+    "no_substates_mapped": "No substates mapped to this state",
     "placeholders": {
       "select_status": "Select {{statusType}}...",
       "select_substate": "Select processing substate..."

@@ -5,12 +5,16 @@ import { Table } from '../../../../components/ui/Table';
 import { Badge } from '../../../../components/ui/Badge';
 import { Modal } from '../../../../components/ui/Modal';
 import { Input } from '../../../../components/ui/Input';
+import { Toggle } from '../../../../components/ui/Toggle';
 import { 
   PlusIcon, 
   PencilIcon, 
-  TrashIcon
+  TrashIcon,
+  EyeIcon,
+  EyeSlashIcon
 } from '@heroicons/react/24/outline';
 import { ProcessingStateDictItem, ProcessingSubstateDictItem } from '../../../customers/types';
+import { statusDictApi } from '../../../../services/api/workflow/status-dict.api';
 
 interface ProcessingSubstatesTabProps {
   processingSubstates: ProcessingSubstateDictItem[];
@@ -38,6 +42,7 @@ const ProcessingSubstatesTab: React.FC<ProcessingSubstatesTabProps> = ({
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<ProcessingSubstateDictItem | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     code: '',
     name: '',
@@ -77,13 +82,12 @@ const ProcessingSubstatesTab: React.FC<ProcessingSubstatesTabProps> = ({
     }
 
     try {
-      // This would need to be implemented in the API
-      // const result = await statusDictApi.deactivateProcessingSubstate(item.code);
-      // if (result.success) {
+      const result = await statusDictApi.deactivateProcessingSubstate(item.code);
+      if (result.success) {
         onSuccess(t('settings:processing_state.messages.substate_deactivated'));
-      // }
+      }
     } catch (error) {
-      let errorMessage = t('settings:processing_state.messages.substate_deactivated');
+      let errorMessage = t('common:errors.generic');
       if (error instanceof Error) {
         errorMessage = error.message;
       }
@@ -95,13 +99,19 @@ const ProcessingSubstatesTab: React.FC<ProcessingSubstatesTabProps> = ({
     setSubmitting(true);
     
     try {
-      // This would need to be implemented in the API
+      const config = {
+        code: formData.code,
+        name: formData.name,
+        description: formData.description || undefined,
+        displayOrder: parseInt(formData.display_order)
+      };
+
       if (editingItem) {
         // Update existing processing substate
-        // await statusDictApi.updateProcessingSubstate(editingItem.code, updateConfig);
+        await statusDictApi.updateProcessingSubstate(editingItem.code, config);
       } else {
         // Add new processing substate
-        // await statusDictApi.addProcessingSubstate(config);
+        await statusDictApi.addProcessingSubstate(config);
       }
       
       onSuccess(t(`settings:processing_state.messages.substate_${editingItem ? 'updated' : 'created'}`));
@@ -109,7 +119,7 @@ const ProcessingSubstatesTab: React.FC<ProcessingSubstatesTabProps> = ({
       resetForm();
       setEditingItem(null);
     } catch (error) {
-      onError(error instanceof Error ? error.message : t('settings:processing_state.messages.substate_created'));
+      onError(error instanceof Error ? error.message : t('common:errors.generic'));
     } finally {
       setSubmitting(false);
     }
@@ -120,6 +130,11 @@ const ProcessingSubstatesTab: React.FC<ProcessingSubstatesTabProps> = ({
     resetForm();
     setEditingItem(null);
   };
+
+  // Filter substates based on active/inactive toggle
+  const filteredSubstates = processingSubstates.filter(substate => 
+    showInactive ? true : substate.is_active
+  );
 
   return (
     <div className="space-y-6">
@@ -132,6 +147,28 @@ const ProcessingSubstatesTab: React.FC<ProcessingSubstatesTabProps> = ({
           <PlusIcon className="w-4 h-4 mr-2" />
           {t('settings:processing_state.actions.add_substate')}
         </Button>
+      </div>
+      
+      {/* Filter and Summary */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Toggle
+            checked={showInactive}
+            onChange={setShowInactive}
+            size="sm"
+          />
+          <span className="text-sm text-neutral-600 flex items-center space-x-1">
+            {showInactive ? <EyeIcon className="w-4 h-4" /> : <EyeSlashIcon className="w-4 h-4" />}
+            <span>{t('settings:processing_state.filter.show_inactive')}</span>
+          </span>
+        </div>
+        <div className="text-sm text-neutral-600">
+          {t('settings:processing_state.summary', { 
+            total: filteredSubstates.length,
+            active: processingSubstates.filter(s => s.is_active).length,
+            inactive: processingSubstates.filter(s => !s.is_active).length
+          })}
+        </div>
       </div>
       
       <div className="bg-white rounded-lg border">
@@ -147,40 +184,51 @@ const ProcessingSubstatesTab: React.FC<ProcessingSubstatesTabProps> = ({
             </tr>
           </thead>
           <tbody>
-            {processingSubstates.map((substate) => (
-              <tr key={substate.id}>
-                <td className="font-mono text-sm">{substate.code}</td>
-                <td className="font-medium">{substate.name}</td>
-                <td className="text-neutral-600">{substate.description}</td>
-                <td>{substate.display_order}</td>
-                <td>
-                  <Badge variant={substate.is_active ? 'success' : 'secondary'}>
-                    {substate.is_active ? t('common:status.active') : t('common:status.inactive')}
-                  </Badge>
+            {filteredSubstates.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-4 text-center text-neutral-500">
+                  {showInactive 
+                    ? t('settings:processing_state.empty.no_substates')
+                    : t('settings:processing_state.empty.no_active_substates')
+                  }
                 </td>
-                <td>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(substate)}
-                    >
-                      <PencilIcon className="w-4 h-4" />
-                    </Button>
-                    {substate.is_active && (
+              </tr>
+            ) : (
+              filteredSubstates.map((substate) => (
+                <tr key={substate.id}>
+                  <td className="font-mono text-sm">{substate.code}</td>
+                  <td className="font-medium">{substate.name}</td>
+                  <td className="text-neutral-600">{substate.description}</td>
+                  <td>{substate.display_order}</td>
+                  <td>
+                    <Badge variant={substate.is_active ? 'success' : 'secondary'}>
+                      {substate.is_active ? t('common:status.active') : t('common:status.inactive')}
+                    </Badge>
+                  </td>
+                  <td>
+                    <div className="flex items-center space-x-2">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(substate)}
-                        className="text-red-600 hover:text-red-700"
+                        onClick={() => handleEdit(substate)}
                       >
-                        <TrashIcon className="w-4 h-4" />
+                        <PencilIcon className="w-4 h-4" />
                       </Button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
+                      {substate.is_active && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(substate)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </Table>
       </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ProcessingStateDictItem, ProcessingSubstateDictItem } from '../../../customers/types';
+import OneToManyMappingInterface from './ProcessingStateMapping/OneToManyMappingInterface';
 
 interface ProcessingStateMappingsTabProps {
   processingStates: ProcessingStateDictItem[];
@@ -28,17 +29,16 @@ const ProcessingStateMappingsTab: React.FC<ProcessingStateMappingsTabProps> = ({
         </p>
       </div>
       
-      <div className="bg-neutral-50 rounded-lg p-8 text-center">
-        <p className="text-neutral-500">
-          Mappings functionality will be implemented when the API endpoints are available.
-        </p>
-        <p className="text-sm text-neutral-400 mt-2">
-          States: {processingStates.length} | Substates: {processingSubstates.length}
-        </p>
-      </div>
+      <OneToManyMappingInterface
+        sourceItems={processingStates}
+        targetItems={processingSubstates}
+        onSuccess={onSuccess}
+        onError={onError}
+        title={t('settings:processing_state.mappings.state_substate_title', { defaultValue: 'State-Substate Mappings' })}
+      />
     </div>
   );
-  // Note: loading, onSuccess, onError are not used in this simplified component
+  // Note: loading is not used in this component directly
 };
 
 export default ProcessingStateMappingsTab;

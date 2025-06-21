@@ -5,6 +5,7 @@ import { Select, SelectOption } from '../../../components/ui/Select';
 import { Input } from '../../../components/ui/Input';
 import { StatusDictItem, StatusUpdateRequest } from '../types';
 import { useTranslation } from '../../../i18n/hooks/useTranslation';
+import { statusDictApi } from '../../../services/api/workflow/status-dict.api';
 
 interface StatusUpdateModalProps {
   isOpen: boolean;
@@ -54,6 +55,8 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
   
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mappedSubstates, setMappedSubstates] = useState<StatusDictItem[]>([]);
+  const [isLoadingSubstates, setIsLoadingSubstates] = useState(false);
 
   // Reset form when modal opens/closes
   useEffect(() => {
@@ -67,8 +70,45 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
       });
       setErrors({});
       setIsSubmitting(false);
+      setMappedSubstates([]);
     }
   }, [isOpen]);
+
+  // Fetch mapped substates when processing state is selected
+  useEffect(() => {
+    if (statusType === 'processingState' && formData.statusId && isOpen) {
+      const fetchMappedSubstates = async () => {
+        setIsLoadingSubstates(true);
+        try {
+          // Find the selected state's code
+          const selectedState = statusOptions.find(s => s.id === formData.statusId);
+          if (selectedState) {
+            // Get substates mapped to this state
+            const mappedSubstateData = await statusDictApi.getProcessingSubstates(false, selectedState.code);
+            
+            // The API returns substate data with substate_code field
+            // We need to match these with our full substate list
+            if (substateOptions) {
+              const mappedSubstateCodes = mappedSubstateData.map(m => m.substate_code);
+              const filteredSubstates = substateOptions.filter(substate => 
+                mappedSubstateCodes.includes(substate.code)
+              );
+              setMappedSubstates(filteredSubstates);
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching mapped substates:', error);
+          setMappedSubstates([]);
+        } finally {
+          setIsLoadingSubstates(false);
+        }
+      };
+
+      fetchMappedSubstates();
+    } else {
+      setMappedSubstates([]);
+    }
+  }, [statusType, formData.statusId, isOpen, statusOptions, substateOptions]);
 
   // Get status type display name
   const getStatusTypeDisplayName = (type: string) => {
@@ -90,14 +130,12 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
       label: option.name
     }));
 
-  const substateSelectOptions: SelectOption[] = substateOptions
-    ? substateOptions
-        .sort((a, b) => a.display_order - b.display_order)
-        .map(option => ({
-          value: option.id,
-          label: option.name
-        }))
-    : [];
+  const substateSelectOptions: SelectOption[] = mappedSubstates
+    .sort((a, b) => a.display_order - b.display_order)
+    .map(option => ({
+      value: option.id,
+      label: option.name
+    }));
 
   // Validate form
   const validateForm = (): boolean => {
@@ -107,7 +145,7 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
       newErrors.statusId = t('customers:status_update.validation.status_required');
     }
 
-    if (statusType === 'processingState' && substateOptions && substateOptions.length > 0 && !formData.substateId?.trim()) {
+    if (statusType === 'processingState' && mappedSubstates.length > 0 && !formData.substateId?.trim()) {
       newErrors.substateId = t('customers:status_update.validation.substate_required');
     }
 
@@ -176,6 +214,11 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
     }
+    
+    // Clear substate when state changes
+    if (field === 'statusId' && statusType === 'processingState') {
+      setFormData(prev => ({ ...prev, substateId: '' }));
+    }
   };
 
   // Handle cancel
@@ -215,15 +258,21 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
         />
 
         {/* Substate Selection (only for processing_state) */}
-        {statusType === 'processingState' && substateSelectOptions.length > 0 && (
+        {statusType === 'processingState' && formData.statusId && (
           <Select
             label={t('customers:status_update.processing_substate')}
             options={substateSelectOptions}
             value={formData.substateId || ''}
             onChange={(e) => handleInputChange('substateId', e.target.value)}
-            placeholder={t('customers:status_update.placeholders.select_substate')}
+            placeholder={
+              isLoadingSubstates 
+                ? t('common:loading') 
+                : substateSelectOptions.length === 0 
+                ? t('customers:status_update.no_substates_mapped')
+                : t('customers:status_update.placeholders.select_substate')
+            }
             error={errors.substateId}
-            disabled={isSubmitting || !formData.statusId}
+            disabled={isSubmitting || !formData.statusId || isLoadingSubstates}
           />
         )}
 

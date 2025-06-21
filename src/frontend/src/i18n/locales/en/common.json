@@ -50,6 +50,8 @@
     "selectFile": "Select File"
   },
   "actions": {
+    "edit": "Edit",
+    "deactivate": "Deactivate",
     "loading": "Loading...",
     "saving": "Saving...",
     "deleting": "Deleting...",
@@ -92,6 +94,7 @@
     "up_to_date": "Up to Date",
     "unknown": "Unknown"
   },
+  "loading": "Loading...",
   "messages": {
     "copyright": "© 2025 Collection CRM. All rights reserved.",
     "no_data": "No data available",

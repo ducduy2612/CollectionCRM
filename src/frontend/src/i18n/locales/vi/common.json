@@ -50,6 +50,8 @@
     "selectFile": "Chọn Tệp"
   },
   "actions": {
+    "edit": "Chỉnh sửa",
+    "deactivate": "Vô hiệu hóa",
     "loading": "Đang tải...",
     "saving": "Đang lưu...",
     "deleting": "Đang xóa...",
@@ -92,6 +94,7 @@
     "up_to_date": "Cập nhật",
     "unknown": "Không xác định"
   },
+  "loading": "Đang tải...",
   "messages": {
     "copyright": "2025 Collection CRM. IT Collection VPBANK",
     "no_data": "Không có dữ liệu",

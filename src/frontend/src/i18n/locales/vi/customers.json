@@ -358,6 +358,7 @@
     "collateral_id": "ID tài sản đảm bảo",
     "updating": "Đang cập nhật...",
     "update_status": "Cập nhật trạng thái",
+    "no_substates_mapped": "Không có trạng thái phụ nào được liên kết với trạng thái này",
     "placeholders": {
       "select_status": "Chọn {{statusType}}...",
       "select_substate": "Chọn trạng thái phụ xử lý..."

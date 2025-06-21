@@ -102,20 +102,6 @@ const ProcessingStateStatsTab: React.FC<ProcessingStateStatsTabProps> = ({
           </CardContent>
         </Card>
       </div>
-
-      {/* Placeholder for future detailed stats */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Detailed Statistics</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="bg-neutral-50 rounded-lg p-8 text-center">
-            <p className="text-neutral-500">
-              Detailed statistics will be implemented when usage data is available from the API.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

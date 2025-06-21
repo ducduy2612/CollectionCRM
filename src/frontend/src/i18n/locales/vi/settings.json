@@ -483,5 +483,118 @@
       "days_offset_range": "Số ngày điều chỉnh phải nằm trong khoảng -365 đến 365",
       "priority_range": "Ưu tiên phải nằm trong khoảng 0 đến 1000"
     }
+  },
+  "processing_state": {
+    "title": "Cấu hình trạng thái xử lý",
+    "description": "Cấu hình các trạng thái xử lý và trạng thái con cho quản lý quy trình",
+    "actions": {
+      "add_state": "Thêm trạng thái xử lý",
+      "add_substate": "Thêm trạng thái con xử lý"
+    },
+    "tabs": {
+      "states": "Trạng thái",
+      "substates": "Trạng thái con",
+      "mappings": "Ánh xạ trạng thái-trạng thái con",
+      "statistics": "Thống kê"
+    },
+    "states": {
+      "title": "Trạng thái xử lý",
+      "description": "Quản lý các trạng thái xử lý chính cho quản lý quy trình",
+      "table": {
+        "code": "Mã",
+        "name": "Tên",
+        "description": "Mô tả",
+        "display_order": "Thứ tự hiển thị",
+        "status": "Trạng thái",
+        "substates": "Trạng thái con",
+        "actions": "Thao tác"
+      },
+      "empty": {
+        "no_states": "Không tìm thấy trạng thái xử lý nào",
+        "no_active_states": "Không tìm thấy trạng thái xử lý hoạt động nào"
+      }
+    },
+    "substates": {
+      "title": "Trạng thái con xử lý",
+      "description": "Định nghĩa các trạng thái con cụ thể trong mỗi trạng thái xử lý",
+      "table": {
+        "code": "Mã",
+        "name": "Tên",
+        "state": "Trạng thái",
+        "description": "Mô tả",
+        "display_order": "Thứ tự hiển thị",
+        "status": "Trạng thái",
+        "actions": "Thao tác"
+      },
+      "empty": {
+        "no_substates": "Không tìm thấy trạng thái con xử lý nào",
+        "no_active_substates": "Không tìm thấy trạng thái con xử lý hoạt động nào"
+      }
+    },
+    "mappings": {
+      "title": "Ánh xạ trạng thái-trạng thái con",
+      "description": "Cấu hình các trạng thái con nào có sẵn cho mỗi trạng thái xử lý",
+      "state_substate_title": "Ánh xạ trạng thái-trạng thái con",
+      "filter": {
+        "all_states": "Tất cả trạng thái",
+        "select_state": "Chọn trạng thái..."
+      },
+      "table": {
+        "state": "Trạng thái xử lý",
+        "available_substates": "Trạng thái con có sẵn",
+        "actions": "Thao tác"
+      },
+      "empty": {
+        "no_mappings": "Chưa có ánh xạ nào được cấu hình"
+      }
+    },
+    "statistics": {
+      "title": "Thống kê trạng thái xử lý",
+      "description": "Tổng quan việc sử dụng cấu hình trạng thái xử lý",
+      "total_states": "Tổng số trạng thái",
+      "total_substates": "Tổng số trạng thái con",
+      "active_states": "Trạng thái hoạt động",
+      "active_substates": "Trạng thái con hoạt động",
+      "usage_summary": "Tóm tắt sử dụng",
+      "most_used_states": "Trạng thái được sử dụng nhiều nhất",
+      "most_used_substates": "Trạng thái con được sử dụng nhiều nhất",
+      "no_stats": "Không có thống kê nào"
+    },
+    "modal": {
+      "create_state": "Tạo trạng thái xử lý",
+      "edit_state": "Chỉnh sửa trạng thái xử lý",
+      "create_substate": "Tạo trạng thái con xử lý",
+      "edit_substate": "Chỉnh sửa trạng thái con xử lý"
+    },
+    "form": {
+      "code": "Mã",
+      "code_placeholder": "Nhập mã duy nhất",
+      "name": "Tên",
+      "name_placeholder": "Nhập tên hiển thị",
+      "description": "Mô tả",
+      "description_placeholder": "Nhập mô tả (tùy chọn)",
+      "display_order": "Thứ tự hiển thị",
+      "select_state": "Chọn trạng thái xử lý",
+      "state": "Trạng thái xử lý",
+      "is_active": "Hoạt động"
+    },
+    "filter": {
+      "show_inactive": "Hiển thị các mục không hoạt động"
+    },
+    "summary": "Hiển thị {{total}} mục ({{active}} hoạt động, {{inactive}} không hoạt động)",
+    "validation": {
+      "code_required": "Mã là bắt buộc",
+      "name_required": "Tên là bắt buộc",
+      "display_order_invalid": "Thứ tự hiển thị phải là số"
+    },
+    "messages": {
+      "state_created": "Trạng thái xử lý đã được tạo thành công",
+      "state_updated": "Trạng thái xử lý đã được cập nhật thành công",
+      "state_deactivated": "Trạng thái xử lý đã được vô hiệu hóa thành công",
+      "substate_created": "Trạng thái con xử lý đã được tạo thành công",
+      "substate_updated": "Trạng thái con xử lý đã được cập nhật thành công",
+      "substate_deactivated": "Trạng thái con xử lý đã được vô hiệu hóa thành công",
+      "confirm_deactivate": "Bạn có chắc chắn muốn vô hiệu hóa {{name}}?"
+    }
   }
 }
