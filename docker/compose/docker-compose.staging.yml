@@ -18,7 +18,8 @@ services:
       - "443:443"
     volumes:
       - ../config/nginx/staging-proxy.conf:/etc/nginx/nginx.conf:ro
-      - /etc/letsencrypt/live/xpm-collectioncrm.ddns.net:/etc/nginx/ssl:ro
+      - /etc/letsencrypt/live/xpm-collectioncrm.ddns.net/fullchain.pem:/etc/nginx/ssl/fullchain.pem:ro
+      - /etc/letsencrypt/live/xpm-collectioncrm.ddns.net/privkey.pem:/etc/nginx/ssl/privkey.pem:ro
     depends_on:
       - frontend
       - api-gateway
