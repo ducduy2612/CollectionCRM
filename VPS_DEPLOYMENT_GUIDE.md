@@ -121,7 +121,7 @@ The nginx reverse proxy configuration is already included in the repository at `
 - Routes API requests to the backend services
 - Proxies all other requests to the frontend container
 - Includes rate limiting and security headers
-- No manual configuration needed!
+- Need to create ssl certs and put in docker/config/nginx/ssl
 
 ## Step 5: Prepare Database
 

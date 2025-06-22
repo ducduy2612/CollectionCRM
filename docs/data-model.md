@@ -1,915 +1,744 @@
 # Data Model
 
-This document outlines the data model for the Collection CRM system, including entity relationships, attributes, and access patterns.
+This document outlines the data model for the Collection CRM system based on the actual PostgreSQL database schema.
 
-## Entity Relationship Diagram
+## Overview
 
-```mermaid
-erDiagram
-    %% Customer and related entities
-    Customer ||--o{ Phone : has
-    Customer ||--o{ Address : has
-    Customer ||--o{ Email : has
-    Customer ||--o{ Loan : has
-    Customer ||--o{ Collateral : owns
-    Customer ||--o{ ReferenceCustomer : has
-    Customer ||--o{ CustomerCaseAction : has
-    
-    %% Loan relationships
-    Loan ||--o{ DueSegmentation : has
-    Loan ||--o{ ActionRecord : has
-    Loan ||--o{ Payment : receives
-    
-    %% Many-to-many between Loan and Collateral
-    Loan }o--o{ Collateral : secured_by
-    LoanCollateral }|--|| Loan : references
-    LoanCollateral }|--|| Collateral : references
-    
-    %% Agent relationships
-    Agent ||--o{ ActionRecord : performs
-    Agent ||--o{ Customer : assigned_to
-    Agent ||--o{ CustomerCaseAction : performs
-    
+CollectionCRM uses a PostgreSQL database with separate schemas for each service:
+
+- **auth_service**: User authentication and authorization
+- **bank_sync_service**: Customer, loan, and collateral data synchronized from external systems
+- **payment_service**: Payment tracking and processing (partitioned by date)
+- **workflow_service**: Collection workflow, actions, agents, and status tracking
+
+## Key Features
+
+- **Partitioned Tables**: Large tables like `action_records`, `payments`, and `customer_agents` are partitioned by date for performance
+- **Materialized Views**: Pre-computed views for reporting and analytics
+- **Customizable Dictionaries**: Action types, status values, and processing states are configurable through admin interfaces
+- **SCD Type 2**: Customer-agent assignments track historical changes
+- **Source System Tracking**: Data includes source system metadata for audit and edit permission control
+
+## Core Types
+
+### Source System Types
+```sql
+CREATE TYPE source_system_type AS ENUM ('T24', 'W4', 'OTHER', 'CRM');
+```
+
+### Customer Types
+```sql
+CREATE TYPE customer_type AS ENUM ('INDIVIDUAL', 'ORGANIZATION');
+```
+
+### Loan Status
+```sql
+CREATE TYPE loan_status AS ENUM ('OPEN', 'CLOSED');
+```
+
+### Payment Status
+```sql
+CREATE TYPE payment_status AS ENUM ('PENDING', 'COMPLETED', 'FAILED', 'REVERSED');
 ```
 
 ## Entity Definitions
 
-### 0. SynchronizedEntity
+### 1. SynchronizedEntity
 
 Base interface for all entities that are synchronized from external systems:
 
 ```typescript
 interface SynchronizedEntity {
-  sourceSystem: SourceSystemType; // Origin system
-  createdBy: string;          // User/system that created
-  updatedBy: string;          // User/system that last updated
-  createdAt: Date;            // Creation timestamp
-  updatedAt: Date;            // Last update timestamp
-  isEditable: boolean;        // Whether record can be modified
-  lastSyncedAt: Date;         // Last synchronization timestamp
+  sourceSystem: SourceSystemType; // Origin system (T24, W4, OTHER, CRM)
+  createdBy: string;              // User/system that created
+  updatedBy: string;              // User/system that last updated
+  createdAt: Date;                // Creation timestamp
+  updatedAt: Date;                // Last update timestamp
+  isEditable: boolean;            // Whether record can be modified
+  lastSyncedAt?: Date;            // Last synchronization timestamp
 }
 ```
 
-### 1. Customer
+## Auth Service Schema
 
-Represents individuals or organizations with loans.
+### Users
+```typescript
+interface User {
+  id: string;                     // UUID primary key
+  username: string;               // Unique username
+  email: string;                  // Unique email
+  passwordHash: string;           // Hashed password
+  firstName?: string;             // First name
+  lastName?: string;              // Last name
+  role: string;                   // User role
+  isActive: boolean;              // Whether user is active
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
 
+### Roles
+```typescript
+interface Role {
+  id: string;                     // UUID primary key
+  name: string;                   // Unique role name
+  description?: string;           // Role description
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### Permissions
+```typescript
+interface Permission {
+  id: string;                     // UUID primary key
+  roleId: string;                 // Reference to role
+  resource: string;               // Resource name
+  action: string;                 // Action allowed
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### User Sessions
+```typescript
+interface UserSession {
+  id: string;                     // UUID primary key
+  userId: string;                 // Reference to user
+  token: string;                  // Session token
+  expiresAt: Date;                // Expiration timestamp
+  createdAt: Date;
+  ipAddress?: string;             // Client IP address
+  userAgent?: string;             // Client user agent
+}
+```
+
+## Bank Sync Service Schema
+
+### Customer
 ```typescript
 interface Customer extends SynchronizedEntity {
-  // naturalKey represents the CIF number
-  cif: string;                // VPBANK CIF  (unique)
-  type: 'INDIVIDUAL' | 'ORGANIZATION'; // Customer type 
+  id: string;                     // UUID primary key
+  cif: string;                    // VPBANK CIF (unique, natural key)
+  type: 'INDIVIDUAL' | 'ORGANIZATION'; // Customer type
   
   // For individuals
-  name?: string;              // Name 
-  dateOfBirth?: Date;         // Date of birth 
-  nationalId?: string;        // National ID number 
-  gender?: string;            // Gender
+  name?: string;                  // Name
+  dateOfBirth?: Date;             // Date of birth
+  nationalId?: string;            // National ID number
+  gender?: string;                // Gender
   
   // For organizations
-  companyName?: string;       // Company name 
-  registrationNumber?: string; // Registration number 
-  taxId?: string;             // Tax ID 
+  companyName?: string;           // Company name
+  registrationNumber?: string;    // Registration number
+  taxId?: string;                 // Tax ID
   
-  segment: string;            // Customer segment 
-  status: 'ACTIVE' | 'INACTIVE'; // Status 
-  
-  // Relationships (accessed via repository methods)
-  getPhoneNumbers(): Phone[];
-  getAddresses(): Address[];
-  getEmails(): Email[];
-  getLoans(): Loan[];
-  getCollaterals(): Collateral[];
-  getCustomerCaseActions(): CustomerCaseAction[]; 
+  segment: string;                // Customer segment
+  status: string;                 // Customer status
 }
 ```
 
-### 2. Phone
-
-Represents phone numbers associated with customers. cif+type is unique pair keys
-
+### Phone
 ```typescript
 interface Phone extends SynchronizedEntity {
-  // naturalKey represents the CIF number
-  cif: string;        // Reference to customer's naturalKey (stable) 
-  type: PhoneType;            // Phone type 
-  number: string;             // Phone number 
-  isPrimary: boolean;         // Whether this is the primary phone 
-  isVerified: boolean;        // Whether this phone is verified 
-  verificationDate?: Date;    // When the phone was verified 
+  id: string;                     // UUID primary key
+  cif: string;                    // Reference to customer CIF
+  type: string;                   // Phone type (MOBILE, HOME, WORK, etc.)
+  number: string;                 // Phone number
+  isPrimary: boolean;             // Whether this is primary phone
+  isVerified: boolean;            // Whether phone is verified
+  verificationDate?: Date;        // When phone was verified
 }
 ```
 
-### 3. Address
-
-Represents physical addresses associated with customers. cif+type is unique pair keys
-
+### Address
 ```typescript
 interface Address extends SynchronizedEntity {
-  // naturalKey represents the CIF number
-  cif: string;        // Reference to customer's naturalKey (stable)
-  type: AddressType;          // Address type 
-  addressLine1: string;       // Address line 1 
-  addressLine2?: string;      // Address line 2 
-  city: string;               // City 
-  state: string;              // State/Province 
-  district: string;           // District 
-  country: string;            // Country 
-  isPrimary: boolean;         // Whether this is the primary address 
-  isVerified: boolean;        // Whether this address is verified 
-  verificationDate?: Date;    // When the address was verified 
+  id: string;                     // UUID primary key
+  cif: string;                    // Reference to customer CIF
+  type: string;                   // Address type (HOME, WORK, BILLING, etc.)
+  addressLine1: string;           // Address line 1
+  addressLine2?: string;          // Address line 2
+  city: string;                   // City
+  state: string;                  // State/Province
+  district: string;               // District
+  country: string;                // Country
+  isPrimary: boolean;             // Whether this is primary address
+  isVerified: boolean;            // Whether address is verified
+  verificationDate?: Date;        // When address was verified
 }
 ```
 
-### 4. Email
-
-Represents email addresses associated with customers. cif+address is unique pair keys
-
+### Email
 ```typescript
 interface Email extends SynchronizedEntity {
-  // naturalKey represents the CIF number
-  cif: string;        // Reference to customer's naturalKey (stable)
-  address: string;            // Email address 
-  isPrimary: boolean;         // Whether this is the primary email 
-  isVerified: boolean;        // Whether this email is verified 
-  verificationDate?: Date;    // When the email was verified 
+  id: string;                     // UUID primary key
+  cif: string;                    // Reference to customer CIF
+  address: string;                // Email address
+  isPrimary: boolean;             // Whether this is primary email
+  isVerified: boolean;            // Whether email is verified
+  verificationDate?: Date;        // When email was verified
 }
 ```
 
-### 5. Loan
-
-Represents a loan issued to a customer. accountNumber is unique key
-
+### Loan
 ```typescript
 interface Loan extends SynchronizedEntity {
-  // naturalKey represents the accountNumber
-  accountNumber: string;      // Loan account number 
-  cif: string;                // Reference to customer's naturalKey (stable)
-  productType: LoanProductType; // Loan product type 
-  originalAmount: number;     // Original loan amount 
-  currency: string;           // Currency code 
-  disbursementDate: Date;     // Disbursement date 
-  maturityDate: Date;         // Maturity date 
-  interestRate: number;       // Interest rate 
-  term: number;               // Loan term in months 
-  paymentFrequency: string;   // Payment frequency 
-  limit: number;              // Limit of OD & Cards
+  id: string;                     // UUID primary key
+  accountNumber: string;          // Loan account number (unique, natural key)
+  cif: string;                    // Reference to customer CIF
+  productType: string;            // Loan product type
+  originalAmount: number;         // Original loan amount
+  currency: string;               // Currency code
+  disbursementDate: Date;         // Disbursement date
+  maturityDate: Date;             // Maturity date
+  interestRate: number;           // Interest rate
+  term: number;                   // Loan term in months
+  paymentFrequency: string;       // Payment frequency
+  limitAmount?: number;           // Limit amount for OD & Cards
   
-  outstanding: number;     // Current outstanding balance 
-  remainingAmount: number;  // Remaining amount = Outstanding - dueAmount this period 
-  dueAmount: number;          // Current due amount 
-  minPay: number;             // For cards product
-  nextPaymentDate: Date;      // Next payment date 
-  dpd: number;                // Days overdue 
-  delinquencyStatus: string;  // Delinquency status 
+  outstanding: number;            // Current outstanding balance
+  remainingAmount: number;        // Remaining amount
+  dueAmount: number;              // Current due amount
+  minPay?: number;                // For cards product
+  nextPaymentDate: Date;          // Next payment date
+  dpd: number;                    // Days past due
+  delinquencyStatus: string;      // Delinquency status
   
-  // tracking loan status
-  status: 'OPEN' | 'CLOSED'   // Loan status 
-  closeDate?: Date;           // Loan close date 
-  resolutionCode?: string;    // Resolution code 
-  resolutionNotes?: string;   // Resolution notes 
-  
-  // Relationships (accessed via repository methods)
-  getDueSegmentation(): DueSegmentation[];
-  getActions(): ActionRecord[];
-  getPayments(): Payment[];
+  status: 'OPEN' | 'CLOSED';      // Loan status
+  closeDate?: Date;               // Loan close date
+  resolutionCode?: string;        // Resolution code
+  resolutionNotes?: string;       // Resolution notes
 }
 ```
 
-### 6. Collateral
-
-Represents assets used as collateral for loans. collateralNumber is unique key
-
+### Collateral
 ```typescript
 interface Collateral extends SynchronizedEntity {
-  // naturalKey represents the collateralNumber
-  collateralNumber: string;   // VPBANK collateral number
-  cif: string;        // Reference to customer's naturalKey (stable)
-  
-  type: string;               // Collateral type 
-  description: string;        // Description 
-  value: number;              // Assessed value 
-  valuationDate: Date;        // Valuation date 
+  id: string;                     // UUID primary key
+  collateralNumber: string;       // Collateral number (unique, natural key)
+  cif: string;                    // Reference to customer CIF
+  type: string;                   // Collateral type
+  description: string;            // Description
+  value: number;                  // Assessed value
+  valuationDate: Date;            // Valuation date
   
   // For vehicles
-  make?: string;              // Vehicle make 
-  model?: string;             // Vehicle model 
-  year?: number;              // Vehicle year 
-  vin?: string;               // Vehicle identification number 
-  licensePlate?: string;      // License plate 
+  make?: string;                  // Vehicle make
+  model?: string;                 // Vehicle model
+  year?: number;                  // Vehicle year
+  vin?: string;                   // Vehicle identification number
+  licensePlate?: string;          // License plate
   
   // For real estate
-  propertyType?: string;      // Property type 
-  address?: string;           // Property address 
-  size?: number;              // Property size 
-  titleNumber?: string;       // Title number 
+  propertyType?: string;          // Property type
+  address?: string;               // Property address
+  size?: number;                  // Property size
+  titleNumber?: string;           // Title number
 }
 ```
 
-### 7. ActionRecord
-
-Represents actions taken by collection agents.
-
-```typescript
-interface ActionRecord {
-  id: string;                 // Unique identifier 
-  cif: string;                // Reference to customer's naturalKey (stable)
-  loanAccountNumber: string;  // Reference to loan's naturalKey (stable)
-  
-  type: ActionType;           // Action type 
-  subtype: ActionSubType;     // Action subtype 
-  actionResult: ActionResultType; // Action result 
-  actionDate: Date;           // When the action occurred 
-  notes: string;              // Action notes 
-  
-  // For calls
-  callTraceId?: number;      // Call traceid in Callcenters
-  
-  // For visits
-  visitLocation?: {           // Visit location 
-    latitude: number;
-    longitude: number;
-    address?: string;
-  };
-  
-  // Metadata
-  createdAt: Date;            // Creation timestamp 
-  updatedAt: Date;            // Last update timestamp 
-  createdBy: string;          // User who created this action 
-  updatedBy: string;          // User who last updated this action 
-}
-```
-
-### 8. Agent
-
-Represents collection agents and their teams.
-
-```typescript
-interface Agent {
-  id: string;                 // Unique identifier 
-  employeeId: string;         // Employee ID 
-  name: string;               // Agent name 
-  email: string;              // Work email 
-  phone: string;              // Work phone 
-  
-  type: 'AGENT' | 'SUPERVISOR' | 'ADMIN'; // Agent type 
-  team: Team;                 // Team assignment 
-  isActive: boolean;          // Whether agent is active 
-  
-  // Relationships
-  getCustomers(): Customer[];   // Assigned Customer (1:N), based on CustomerAgent[]
-  getActions(): ActionRecord[];    // Performed actions (1:N)
-  
-  // Metadata
-  createdAt: Date;            // Creation timestamp 
-  updatedAt: Date;            // Last update timestamp 
-}
-```
-
-### 9. Payment
-
-Represents payments made toward a loan.
-
-```typescript
-interface Payment extends SynchronizedEntity {
-  // naturalKey represents the referenceNumber
-  referenceNumber: string;    // Reference number 
-  loanAccountNumber: string;  // Reference to loan's naturalKey (stable)
-  cif: string;           // Reference to customer's naturalKey (stable)
-  
-  amount: number;             // Payment amount 
-  currency: string;           // Currency code 
-  paymentDate: Date;          // Payment date 
-  paymentMethod: string;      // Payment method 
-  
-  status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REVERSED'; // Payment status 
-  statusReason?: string;      // Status reason 
-}
-```
-
-### 10. DueSegmentation
-
-Represents due segmentation amount for different duedates for a loan. loanAccountNumber + dueDate is unique pair key
-
+### DueSegmentation
 ```typescript
 interface DueSegmentation extends SynchronizedEntity {
-  // naturalKey represents the loanAccountNumber
-  loanAccountNumber: string;  // Reference to loan's naturalKey (stable)
-  dueDate: Date;              // Duedate need to pay
-  // Allocation
-  principalAmount: number;    // Amount allocated to principal 
-  interestAmount: number;     // Amount allocated to interest 
-  feesAmount: number;         // Amount allocated to fees 
-  penaltyAmount: number;      // Amount allocated to penalties 
+  id: string;                     // UUID primary key
+  loanAccountNumber: string;      // Reference to loan account number
+  dueDate: Date;                  // Due date
+  principalAmount: number;        // Principal amount
+  interestAmount: number;         // Interest amount
+  feesAmount: number;             // Fees amount
+  penaltyAmount: number;          // Penalty amount
 }
 ```
 
-### 11. LoanCollateral
-
-Represents the many-to-many relationship between loans and collaterals. loanAccountNumber + collateralNumber is unique pair key
-
-```typescript
-interface LoanCollateral {
-  loanAccountNumber: string;   // Reference to loan's naturalKey (stable)
-  collateralNumber: string;      // Reference to collateral's naturalKey (stable)
-  
-  // Metadata
-  createdAt: Date;            // Creation timestamp 
-  updatedAt: Date;            // Last update timestamp 
-  sourceSystem: string;       // Source system identifier 
-}
-```
-
-### 12. CustomerAgent
-
-Represents list of customer assigning to agents. scd type 2 table
-
-```typescript
-interface CustomerAgent {
-  id: string;          // Internal database ID
-  cif: string;         // Reference to customer 
-  
-  assignedCallAgentId?: string;  // Assigned call agent ID 
-  assignedFieldAgentId?: string; // Assigned field agent ID 
-  
-  // Metadata
-  startDate: Date;            // scd type 2
-  endDate: Date;            // scd type 2
-  isCurrent: boolean;       // scd type 2
-}
-```
-
-### 12. CustomerCase
-
-Represents current status of customers, for strategy allocation. cif is unique key
-
-```typescript
-interface CustomerCase {
-  id: string;          // Internal database ID
-  cif: string;         // Reference to customer 
-  
-  assignedCallAgentId: string;  // Assigned call agent ID - isCurrent record from CustomerAgent
-  assignedFieldAgentId: string; // Assigned field agent ID - isCurrent record from CustomerAgent
-  fUpdate: Date; // Followup date, get updated when agents record new records
-  customerStatus: CustomerStatusType;        // Customer latest status 
-  collateralStatus: CollateralStatusType;    // Collateral latest status 
-  processingStateStatus: ProcessingStateStatusType; // Processing state latest status 
-  lendingViolationStatus: LendingViolationStatusType; // Lending violation latest status 
-  recoveryAbilityStatus: RecoveryAbilityStatusType; // Recovery ability latest status 
-}
-```
-
-### 13. CustomerCaseAction
-
-Represents actions and status inputs from agents at the customer level.
-
-```typescript
-interface CustomerCaseAction {
-  id: string;                 // Unique identifier 
-  cif: string;     // Reference to customer's natural key 
-  
-  actionDate: Date;           // When the action occurred 
-  notes: string;              // Action notes 
-  
-  // Status inputs
-  customerStatus: CustomerStatusType;        // Customer status 
-  collateralStatus: CollateralStatusType;    // Collateral status 
-  processingStateStatus: ProcessingStateStatusType; // Processing state status 
-  lendingViolationStatus: LendingViolationStatusType; // Lending violation status 
-  recoveryAbilityStatus: RecoveryAbilityStatusType; // Recovery ability status 
-  
-  // Metadata
-  createdAt: Date;            // Creation timestamp 
-  updatedAt: Date;            // Last update timestamp 
-  createdBy: string;          // User who created this action 
-  updatedBy: string;          // User who last updated this action 
-}
-```
-
-### 14. ReferenceCustomer
-
-Represents related contacts to a customer (such as guarantors, spouses, or other related parties).
-
+### ReferenceCustomer
 ```typescript
 interface ReferenceCustomer extends SynchronizedEntity {
-  // naturalKey represents the refCif
-  refCif: string;         // Stable business identifier (CIF number)
-  primaryCif: string;        // Reference to primary customer's naturalKey (stable)
-  relationshipType: ReferenceRelationshipType;   // Relationship to primary customer 
-  
-  cif: string;                // VPBANK CIF 
-  type: 'INDIVIDUAL' | 'ORGANIZATION'; // Customer type 
+  id: string;                     // UUID primary key
+  refCif: string;                 // Reference customer CIF (unique, natural key)
+  primaryCif: string;             // Reference to primary customer CIF
+  relationshipType: string;       // Relationship type
+  type: 'INDIVIDUAL' | 'ORGANIZATION'; // Customer type
   
   // For individuals
-  name?: string;              // Name 
-  dateOfBirth?: Date;         // Date of birth 
-  nationalId?: string;        // National ID number 
-  gender?: string;            // Gender 
+  name?: string;                  // Name
+  dateOfBirth?: Date;             // Date of birth
+  nationalId?: string;            // National ID
+  gender?: string;                // Gender
   
   // For organizations
-  companyName?: string;       // Company name 
-  registrationNumber?: string; // Registration number 
-  taxId?: string;             // Tax ID 
-  
-  // Relationships (accessed via repository methods)
-  getPhoneNumbers(): Phone[];
-  getAddresses(): Address[];
-  getEmails(): Email[];
+  companyName?: string;           // Company name
+  registrationNumber?: string;    // Registration number
+  taxId?: string;                 // Tax ID
 }
+```
+
+### LoanCollateral
+```typescript
+interface LoanCollateral {
+  id: string;                     // UUID primary key
+  loanAccountNumber: string;      // Reference to loan account number
+  collateralNumber: string;       // Reference to collateral number
+  sourceSystem: SourceSystemType; // Source system
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+## Payment Service Schema
+
+### Payment (Partitioned)
+```typescript
+interface Payment extends SynchronizedEntity {
+  id: string;                     // UUID primary key
+  referenceNumber: string;        // Reference number (natural key)
+  loanAccountNumber: string;      // Reference to loan account number
+  cif: string;                    // Reference to customer CIF
+  amount: number;                 // Payment amount
+  currency: string;               // Currency code
+  paymentDate: Date;              // Payment date (partition key)
+  paymentMethod: string;          // Payment method
+  status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REVERSED'; // Payment status
+  statusReason?: string;          // Status reason
+}
+```
+
+## Workflow Service Schema
+
+### Agent
+```typescript
+interface Agent {
+  id: string;                     // UUID primary key
+  employeeId: string;             // Employee ID (unique)
+  name: string;                   // Agent name
+  email: string;                  // Work email (unique)
+  phone?: string;                 // Work phone
+  type: string;                   // Agent type (AGENT, SUPERVISOR, ADMIN)
+  team: string;                   // Team assignment
+  userId?: string;                // Reference to auth user
+  isActive: boolean;              // Whether agent is active
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy?: string;
+  updatedBy?: string;
+}
+```
+
+### Action Configuration Tables
+
+#### ActionTypes
+```typescript
+interface ActionTypes {
+  id: string;                     // UUID primary key
+  code: string;                   // Action type code (unique)
+  name: string;                   // Display name
+  description?: string;           // Description
+  isActive: boolean;              // Whether type is active
+  displayOrder: number;           // Display order
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  updatedBy: string;
+}
+```
+
+#### ActionSubtypes
+```typescript
+interface ActionSubtypes {
+  id: string;                     // UUID primary key
+  code: string;                   // Action subtype code (unique)
+  name: string;                   // Display name
+  description?: string;           // Description
+  isActive: boolean;              // Whether subtype is active
+  displayOrder: number;           // Display order
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  updatedBy: string;
+}
+```
+
+#### ActionResults
+```typescript
+interface ActionResults {
+  id: string;                     // UUID primary key
+  code: string;                   // Action result code (unique)
+  name: string;                   // Display name
+  description?: string;           // Description
+  isActive: boolean;              // Whether result is active
+  displayOrder: number;           // Display order
+  isPromise: boolean;             // Whether this result indicates a promise to pay
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  updatedBy: string;
+}
+```
+
+### ActionRecord (Partitioned)
+```typescript
+interface ActionRecord {
+  id: string;                     // UUID primary key
+  cif: string;                    // Reference to customer CIF
+  loanAccountNumber: string;      // Reference to loan account number
+  agentId: string;                // Reference to agent
+  actionTypeId: string;           // Reference to action type
+  actionSubtypeId: string;        // Reference to action subtype
+  actionResultId: string;         // Reference to action result
+  actionDate: Date;               // When action occurred (partition key)
+  
+  // Promise tracking
+  promiseDate?: Date;             // Date customer promised to pay
+  promiseAmount?: number;         // Amount customer promised to pay
+  dueAmount?: number;             // Due amount at time of action
+  dpd?: number;                   // Days past due at time of action
+  fUpdate?: Date;                 // Follow-up date
+  
+  notes?: string;                 // Action notes
+  
+  // For visits
+  visitLatitude?: number;         // Visit location latitude
+  visitLongitude?: number;        // Visit location longitude
+  visitAddress?: string;          // Visit location address
+  
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  updatedBy: string;
+}
+```
+
+### CustomerAgent (Partitioned, SCD Type 2)
+```typescript
+interface CustomerAgent {
+  id: string;                     // UUID primary key
+  cif: string;                    // Reference to customer CIF
+  assignedCallAgentId?: string;   // Assigned call agent
+  assignedFieldAgentId?: string;  // Assigned field agent
+  startDate: Date;                // Assignment start date (partition key)
+  endDate?: Date;                 // Assignment end date
+  isCurrent: boolean;             // Whether this is current assignment
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  updatedBy: string;
+}
+```
+
+### CustomerCase
+```typescript
+interface CustomerCase {
+  id: string;                     // UUID primary key
+  cif: string;                    // Reference to customer CIF (unique)
+  assignedCallAgentId?: string;   // Currently assigned call agent
+  assignedFieldAgentId?: string;  // Currently assigned field agent
+  fUpdate?: Date;                 // Follow-up date
+  masterNotes?: string;           // Master notes for the case
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy?: string;
+  updatedBy?: string;
+}
+```
+
+### Status Dictionary Tables
+
+All status dictionary tables follow this pattern:
+
+```typescript
+interface StatusDict {
+  id: string;                     // UUID primary key
+  code: string;                   // Status code (unique)
+  name: string;                   // Display name
+  description?: string;           // Description
+  color?: string;                 // Hex color code for UI
+  isActive: boolean;              // Whether status is active
+  displayOrder: number;           // Display order
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  updatedBy: string;
+}
+```
+
+Dictionary tables include:
+- **customer_status_dict**: Customer status values
+- **collateral_status_dict**: Collateral status values
+- **processing_state_dict**: Processing states
+- **processing_substate_dict**: Processing substates
+- **lending_violation_status_dict**: Lending violation statuses
+- **recovery_ability_status_dict**: Recovery ability assessments
+
+### Status Tracking Tables
+
+All status tracking tables follow this pattern:
+
+```typescript
+interface StatusTracking {
+  id: string;                     // UUID primary key
+  cif: string;                    // Reference to customer CIF
+  agentId: string;                // Agent who updated the status
+  actionDate: Date;               // When status was updated
+  statusId: string;               // Reference to status dictionary
+  notes?: string;                 // Additional notes
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  updatedBy: string;
+}
+```
+
+Status tracking tables include:
+- **customer_status**: Customer status updates
+- **collateral_status**: Collateral status updates (with optional collateral_number)
+- **processing_state_status**: Processing state updates (with state_id and optional substate_id)
+- **lending_violation_status**: Lending violation status updates
+- **recovery_ability_status**: Recovery ability status updates
+
+### User-Input Contact Information
+
+The workflow service includes tables for contact information that agents can add or modify:
+
+#### Phones (User Input)
+```typescript
+interface Phones {
+  id: string;                     // UUID primary key
+  cif: string;                    // Reference to customer CIF
+  type: string;                   // Phone type
+  number: string;                 // Phone number
+  isPrimary: boolean;             // Whether this is primary phone
+  isVerified: boolean;            // Whether phone is verified
+  verificationDate?: Date;        // When phone was verified
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  updatedBy: string;
+}
+```
+
+#### Addresses (User Input)
+```typescript
+interface Addresses {
+  id: string;                     // UUID primary key
+  cif: string;                    // Reference to customer CIF
+  type: string;                   // Address type
+  addressLine1: string;           // Address line 1
+  addressLine2?: string;          // Address line 2
+  city: string;                   // City
+  state: string;                  // State/Province
+  district: string;               // District
+  country: string;                // Country
+  isPrimary: boolean;             // Whether this is primary address
+  isVerified: boolean;            // Whether address is verified
+  verificationDate?: Date;        // When address was verified
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  updatedBy: string;
+}
+```
+
+#### Emails (User Input)
+```typescript
+interface Emails {
+  id: string;                     // UUID primary key
+  cif: string;                    // Reference to customer CIF
+  address: string;                // Email address
+  isPrimary: boolean;             // Whether this is primary email
+  isVerified: boolean;            // Whether email is verified
+  verificationDate?: Date;        // When email was verified
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  updatedBy: string;
+}
+```
+
+#### ReferenceCustomer (User Input)
+```typescript
+interface ReferenceCustomer {
+  id: string;                     // UUID primary key
+  refCif: string;                 // Reference customer CIF (unique)
+  primaryCif: string;             // Reference to primary customer CIF
+  relationshipType: string;       // Relationship type
+  type: 'INDIVIDUAL' | 'ORGANIZATION'; // Customer type
+  
+  // For individuals
+  name?: string;                  // Name
+  dateOfBirth?: Date;             // Date of birth
+  nationalId?: string;            // National ID
+  gender?: string;                // Gender
+  
+  // For organizations
+  companyName?: string;           // Company name
+  registrationNumber?: string;    // Registration number
+  taxId?: string;                 // Tax ID
+  
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  updatedBy: string;
+}
+```
+
+## Table Partitioning
+
+The following tables are partitioned by date for performance:
+
+### action_records
+- Partitioned by `action_date`
+- Quarterly partitions (2025 Q1-Q4, 2026 Q1-Q4)
+- Historical partition for data before 2025
+- Future partition for data after 2026
+
+### payments
+- Partitioned by `payment_date`
+- Quarterly partitions (2025 Q1-Q4, 2026 Q1-Q4)
+- Historical partition for data before 2025
+- Future partition for data after 2026
+
+### customer_agents
+- Partitioned by `start_date`
+- Quarterly partitions (2025 Q1-Q4, 2026 Q1-Q4)
+- Historical partition for data before 2025
+- Future partition for data after 2026
+
+## Materialized Views
+
+### payment_summary
+Provides payment summary metrics for reporting:
+- Total paid amount by loan/customer/month/year
+- Count of successful and failed payments
+- Last payment date
+
+### payment_method_analysis
+Provides payment method analysis:
+- Payment counts and amounts by method
+- Success/failure rates by method
+- Trends by month/year
+
+### agent_performance
+Provides agent performance metrics:
+- Total actions per agent
+- Total customers handled
+- Payment promises obtained
+- Performance by month/year
+
+## Administrative Functions
+
+The system provides comprehensive stored procedures for managing dictionary values and configurations:
+
+### Action Configuration Management
+```sql
+-- Add new values
+SELECT workflow_service.add_action_type('NEW_TYPE', 'New Type Name', 'Description');
+SELECT workflow_service.add_action_subtype('NEW_SUBTYPE', 'New Subtype Name', 'Description');
+SELECT workflow_service.add_action_result('NEW_RESULT', 'New Result Name', 'Description');
+
+-- Create mappings
+SELECT workflow_service.map_type_to_subtype('CALL', 'REMINDER_CALL');
+SELECT workflow_service.map_subtype_to_result('REMINDER_CALL', 'PROMISE_TO_PAY');
+
+-- Safely deactivate (prevents if used in existing records)
+SELECT workflow_service.deactivate_action_type('OLD_TYPE');
+
+-- Get usage statistics
+SELECT * FROM workflow_service.get_configuration_usage_stats();
+```
+
+### Status Dictionary Management
+```sql
+-- Add new status values
+SELECT workflow_service.add_customer_status('NEW_STATUS', 'New Status', 'Description', '#color');
+SELECT workflow_service.add_processing_state('NEW_STATE', 'New State', 'Description', '#color');
+
+-- Create state-substate mappings
+SELECT workflow_service.map_state_to_substate('INVESTIGATION', 'INITIAL_REVIEW');
+
+-- Get usage statistics
+SELECT * FROM workflow_service.get_status_usage_stats();
+```
+
+### Data Synchronization Functions
+```sql
+-- Sync customer cases from bank sync service
+SELECT workflow_service.sync_customer_cases();
+
+-- Refresh materialized views
+SELECT payment_service.refresh_payment_materialized_views();
+SELECT workflow_service.refresh_workflow_materialized_views();
 ```
 
 ## Access Patterns
 
-### 1. Customer Management
-
-- Retrieve customer by ID
+### Customer Management
+- Retrieve customer by CIF
 - Search customers by name, national ID, or company registration
-- List customers by segment or risk category
-- Update customer contact information
+- List customers by segment or status
 - View customer's loans and collection history
-- Manage reference customers
+- Manage customer contact information and references
 
-### 2. Loan Management
+### Loan Management
+- Retrieve loan by account number
+- List loans by customer CIF
+- List loans by delinquency status or DPD
+- View loan payment history and due segmentations
+- View loan collateral associations
 
-- Retrieve loan by ID or account number
-- List loans by customer
-- List loans by delinquency status
-- View loan payment history
-- View loan collateral information
-- Manage loan-collateral associations
+### Collection Workflow
+- Assign customers to agents (with SCD Type 2 tracking)
+- Record collection actions with customizable types/subtypes/results
+- Track customer status across multiple dimensions
+- Generate agent performance reports
+- Track promises to pay and follow-up dates
 
-### 3. Collection Workflow
-
-- Assign customers to agents
-- Record collection actions and outcomes
-- Create and update customer case actions
-- Track customer-level collection status
-- Track agent performance metrics
-- Generate collection reports
-
-### 4. Payment Tracking
-
-- Record and track payments
+### Payment Tracking
+- Record and track payments (partitioned by date)
 - View payment history by loan or customer
-- Generate payment reports
-- Reconcile payments with collection actions
+- Analyze payment methods and success rates
+- Generate payment summary reports
+
+### Reporting and Analytics
+- Agent performance metrics by time period
+- Payment analysis by method and outcome
+- Customer status distribution and trends
+- Collection effectiveness tracking
 
 ## Data Access Control
 
-| Entity              | Collection Agent | Team Lead | Administrator |
-|---------------------|------------------|-----------|--------------|
-| Customer            | Read             | Read      | Read/Write   |
-| Phone               | Read/Write       | Read/Write| Read/Write   |
-| Address             | Read/Write       | Read/Write| Read/Write   |
-| Email               | Read/Write       | Read/Write| Read/Write   |
-| Loan                | Read             | Read      | Read/Write   |
-| Collateral          | Read             | Read      | Read/Write   |
-| ActionRecord        | Read/Write       | Read/Write| Read/Write   |
-| Agent               | Read             | Read/Write| Read/Write   |
-| Payment             | Read             | Read      | Read/Write   |
-| LoanCollateral      | Read             | Read      | Read/Write   |
-| CustomerAgent       | Read             | Read/Write| Read/Write   |
-| CustomerCaseAction  | Read/Write       | Read/Write| Read/Write   |
-| ReferenceCustomer   | Read/Write       | Read/Write| Read/Write   |
-
-## Data Synchronization
-
-### Natural Key Approach
-
-The system uses natural business keys to maintain relationship integrity during synchronization:
-
-1. **Natural Key Definition**:
-   - Each synchronized entity has a `naturalKey` field that remains stable across synchronization cycles
-   - Natural keys are derived from business identifiers in source systems:
-     - Customer: CIF number
-     - Loan: Account number
-     - Collateral: Collateral number
-     - Phone/Address/Email: Composite key of entity type + source ID + customer CIF
-
-2. **Relationship Management**:
-   - Relationships between entities use naturalKey references instead of database IDs
-   - This ensures relationships remain intact even when database IDs change during synchronization
-
-3. **Synchronization Process**:
-   - Entities are synchronized using upsert operations based on naturalKey matching
-   - This approach is more efficient than truncate-and-insert and preserves relationship integrity
-
-### Entity Synchronization Details
-
-1. **Customer Data**:
-   - Synchronized daily from core bank systems
-   - Natural key: CIF number
-   - Read-only in Collection CRM when sourced from core bank systems
-   - Contact information can be updated in CRM but not synced back
-
-2. **Loan Data**:
-   - Synchronized daily from core bank systems
-   - Natural key: Account number
-   - Read-only in Collection CRM 
-   - Payment information updated in real-time
-
-3. **Collateral Data**:
-   - Synchronized daily from core bank systems
-   - Natural key: Collateral number
-   - Read-only in Collection CRM 
-
-4. **Payment Data**:
-   - Real-time updates from payment processing system
-   - Natural key: Reference number
-   - Read-only in Collection CRM
-
-5. **Action Records**:
-   - Created and managed within Collection CRM
-   - References loan and customer using loan naturalKey and customer naturalKey
-   - Fully editable by authorized users
-
-6. **CustomerAgent Data**:
-   - Created and managed within Collection CRM
-   - Mapping assigned Customers to Agents using customer naturalKey and Agent id
-   - Represents the many-to-many relationship between Customers and Agents
-   - SCD type 2 
-
-7. **CustomerCaseAction Data**:
-   - Created and managed within Collection CRM
-   - References customer using customer naturalKey
-   - Fully editable by authorized users
-
-8. **ReferenceCustomer Data**:
-   - Synchronized daily from T24 or created within Collection CRM
-   - Natural key: CIF number
-   - Basic information read-only when synchronized from T24
-   - Contact information can be updated in CRM but not synced back
-
-9. **LoanCollateral Data**:
-   - Created and managed within Collection CRM
-   - References loans and collaterals using their naturalKeys
-   - Represents the many-to-many relationship between loans and collaterals
-
-
-## Data Source Tracking
-
-To implement the requirement that data imported from external sources (T24, W4, OTHER) should be read-only while allowing agents to add new data and edit their own entries, the system will implement the following approach:
-
-1. **Source Tracking**:
-   - Applied only to entities that can be imported from external systems: Customer, ReferenceCustomer, Phone, Address, Email, Loan, Collateral, Payment
-   - Each tracked entity extends the SynchronizedEntity interface
-   - Values for `sourceSystem` are defined in the SourceSystemType enum
-   - The `isEditable` flag determines if a record can be modified
-
-2. **Edit Permissions Logic**:
-   - Records with `sourceSystem` values of "T24", "W4", or "OTHER" will be read-only for core fields
-   - Records with `sourceSystem` value of "CRM" will be editable by the user who created them (`createdBy` matches current user) or by users with appropriate permissions
-   - Supplementary information can be added to external records without modifying the core data
-
-3. **Implementation Approach**:
-   ```typescript
-   interface SynchronizedEntity {
-     id: string;                 // Internal database ID (can change during sync)
-     naturalKey: string;         // Stable business identifier (never changes)
-     sourceSystem: SourceSystemType; // Origin system
-     lastSyncedAt: Date;         // Last synchronization timestamp
-     createdBy: string;          // User/system that created
-     updatedBy: string;          // User/system that last updated
-     createdAt: Date;            // Creation timestamp
-     updatedAt: Date;            // Last update timestamp
-     isEditable: boolean;        // Whether record can be modified
-   }
-   ```
-
-4. **Extending Records**:
-   - For records from external systems that need additional information, the system will use extension tables rather than modifying the original records
-   - Example: CustomerExtension table to store additional information about customers without modifying the original Customer record
-
-5. **UI Presentation**:
-   - Read-only fields from external systems will be visually distinguished in the UI
-   - Editable fields created within the CRM will be clearly indicated
-   - The source of each record will be displayed to users
-
-## Data Dictionaries
-
-This section defines standardized value sets for various field types used throughout the system.
-
-### SourceSystemType Dictionary
-
-Defines the source systems from which data can originate.
-
-```typescript
-enum SourceSystemType {
- T24 = 'T24',           // Core banking system
- W4 = 'W4',             // Workflow system
- OTHER = 'OTHER',       // Other external systems
- CRM = 'CRM'            // Collection CRM (internal)
-}
-```
-
-### PhoneType Dictionary
-
-Defines the types of phone numbers associated with customers.
-
-```typescript
-enum PhoneType {
- MOBILE = 'MOBILE',       // Mobile/cell phone
- HOME = 'HOME',           // Home landline
- WORK = 'WORK',           // Work/office phone
- EMERGENCY = 'EMERGENCY', // Emergency contact
- FAX = 'FAX',             // Fax number
- OTHER = 'OTHER'          // Other phone types
-}
-```
-
-### AddressType Dictionary
-
-Defines the types of addresses associated with customers.
-
-```typescript
-enum AddressType {
- HOME = 'HOME',             // Residential address
- WORK = 'WORK',             // Work/office address
- BILLING = 'BILLING',       // Billing address
- MAILING = 'MAILING',       // Mailing address
- PROPERTY = 'PROPERTY',     // Property address (for collateral)
- TEMPORARY = 'TEMPORARY',   // Temporary address
- OTHER = 'OTHER'            // Other address types
-}
-```
-
-### LoanProductType Dictionary
-
-Defines the types of loan products offered.
-
-```typescript
-enum LoanProductType {
- // Secured loans
- MORTGAGE = 'MORTGAGE',                 // Home mortgage loan
- AUTO = 'AUTO',                         // Auto/vehicle loan
- SECURED_PERSONAL = 'SECURED_PERSONAL', // Secured personal loan
- 
- // Unsecured loans
- PERSONAL = 'PERSONAL',                 // Unsecured personal loan
- EDUCATION = 'EDUCATION',               // Education/student loan
- BUSINESS = 'BUSINESS',                 // Business loan
- 
- // Credit facilities
- CREDIT_CARD = 'CREDIT_CARD',           // Credit card
- OVERDRAFT = 'OVERDRAFT',               // Overdraft facility
- LINE_OF_CREDIT = 'LINE_OF_CREDIT',     // Line of credit
- 
- // Other
- REFINANCE = 'REFINANCE',               // Refinance loan
- CONSOLIDATION = 'CONSOLIDATION',       // Debt consolidation loan
- OTHER = 'OTHER'                        // Other loan types
-}
-```
-
-### ActionType Dictionary
-
-Defines the types of actions performed by collection agents.
-
-```typescript
-enum ActionType {
- // Communication actions
- CALL = 'CALL',                     // Phone call to customer
- SMS = 'SMS',                       // SMS message to customer
- EMAIL = 'EMAIL',                   // Email to customer
- LETTER = 'LETTER',                 // Physical letter to customer
- 
- // In-person actions
- VISIT = 'VISIT',                   // In-person visit
- MEETING = 'MEETING',               // Scheduled meeting
- 
- // Case management actions
- CASE_REVIEW = 'CASE_REVIEW',       // Review of case details
- CASE_ESCALATION = 'CASE_ESCALATION', // Escalation to higher authority
- CASE_TRANSFER = 'CASE_TRANSFER',   // Transfer to another agent/team
- 
- // Payment actions
- PAYMENT_ARRANGEMENT = 'PAYMENT_ARRANGEMENT', // Setting up payment plan
- PAYMENT_REMINDER = 'PAYMENT_REMINDER',       // Reminder about payment
- PAYMENT_CONFIRMATION = 'PAYMENT_CONFIRMATION', // Confirming received payment
- 
- // Legal actions
- LEGAL_NOTICE = 'LEGAL_NOTICE',     // Legal notice issuance
- LEGAL_FILING = 'LEGAL_FILING',     // Legal case filing
- 
- // Other
- NOTE = 'NOTE',                     // General note/comment
- OTHER = 'OTHER'                    // Other action types
-}
-```
-
-### ActionSubType Dictionary
-
-Defines subtypes for the main action types.
-
-```typescript
-enum ActionSubType {
- // Call subtypes
- CALL_OUTBOUND = 'CALL_OUTBOUND',       // Outbound call initiated by agent
- CALL_INBOUND = 'CALL_INBOUND',         // Inbound call from customer
- CALL_FOLLOWUP = 'CALL_FOLLOWUP',       // Follow-up call
- 
- // SMS subtypes
- SMS_REMINDER = 'SMS_REMINDER',         // Payment reminder SMS
- SMS_CONFIRMATION = 'SMS_CONFIRMATION', // Confirmation SMS
- SMS_INFORMATION = 'SMS_INFORMATION',   // Informational SMS
- 
- // Email subtypes
- EMAIL_REMINDER = 'EMAIL_REMINDER',     // Payment reminder email
- EMAIL_STATEMENT = 'EMAIL_STATEMENT',   // Statement email
- EMAIL_LEGAL = 'EMAIL_LEGAL',           // Legal notice email
- 
- // Visit subtypes
- VISIT_SCHEDULED = 'VISIT_SCHEDULED',   // Scheduled visit
- VISIT_UNSCHEDULED = 'VISIT_UNSCHEDULED', // Unscheduled visit
- 
- // Payment arrangement subtypes
- ARRANGEMENT_NEW = 'ARRANGEMENT_NEW',   // New payment arrangement
- ARRANGEMENT_REVISED = 'ARRANGEMENT_REVISED', // Revised payment arrangement
- 
- // Legal subtypes
- LEGAL_WARNING = 'LEGAL_WARNING',       // Legal warning
- LEGAL_DEMAND = 'LEGAL_DEMAND',         // Demand letter
- LEGAL_COURT = 'LEGAL_COURT',           // Court proceedings
- 
- // Other
- OTHER = 'OTHER'                        // Other subtypes
-}
-```
-
-### ActionResultType Dictionary
-
-Defines the possible outcomes of collection actions.
-
-```typescript
-enum ActionResultType {
- // Contact results
- CONTACTED = 'CONTACTED',               // Successfully contacted customer
- NOT_CONTACTED = 'NOT_CONTACTED',       // Could not contact customer
- LEFT_MESSAGE = 'LEFT_MESSAGE',         // Left message/voicemail
- 
- // Response results
- PROMISE_TO_PAY = 'PROMISE_TO_PAY',     // Customer promised to pay
- PAYMENT_MADE = 'PAYMENT_MADE',         // Payment was made
- DISPUTE = 'DISPUTE',                   // Customer disputed the debt
- HARDSHIP_CLAIM = 'HARDSHIP_CLAIM',     // Customer claimed financial hardship
- 
- // Negative results
- REFUSED = 'REFUSED',                   // Customer refused to pay
- DISCONNECTED = 'DISCONNECTED',         // Phone disconnected/invalid
- WRONG_CONTACT = 'WRONG_CONTACT',       // Wrong contact information
- NO_RESPONSE = 'NO_RESPONSE',           // No response from customer
- 
- // Visit results
- NOT_HOME = 'NOT_HOME',                 // Customer not at home
- ADDRESS_NOT_FOUND = 'ADDRESS_NOT_FOUND', // Address could not be found
- 
- // Other
- PENDING = 'PENDING',                   // Action pending completion
- COMPLETED = 'COMPLETED',               // Action completed
- FAILED = 'FAILED',                     // Action failed
- OTHER = 'OTHER'                        // Other result types
-}
-```
-
-### Team Dictionary
-
-Defines the collection teams within the organization.
-
-```typescript
-enum Team {
- // Early-stage collection teams
- EARLY_STAGE_CALL = 'EARLY_STAGE_CALL',   // Early-stage call center team
- EARLY_STAGE_FIELD = 'EARLY_STAGE_FIELD', // Early-stage field team
- 
- // Mid-stage collection teams
- MID_STAGE_CALL = 'MID_STAGE_CALL',       // Mid-stage call center team
- MID_STAGE_FIELD = 'MID_STAGE_FIELD',     // Mid-stage field team
- 
- // Late-stage collection teams
- LATE_STAGE_CALL = 'LATE_STAGE_CALL',     // Late-stage call center team
- LATE_STAGE_FIELD = 'LATE_STAGE_FIELD',   // Late-stage field team
- 
- // Specialized teams
- LEGAL = 'LEGAL',                         // Legal team
- RESTRUCTURING = 'RESTRUCTURING',         // Loan restructuring team
- SPECIAL_ASSETS = 'SPECIAL_ASSETS',       // Special assets team
- HIGH_VALUE = 'HIGH_VALUE',               // High-value accounts team
- 
- // Management
- SUPERVISOR = 'SUPERVISOR',               // Supervisory team
- MANAGEMENT = 'MANAGEMENT',               // Management team
- 
- // Other
- OTHER = 'OTHER'                          // Other teams
-}
-```
-
-### ReferenceRelationshipType Dictionary
-
-Defines the possible relationship types between customers and their references.
-
-```typescript
-enum ReferenceRelationshipType {
-  GUARANTOR = 'GUARANTOR',           // Financial guarantor
-  SPOUSE = 'SPOUSE',                 // Spouse/partner
-  FAMILY_MEMBER = 'FAMILY_MEMBER',   // Other family member
-  BUSINESS_PARTNER = 'BUSINESS_PARTNER', // Business partner
-  EMPLOYER = 'EMPLOYER',             // Employer
-  EMPLOYEE = 'EMPLOYEE',             // Employee
-  FRIEND = 'FRIEND',                 // Personal friend
-  COLLEAGUE = 'COLLEAGUE',           // Work colleague
-  LEGAL_REPRESENTATIVE = 'LEGAL_REPRESENTATIVE', // Legal representative
-  OTHER = 'OTHER'                    // Other relationship types
-}
-```
-
-### CustomerStatusType Dictionary
-
-Defines the possible status types for customers in collection.
-
-```typescript
-enum CustomerStatusType {
- COOPERATIVE = 'COOPERATIVE',           // Customer is cooperative
- PARTIALLY_COOPERATIVE = 'PARTIALLY_COOPERATIVE', // Customer is somewhat cooperative
- UNCOOPERATIVE = 'UNCOOPERATIVE',       // Customer is uncooperative
- UNREACHABLE = 'UNREACHABLE',           // Cannot reach customer
- DISPUTED = 'DISPUTED',                 // Customer disputes the debt
- BANKRUPT = 'BANKRUPT',                 // Customer has declared bankruptcy
- DECEASED = 'DECEASED',                 // Customer is deceased
- LEGAL_REPRESENTATION = 'LEGAL_REPRESENTATION', // Customer has legal representation
- UNKNOWN = 'UNKNOWN'                    // Status unknown
-}
-```
-
-### CollateralStatusType Dictionary
-
-Defines the status types for collateral assets.
-
-```typescript
-enum CollateralStatusType {
- SECURED = 'SECURED',                   // Collateral is secured
- PARTIALLY_SECURED = 'PARTIALLY_SECURED', // Collateral is partially secured
- AT_RISK = 'AT_RISK',                   // Collateral is at risk
- DAMAGED = 'DAMAGED',                   // Collateral is damaged
- MISSING = 'MISSING',                   // Collateral is missing
- SEIZED = 'SEIZED',                     // Collateral has been seized
- IN_LIQUIDATION = 'IN_LIQUIDATION',     // Collateral is being liquidated
- LIQUIDATED = 'LIQUIDATED',             // Collateral has been liquidated
- NOT_APPLICABLE = 'NOT_APPLICABLE',     // No collateral or not applicable
- UNKNOWN = 'UNKNOWN'                    // Status unknown
-}
-```
-
-### ProcessingStateStatusType Dictionary
-
-Defines the processing state of collection cases.
-
-```typescript
-enum ProcessingStateStatusType {
- NEW = 'NEW',                           // New case
- IN_PROGRESS = 'IN_PROGRESS',           // Case in progress
- PENDING_CUSTOMER = 'PENDING_CUSTOMER', // Waiting for customer action
- PENDING_APPROVAL = 'PENDING_APPROVAL', // Waiting for internal approval
- PENDING_LEGAL = 'PENDING_LEGAL',       // Waiting for legal action
- ON_HOLD = 'ON_HOLD',                   // Case temporarily on hold
- ESCALATED = 'ESCALATED',               // Case has been escalated
- RESOLVED = 'RESOLVED',                 // Case has been resolved
- CLOSED = 'CLOSED',                     // Case is closed
- REOPENED = 'REOPENED'                  // Previously closed case reopened
-}
-```
-
-### LendingViolationStatusType Dictionary
-
-Defines the status of lending violations.
-
-```typescript
-enum LendingViolationStatusType {
- NONE = 'NONE',                         // No violations
- PAYMENT_DELAY = 'PAYMENT_DELAY',       // Payment delay violation
- COVENANT_BREACH = 'COVENANT_BREACH',   // Covenant breach
- COLLATERAL_ISSUE = 'COLLATERAL_ISSUE', // Collateral-related violation
- FINANCIAL_REPORTING = 'FINANCIAL_REPORTING', // Financial reporting violation
- MULTIPLE = 'MULTIPLE',                 // Multiple violations
- SEVERE = 'SEVERE',                     // Severe violations
- UNDER_INVESTIGATION = 'UNDER_INVESTIGATION', // Violations under investigation
- RESOLVED = 'RESOLVED',                 // Violations resolved
- UNKNOWN = 'UNKNOWN'                    // Status unknown
-}
-```
-
-### RecoveryAbilityStatusType Dictionary
-
-Defines the assessment of recovery ability.
-
-```typescript
-enum RecoveryAbilityStatusType {
- HIGH = 'HIGH',                         // High recovery probability
- MEDIUM = 'MEDIUM',                     // Medium recovery probability
- LOW = 'LOW',                           // Low recovery probability
- VERY_LOW = 'VERY_LOW',                 // Very low recovery probability
- REQUIRES_RESTRUCTURING = 'REQUIRES_RESTRUCTURING', // Requires loan restructuring
- REQUIRES_LEGAL = 'REQUIRES_LEGAL',     // Requires legal action
- WRITE_OFF_RECOMMENDED = 'WRITE_OFF_RECOMMENDED', // Write-off recommended
- UNKNOWN = 'UNKNOWN'                    // Recovery ability unknown
-}
+| Entity                    | Collection Agent | Team Lead | Administrator |
+|---------------------------|------------------|-----------|---------------|
+| Customer (bank_sync)      | Read             | Read      | Read          |
+| Phone/Address/Email (bank_sync) | Read       | Read      | Read          |
+| Phone/Address/Email (workflow) | Read/Write | Read/Write| Read/Write    |
+| Loan                      | Read             | Read      | Read          |
+| Collateral                | Read             | Read      | Read          |
+| ActionRecord              | Read/Write       | Read/Write| Read/Write    |
+| Agent                     | Read             | Read/Write| Read/Write    |
+| Payment                   | Read             | Read      | Read          |
+| Status Dictionaries       | Read             | Read      | Read/Write    |
+| Action Configuration      | Read             | Read      | Read/Write    |
+| CustomerAgent             | Read             | Read/Write| Read/Write    |
+| Status Tracking           | Read/Write       | Read/Write| Read/Write    |
+| ReferenceCustomer         | Read/Write       | Read/Write| Read/Write    |
+
+## Data Source Integration
+
+### External Systems
+- **T24**: Core banking system (customers, loans, collaterals)
+- **W4**: Workflow system (process data)
+- **Payment Systems**: Real-time payment updates
+
+### Internal Systems
+- **CRM**: Internally created and managed data
+- All user-input contact information and status updates
+- Action records and agent assignments
+- Reference customer relationships
+
+### Data Validation
+- Source system tracking prevents modification of external data
+- Edit permissions based on `sourceSystem` and `isEditable` flags
+- Historical data preservation for deactivated dictionary values
+- Referential integrity through foreign key constraints
+
+This data model supports a scalable, auditable collection management system with flexible configuration capabilities and comprehensive tracking of all collection activities.
