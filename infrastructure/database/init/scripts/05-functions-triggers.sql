@@ -22,10 +22,10 @@ COMMENT ON FUNCTION update_updated_at_column() IS 'Automatically updates the upd
 -- PARTITION MANAGEMENT FUNCTIONS
 -- =============================================
 
--- Function to create a new partition for the payments table
+-- Function to create new monthly partitions for the payments table
 CREATE OR REPLACE FUNCTION payment_service.create_payments_partition(
     p_year INTEGER,
-    p_quarter INTEGER
+    p_month INTEGER
 )
 RETURNS void AS $$
 DECLARE
@@ -34,16 +34,11 @@ DECLARE
     partition_name TEXT;
 BEGIN
     -- Calculate start and end dates for the partition
-    start_date := make_date(p_year, ((p_quarter - 1) * 3) + 1, 1);
-    
-    IF p_quarter = 4 THEN
-        end_date := make_date(p_year + 1, 1, 1);
-    ELSE
-        end_date := make_date(p_year, ((p_quarter) * 3) + 1, 1);
-    END IF;
+    start_date := make_date(p_year, p_month, 1);
+    end_date := start_date + INTERVAL '1 month';
     
     -- Create partition name
-    partition_name := 'payments_' || p_year || '_q' || p_quarter;
+    partition_name := 'payments_' || p_year || '_' || LPAD(p_month::TEXT, 2, '0');
     
     -- Create the partition
     EXECUTE format('
@@ -55,7 +50,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-COMMENT ON FUNCTION payment_service.create_payments_partition(INTEGER, INTEGER) IS 'Creates a new quarterly partition for the payments table';
+COMMENT ON FUNCTION payment_service.create_payments_partition(INTEGER, INTEGER) IS 'Creates a new monthly partition for the payments table';
 
 -- Function to create a new partition for the action_records table
 CREATE OR REPLACE FUNCTION workflow_service.create_action_records_partition(
@@ -147,12 +142,6 @@ BEFORE UPDATE ON auth_service.permissions
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
--- Triggers for payment_service schema
--- Note: For partitioned tables, triggers need to be created on the parent table
-CREATE TRIGGER update_payments_updated_at
-BEFORE UPDATE ON payment_service.payments
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
 
 -- Triggers for workflow_service schema
 CREATE TRIGGER update_agents_updated_at
