@@ -6,6 +6,7 @@ import { env } from './config/env.config';
 import { logger } from './utils/logger';
 import db from './config/database';
 import { campaignCache } from './services/cache.service';
+import { KafkaService } from './services/kafka.service';
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.get('/api/v1/campaigns/health', async (_req, res) => {
   const healthChecks = {
     database: false,
     cache: false,
+    kafka: false,
     service: env.SERVICE_NAME,
     timestamp: new Date().toISOString()
   };
@@ -47,7 +49,14 @@ app.get('/api/v1/campaigns/health', async (_req, res) => {
     logger.error('Cache health check failed:', error);
   }
 
-  const isHealthy = healthChecks.database && healthChecks.cache;
+  try {
+    const kafkaService = KafkaService.getInstance();
+    healthChecks.kafka = kafkaService.isHealthy();
+  } catch (error) {
+    logger.error('Kafka health check failed:', error);
+  }
+
+  const isHealthy = healthChecks.database && healthChecks.cache && healthChecks.kafka;
   const status = isHealthy ? 200 : 503;
 
   res.status(status).json({
@@ -86,6 +95,30 @@ async function startServer(): Promise<void> {
     await campaignCache.get('startup-test');
     logger.info('Cache service connected');
 
+    // Initialize Kafka service with retry
+    const kafkaService = KafkaService.getInstance();
+    const maxRetries = 5;
+    const retryDelay = 5000; // 5 seconds
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        logger.info(`Attempting to connect to Kafka (attempt ${attempt}/${maxRetries})`);
+        await kafkaService.connect();
+        logger.info('Kafka service connected');
+        break;
+      } catch (error) {
+        logger.error(`Failed to connect to Kafka (attempt ${attempt}/${maxRetries}):`, error);
+        
+        if (attempt === maxRetries) {
+          logger.error('Max Kafka retries reached - continuing without Kafka');
+          break;
+        }
+        
+        logger.info(`Retrying Kafka connection in ${retryDelay / 1000} seconds...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+      }
+    }
+
     const server = app.listen(env.PORT, () => {
       logger.info(`${env.SERVICE_NAME} service started on port ${env.PORT}`);
       logger.info(`Environment: ${env.NODE_ENV}`);
@@ -96,6 +129,12 @@ async function startServer(): Promise<void> {
       
       server.close(async () => {
         try {
+          // Disconnect Kafka
+          const kafkaService = KafkaService.getInstance();
+          await kafkaService.disconnect();
+          logger.info('Kafka disconnected');
+          
+          // Close database connection
           await db.destroy();
           logger.info('All connections closed');
           process.exit(0);

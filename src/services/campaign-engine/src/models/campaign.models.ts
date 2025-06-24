@@ -126,7 +126,10 @@ export interface CreateCampaignRequest {
 
 export interface UpdateCampaignRequest {
   name?: string;
+  campaign_group_id?: string;
   priority?: number;
+  base_conditions?: CreateBaseConditionRequest[];
+  contact_selection_rules?: CreateContactSelectionRuleRequest[];
 }
 
 export interface CreateBaseConditionRequest {

@@ -149,15 +149,83 @@ export class CampaignRepository {
   }
 
   async updateCampaign(id: string, data: UpdateCampaignRequest): Promise<Campaign | null> {
-    const [campaign] = await db('campaign_engine.campaigns')
-      .where('id', id)
-      .update({ ...data, updated_at: db.fn.now() })
-      .returning('*');
-    
-    if (campaign) {
+    return db.transaction(async (trx: any) => {
+      // Update campaign basic info
+      const [campaign] = await trx('campaign_engine.campaigns')
+        .where('id', id)
+        .update({ 
+          name: data.name,
+          campaign_group_id: data.campaign_group_id,
+          priority: data.priority,
+          updated_at: trx.fn.now() 
+        })
+        .returning('*');
+
+      if (!campaign) {
+        return null;
+      }
+
+      // If base_conditions are provided, replace them
+      if (data.base_conditions !== undefined) {
+        // Delete existing base conditions
+        await trx('campaign_engine.base_conditions')
+          .where('campaign_id', id)
+          .del();
+
+        // Insert new base conditions if any
+        if (data.base_conditions.length > 0) {
+          await trx('campaign_engine.base_conditions').insert(
+            data.base_conditions.map(condition => ({
+              ...condition,
+              campaign_id: id
+            }))
+          );
+        }
+      }
+
+      // If contact_selection_rules are provided, replace them
+      if (data.contact_selection_rules !== undefined) {
+        // Delete existing contact selection rules (cascade will handle conditions and outputs)
+        await trx('campaign_engine.contact_selection_rules')
+          .where('campaign_id', id)
+          .del();
+
+        // Insert new contact selection rules if any
+        if (data.contact_selection_rules.length > 0) {
+          for (const rule of data.contact_selection_rules) {
+            const [contactRule] = await trx('campaign_engine.contact_selection_rules')
+              .insert({
+                campaign_id: id,
+                rule_priority: rule.rule_priority
+              })
+              .returning('*');
+
+            // Create rule conditions
+            if (rule.conditions.length > 0) {
+              await trx('campaign_engine.contact_rule_conditions').insert(
+                rule.conditions.map(condition => ({
+                  ...condition,
+                  contact_selection_rule_id: contactRule.id
+                }))
+              );
+            }
+
+            // Create rule outputs
+            if (rule.outputs.length > 0) {
+              await trx('campaign_engine.contact_rule_outputs').insert(
+                rule.outputs.map(output => ({
+                  ...output,
+                  contact_selection_rule_id: contactRule.id
+                }))
+              );
+            }
+          }
+        }
+      }
+
       await this.clearProcessingCache();
-    }
-    return campaign || null;
+      return campaign;
+    });
   }
 
   async deleteCampaign(id: string): Promise<boolean> {

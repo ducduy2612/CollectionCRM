@@ -1,3 +1,8 @@
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE SCHEMA IF NOT EXISTS campaign_engine;
+
 -- Create campaign_groups table
 CREATE TABLE campaign_engine.campaign_groups (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -115,3 +120,49 @@ CREATE INDEX idx_contact_selection_rules_campaign_id ON campaign_engine.contact_
 CREATE INDEX idx_contact_selection_rules_rule_priority ON campaign_engine.contact_selection_rules(rule_priority);
 CREATE INDEX idx_contact_rule_conditions_rule_id ON campaign_engine.contact_rule_conditions(contact_selection_rule_id);
 CREATE INDEX idx_contact_rule_outputs_rule_id ON campaign_engine.contact_rule_outputs(contact_selection_rule_id);
+
+
+-- Create updated_at trigger function
+CREATE OR REPLACE FUNCTION campaign_engine.update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create triggers for all tables
+CREATE TRIGGER update_campaign_groups_updated_at
+    BEFORE UPDATE ON campaign_engine.campaign_groups
+    FOR EACH ROW
+    EXECUTE FUNCTION campaign_engine.update_updated_at_column();
+
+CREATE TRIGGER update_campaigns_updated_at
+    BEFORE UPDATE ON campaign_engine.campaigns
+    FOR EACH ROW
+    EXECUTE FUNCTION campaign_engine.update_updated_at_column();
+
+CREATE TRIGGER update_base_conditions_updated_at
+    BEFORE UPDATE ON campaign_engine.base_conditions
+    FOR EACH ROW
+    EXECUTE FUNCTION campaign_engine.update_updated_at_column();
+
+CREATE TRIGGER update_contact_selection_rules_updated_at
+    BEFORE UPDATE ON campaign_engine.contact_selection_rules
+    FOR EACH ROW
+    EXECUTE FUNCTION campaign_engine.update_updated_at_column();
+
+CREATE TRIGGER update_contact_rule_conditions_updated_at
+    BEFORE UPDATE ON campaign_engine.contact_rule_conditions
+    FOR EACH ROW
+    EXECUTE FUNCTION campaign_engine.update_updated_at_column();
+
+CREATE TRIGGER update_contact_rule_outputs_updated_at
+    BEFORE UPDATE ON campaign_engine.contact_rule_outputs
+    FOR EACH ROW
+    EXECUTE FUNCTION campaign_engine.update_updated_at_column();
+
+CREATE TRIGGER update_custom_fields_updated_at
+    BEFORE UPDATE ON campaign_engine.custom_fields
+    FOR EACH ROW
+    EXECUTE FUNCTION campaign_engine.update_updated_at_column();

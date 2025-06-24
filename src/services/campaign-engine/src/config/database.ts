@@ -6,8 +6,8 @@ const dbConfig = {
   connection: {
     host: env.DB_HOST,
     port: env.DB_PORT,
-    database: env.DB_NAME,
-    user: env.DB_USER,
+    database: env.DB_DATABASE,
+    user: env.DB_USERNAME,
     password: env.DB_PASSWORD,
     ssl: env.isProduction() ? { rejectUnauthorized: false } : false,
   },

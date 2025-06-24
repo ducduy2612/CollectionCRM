@@ -799,5 +799,249 @@
       "confirm_deactivate": "Are you sure you want to deactivate '{{name}}'?",
       "cannot_deactivate_in_use": "Cannot deactivate item that is currently in use"
     }
+  },
+  "campaign_config": {
+    "title": "Campaign Configuration",
+    "description": "Configure collection campaign groups, campaigns, and their targeting rules for automated customer outreach",
+    "tabs": {
+      "campaign_groups": "Campaign Groups",
+      "campaigns": "Campaigns",
+      "custom_fields": "Custom Fields"
+    },
+    "campaign_groups": {
+      "title": "Campaign Groups",
+      "description": "Organize campaigns into logical groups with priority order",
+      "add_group": "Add Campaign Group",
+      "table": {
+        "name": "Group Name",
+        "campaigns": "Campaigns",
+        "created_at": "Created",
+        "actions": "Actions"
+      },
+      "empty": {
+        "no_groups": "No campaign groups found",
+        "create_first": "Create your first campaign group to get started"
+      },
+      "modal": {
+        "create_title": "Create Campaign Group",
+        "edit_title": "Edit Campaign Group"
+      },
+      "form": {
+        "name": "Group Name",
+        "name_placeholder": "Enter campaign group name",
+        "name_help": "Descriptive name for organizing related campaigns"
+      },
+      "validation": {
+        "name_required": "Group name is required",
+        "name_unique": "Group name must be unique"
+      },
+      "messages": {
+        "created": "Campaign group created successfully",
+        "updated": "Campaign group updated successfully",
+        "deleted": "Campaign group deleted successfully",
+        "confirm_delete": "Are you sure you want to delete the campaign group '{{name}}'? This will also delete all campaigns in this group."
+      }
+    },
+    "campaigns": {
+      "title": "Campaigns",
+      "description": "Define collection campaigns with targeting conditions and contact selection rules",
+      "add_campaign": "Add Campaign",
+      "select_group": "Select a campaign group",
+      "table": {
+        "name": "Campaign Name",
+        "group": "Group",
+        "priority": "Priority",
+        "conditions": "Conditions",
+        "contact_rules": "Contact Rules",
+        "created_at": "Created",
+        "actions": "Actions"
+      },
+      "empty": {
+        "no_campaigns": "No campaigns found",
+        "no_campaigns_for_group": "No campaigns found for this group",
+        "create_first": "Create your first campaign to define targeting rules"
+      },
+      "filter": {
+        "all_groups": "All Groups",
+        "group_placeholder": "Filter by group..."
+      },
+      "priority_help": "Lower numbers indicate higher priority (1 = highest priority)",
+      "modal": {
+        "create_title": "Create Campaign",
+        "edit_title": "Edit Campaign",
+        "steps": {
+          "basic": "Basic Information",
+          "conditions": "Base Conditions",
+          "contact_rules": "Contact Selection Rules",
+          "review": "Review & Save"
+        }
+      },
+      "form": {
+        "basic": {
+          "name": "Campaign Name",
+          "name_placeholder": "Enter campaign name",
+          "name_help": "Descriptive name for this campaign",
+          "group": "Campaign Group",
+          "group_placeholder": "Select campaign group",
+          "priority": "Priority",
+          "priority_placeholder": "Enter priority (1-1000)",
+          "priority_help": "Priority within the group (1 = highest priority)"
+        },
+        "conditions": {
+          "title": "Base Conditions",
+          "description": "Define conditions that customers must meet to be eligible for this campaign",
+          "add_condition": "Add Condition",
+          "no_conditions": "No conditions defined",
+          "condition_help": "All conditions must be met for a customer to qualify",
+          "field_name": "Field Name",
+          "field_name_placeholder": "Select field name",
+          "select_data_source_first": "Select data source first",
+          "operator": "Operator",
+          "operator_placeholder": "Select operator",
+          "field_value": "Value",
+          "field_value_placeholder": "Enter comparison value",
+          "data_source": "Data Source",
+          "data_source_placeholder": "Select data source"
+        },
+        "contact_rules": {
+          "title": "Contact Selection Rules",
+          "description": "Define rules for selecting customer contact information when campaign conditions are met",
+          "add_rule": "Add Contact Rule",
+          "no_rules": "No contact rules defined",
+          "rule_help": "Rules are evaluated in priority order",
+          "rule_priority": "Rule Priority",
+          "rule_priority_placeholder": "Enter rule priority",
+          "rule_conditions": "Rule Conditions",
+          "rule_outputs": "Contact Outputs",
+          "add_condition": "Add Condition",
+          "add_output": "Add Output",
+          "related_party_type": "Related Party",
+          "related_party_placeholder": "Select related party type",
+          "contact_type": "Contact Type",
+          "contact_type_placeholder": "Select contact type"
+        }
+      },
+      "validation": {
+        "name_required": "Campaign name is required",
+        "group_required": "Campaign group is required",
+        "priority_required": "Priority is required",
+        "priority_number": "Priority must be a number",
+        "priority_positive": "Priority must be positive",
+        "priority_unique": "Priority must be unique within the group",
+        "condition_field_required": "Field name is required",
+        "condition_operator_required": "Operator is required",
+        "condition_value_required": "Field value is required",
+        "condition_source_required": "Data source is required",
+        "rule_priority_required": "Rule priority is required",
+        "rule_priority_unique": "Rule priority must be unique within the campaign",
+        "rule_conditions_required": "At least one condition is required for each rule",
+        "rule_outputs_required": "At least one output is required for each rule"
+      },
+      "messages": {
+        "created": "Campaign created successfully",
+        "updated": "Campaign updated successfully",
+        "deleted": "Campaign deleted successfully",
+        "confirm_delete": "Are you sure you want to delete the campaign '{{name}}'? This action cannot be undone."
+      }
+    },
+    "custom_fields": {
+      "title": "Custom Fields",
+      "description": "Define custom fields that can be used in campaign conditions",
+      "add_field": "Add Custom Field",
+      "table": {
+        "field_name": "Field Name",
+        "data_type": "Data Type",
+        "description": "Description",
+        "created_at": "Created",
+        "actions": "Actions"
+      },
+      "empty": {
+        "no_fields": "No custom fields defined",
+        "create_first": "Create custom fields to use in campaign conditions"
+      },
+      "modal": {
+        "create_title": "Create Custom Field",
+        "edit_title": "Edit Custom Field"
+      },
+      "form": {
+        "field_name": "Field Name",
+        "field_name_placeholder": "Enter field name",
+        "field_name_help": "Unique identifier for this field",
+        "data_type": "Data Type",
+        "data_type_placeholder": "Select data type",
+        "description": "Description",
+        "description_placeholder": "Describe what this field represents",
+        "description_help": "Optional description of the field's purpose"
+      },
+      "data_types": {
+        "string": "Text",
+        "number": "Number",
+        "date": "Date",
+        "boolean": "True/False"
+      },
+      "validation": {
+        "field_name_required": "Field name is required",
+        "field_name_unique": "Field name must be unique",
+        "data_type_required": "Data type is required"
+      },
+      "messages": {
+        "created": "Custom field created successfully",
+        "updated": "Custom field updated successfully",
+        "deleted": "Custom field deleted successfully",
+        "confirm_delete": "Are you sure you want to delete the custom field '{{name}}'?"
+      }
+    },
+    "common": {
+      "actions": {
+        "create": "Create",
+        "edit": "Edit",
+        "delete": "Delete",
+        "save": "Save",
+        "cancel": "Cancel",
+        "add": "Add",
+        "remove": "Remove",
+        "next": "Next",
+        "previous": "Previous",
+        "finish": "Finish"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "loading": "Loading...",
+      "no_data": "No data available",
+      "error": "An error occurred",
+      "success": "Operation completed successfully"
+    },
+    "operators": {
+      "equals": "Equals",
+      "not_equals": "Not Equals",
+      "greater_than": "Greater Than",
+      "greater_than_equal": "Greater Than or Equal",
+      "less_than": "Less Than",
+      "less_than_equal": "Less Than or Equal",
+      "like": "Contains",
+      "not_like": "Does Not Contain",
+      "in": "In List",
+      "not_in": "Not In List",
+      "is_null": "Is Empty",
+      "is_not_null": "Is Not Empty"
+    },
+    "data_sources": {
+      "loans": "Loan Data",
+      "customers": "Customer Data",
+      "custom_fields": "Custom Fields"
+    },
+    "contact_types": {
+      "mobile": "Mobile Phone",
+      "home": "Home Phone",
+      "work": "Work Phone",
+      "all": "All Phone Types"
+    },
+    "related_party_types": {
+      "customer": "Customer",
+      "reference_customer_parent": "Reference (Parent)",
+      "reference_customer_all": "Reference (All)"
+    }
   }
 }

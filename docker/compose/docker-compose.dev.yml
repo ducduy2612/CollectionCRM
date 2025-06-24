@@ -38,6 +38,7 @@ services:
       - auth-service
       - bank-sync-service
       - workflow-service
+      - campaign-engine
       - redis
     networks:
       - collectioncrm-network
@@ -103,6 +104,30 @@ services:
       - ../../src/services/workflow-service/src:/app/services/workflow-service/src
     depends_on:
       postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - collectioncrm-network
+    restart: unless-stopped
+
+  # Campaign Engine Service
+  campaign-engine:
+    build:
+      context: ../../
+      dockerfile: docker/base-images/campaign-engine.Dockerfile
+    ports:
+      - "3004:3004"
+    env_file:
+      - ../../src/services/campaign-engine/.env
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # For Docker file watching
+    volumes:
+      - ../../src/services/campaign-engine/src:/app/services/campaign-engine/src
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       kafka:
         condition: service_healthy

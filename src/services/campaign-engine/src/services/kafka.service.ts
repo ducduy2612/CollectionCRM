@@ -55,7 +55,7 @@ export class KafkaService {
   private constructor() {
     this.kafka = new Kafka(kafkaConfig);
     this.producer = this.kafka.producer({
-      allowAutoTopicCreation: false,
+      allowAutoTopicCreation: true,
       transactionTimeout: 30000,
     });
   }
@@ -157,7 +157,8 @@ export class KafkaService {
 
   public async publishCampaignEvent(eventType: string, campaignData: any): Promise<void> {
     if (!this.isConnected) {
-      throw new Error('Kafka producer not connected');
+      logger.warn('Kafka producer not connected - skipping event publishing');
+      return;
     }
 
     const topicMap: { [key: string]: string } = {

@@ -100,7 +100,21 @@ router.put('/:id',
     param('id').isUUID().withMessage('Invalid campaign ID'),
     body('name').optional().trim().notEmpty().withMessage('Name cannot be empty'),
     body('name').optional().isLength({ max: 255 }).withMessage('Name must be less than 255 characters'),
-    body('priority').optional().isInt({ min: 1 }).withMessage('Priority must be a positive integer')
+    body('campaign_group_id').optional().isUUID().withMessage('Invalid campaign group ID'),
+    body('priority').optional().isInt({ min: 1 }).withMessage('Priority must be a positive integer'),
+    
+    // Base conditions validation (optional for updates)
+    body('base_conditions').optional().isArray().withMessage('Base conditions must be an array'),
+    body('base_conditions.*.field_name').optional().notEmpty().withMessage('Field name is required'),
+    body('base_conditions.*.operator').optional().isIn(['=', '!=', '>', '>=', '<', '<=', 'LIKE', 'NOT_LIKE', 'IN', 'NOT_IN', 'IS_NULL', 'IS_NOT_NULL']).withMessage('Invalid operator'),
+    body('base_conditions.*.field_value').optional().notEmpty().withMessage('Field value is required'),
+    body('base_conditions.*.data_source').optional().notEmpty().withMessage('Data source is required'),
+    
+    // Contact selection rules validation (optional for updates)
+    body('contact_selection_rules').optional().isArray().withMessage('Contact selection rules must be an array'),
+    body('contact_selection_rules.*.rule_priority').optional().isInt({ min: 1 }).withMessage('Rule priority must be a positive integer'),
+    body('contact_selection_rules.*.conditions').optional().isArray().withMessage('Rule conditions must be an array'),
+    body('contact_selection_rules.*.outputs').optional().isArray().withMessage('Rule outputs must be an array')
   ],
   validateRequest,
   campaignController.updateCampaign.bind(campaignController)

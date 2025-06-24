@@ -10,8 +10,8 @@ export const env = {
   // Database Configuration
   DB_HOST: process.env.DB_HOST || 'localhost',
   DB_PORT: parseInt(process.env.DB_PORT || '5432', 10),
-  DB_NAME: process.env.DB_NAME || 'collectioncrm',
-  DB_USER: process.env.DB_USER || 'postgres',
+  DB_DATABASE: process.env.DB_DATABASE || 'collectioncrm',
+  DB_USERNAME: process.env.DB_USERNAME || 'postgres',
   DB_PASSWORD: process.env.DB_PASSWORD || 'postgres',
   DB_SCHEMA: process.env.DB_SCHEMA || 'campaign_engine',
   

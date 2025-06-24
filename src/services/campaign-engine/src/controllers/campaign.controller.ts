@@ -412,10 +412,25 @@ export class CampaignController {
   // Configuration
   async getDataSources(_req: Request, res: Response): Promise<void> {
     try {
-      const dataSources = Object.keys(DATA_SOURCE_FIELDS).map(source => ({
-        name: source,
-        fields: DATA_SOURCE_FIELDS[source as keyof typeof DATA_SOURCE_FIELDS]
-      }));
+      const dataSources = [];
+      
+      // Add static data sources
+      for (const [sourceName, staticFields] of Object.entries(DATA_SOURCE_FIELDS)) {
+        if (sourceName === 'custom_fields') {
+          // For custom_fields, get dynamic fields from database
+          const customFields = await this.campaignRepository.getCustomFields();
+          dataSources.push({
+            name: sourceName,
+            fields: customFields.map(field => field.field_name)
+          });
+        } else {
+          // For other sources, use static fields
+          dataSources.push({
+            name: sourceName,
+            fields: staticFields
+          });
+        }
+      }
 
       res.json({
         success: true,
