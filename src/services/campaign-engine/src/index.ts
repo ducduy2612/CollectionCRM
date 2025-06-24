@@ -1,111 +1,118 @@
-import { Kafka } from 'kafkajs';
-import dotenv from 'dotenv';
-import logger from './utils/logger';
-import { fetchCampaignConfig, fetchCustomFields } from './config/campaign.config';
-import { processCustomerBatch, setCampaignConfigCache, setCustomFieldsCache } from './engine/processor';
+import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import compression from 'compression';
+import { env } from './config/env.config';
+import { logger } from './utils/logger';
+import db from './config/database';
+import { campaignCache } from './services/cache.service';
 
-dotenv.config();
+const app = express();
 
-const kafka = new Kafka({
-  clientId: 'campaign-engine',
-  brokers: process.env.KAFKA_BROKERS ? process.env.KAFKA_BROKERS.split(',') : ['localhost:9092'],
+// Middleware
+app.use(helmet());
+app.use(cors());
+app.use(compression());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// Health check endpoints
+app.get('/health', async (req, res) => {
+  res.json({
+    status: 'OK',
+    service: env.SERVICE_NAME,
+    timestamp: new Date().toISOString()
+  });
 });
 
-const consumer = kafka.consumer({ groupId: 'campaign-engine-group' });
-const producer = kafka.producer();
+app.get('/api/v1/campaigns/health', async (req, res) => {
+  const healthChecks = {
+    database: false,
+    cache: false,
+    service: env.SERVICE_NAME,
+    timestamp: new Date().toISOString()
+  };
 
-const INPUT_TOPIC = process.env.KAFKA_INPUT_TOPIC || 'customer-processing-requests';
-const OUTPUT_TOPIC = process.env.KAFKA_OUTPUT_TOPIC || 'campaign-processing-results';
-
-const run = async () => {
-  await consumer.connect();
-  await producer.connect();
-  logger.info('Kafka consumer and producer connected');
-
-  // Fetch and cache campaign configuration and custom fields
   try {
-    const campaignConfig = await fetchCampaignConfig();
-    const customFields = await fetchCustomFields();
-    setCampaignConfigCache(campaignConfig);
-    setCustomFieldsCache(customFields);
-    logger.info('Campaign configuration and custom fields loaded successfully.');
+    await db.raw('SELECT 1');
+    healthChecks.database = true;
   } catch (error) {
-    logger.error('Failed to load campaign configuration or custom fields, exiting:', error);
+    logger.error('Database health check failed:', error);
+  }
+
+  try {
+    await campaignCache.get('health-check');
+    healthChecks.cache = true;
+  } catch (error) {
+    logger.error('Cache health check failed:', error);
+  }
+
+  const isHealthy = healthChecks.database && healthChecks.cache;
+  const status = isHealthy ? 200 : 503;
+
+  res.status(status).json({
+    success: isHealthy,
+    data: healthChecks,
+    message: isHealthy ? 'Service is healthy' : 'Service health check failed'
+  });
+});
+
+// Routes
+import { campaignRoutes } from './routes/campaign.routes';
+app.use('/api/v1/campaigns', campaignRoutes);
+
+// Error handling middleware
+app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  logger.error('Unhandled error:', error);
+  
+  res.status(error.status || 500).json({
+    success: false,
+    data: null,
+    message: error.message || 'Internal server error',
+    errors: [{
+      code: error.code || 'INTERNAL_ERROR',
+      message: error.message || 'An unexpected error occurred'
+    }]
+  });
+});
+
+async function startServer(): Promise<void> {
+  try {
+    // Test database connection
+    await db.raw('SELECT 1');
+    logger.info('Database connected');
+
+    // Test cache connection
+    await campaignCache.get('startup-test');
+    logger.info('Cache service connected');
+
+    const server = app.listen(env.PORT, () => {
+      logger.info(`${env.SERVICE_NAME} service started on port ${env.PORT}`);
+      logger.info(`Environment: ${env.NODE_ENV}`);
+    });
+
+    const gracefulShutdown = async (signal: string): Promise<void> => {
+      logger.info(`Received ${signal}, shutting down gracefully`);
+      
+      server.close(async () => {
+        try {
+          await db.destroy();
+          logger.info('All connections closed');
+          process.exit(0);
+        } catch (error) {
+          logger.error('Error during shutdown:', error);
+          process.exit(1);
+        }
+      });
+    };
+
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+  } catch (error) {
+    logger.error('Failed to start server:', error);
     process.exit(1);
   }
+}
 
-  await consumer.subscribe({ topic: INPUT_TOPIC, fromBeginning: false });
-  logger.info(`Subscribed to topic: ${INPUT_TOPIC}`);
-
-  await consumer.run({
-    eachBatch: async ({ batch, resolveOffset, heartbeat, commitOffsetsIfNecessary, uncommittedOffsets }) => {
-      logger.info(`Received batch with ${batch.messages.length} messages from topic ${batch.topic}`);
-      // Process messages in batch
-      for (const message of batch.messages) {
-        if (!message.value) {
-          logger.warn('Received message with null or undefined value');
-          resolveOffset(message.offset);
-          continue;
-        }
-        try {
-          const customerId = message.value.toString(); // Assuming message value is customer ID string
-          const customerIdsInBatch = batch.messages.map(msg => msg.value?.toString()).filter(Boolean) as string[];
-          logger.info(`Processing batch of ${customerIdsInBatch.length} customer IDs.`);
-
-          const processedResults = await processCustomerBatch(customerIdsInBatch);
-
-          // Publish results to output topic
-          const messages = processedResults.map(result => ({
-            value: JSON.stringify(result),
-            key: result.customerId, // Use customerId as key for partitioning
-          }));
-
-          await producer.send({
-            topic: OUTPUT_TOPIC,
-            messages: messages,
-          });
-          logger.info(`Published results for ${processedResults.length} customers to topic ${OUTPUT_TOPIC}`);
-          logger.info(`Published result for customer ID ${customerId} to topic ${OUTPUT_TOPIC}`);
-
-          resolveOffset(message.offset);
-          await commitOffsetsIfNecessary();
-          await heartbeat();
-
-        } catch (error) {
-          logger.error(`Error processing message for customer ID ${message.value?.toString()}:`, error);
-          // Depending on error handling strategy, you might want to send to a dead-letter queue
-          // For now, we resolve the offset to avoid reprocessing the same failing message indefinitely
-          resolveOffset(message.offset);
-        }
-      }
-    },
-  });
-};
-
-run().catch(async (e) => {
-  logger.error('Error in campaign engine:', e);
-  try {
-    await consumer.disconnect();
-    await producer.disconnect();
-  } catch (e) {
-    logger.error('Error disconnecting Kafka:', e);
-  }
-  process.exit(1);
-});
-
-// Handle graceful shutdown
-process.on('SIGINT', async () => {
-  logger.info('SIGINT received, disconnecting Kafka...');
-  await consumer.disconnect();
-  await producer.disconnect();
-  logger.info('Kafka disconnected. Exiting.');
-  process.exit(0);
-});
-
-process.on('SIGTERM', async () => {
-  logger.info('SIGTERM received, disconnecting Kafka...');
-  await consumer.disconnect();
-  await producer.disconnect();
-  logger.info('Kafka disconnected. Exiting.');
-  process.exit(0);
-});
+startServer();

@@ -21,6 +21,9 @@ COMMENT ON SCHEMA payment_service IS 'Payment-related tables';
 CREATE SCHEMA IF NOT EXISTS workflow_service;
 COMMENT ON SCHEMA workflow_service IS 'Collection workflow-related tables including agents, actions, and cases';
 
+CREATE SCHEMA IF NOT EXISTS campaign_engine;
+COMMENT ON SCHEMA campaign_engine IS 'Collection campaign configuration system';
+
 -- Create common types
 -- Source system types
 CREATE TYPE source_system_type AS ENUM ('T24', 'W4', 'OTHER', 'CRM');
