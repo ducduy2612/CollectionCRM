@@ -14,7 +14,7 @@ export class CampaignController {
   }
 
   // Campaign Groups
-  async getCampaignGroups(req: Request, res: Response): Promise<void> {
+  async getCampaignGroups(_req: Request, res: Response): Promise<void> {
     try {
       const groups = await this.campaignRepository.getCampaignGroups();
       res.json({
@@ -369,7 +369,7 @@ export class CampaignController {
   }
 
   // Custom Fields
-  async getCustomFields(req: Request, res: Response): Promise<void> {
+  async getCustomFields(_req: Request, res: Response): Promise<void> {
     try {
       const fields = await this.campaignRepository.getCustomFields();
       
@@ -410,7 +410,7 @@ export class CampaignController {
   }
 
   // Configuration
-  async getDataSources(req: Request, res: Response): Promise<void> {
+  async getDataSources(_req: Request, res: Response): Promise<void> {
     try {
       const dataSources = Object.keys(DATA_SOURCE_FIELDS).map(source => ({
         name: source,
@@ -433,7 +433,7 @@ export class CampaignController {
     }
   }
 
-  async getOperators(req: Request, res: Response): Promise<void> {
+  async getOperators(_req: Request, res: Response): Promise<void> {
     try {
       const operators = [
         { value: '=', label: 'Equals' },
@@ -466,7 +466,7 @@ export class CampaignController {
     }
   }
 
-  async getContactTypes(req: Request, res: Response): Promise<void> {
+  async getContactTypes(_req: Request, res: Response): Promise<void> {
     try {
       const contactTypes = [
         { value: 'mobile', label: 'Mobile Phone' },
@@ -492,7 +492,7 @@ export class CampaignController {
     }
   }
 
-  async getRelatedPartyTypes(req: Request, res: Response): Promise<void> {
+  async getRelatedPartyTypes(_req: Request, res: Response): Promise<void> {
     try {
       const relatedPartyTypes = [
         { value: 'customer', label: 'Customer' },
@@ -516,7 +516,7 @@ export class CampaignController {
     }
   }
 
-  async getCampaignConfiguration(req: Request, res: Response): Promise<void> {
+  async getCampaignConfiguration(_req: Request, res: Response): Promise<void> {
     try {
       const config = await this.campaignRepository.getCampaignConfiguration();
       

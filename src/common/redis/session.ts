@@ -251,7 +251,7 @@ export class SessionStore {
       
       if (sessionIds.length > 0) {
         // Delete all sessions
-        const sessionKeys = sessionIds.map(id => this.generateKey(id));
+        const sessionKeys = sessionIds.map((id: string) => this.generateKey(id));
         await this.client.del(sessionKeys);
       }
       

@@ -17,7 +17,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Health check endpoints
-app.get('/health', async (req, res) => {
+app.get('/health', async (_req, res) => {
   res.json({
     status: 'OK',
     service: env.SERVICE_NAME,
@@ -25,7 +25,7 @@ app.get('/health', async (req, res) => {
   });
 });
 
-app.get('/api/v1/campaigns/health', async (req, res) => {
+app.get('/api/v1/campaigns/health', async (_req, res) => {
   const healthChecks = {
     database: false,
     cache: false,
@@ -62,7 +62,7 @@ import { campaignRoutes } from './routes/campaign.routes';
 app.use('/api/v1/campaigns', campaignRoutes);
 
 // Error handling middleware
-app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((error: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   logger.error('Unhandled error:', error);
   
   res.status(error.status || 500).json({

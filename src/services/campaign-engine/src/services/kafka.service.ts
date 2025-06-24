@@ -1,4 +1,4 @@
-import { Kafka, Producer, Consumer, KafkaMessage } from 'kafkajs';
+import { Kafka, Producer, Consumer } from 'kafkajs';
 import { v4 as uuidv4 } from 'uuid';
 import { kafkaConfig, KAFKA_TOPICS, CONSUMER_GROUP_IDS } from '../config/kafka.config';
 import { logger } from '../utils/logger';
@@ -217,7 +217,7 @@ export class KafkaService {
     });
 
     await this.consumer.run({
-      eachMessage: async ({ topic, partition, message }) => {
+      eachMessage: async ({ message }) => {
         try {
           if (!message.value) {
             logger.warn('Received empty message');

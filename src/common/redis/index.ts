@@ -67,7 +67,7 @@ export class RedisConnectionManager {
       url: `redis://${clientConfig.password ? `:${clientConfig.password}@` : ''}${clientConfig.host}:${clientConfig.port}`,
       socket: {
         connectTimeout: clientConfig.connectTimeout,
-        reconnectStrategy: (retries) => {
+        reconnectStrategy: (retries: number) => {
           // Exponential backoff with max 10 seconds
           const delay = Math.min(Math.pow(2, retries) * 100, 10000);
           return delay;
@@ -77,7 +77,7 @@ export class RedisConnectionManager {
     });
 
     // Set up error handling
-    client.on('error', (err) => {
+    client.on('error', (err: Error) => {
       console.error(`Redis client (${clientName}) error:`, err);
     });
 

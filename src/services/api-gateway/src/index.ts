@@ -142,6 +142,18 @@ Object.entries(serviceRoutes).forEach(([name, config]) => {
     
   }
   
+  // Add specific rate limiting for campaign endpoints
+  if (name === 'campaign' && config.routes) {
+    // Campaign creation rate limiting
+    app.use(`${config.path}`, routeRateLimiter(rateLimitConfigs.campaign.campaignCreate));
+    
+    // Campaign update rate limiting
+    app.use(`${config.path}/:id`, routeRateLimiter(rateLimitConfigs.campaign.campaignUpdate));
+    
+    // Custom field creation rate limiting
+    app.use(`${config.path}/config/custom-fields`, routeRateLimiter(rateLimitConfigs.campaign.customFieldCreate));
+  }
+  
   // Set up the proxy
   app.use(config.path, createServiceProxy(config));
 });

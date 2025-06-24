@@ -6,19 +6,20 @@ const router = express.Router();
 const campaignController = new CampaignController();
 
 // Validation middleware
-const validateRequest = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+const validateRequest = (req: express.Request, res: express.Response, next: express.NextFunction): void => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({
+    res.status(400).json({
       success: false,
       data: null,
       message: 'Validation error',
       errors: errors.array().map(err => ({
         code: 'VALIDATION_ERROR',
         message: err.msg,
-        field: err.param
+        field: 'param' in err ? err.param : undefined
       }))
     });
+    return;
   }
   next();
 };

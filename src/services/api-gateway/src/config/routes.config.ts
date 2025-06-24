@@ -44,6 +44,23 @@ export const rateLimitConfigs = {
       windowSizeInSeconds: 60, // 1 minute
       prefix: 'workflow:action:record:'
     }
+  },
+  campaign: {
+    campaignCreate: {
+      max: 10,
+      windowSizeInSeconds: 60, // 1 minute
+      prefix: 'campaign:create:'
+    },
+    campaignUpdate: {
+      max: 20,
+      windowSizeInSeconds: 60, // 1 minute
+      prefix: 'campaign:update:'
+    },
+    customFieldCreate: {
+      max: 5,
+      windowSizeInSeconds: 60, // 1 minute
+      prefix: 'campaign:customfield:'
+    }
   }
 };
 
@@ -120,6 +137,32 @@ export const serviceRoutes: Record<string, ProxyConfig> = {
       actionById: '/actions/:id',
       assignments: '/assignments',
       assignmentById: '/assignments/:id',
+      health: '/health'
+    },
+    requiresAuth: {
+      all: true,
+      except: ['/health']
+    }
+  },
+  campaign: {
+    path: '/api/campaigns',
+    target: process.env.CAMPAIGN_SERVICE_URL || 'http://campaign-engine:3004',
+    pathRewrite: { '^/api/campaigns': '/api/v1/campaigns' },
+    timeout: parseInt(process.env.CAMPAIGN_SERVICE_TIMEOUT || '30000', 10),
+    serviceName: 'Campaign Engine Service',
+    routes: {
+      groups: '/groups',
+      groupById: '/groups/:id',
+      campaigns: '/',
+      campaignById: '/:id',
+      campaignConditions: '/:id/conditions',
+      campaignContactRules: '/:id/contact-rules',
+      customFields: '/config/custom-fields',
+      dataSources: '/config/data-sources',
+      operators: '/config/operators',
+      contactTypes: '/config/contact-types',
+      relatedPartyTypes: '/config/related-party-types',
+      processingConfig: '/config/processing',
       health: '/health'
     },
     requiresAuth: {
