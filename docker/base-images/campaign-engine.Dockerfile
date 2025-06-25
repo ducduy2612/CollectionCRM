@@ -18,7 +18,7 @@ RUN npm install
 # RUN npm run build
 
 # Copy environment variables file
-COPY src/services/campaign-engine/.env ./.env
+COPY src/services/campaign-engine/.env.example ./.env
 
 # Expose the port the app runs on
 EXPOSE 3004

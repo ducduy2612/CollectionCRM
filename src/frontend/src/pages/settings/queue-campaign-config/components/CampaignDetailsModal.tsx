@@ -12,14 +12,11 @@ import type {
   CampaignGroup, 
   CreateCampaignRequest,
   CreateBaseConditionRequest,
-  CreateContactSelectionRuleRequest,
-  DataSource,
-  Operator,
-  ContactType,
-  RelatedPartyType
+  CreateContactSelectionRuleRequest
 } from '../../../../services/api/campaign';
 import BaseConditionsForm from './BaseConditionsForm';
 import ContactRulesForm from './ContactRulesForm';
+import CampaignReviewSection from './CampaignReviewSection';
 
 interface CampaignDetailsModalProps {
   isOpen: boolean;
@@ -119,7 +116,8 @@ const CampaignDetailsModal: React.FC<CampaignDetailsModalProps> = ({
           })) || [],
           outputs: rule.outputs?.map(output => ({
             related_party_type: output.related_party_type,
-            contact_type: output.contact_type
+            contact_type: output.contact_type,
+            relationship_patterns: output.relationship_patterns || []
           })) || []
         })) || []
       });
@@ -348,48 +346,10 @@ const CampaignDetailsModal: React.FC<CampaignDetailsModalProps> = ({
 
       case 'review':
         return (
-          <div className="space-y-6">
-            <div>
-              <h4 className="text-lg font-medium text-neutral-900 mb-2">Review Campaign Configuration</h4>
-              <p className="text-sm text-neutral-600">Please review your campaign configuration before saving.</p>
-            </div>
-
-            <div className="bg-neutral-50 rounded-lg p-4 space-y-4">
-              <div>
-                <h5 className="font-medium text-neutral-900">Basic Information</h5>
-                <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
-                  <div>
-                    <dt className="text-sm font-medium text-neutral-500">Name</dt>
-                    <dd className="text-sm text-neutral-900">{formData.name}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-neutral-500">Group</dt>
-                    <dd className="text-sm text-neutral-900">
-                      {campaignGroups.find(g => g.id === formData.campaign_group_id)?.name || 'Unknown'}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-neutral-500">Priority</dt>
-                    <dd className="text-sm text-neutral-900">{formData.priority}</dd>
-                  </div>
-                </dl>
-              </div>
-
-              <div>
-                <h5 className="font-medium text-neutral-900">Base Conditions</h5>
-                <p className="text-sm text-neutral-600">
-                  {formData.base_conditions.length} condition(s) defined
-                </p>
-              </div>
-
-              <div>
-                <h5 className="font-medium text-neutral-900">Contact Selection Rules</h5>
-                <p className="text-sm text-neutral-600">
-                  {formData.contact_selection_rules.length} rule(s) defined
-                </p>
-              </div>
-            </div>
-          </div>
+          <CampaignReviewSection
+            formData={formData}
+            campaignGroups={campaignGroups}
+          />
         );
 
       default:

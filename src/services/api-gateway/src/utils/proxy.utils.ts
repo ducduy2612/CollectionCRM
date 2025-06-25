@@ -164,9 +164,17 @@ class ResponseHeadersMiddleware implements ResponseMiddleware {
     // Add service name to response headers for debugging
     res.setHeader('x-proxied-service', proxyConfig.serviceName);
     
+    // Headers that should not be forwarded to prevent conflicts
+    const excludedHeaders = [
+      'content-length',
+      'transfer-encoding',
+      'connection',
+      'keep-alive'
+    ];
+    
     // Forward response headers
     for (const [key, value] of Object.entries(proxyRes.headers)) {
-      if (value !== undefined) {
+      if (value !== undefined && !excludedHeaders.includes(key.toLowerCase())) {
         res.setHeader(key, value);
       }
     }

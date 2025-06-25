@@ -106,7 +106,8 @@ const ContactRulesForm: React.FC<ContactRulesFormProps> = ({
   const addOutput = (ruleIndex: number) => {
     const newOutput: CreateContactRuleOutputRequest = {
       related_party_type: '',
-      contact_type: ''
+      contact_type: '',
+      relationship_patterns: []
     };
     const newRules = rules.map((rule, i) => 
       i === ruleIndex 
@@ -125,7 +126,7 @@ const ContactRulesForm: React.FC<ContactRulesFormProps> = ({
     onChange(newRules);
   };
 
-  const updateOutput = (ruleIndex: number, outputIndex: number, field: keyof CreateContactRuleOutputRequest, value: string) => {
+  const updateOutput = (ruleIndex: number, outputIndex: number, field: keyof CreateContactRuleOutputRequest, value: string | string[]) => {
     const newRules = rules.map((rule, i) => 
       i === ruleIndex 
         ? {
@@ -137,6 +138,16 @@ const ContactRulesForm: React.FC<ContactRulesFormProps> = ({
         : rule
     );
     onChange(newRules);
+  };
+
+  const updateRelationshipPatterns = (ruleIndex: number, outputIndex: number, patterns: string) => {
+    // Convert comma-separated string to array, filtering out empty values
+    const patternsArray = patterns
+      .split(',')
+      .map(p => p.trim())
+      .filter(p => p.length > 0);
+    
+    updateOutput(ruleIndex, outputIndex, 'relationship_patterns', patternsArray);
   };
 
   return (
@@ -167,10 +178,10 @@ const ContactRulesForm: React.FC<ContactRulesFormProps> = ({
               <div className="flex justify-between items-center">
                 <div>
                   <h5 className="text-sm font-medium text-neutral-900">
-                    Contact Rule {rule.rule_priority}
+                    {t('campaign_config.campaigns.form.contact_rules.exclusion_rule_title', { priority: rule.rule_priority })}
                   </h5>
                   <p className="text-xs text-neutral-500 mt-1">
-                    {t('campaign_config.campaigns.form.contact_rules.rule_help')}
+                    {t('campaign_config.campaigns.form.contact_rules.exclusion_rule_description')}
                   </p>
                 </div>
                 <Button
@@ -215,7 +226,7 @@ const ContactRulesForm: React.FC<ContactRulesFormProps> = ({
 
                 {rule.conditions.length === 0 ? (
                   <p className="text-sm text-neutral-500 text-center py-4 border border-dashed border-neutral-300 rounded">
-                    No conditions defined for this rule
+                    {t('campaign_config.campaigns.form.contact_rules.no_conditions_rule')}
                   </p>
                 ) : (
                   <div className="space-y-3">
@@ -323,7 +334,7 @@ const ContactRulesForm: React.FC<ContactRulesFormProps> = ({
 
                 {rule.outputs.length === 0 ? (
                   <p className="text-sm text-neutral-500 text-center py-4 border border-dashed border-neutral-300 rounded">
-                    No outputs defined for this rule
+                    {t('campaign_config.campaigns.form.contact_rules.no_outputs_rule')}
                   </p>
                 ) : (
                   <div className="space-y-3">
@@ -342,46 +353,67 @@ const ContactRulesForm: React.FC<ContactRulesFormProps> = ({
                           </Button>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <div>
-                            <label className="block text-xs font-medium text-neutral-600 mb-1">
-                              {t('campaign_config.campaigns.form.contact_rules.related_party_type')}
-                            </label>
-                            <select
-                              value={output.related_party_type}
-                              onChange={(e) => updateOutput(ruleIndex, outputIndex, 'related_party_type', e.target.value)}
-                              className="w-full px-2 py-1 text-sm border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-primary-500"
-                            >
-                              <option value="">
-                                {t('campaign_config.campaigns.form.contact_rules.related_party_placeholder')}
-                              </option>
-                              {relatedPartyTypes.map((type) => (
-                                <option key={type.value} value={type.value}>
-                                  {type.label}
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs font-medium text-neutral-600 mb-1">
+                                {t('campaign_config.campaigns.form.contact_rules.related_party_type')}
+                              </label>
+                              <select
+                                value={output.related_party_type}
+                                onChange={(e) => updateOutput(ruleIndex, outputIndex, 'related_party_type', e.target.value)}
+                                className="w-full px-2 py-1 text-sm border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-primary-500"
+                              >
+                                <option value="">
+                                  {t('campaign_config.campaigns.form.contact_rules.related_party_placeholder')}
                                 </option>
-                              ))}
-                            </select>
+                                {relatedPartyTypes.map((type) => (
+                                  <option key={type.value} value={type.value}>
+                                    {type.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-medium text-neutral-600 mb-1">
+                                {t('campaign_config.campaigns.form.contact_rules.contact_type')}
+                              </label>
+                              <select
+                                value={output.contact_type}
+                                onChange={(e) => updateOutput(ruleIndex, outputIndex, 'contact_type', e.target.value)}
+                                className="w-full px-2 py-1 text-sm border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-primary-500"
+                              >
+                                <option value="">
+                                  {t('campaign_config.campaigns.form.contact_rules.contact_type_placeholder')}
+                                </option>
+                                {contactTypes.map((type) => (
+                                  <option key={type.value} value={type.value}>
+                                    {type.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
                           </div>
 
-                          <div>
-                            <label className="block text-xs font-medium text-neutral-600 mb-1">
-                              {t('campaign_config.campaigns.form.contact_rules.contact_type')}
-                            </label>
-                            <select
-                              value={output.contact_type}
-                              onChange={(e) => updateOutput(ruleIndex, outputIndex, 'contact_type', e.target.value)}
-                              className="w-full px-2 py-1 text-sm border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-primary-500"
-                            >
-                              <option value="">
-                                {t('campaign_config.campaigns.form.contact_rules.contact_type_placeholder')}
-                              </option>
-                              {contactTypes.map((type) => (
-                                <option key={type.value} value={type.value}>
-                                  {type.label}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
+                          {/* Relationship Patterns - Only show when related_party_type is 'reference' */}
+                          {output.related_party_type === 'reference' && (
+                            <div>
+                              <label className="block text-xs font-medium text-neutral-600 mb-1">
+                                {t('campaign_config.campaigns.form.contact_rules.relationship_patterns')}
+                              </label>
+                              <input
+                                type="text"
+                                value={output.relationship_patterns?.join(', ') || ''}
+                                onChange={(e) => updateRelationshipPatterns(ruleIndex, outputIndex, e.target.value)}
+                                placeholder={t('campaign_config.campaigns.form.contact_rules.relationship_patterns_placeholder')}
+                                className="w-full px-2 py-1 text-sm border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-primary-500"
+                              />
+                              <p className="text-xs text-neutral-500 mt-1">
+                                {t('campaign_config.campaigns.form.contact_rules.relationship_patterns_help')}
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}

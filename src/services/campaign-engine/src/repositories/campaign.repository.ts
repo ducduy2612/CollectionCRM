@@ -107,8 +107,10 @@ export class CampaignRepository {
           if (rule.outputs.length > 0) {
             await trx('campaign_engine.contact_rule_outputs').insert(
               rule.outputs.map(output => ({
-                ...output,
-                contact_selection_rule_id: contactRule.id
+                contact_selection_rule_id: contactRule.id,
+                related_party_type: output.related_party_type,
+                contact_type: output.contact_type,
+                relationship_patterns: output.relationship_patterns ? JSON.stringify(output.relationship_patterns) : null
               }))
             );
           }
@@ -214,8 +216,10 @@ export class CampaignRepository {
             if (rule.outputs.length > 0) {
               await trx('campaign_engine.contact_rule_outputs').insert(
                 rule.outputs.map(output => ({
-                  ...output,
-                  contact_selection_rule_id: contactRule.id
+                  contact_selection_rule_id: contactRule.id,
+                  related_party_type: output.related_party_type,
+                  contact_type: output.contact_type,
+                  relationship_patterns: output.relationship_patterns ? JSON.stringify(output.relationship_patterns) : null
                 }))
               );
             }
@@ -248,22 +252,44 @@ export class CampaignRepository {
 
   // Contact Selection Rules
   async getContactSelectionRules(campaignId: string): Promise<ContactSelectionRule[]> {
-    const rules = await db('campaign_engine.contact_selection_rules')
-      .where('campaign_id', campaignId)
-      .orderBy('rule_priority');
+    try {
+      const rules = await db('campaign_engine.contact_selection_rules')
+        .where('campaign_id', campaignId)
+        .orderBy('rule_priority');
 
-    // Get conditions and outputs for each rule
-    for (const rule of rules) {
-      rule.conditions = await db('campaign_engine.contact_rule_conditions')
-        .where('contact_selection_rule_id', rule.id)
-        .orderBy('created_at');
+      // Get conditions and outputs for each rule
+      for (const rule of rules) {
+        rule.conditions = await db('campaign_engine.contact_rule_conditions')
+          .where('contact_selection_rule_id', rule.id)
+          .orderBy('created_at');
 
-      rule.outputs = await db('campaign_engine.contact_rule_outputs')
-        .where('contact_selection_rule_id', rule.id)
-        .orderBy('created_at');
+        const outputs = await db('campaign_engine.contact_rule_outputs')
+          .where('contact_selection_rule_id', rule.id)
+          .orderBy('created_at');
+        
+        // Parse relationship_patterns JSONB back to array with error handling
+        rule.outputs = outputs.map((output: any) => {
+          try {
+            return {
+              ...output,
+              relationship_patterns: output.relationship_patterns ? JSON.parse(output.relationship_patterns) : undefined
+            };
+          } catch (parseError) {
+            // Handle case where relationship_patterns column doesn't exist or contains invalid JSON
+            console.warn(`Warning: Could not parse relationship_patterns for output ${output.id}:`, parseError);
+            return {
+              ...output,
+              relationship_patterns: undefined
+            };
+          }
+        });
+      }
+
+      return rules;
+    } catch (error) {
+      console.error('Error in getContactSelectionRules:', error);
+      throw error;
     }
-
-    return rules;
   }
 
   // Custom Fields
@@ -321,9 +347,15 @@ export class CampaignRepository {
                 .where('contact_selection_rule_id', rule.id)
                 .select('*');
 
-              rule.outputs = await db('campaign_engine.contact_rule_outputs')
+              const outputs = await db('campaign_engine.contact_rule_outputs')
                 .where('contact_selection_rule_id', rule.id)
                 .select('*');
+              
+              // Parse relationship_patterns JSONB back to array
+              rule.outputs = outputs.map((output: any) => ({
+                ...output,
+                relationship_patterns: output.relationship_patterns ? JSON.parse(output.relationship_patterns) : undefined
+              }));
             }
           }
         }

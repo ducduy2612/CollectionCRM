@@ -12,7 +12,8 @@ import {
   ProcessingSummary,
   PerformanceMetrics,
   CampaignConfiguration,
-  ProcessingCampaignGroup
+  ProcessingCampaignGroup,
+  isNumericField
 } from '../models/processing.models';
 import { CampaignRepository } from '../repositories/campaign.repository';
 import { KafkaService } from './kafka.service';
@@ -155,7 +156,7 @@ export class ProcessingService {
           logger.info(`Processing campaign: ${campaign.name} (priority: ${campaign.priority})`);
           
           // Execute single optimized query for this campaign
-          const queryResult = await this.executeCampaignQuery(campaign, assignedCustomers.get(group.id)!, options);
+          const queryResult = await this.executeCampaignQuery(campaign, assignedCustomers.get(group.id)!);
           
           // Process query results
           const customerAssignments = this.processQueryResults(queryResult, options);
@@ -200,10 +201,15 @@ export class ProcessingService {
 
   private async executeCampaignQuery(
     campaign: ProcessingCampaign,
-    assignedCifsInGroup: Set<string>,
-    options: any
+    assignedCifsInGroup: Set<string>
   ): Promise<QueryResult[]> {
-    const query = this.buildOptimizedCampaignQuery(campaign, assignedCifsInGroup, options);
+    const query = this.buildOptimizedCampaignQuery(campaign, assignedCifsInGroup);
+    
+    // Log the generated SQL for review
+    logger.info('Generated campaign query SQL:');
+    logger.info('============================');
+    logger.info(query);
+    logger.info('============================');
     
     const queryStartTime = Date.now();
     const result = await db.raw(query);
@@ -217,41 +223,37 @@ export class ProcessingService {
 
   private buildOptimizedCampaignQuery(
     campaign: ProcessingCampaign,
-    assignedCifsInGroup: Set<string>,
-    options: any
+    assignedCifsInGroup: Set<string>
   ): string {
     // Build customer selection conditions
     const customerConditions = this.buildCustomerConditions(campaign.base_conditions);
     
     // Build exclusion clause for already assigned customers
     const excludeClause = assignedCifsInGroup.size > 0 
-      ? `AND c.cif NOT IN (${Array.from(assignedCifsInGroup).map(cif => `'${cif}'`).join(',')})`
+      ? `AND lcd.cif NOT IN (${Array.from(assignedCifsInGroup).map(cif => `'${cif}'`).join(',')})`
       : '';
 
     // Build contact selection queries
-    const contactQueries = this.buildContactSelectionQueries(campaign.contact_selection_rules, options);
+    const contactQueries = this.buildContactSelectionQueries(campaign.contact_selection_rules);
 
     return `
       WITH campaign_customers AS (
         SELECT DISTINCT 
-          c.id as customer_id,
-          c.cif,
-          l.account_number,
-          c.segment,
-          c.status,
-          ca.total_loans,
-          ca.active_loans,
-          ca.overdue_loans,
-          ca.client_outstanding,
-          ca.total_due_amount,
-          ca.overdue_outstanding,
-          ca.max_dpd,
-          ca.avg_dpd,
-          ca.utilization_ratio
-        FROM bank_sync_service.customers c
-        JOIN bank_sync_service.loans l ON c.cif = l.cif
-        LEFT JOIN bank_sync_service.customer_aggregates ca ON c.cif = ca.cif
-        LEFT JOIN bank_sync_service.loan_custom_fields lcf ON l.account_number = lcf.account_number
+          lcd.customer_id,
+          lcd.cif,
+          lcd.account_number,
+          lcd.segment,
+          lcd.customer_status as status,
+          lcd.total_loans,
+          lcd.active_loans,
+          lcd.overdue_loans,
+          lcd.client_outstanding,
+          lcd.total_due_amount,
+          lcd.overdue_outstanding,
+          lcd.max_dpd,
+          lcd.avg_dpd,
+          lcd.utilization_ratio
+        FROM bank_sync_service.loan_campaign_data lcd
         WHERE ${customerConditions}
         ${excludeClause}
       ),
@@ -291,30 +293,19 @@ export class ProcessingService {
     const { field_name, operator, field_value, data_source } = condition;
     
     let fieldReference: string;
-    let value = field_value;
+    let isNumeric = false;
 
     // Map data source to table alias and field
     switch (data_source) {
-      case 'bank_sync_service.customers':
-        fieldReference = `c.${field_name}`;
-        break;
-      case 'bank_sync_service.customer_aggregates':
-        fieldReference = `ca.${field_name}`;
-        // For numeric fields, don't quote the value
-        if (['total_loans', 'active_loans', 'overdue_loans', 'client_outstanding', 
-             'total_due_amount', 'overdue_outstanding', 'max_dpd', 'avg_dpd', 'utilization_ratio'].includes(field_name)) {
-          value = field_value; // No quotes for numbers
-        }
-        break;
-      case 'bank_sync_service.loans':
-        fieldReference = `l.${field_name}`;
-        // For numeric fields, don't quote the value
-        if (['outstanding', 'due_amount', 'dpd', 'original_amount'].includes(field_name)) {
-          value = field_value; // No quotes for numbers
-        }
+      case 'bank_sync_service.loan_campaign_data':
+        fieldReference = `lcd.${field_name}`;
+        // Use centralized field metadata to check type
+        isNumeric = isNumericField(field_name);
         break;
       case 'custom_fields':
-        fieldReference = `lcf.fields->>'${field_name}'`;
+        fieldReference = `lcd.custom_fields->>'${field_name}'`;
+        // Custom fields are always treated as text since they come from JSONB
+        isNumeric = false;
         break;
       default:
         logger.warn(`Unknown data source: ${data_source}`);
@@ -324,26 +315,34 @@ export class ProcessingService {
     // Build condition based on operator
     switch (operator) {
       case '=':
-        return `${fieldReference} = '${value}'`;
+        return isNumeric 
+          ? `${fieldReference} = ${field_value}`
+          : `${fieldReference} = '${field_value}'`;
       case '!=':
-        return `${fieldReference} != '${value}'`;
+        return isNumeric
+          ? `${fieldReference} != ${field_value}`
+          : `${fieldReference} != '${field_value}'`;
       case '>':
-        return `${fieldReference} > ${value}`;
+        return `${fieldReference} > ${field_value}`;
       case '>=':
-        return `${fieldReference} >= ${value}`;
+        return `${fieldReference} >= ${field_value}`;
       case '<':
-        return `${fieldReference} < ${value}`;
+        return `${fieldReference} < ${field_value}`;
       case '<=':
-        return `${fieldReference} <= ${value}`;
+        return `${fieldReference} <= ${field_value}`;
       case 'LIKE':
-        return `${fieldReference} ILIKE '%${value}%'`;
+        return `${fieldReference} ILIKE '%${field_value}%'`;
       case 'NOT_LIKE':
-        return `${fieldReference} NOT ILIKE '%${value}%'`;
+        return `${fieldReference} NOT ILIKE '%${field_value}%'`;
       case 'IN':
-        const inValues = value.split(',').map(v => `'${v.trim()}'`).join(',');
+        const inValues = field_value.split(',').map(v => 
+          isNumeric ? v.trim() : `'${v.trim()}'`
+        ).join(',');
         return `${fieldReference} IN (${inValues})`;
       case 'NOT_IN':
-        const notInValues = value.split(',').map(v => `'${v.trim()}'`).join(',');
+        const notInValues = field_value.split(',').map(v => 
+          isNumeric ? v.trim() : `'${v.trim()}'`
+        ).join(',');
         return `${fieldReference} NOT IN (${notInValues})`;
       case 'IS_NULL':
         return `${fieldReference} IS NULL`;
@@ -355,136 +354,227 @@ export class ProcessingService {
     }
   }
 
-  private buildContactSelectionQueries(rules: ProcessingContactRule[], options: any): string {
-    if (rules.length === 0) return 'SELECT NULL as customer_id WHERE FALSE';
+  private buildContactSelectionQueries(rules: ProcessingContactRule[]): string {
+    // If no rules, return all contacts without exclusions
+    if (rules.length === 0) {
+      return this.buildAllContactsQuery();
+    }
 
-    const queries: string[] = [];
+    // Build the query with rule-based exclusions
+    return this.buildContactsWithRuleExclusions(rules);
+  }
 
-    for (const rule of rules) {
+  private buildAllContactsQuery(): string {
+    return `
+      SELECT 
+        cc.customer_id,
+        p.id as contact_id,
+        p.type as contact_type,
+        p.number as contact_value,
+        'customer' as related_party_type,
+        cc.cif as related_party_cif,
+        NULL as related_party_name,
+        NULL as relationship_type,
+        0 as rule_priority,
+        p.is_primary,
+        p.is_verified,
+        'bank_sync' as source
+      FROM campaign_customers cc
+      JOIN bank_sync_service.phones p ON cc.cif = p.cif
+      
+      UNION ALL
+      
+      SELECT 
+        cc.customer_id,
+        wp.id as contact_id,
+        wp.type as contact_type,
+        wp.number as contact_value,
+        'customer' as related_party_type,
+        cc.cif as related_party_cif,
+        NULL as related_party_name,
+        NULL as relationship_type,
+        0 as rule_priority,
+        wp.is_primary,
+        wp.is_verified,
+        'user_input' as source
+      FROM campaign_customers cc
+      JOIN workflow_service.phones wp ON cc.cif = wp.cif
+      
+      UNION ALL
+      
+      SELECT 
+        cc.customer_id,
+        rp.id as contact_id,
+        rp.type as contact_type,
+        rp.number as contact_value,
+        'reference' as related_party_type,
+        rc.ref_cif as related_party_cif,
+        rc.name as related_party_name,
+        rc.relationship_type,
+        0 as rule_priority,
+        rp.is_primary,
+        rp.is_verified,
+        'bank_sync' as source
+      FROM campaign_customers cc
+      JOIN bank_sync_service.reference_customers rc ON cc.cif = rc.primary_cif
+      JOIN bank_sync_service.phones rp ON rc.ref_cif = rp.cif
+      
+      UNION ALL
+      
+      SELECT 
+        cc.customer_id,
+        wrp.id as contact_id,
+        wrp.type as contact_type,
+        wrp.number as contact_value,
+        'reference' as related_party_type,
+        wrc.ref_cif as related_party_cif,
+        wrc.name as related_party_name,
+        wrc.relationship_type,
+        0 as rule_priority,
+        wrp.is_primary,
+        wrp.is_verified,
+        'user_input' as source
+      FROM campaign_customers cc
+      JOIN workflow_service.reference_customers wrc ON cc.cif = wrc.primary_cif
+      JOIN workflow_service.phones wrp ON wrc.ref_cif = wrp.cif
+    `;
+  }
+
+  private buildContactsWithRuleExclusions(rules: ProcessingContactRule[]): string {
+    // Build CASE statements for each rule
+    const ruleCases: string[] = [];
+    for (let i = 0; i < rules.length; i++) {
+      const rule = rules[i];
+      const conditions = this.buildCustomerConditions(rule.conditions);
+      ruleCases.push(`CASE WHEN ${conditions} THEN 1 ELSE 0 END as rule_${i}_applies`);
+    }
+
+    // Build exclusion conditions
+    const exclusionConditions: string[] = [];
+    for (let i = 0; i < rules.length; i++) {
+      const rule = rules[i];
+      
       for (const output of rule.outputs as ProcessingContactOutput[]) {
-        // Build queries based on related party type
-        if (output.related_party_type === 'customer') {
-          // Customer phones from bank_sync
-          queries.push(`
-            SELECT 
-              cc.customer_id,
-              p.id as contact_id,
-              p.type as contact_type,
-              p.number as contact_value,
-              '${output.related_party_type}' as related_party_type,
-              cc.cif as related_party_cif,
-              NULL as related_party_name,
-              NULL as relationship_type,
-              ${rule.rule_priority} as rule_priority,
-              p.is_primary,
-              p.is_verified,
-              'bank_sync' as source
-            FROM campaign_customers cc
-            JOIN bank_sync_service.phones p ON cc.cif = p.cif
-            ${output.contact_type !== 'all' ? `AND p.type = '${output.contact_type}'` : ''}
-            ${!options.include_unverified_contacts ? 'AND p.is_verified = true' : ''}
-          `);
-
-          // Customer phones from user input
-          queries.push(`
-            SELECT 
-              cc.customer_id,
-              wp.id as contact_id,
-              wp.type as contact_type,
-              wp.number as contact_value,
-              '${output.related_party_type}' as related_party_type,
-              cc.cif as related_party_cif,
-              NULL as related_party_name,
-              NULL as relationship_type,
-              ${rule.rule_priority} as rule_priority,
-              wp.is_primary,
-              wp.is_verified,
-              'user_input' as source
-            FROM campaign_customers cc
-            JOIN workflow_service.phones wp ON cc.cif = wp.cif
-            ${output.contact_type !== 'all' ? `AND wp.type = '${output.contact_type}'` : ''}
-            ${!options.include_unverified_contacts ? 'AND wp.is_verified = true' : ''}
-          `);
-
-        } else if (output.related_party_type === 'reference_customer_all') {
-          // All reference customer phones from bank_sync
-          queries.push(`
-            SELECT 
-              cc.customer_id,
-              rp.id as contact_id,
-              rp.type as contact_type,
-              rp.number as contact_value,
-              '${output.related_party_type}' as related_party_type,
-              rc.ref_cif as related_party_cif,
-              rc.name as related_party_name,
-              rc.relationship_type,
-              ${rule.rule_priority} as rule_priority,
-              rp.is_primary,
-              rp.is_verified,
-              'bank_sync' as source
-            FROM campaign_customers cc
-            JOIN bank_sync_service.reference_customers rc ON cc.cif = rc.primary_cif
-            JOIN bank_sync_service.phones rp ON rc.ref_cif = rp.cif
-            ${output.contact_type !== 'all' ? `AND rp.type = '${output.contact_type}'` : ''}
-            ${!options.include_unverified_contacts ? 'AND rp.is_verified = true' : ''}
-          `);
-
-          // All reference customer phones from user input
-          queries.push(`
-            SELECT 
-              cc.customer_id,
-              wrp.id as contact_id,
-              wrp.type as contact_type,
-              wrp.number as contact_value,
-              '${output.related_party_type}' as related_party_type,
-              wrc.ref_cif as related_party_cif,
-              wrc.name as related_party_name,
-              wrc.relationship_type,
-              ${rule.rule_priority} as rule_priority,
-              wrp.is_primary,
-              wrp.is_verified,
-              'user_input' as source
-            FROM campaign_customers cc
-            JOIN workflow_service.reference_customers wrc ON cc.cif = wrc.primary_cif
-            JOIN workflow_service.phones wrp ON wrc.ref_cif = wrp.cif
-            ${output.contact_type !== 'all' ? `AND wrp.type = '${output.contact_type}'` : ''}
-            ${!options.include_unverified_contacts ? 'AND wrp.is_verified = true' : ''}
-          `);
-
-        } else if (output.related_party_type === 'reference_customer_parent') {
-          // Parent/spouse reference phones
-          queries.push(`
-            SELECT 
-              cc.customer_id,
-              rp.id as contact_id,
-              rp.type as contact_type,
-              rp.number as contact_value,
-              '${output.related_party_type}' as related_party_type,
-              rc.ref_cif as related_party_cif,
-              rc.name as related_party_name,
-              rc.relationship_type,
-              ${rule.rule_priority} as rule_priority,
-              rp.is_primary,
-              rp.is_verified,
-              'bank_sync' as source
-            FROM campaign_customers cc
-            JOIN bank_sync_service.reference_customers rc ON cc.cif = rc.primary_cif
-            JOIN bank_sync_service.phones rp ON rc.ref_cif = rp.cif
-            WHERE (
-              LOWER(rc.relationship_type) LIKE '%parent%' OR
-              LOWER(rc.relationship_type) LIKE '%spouse%' OR
-              LOWER(rc.relationship_type) LIKE '%father%' OR
-              LOWER(rc.relationship_type) LIKE '%mother%'
-            )
-            ${output.contact_type !== 'all' ? `AND rp.type = '${output.contact_type}'` : ''}
-            ${!options.include_unverified_contacts ? 'AND rp.is_verified = true' : ''}
-          `);
+        const exclusionParts: string[] = [`rule_${i}_applies = 1`];
+        
+        // Add contact type condition
+        if (output.contact_type && output.contact_type !== 'all') {
+          exclusionParts.push(`contact_type = '${output.contact_type}'`);
+        }
+        
+        // Add related party type condition
+        if (output.related_party_type && output.related_party_type !== 'all') {
+          if (output.related_party_type === 'reference') {
+            // For reference contacts, check if we need to filter by relationship patterns
+            if (output.relationship_patterns && output.relationship_patterns.length > 0) {
+              const relationshipConditions = output.relationship_patterns
+                .map(pattern => `LOWER(relationship_type) LIKE '%${pattern.toLowerCase()}%'`)
+                .join(' OR ');
+              exclusionParts.push(`(
+                related_party_type = 'reference' AND (${relationshipConditions})
+              )`);
+            } else {
+              // No relationship filter, exclude all references
+              exclusionParts.push(`related_party_type = 'reference'`);
+            }
+          } else {
+            // For other party types (customer, etc.)
+            exclusionParts.push(`related_party_type = '${output.related_party_type}'`);
+          }
+        }
+        
+        if (exclusionParts.length > 1) {
+          exclusionConditions.push(`(${exclusionParts.join(' AND ')})`);
         }
       }
     }
 
-    return queries.length > 0 ? queries.join(' UNION ALL ') : 'SELECT NULL as customer_id WHERE FALSE';
+    const excludeClause = exclusionConditions.length > 0 
+      ? `WHERE NOT (${exclusionConditions.join(' OR ')})` 
+      : '';
+
+    return `
+      SELECT * FROM (
+        SELECT 
+          cc.customer_id,
+          p.id as contact_id,
+          p.type as contact_type,
+          p.number as contact_value,
+          'customer' as related_party_type,
+          cc.cif as related_party_cif,
+          NULL as related_party_name,
+          NULL as relationship_type,
+          0 as rule_priority,
+          p.is_primary,
+          p.is_verified,
+          'bank_sync' as source,
+          ${ruleCases.join(',\n          ')}
+        FROM campaign_customers cc
+        JOIN bank_sync_service.phones p ON cc.cif = p.cif
+        
+        UNION ALL
+        
+        SELECT 
+          cc.customer_id,
+          wp.id as contact_id,
+          wp.type as contact_type,
+          wp.number as contact_value,
+          'customer' as related_party_type,
+          cc.cif as related_party_cif,
+          NULL as related_party_name,
+          NULL as relationship_type,
+          0 as rule_priority,
+          wp.is_primary,
+          wp.is_verified,
+          'user_input' as source,
+          ${ruleCases.join(',\n          ')}
+        FROM campaign_customers cc
+        JOIN workflow_service.phones wp ON cc.cif = wp.cif
+        
+        UNION ALL
+        
+        SELECT 
+          cc.customer_id,
+          rp.id as contact_id,
+          rp.type as contact_type,
+          rp.number as contact_value,
+          'reference' as related_party_type,
+          rc.ref_cif as related_party_cif,
+          rc.name as related_party_name,
+          rc.relationship_type,
+          0 as rule_priority,
+          rp.is_primary,
+          rp.is_verified,
+          'bank_sync' as source,
+          ${ruleCases.join(',\n          ')}
+        FROM campaign_customers cc
+        JOIN bank_sync_service.reference_customers rc ON cc.cif = rc.primary_cif
+        JOIN bank_sync_service.phones rp ON rc.ref_cif = rp.cif
+        
+        UNION ALL
+        
+        SELECT 
+          cc.customer_id,
+          wrp.id as contact_id,
+          wrp.type as contact_type,
+          wrp.number as contact_value,
+          'reference' as related_party_type,
+          wrc.ref_cif as related_party_cif,
+          wrc.name as related_party_name,
+          wrc.relationship_type,
+          0 as rule_priority,
+          wrp.is_primary,
+          wrp.is_verified,
+          'user_input' as source,
+          ${ruleCases.join(',\n          ')}
+        FROM campaign_customers cc
+        JOIN workflow_service.reference_customers wrc ON cc.cif = wrc.primary_cif
+        JOIN workflow_service.phones wrp ON wrc.ref_cif = wrp.cif
+      ) contacts_with_rules
+      ${excludeClause}
+    `;
   }
+
 
   private processQueryResults(
     queryResults: QueryResult[],    
@@ -649,5 +739,24 @@ export class ProcessingService {
       logger.error('Failed to publish result to Kafka:', error);
       // Don't throw here - the processing was successful even if Kafka fails
     }
+  }
+
+  // Helper method to preview generated SQL for testing/debugging
+  public previewCampaignSQL(campaign: ProcessingCampaign, assignedCifs: string[] = []): string {
+    const assignedCifsSet = new Set(assignedCifs);
+    const query = this.buildOptimizedCampaignQuery(campaign, assignedCifsSet);
+    
+    logger.info('='.repeat(80));
+    logger.info('CAMPAIGN SQL PREVIEW');
+    logger.info('='.repeat(80));
+    logger.info(`Campaign: ${campaign.name}`);
+    logger.info(`Priority: ${campaign.priority}`);
+    logger.info(`Base Conditions: ${campaign.base_conditions.length}`);
+    logger.info(`Contact Rules: ${campaign.contact_selection_rules.length}`);
+    logger.info('='.repeat(80));
+    logger.info(query);
+    logger.info('='.repeat(80));
+    
+    return query;
   }
 }

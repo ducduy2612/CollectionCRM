@@ -88,8 +88,9 @@ COMMENT ON TABLE campaign_engine.contact_rule_conditions IS 'Conditions for a co
 CREATE TABLE campaign_engine.contact_rule_outputs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     contact_selection_rule_id UUID NOT NULL,
-    related_party_type VARCHAR(50) NOT NULL, -- e.g., 'customer', 'reference_customer_parent', 'reference_customer_all'
+    related_party_type VARCHAR(50) NOT NULL, -- e.g., 'customer', 'reference'
     contact_type VARCHAR(50) NOT NULL, -- e.g., 'mobile', 'home', 'work', 'all'
+    relationship_patterns JSONB, -- Optional: JSON array of relationship types to exclude (e.g., ['parent', 'spouse', 'colleague'])
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_contact_rule_output
@@ -98,7 +99,7 @@ CREATE TABLE campaign_engine.contact_rule_outputs (
         ON DELETE CASCADE
 );
 
-COMMENT ON TABLE campaign_engine.contact_rule_outputs IS 'Specifies which contact info to include if a rule is met.';
+COMMENT ON TABLE campaign_engine.contact_rule_outputs IS 'Specifies which contact info to exclude if a rule is met. Uses relationship_patterns for flexible relationship filtering.';
 
 -- Create custom_fields table
 CREATE TABLE campaign_engine.custom_fields (
@@ -120,6 +121,7 @@ CREATE INDEX idx_contact_selection_rules_campaign_id ON campaign_engine.contact_
 CREATE INDEX idx_contact_selection_rules_rule_priority ON campaign_engine.contact_selection_rules(rule_priority);
 CREATE INDEX idx_contact_rule_conditions_rule_id ON campaign_engine.contact_rule_conditions(contact_selection_rule_id);
 CREATE INDEX idx_contact_rule_outputs_rule_id ON campaign_engine.contact_rule_outputs(contact_selection_rule_id);
+CREATE INDEX idx_contact_rule_outputs_relationship_patterns ON campaign_engine.contact_rule_outputs USING GIN (relationship_patterns);
 
 
 -- Create updated_at trigger function

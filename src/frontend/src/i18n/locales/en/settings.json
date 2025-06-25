@@ -904,21 +904,28 @@
           "data_source_placeholder": "Select data source"
         },
         "contact_rules": {
-          "title": "Contact Selection Rules",
-          "description": "Define rules for selecting customer contact information when campaign conditions are met",
-          "add_rule": "Add Contact Rule",
-          "no_rules": "No contact rules defined",
-          "rule_help": "Rules are evaluated in priority order",
+          "title": "Contact Exclusion Rules",
+          "description": "Define rules for excluding customer contact information when campaign conditions are met. By default, all available contacts are selected unless excluded by these rules.",
+          "add_rule": "Add Exclusion Rule",
+          "no_rules": "No exclusion rules defined - all contacts will be included",
+          "rule_help": "Rules are evaluated in priority order to exclude specific contacts",
           "rule_priority": "Rule Priority",
           "rule_priority_placeholder": "Enter rule priority",
           "rule_conditions": "Rule Conditions",
-          "rule_outputs": "Contact Outputs",
+          "rule_outputs": "Contacts to Exclude",
           "add_condition": "Add Condition",
-          "add_output": "Add Output",
+          "add_output": "Add Exclusion",
           "related_party_type": "Related Party",
           "related_party_placeholder": "Select related party type",
           "contact_type": "Contact Type",
-          "contact_type_placeholder": "Select contact type"
+          "contact_type_placeholder": "Select contact type",
+          "relationship_patterns": "Relationship Patterns to Exclude",
+          "relationship_patterns_placeholder": "e.g., parent, spouse, colleague, friend",
+          "relationship_patterns_help": "Enter comma-separated relationship types to exclude. Leave empty to include all reference types.",
+          "no_conditions_rule": "No conditions defined for this exclusion rule",
+          "no_outputs_rule": "No contact exclusions defined for this rule",
+          "exclusion_rule_title": "Contact Exclusion Rule {{priority}}",
+          "exclusion_rule_description": "When conditions are met, exclude the specified contacts from selection"
         }
       },
       "validation": {
@@ -934,8 +941,8 @@
         "condition_source_required": "Data source is required",
         "rule_priority_required": "Rule priority is required",
         "rule_priority_unique": "Rule priority must be unique within the campaign",
-        "rule_conditions_required": "At least one condition is required for each rule",
-        "rule_outputs_required": "At least one output is required for each rule"
+        "rule_conditions_required": "At least one condition is required for each exclusion rule",
+        "rule_outputs_required": "At least one contact exclusion is required for each rule"
       },
       "messages": {
         "created": "Campaign created successfully",

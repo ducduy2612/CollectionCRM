@@ -135,6 +135,7 @@ export interface ContactRuleOutput {
   contact_selection_rule_id: string;
   related_party_type: string;
   contact_type: string;
+  relationship_patterns?: string[]; // Optional: relationship types to exclude
   created_at: string;
   updated_at: string;
 }
@@ -142,6 +143,7 @@ export interface ContactRuleOutput {
 export interface CreateContactRuleOutputRequest {
   related_party_type: string;
   contact_type: string;
+  relationship_patterns?: string[]; // Optional: relationship types to exclude
 }
 
 export interface ContactRulesResponse {

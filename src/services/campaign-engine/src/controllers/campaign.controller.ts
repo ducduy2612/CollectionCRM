@@ -329,7 +329,11 @@ export class CampaignController {
   async getCampaignConditions(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
+      logger.info(`Getting conditions for campaign ${id}`);
+      
       const conditions = await this.campaignRepository.getBaseConditions(id);
+      
+      logger.info(`Found ${conditions.length} conditions for campaign ${id}`);
       
       res.json({
         success: true,
@@ -338,11 +342,12 @@ export class CampaignController {
       });
     } catch (error) {
       logger.error('Error getting campaign conditions:', error);
+      logger.error('Stack trace:', (error as Error).stack);
       res.status(500).json({
         success: false,
         data: null,
         message: 'Failed to retrieve campaign conditions',
-        errors: [{ code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' }]
+        errors: [{ code: 'INTERNAL_ERROR', message: (error as Error).message || 'An unexpected error occurred' }]
       });
     }
   }
@@ -511,8 +516,7 @@ export class CampaignController {
     try {
       const relatedPartyTypes = [
         { value: 'customer', label: 'Customer' },
-        { value: 'reference_customer_parent', label: 'Parent Reference' },
-        { value: 'reference_customer_all', label: 'All References' }
+        { value: 'reference', label: 'Reference (use relationship_patterns for filtering)' }
       ];
 
       res.json({

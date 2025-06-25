@@ -52,6 +52,7 @@ export interface ContactRuleOutput {
   contact_selection_rule_id: string;
   related_party_type: RelatedPartyType;
   contact_type: ContactType;
+  relationship_patterns?: string[]; // Optional: JSON array of relationship types to exclude (e.g., ['parent', 'spouse'])
   created_at: Date;
   updated_at: Date;
 }
@@ -81,18 +82,13 @@ export type ConditionOperator =
   | 'IS_NOT_NULL';
 
 export type DataSource = 
-  | 'bank_sync_service.loans'
-  | 'bank_sync_service.customers'
-  | 'bank_sync_service.customer_phones'
-  | 'bank_sync_service.customer_addresses'
+  | 'bank_sync_service.loan_campaign_data' // Unified view with all customer and loan data
   | 'custom_fields';
 
 export type RelatedPartyType = 
   | 'customer'
-  | 'reference_customer_parent'
-  | 'reference_customer_all'
-  | 'guarantor'
-  | 'co_borrower';
+  | 'reference' // Simplified: use relationship_patterns for filtering
+  ;
 
 export type ContactType = 
   | 'mobile'
@@ -155,6 +151,7 @@ export interface CreateContactRuleConditionRequest {
 export interface CreateContactRuleOutputRequest {
   related_party_type: RelatedPartyType;
   contact_type: ContactType;
+  relationship_patterns?: string[]; // Optional: relationship types to exclude
 }
 
 export interface CreateCustomFieldRequest {
@@ -223,6 +220,7 @@ export interface ContactRuleOutputResponse {
   id: string;
   related_party_type: RelatedPartyType;
   contact_type: ContactType;
+  relationship_patterns?: string[]; // Optional: relationship types to exclude
   created_at: string;
   updated_at: string;
 }

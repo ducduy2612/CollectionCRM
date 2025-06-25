@@ -10,7 +10,6 @@ export interface BatchProcessingRequest {
 
 export interface ProcessingOptions {
   parallel_processing: boolean;
-  include_unverified_contacts: boolean;
   max_contacts_per_customer: number;
 }
 
@@ -102,6 +101,7 @@ export interface ProcessingContactOutput {
   id: string;
   related_party_type: string;
   contact_type: string;
+  relationship_patterns?: string[]; // Optional: relationship types to exclude (e.g., ['parent', 'spouse', 'father'])
 }
 
 export interface CustomFieldMetadata {
@@ -152,19 +152,50 @@ export interface PerformanceMetrics {
   customers_per_second: number;
 }
 
-// Data source field mappings - only necessary fields for campaign evaluation
+// Field metadata for the loan_campaign_data view
+export interface FieldMetadata {
+  name: string;
+  type: 'string' | 'number' | 'date' | 'boolean';
+  description?: string;
+}
+
+// Define all available fields with their types
+export const LOAN_CAMPAIGN_FIELDS: Record<string, FieldMetadata> = {
+  // Customer fields (excluding customer_id and cif as they're not used for campaign selection)
+  segment: { name: 'segment', type: 'string', description: 'Customer segment' },
+  customer_status: { name: 'customer_status', type: 'string', description: 'Customer status' },
+  
+  // Loan-specific fields
+  account_number: { name: 'account_number', type: 'string', description: 'Loan account number' },
+  product_type: { name: 'product_type', type: 'string', description: 'Loan product type' },
+  loan_outstanding: { name: 'loan_outstanding', type: 'number', description: 'Loan outstanding amount' },
+  loan_due_amount: { name: 'loan_due_amount', type: 'number', description: 'Loan due amount' },
+  loan_dpd: { name: 'loan_dpd', type: 'number', description: 'Loan days past due' },
+  delinquency_status: { name: 'delinquency_status', type: 'string', description: 'Loan delinquency status' },
+  loan_status: { name: 'loan_status', type: 'string', description: 'Loan status' },
+  original_amount: { name: 'original_amount', type: 'number', description: 'Original loan amount' },
+  
+  // Customer aggregates
+  total_loans: { name: 'total_loans', type: 'number', description: 'Total number of loans' },
+  active_loans: { name: 'active_loans', type: 'number', description: 'Number of active loans' },
+  overdue_loans: { name: 'overdue_loans', type: 'number', description: 'Number of overdue loans' },
+  client_outstanding: { name: 'client_outstanding', type: 'number', description: 'Total outstanding across all loans' },
+  total_due_amount: { name: 'total_due_amount', type: 'number', description: 'Total due amount across all loans' },
+  overdue_outstanding: { name: 'overdue_outstanding', type: 'number', description: 'Total overdue outstanding' },
+  overdue_due_amount: { name: 'overdue_due_amount', type: 'number', description: 'Total overdue due amount' },
+  max_dpd: { name: 'max_dpd', type: 'number', description: 'Maximum days past due' },
+  avg_dpd: { name: 'avg_dpd', type: 'number', description: 'Average days past due' },
+  utilization_ratio: { name: 'utilization_ratio', type: 'number', description: 'Loan utilization ratio' }
+};
+
+// Helper function to check if a field is numeric
+export const isNumericField = (fieldName: string): boolean => {
+  const field = LOAN_CAMPAIGN_FIELDS[fieldName];
+  return field?.type === 'number';
+};
+
+// Data source field mappings - using unified loan_campaign_data view
 export const DATA_SOURCE_FIELDS = {
-  'bank_sync_service.customers': [
-    'cif', 'segment', 'status'
-  ],
-  'bank_sync_service.customer_aggregates': [
-    'cif', 'segment', 'customer_status', 'total_loans', 'active_loans', 'overdue_loans',
-    'client_outstanding', 'total_due_amount', 'overdue_outstanding', 'max_dpd', 
-    'avg_dpd', 'utilization_ratio'
-  ],
-  'bank_sync_service.loans': [
-    'account_number', 'cif', 'product_type', 'outstanding', 'due_amount', 
-    'dpd', 'delinquency_status', 'status'
-  ],
-  'custom_fields': [] // Dynamic based on loan_custom_fields.fields JSONB
+  'bank_sync_service.loan_campaign_data': Object.keys(LOAN_CAMPAIGN_FIELDS),
+  'custom_fields': [] // Dynamic based on custom_fields JSONB column
 } as const;
