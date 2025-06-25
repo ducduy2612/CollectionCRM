@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../../../components/ui/Button';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
@@ -140,14 +140,44 @@ const ContactRulesForm: React.FC<ContactRulesFormProps> = ({
     onChange(newRules);
   };
 
-  const updateRelationshipPatterns = (ruleIndex: number, outputIndex: number, patterns: string) => {
-    // Convert comma-separated string to array, filtering out empty values
-    const patternsArray = patterns
-      .split(',')
-      .map(p => p.trim())
-      .filter(p => p.length > 0);
-    
-    updateOutput(ruleIndex, outputIndex, 'relationship_patterns', patternsArray);
+  const updateRelationshipPatternsArray = (ruleIndex: number, outputIndex: number, patterns: string[]) => {
+    updateOutput(ruleIndex, outputIndex, 'relationship_patterns', patterns);
+  };
+
+  // Component for relationship patterns input with local state
+  const RelationshipPatternsInput: React.FC<{
+    value: string[];
+    onChange: (patterns: string[]) => void;
+    placeholder: string;
+  }> = ({ value, onChange, placeholder }) => {
+    const [inputValue, setInputValue] = useState(value?.join(', ') || '');
+
+    useEffect(() => {
+      setInputValue(value?.join(', ') || '');
+    }, [value]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setInputValue(e.target.value);
+    };
+
+    const handleBlur = () => {
+      const patternsArray = inputValue
+        .split(',')
+        .map(p => p.trim())
+        .filter(p => p.length > 0);
+      onChange(patternsArray);
+    };
+
+    return (
+      <input
+        type="text"
+        value={inputValue}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        placeholder={placeholder}
+        className="w-full px-2 py-1 text-sm border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-primary-500"
+      />
+    );
   };
 
   return (
@@ -402,12 +432,10 @@ const ContactRulesForm: React.FC<ContactRulesFormProps> = ({
                               <label className="block text-xs font-medium text-neutral-600 mb-1">
                                 {t('campaign_config.campaigns.form.contact_rules.relationship_patterns')}
                               </label>
-                              <input
-                                type="text"
-                                value={output.relationship_patterns?.join(', ') || ''}
-                                onChange={(e) => updateRelationshipPatterns(ruleIndex, outputIndex, e.target.value)}
+                              <RelationshipPatternsInput
+                                value={output.relationship_patterns || []}
+                                onChange={(patterns) => updateRelationshipPatternsArray(ruleIndex, outputIndex, patterns)}
                                 placeholder={t('campaign_config.campaigns.form.contact_rules.relationship_patterns_placeholder')}
-                                className="w-full px-2 py-1 text-sm border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-primary-500"
                               />
                               <p className="text-xs text-neutral-500 mt-1">
                                 {t('campaign_config.campaigns.form.contact_rules.relationship_patterns_help')}

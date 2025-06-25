@@ -278,7 +278,13 @@ export class CampaignController {
         message: 'Campaign updated successfully'
       });
     } catch (error) {
-      logger.error('Error updating campaign:', error);
+      console.error('FULL ERROR DETAILS:', error);
+      logger.error('Error updating campaign:', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        campaignId: req.params.id,
+        requestBody: req.body
+      });
       res.status(500).json({
         success: false,
         data: null,

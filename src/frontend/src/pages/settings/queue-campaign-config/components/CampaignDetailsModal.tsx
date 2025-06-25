@@ -117,7 +117,7 @@ const CampaignDetailsModal: React.FC<CampaignDetailsModalProps> = ({
           outputs: rule.outputs?.map(output => ({
             related_party_type: output.related_party_type,
             contact_type: output.contact_type,
-            relationship_patterns: output.relationship_patterns || []
+            relationship_patterns: Array.isArray(output.relationship_patterns) ? output.relationship_patterns : []
           })) || []
         })) || []
       });

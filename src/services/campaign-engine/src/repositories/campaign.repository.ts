@@ -110,7 +110,7 @@ export class CampaignRepository {
                 contact_selection_rule_id: contactRule.id,
                 related_party_type: output.related_party_type,
                 contact_type: output.contact_type,
-                relationship_patterns: output.relationship_patterns ? JSON.stringify(output.relationship_patterns) : null
+                relationship_patterns: Array.isArray(output.relationship_patterns) && output.relationship_patterns.length > 0 ? JSON.stringify(output.relationship_patterns) : null
               }))
             );
           }
@@ -219,7 +219,7 @@ export class CampaignRepository {
                   contact_selection_rule_id: contactRule.id,
                   related_party_type: output.related_party_type,
                   contact_type: output.contact_type,
-                  relationship_patterns: output.relationship_patterns ? JSON.stringify(output.relationship_patterns) : null
+                  relationship_patterns: Array.isArray(output.relationship_patterns) && output.relationship_patterns.length > 0 ? JSON.stringify(output.relationship_patterns) : null
                 }))
               );
             }
@@ -267,22 +267,11 @@ export class CampaignRepository {
           .where('contact_selection_rule_id', rule.id)
           .orderBy('created_at');
         
-        // Parse relationship_patterns JSONB back to array with error handling
-        rule.outputs = outputs.map((output: any) => {
-          try {
-            return {
-              ...output,
-              relationship_patterns: output.relationship_patterns ? JSON.parse(output.relationship_patterns) : undefined
-            };
-          } catch (parseError) {
-            // Handle case where relationship_patterns column doesn't exist or contains invalid JSON
-            console.warn(`Warning: Could not parse relationship_patterns for output ${output.id}:`, parseError);
-            return {
-              ...output,
-              relationship_patterns: undefined
-            };
-          }
-        });
+        // JSONB is already parsed by PostgreSQL/Knex, no need to JSON.parse()
+        rule.outputs = outputs.map((output: any) => ({
+          ...output,
+          relationship_patterns: output.relationship_patterns || undefined
+        }));
       }
 
       return rules;
@@ -351,11 +340,8 @@ export class CampaignRepository {
                 .where('contact_selection_rule_id', rule.id)
                 .select('*');
               
-              // Parse relationship_patterns JSONB back to array
-              rule.outputs = outputs.map((output: any) => ({
-                ...output,
-                relationship_patterns: output.relationship_patterns ? JSON.parse(output.relationship_patterns) : undefined
-              }));
+              // relationship_patterns is already parsed from JSONB
+              rule.outputs = outputs;
             }
           }
         }

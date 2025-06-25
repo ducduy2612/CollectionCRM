@@ -3,8 +3,8 @@
  * This script tests the ProcessingService with the loaded test data
  */
 
-const { ProcessingService } = require('../../src/services/processing.service');
-const { CampaignRepository } = require('../../src/repositories/campaign.repository');
+const { ProcessingService } = require('../../dist/services/processing.service');
+const { CampaignRepository } = require('../../dist/repositories/campaign.repository');
 
 async function runQuickTest() {
   console.log('🚀 Quick ProcessingService Test');

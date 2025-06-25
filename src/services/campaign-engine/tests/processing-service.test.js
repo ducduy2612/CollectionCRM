@@ -1,6 +1,6 @@
 const { ProcessingService } = require('../src/services/processing.service');
 const { CampaignRepository } = require('../src/repositories/campaign.repository');
-const db = require('../src/config/database');
+const db = require('../src/config/database').default;
 
 describe('ProcessingService Integration Tests', () => {
   let processingService;
