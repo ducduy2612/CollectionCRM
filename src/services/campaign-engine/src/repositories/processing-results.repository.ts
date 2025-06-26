@@ -139,13 +139,21 @@ export class ProcessingResultsRepository {
     
     if (!stats) return null;
     
-    // Parse JSON fields
+    // Parse JSON fields safely - they might already be parsed objects
     return {
       ...stats,
-      campaign_assignments_by_group: JSON.parse(stats.campaign_assignments_by_group),
-      most_assigned_campaign: JSON.parse(stats.most_assigned_campaign),
-      error_summary: JSON.parse(stats.error_summary),
-      performance_metrics: JSON.parse(stats.performance_metrics)
+      campaign_assignments_by_group: typeof stats.campaign_assignments_by_group === 'string' 
+        ? JSON.parse(stats.campaign_assignments_by_group) 
+        : stats.campaign_assignments_by_group,
+      most_assigned_campaign: typeof stats.most_assigned_campaign === 'string' 
+        ? JSON.parse(stats.most_assigned_campaign) 
+        : stats.most_assigned_campaign,
+      error_summary: typeof stats.error_summary === 'string' 
+        ? JSON.parse(stats.error_summary) 
+        : stats.error_summary,
+      performance_metrics: typeof stats.performance_metrics === 'string' 
+        ? JSON.parse(stats.performance_metrics) 
+        : stats.performance_metrics
     };
   }
 

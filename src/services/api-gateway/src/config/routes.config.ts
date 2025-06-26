@@ -163,6 +163,14 @@ export const serviceRoutes: Record<string, ProxyConfig> = {
       contactTypes: '/config/contact-types',
       relatedPartyTypes: '/config/related-party-types',
       processingConfig: '/config/processing',
+      processingTrigger: '/processing/trigger',
+      processingRuns: '/processing/runs',
+      processingRunById: '/processing/runs/:id',
+      processingRunResults: '/processing/runs/:id/results',
+      processingRunStatistics: '/processing/runs/:id/statistics',
+      processingRunErrors: '/processing/runs/:id/errors',
+      processingAssignments: '/results/:campaignResultId/assignments',
+      processingAssignmentSearch: '/processing/assignments/search',
       health: '/health'
     },
     requiresAuth: {

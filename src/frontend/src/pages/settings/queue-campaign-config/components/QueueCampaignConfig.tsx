@@ -5,8 +5,9 @@ import { QueueListIcon } from '@heroicons/react/24/outline';
 import CampaignGroupsSection from './CampaignGroupsSection';
 import CampaignsSection from './CampaignsSection';
 import CustomFieldsSection from './CustomFieldsSection';
+import ProcessingSection from './ProcessingSection';
 
-type ActiveTab = 'campaign_groups' | 'campaigns' | 'custom_fields';
+type ActiveTab = 'campaign_groups' | 'campaigns' | 'custom_fields' | 'processing';
 
 const QueueCampaignConfig: React.FC = () => {
   const { t } = useTranslation('settings');
@@ -16,6 +17,7 @@ const QueueCampaignConfig: React.FC = () => {
     { id: 'campaign_groups' as const, label: t('campaign_config.tabs.campaign_groups') },
     { id: 'campaigns' as const, label: t('campaign_config.tabs.campaigns') },
     { id: 'custom_fields' as const, label: t('campaign_config.tabs.custom_fields') },
+    { id: 'processing' as const, label: t('campaign_config.tabs.processing') },
   ];
 
   const renderActiveTabContent = () => {
@@ -26,6 +28,8 @@ const QueueCampaignConfig: React.FC = () => {
         return <CampaignsSection />;
       case 'custom_fields':
         return <CustomFieldsSection />;
+      case 'processing':
+        return <ProcessingSection />;
       default:
         return null;
     }

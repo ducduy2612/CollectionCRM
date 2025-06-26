@@ -806,7 +806,8 @@
     "tabs": {
       "campaign_groups": "Campaign Groups",
       "campaigns": "Campaigns",
-      "custom_fields": "Custom Fields"
+      "custom_fields": "Custom Fields",
+      "processing": "Processing"
     },
     "campaign_groups": {
       "title": "Campaign Groups",
@@ -1018,7 +1019,8 @@
       "loading": "Loading...",
       "no_data": "No data available",
       "error": "An error occurred",
-      "success": "Operation completed successfully"
+      "success": "Operation completed successfully",
+      "refresh": "Refresh"
     },
     "operators": {
       "equals": "Equals",
@@ -1049,6 +1051,79 @@
       "customer": "Customer",
       "reference_customer_parent": "Reference (Parent)",
       "reference_customer_all": "Reference (All)"
+    },
+    "processing": {
+      "title": "Campaign Processing",
+      "description": "Run campaigns and view processing results",
+      "campaign_groups_label": "Campaign Groups (Optional)",
+      "campaign_groups_help": "Select specific campaign groups to process, or leave empty to process all groups",
+      "max_contacts_label": "Max Contacts per Customer",
+      "include_uncontactable_label": "Include Uncontactable Customers",
+      "trigger_button": "Start Processing",
+      "triggering": "Starting...",
+      "history_title": "Processing History",
+      "no_runs": "No processing runs found",
+      "view_results": "View Results",
+      "status": {
+        "running": "Running",
+        "completed": "Completed", 
+        "failed": "Failed"
+      },
+      "table": {
+        "status": "Status",
+        "started_at": "Started At",
+        "duration": "Duration",
+        "results": "Results",
+        "actions": "Actions",
+        "processed": "Processed",
+        "success": "Success",
+        "errors": "Errors"
+      },
+      "error": {
+        "load_failed": "Failed to load processing data",
+        "trigger_failed": "Failed to start processing"
+      },
+      "modal": {
+        "title": "Processing Run Details",
+        "tabs": {
+          "overview": "Overview",
+          "results": "Results",
+          "errors": "Errors",
+          "assignments": "Assignments"
+        },
+        "run_info": "Run Information",
+        "request_id": "Request ID",
+        "requested_by": "Requested By",
+        "started_at": "Started At",
+        "completed_at": "Completed At",
+        "statistics": "Statistics",
+        "customers_processed": "Customers Processed",
+        "assignments_created": "Assignments Created",
+        "total_errors": "Total Errors",
+        "campaigns_processed": "Campaigns Processed",
+        "duration": "Duration",
+        "campaign_breakdown": "Campaign Breakdown",
+        "campaign_name": "Campaign",
+        "customers": "Customers",
+        "assignments": "Assignments",
+        "errors": "Errors",
+        "no_results": "No results available",
+        "no_errors": "No errors found",
+        "no_assignments": "No assignments found",
+        "view_assignments": "View Assignments",
+        "search_cif_placeholder": "Enter customer CIF",
+        "search": "Search",
+        "performance_metrics": "Performance Metrics",
+        "customers_per_second": "Customers/Sec",
+        "database_queries": "DB Queries",
+        "avg_query_duration": "Avg Query Time",
+        "contacts_selected": "Contacts Selected",
+        "most_assigned_campaign": "Most Assigned Campaign",
+        "customers_assigned": "Customers Assigned",
+        "customers_with_contacts": "With Contacts",
+        "selected_contacts": "Selected Contacts",
+        "no_contacts_selected": "No contacts selected for this assignment"
+      }
     }
   }
 }

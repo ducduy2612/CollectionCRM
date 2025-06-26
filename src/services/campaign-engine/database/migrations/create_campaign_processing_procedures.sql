@@ -355,6 +355,7 @@ BEGIN
         
         -- Update rule evaluation column
         IF v_conditions_where != '1=1' THEN
+            -- Apply rule only to contacts matching specific conditions
             EXECUTE format('
                 UPDATE %I tac
                 SET rule_%s_applies = TRUE
@@ -366,6 +367,10 @@ BEGIN
                 p_customers_table,
                 v_conditions_where
             );
+        ELSE
+            -- No conditions means apply rule to ALL contacts
+            EXECUTE format('UPDATE %I SET rule_%s_applies = TRUE', 
+                p_all_contacts_table, v_rule_index);
         END IF;
         
         -- Build exclusion conditions for this rule

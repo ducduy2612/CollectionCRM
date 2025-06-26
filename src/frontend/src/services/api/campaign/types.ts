@@ -274,3 +274,130 @@ export interface PaginatedResponse<T> {
     totalItems: number;
   };
 }
+
+// =============================================
+// PROCESSING INTERFACES
+// =============================================
+
+export interface ProcessingRequest {
+  campaign_group_ids?: string[];
+  processing_options?: ProcessingOptions;
+}
+
+export interface ProcessingOptions {
+  parallel_processing?: boolean;
+  max_contacts_per_customer?: number;
+  include_uncontactable?: boolean;
+}
+
+export interface ProcessingRun {
+  id: string;
+  request_id: string;
+  status: 'running' | 'completed' | 'failed';
+  requested_by: string;
+  started_at: string;
+  completed_at?: string;
+  total_duration_ms?: number;
+  processed_count?: number;
+  success_count?: number;
+  error_count?: number;
+  processing_options?: ProcessingOptions;
+}
+
+export interface ProcessingRunsResponse {
+  success: boolean;
+  data: ProcessingRun[];
+  message: string;
+}
+
+export interface CampaignResult {
+  id: string;
+  processing_run_id: string;
+  campaign_id: string;
+  campaign_name: string;
+  campaign_group_id: string;
+  campaign_group_name: string;
+  priority: number;
+  customers_assigned: number;
+  customers_with_contacts: number;
+  total_contacts_selected: number;
+  processing_duration_ms: number;
+  created_at: string;
+}
+
+export interface ProcessingStatistics {
+  id: string;
+  processing_run_id: string;
+  total_customers: number;
+  total_campaigns_processed: number;
+  total_groups_processed: number;
+  customers_with_assignments: number;
+  customers_without_assignments: number;
+  campaign_assignments_by_group: Record<string, number>;
+  most_assigned_campaign: {
+    campaign_id: string;
+    campaign_name: string;
+    assignment_count: number;
+  };
+  total_contacts_selected: number;
+  total_processing_duration_ms: number;
+  total_errors: number;
+  error_summary: {
+    campaign_errors: number;
+    most_common_error: string;
+    processing_errors: number;
+  };
+  performance_metrics: {
+    cache_hit_rate: number;
+    customers_per_second: number;
+    total_database_queries: number;
+    average_query_duration_ms: number;
+  };
+  created_at: string;
+}
+
+export interface ProcessingError {
+  id: string;
+  processing_run_id: string;
+  campaign_id?: string;
+  customer_cif?: string;
+  error_type: string;
+  error_message: string;
+  error_details?: any;
+  created_at: string;
+}
+
+export interface CustomerAssignment {
+  id: string;
+  campaign_result_id: string;
+  cif: string;
+  assigned_at: string;
+  created_at: string;
+  campaign_id?: string;
+  campaign_name?: string;
+  campaign_group_id?: string;
+  campaign_group_name?: string;
+  request_id?: string;
+  processing_run_started_at?: string;
+  selected_contacts?: Array<{
+    id: string;
+    customer_assignment_id: string;
+    contact_id: string;
+    contact_type: string;
+    contact_value: string;
+    related_party_type: string;
+    related_party_cif: string;
+    related_party_name?: string;
+    relationship_type?: string;
+    rule_priority: number;
+    is_primary: boolean;
+    is_verified: boolean;
+    source: string;
+    created_at: string;
+  }>;
+}
+
+export interface SearchAssignmentsRequest {
+  cif: string;
+  processing_run_id?: string;
+}
