@@ -68,7 +68,9 @@ app.get('/api/v1/campaigns/health', async (_req, res) => {
 
 // Routes
 import { campaignRoutes } from './routes/campaign.routes';
+import { processingRoutes } from './routes/processing.routes';
 app.use('/api/v1/campaigns', campaignRoutes);
+app.use('/api/v1/campaigns/processing', processingRoutes);
 
 // Error handling middleware
 app.use((error: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

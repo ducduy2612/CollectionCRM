@@ -48,8 +48,7 @@ CREATE TABLE bank_sync_service.phones (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     is_editable BOOLEAN NOT NULL DEFAULT FALSE,
     last_synced_at TIMESTAMP,
-    UNIQUE (cif, type),
-    CONSTRAINT fk_customer_phone FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif)
+    UNIQUE (cif, type)
 );
 
 COMMENT ON TABLE bank_sync_service.phones IS 'Stores phone numbers associated with customers';
@@ -75,8 +74,7 @@ CREATE TABLE bank_sync_service.addresses (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     is_editable BOOLEAN NOT NULL DEFAULT FALSE,
     last_synced_at TIMESTAMP,
-    UNIQUE (cif, type),
-    CONSTRAINT fk_customer_address FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif)
+    UNIQUE (cif, type)
 );
 
 COMMENT ON TABLE bank_sync_service.addresses IS 'Stores physical addresses associated with customers';
@@ -96,8 +94,7 @@ CREATE TABLE bank_sync_service.emails (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     is_editable BOOLEAN NOT NULL DEFAULT FALSE,
     last_synced_at TIMESTAMP,
-    UNIQUE (cif, address),
-    CONSTRAINT fk_customer_email FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif)
+    UNIQUE (cif, address)
 );
 
 COMMENT ON TABLE bank_sync_service.emails IS 'Stores email addresses associated with customers';

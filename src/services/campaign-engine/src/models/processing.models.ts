@@ -18,49 +18,14 @@ export interface BatchProcessingResult {
   processed_count: number;
   success_count: number;
   error_count: number;
-  campaign_results: CampaignProcessingResult[];
-  errors: ProcessingError[];
-  processing_summary: ProcessingSummary;
+  campaign_results: any[]; // Detailed structure returned from database
+  errors: any[]; // Error details from database
+  processing_summary: any; // Statistics from database
   started_at: string;
   completed_at: string;
   total_duration_ms: number;
 }
 
-// Campaign processing results
-export interface CampaignProcessingResult {
-  campaign_id: string;
-  campaign_name: string;
-  campaign_group_id: string;
-  campaign_group_name: string;
-  priority: number;
-  customers_assigned: number;
-  customers_with_contacts: number;
-  total_contacts_selected: number;
-  processing_duration_ms: number;
-  customer_assignments: CustomerAssignment[];
-}
-
-export interface CustomerAssignment {
-  customer_id: string;
-  cif: string;
-  account_number: string;
-  assigned_at: string;
-  selected_contacts: SelectedContact[];
-}
-
-export interface SelectedContact {
-  contact_id: string;
-  contact_type: string;
-  contact_value: string;
-  related_party_type: string;
-  related_party_cif: string;
-  related_party_name?: string;
-  relationship_type?: string;
-  rule_priority: number;
-  is_primary: boolean;
-  is_verified: boolean;
-  source: 'bank_sync' | 'user_input';
-}
 
 // Campaign configuration for processing
 export interface CampaignConfiguration {
@@ -110,47 +75,6 @@ export interface CustomFieldMetadata {
   description?: string;
 }
 
-// Error handling
-export interface ProcessingError {
-  campaign_id?: string;
-  customer_id?: string;
-  cif?: string;
-  account_number?: string;
-  error_code: string;
-  error_message: string;
-  stack_trace?: string;
-}
-
-// Processing summary
-export interface ProcessingSummary {
-  total_customers: number;
-  total_campaigns_processed: number;
-  total_groups_processed: number;
-  customers_with_assignments: number;
-  customers_without_assignments: number;
-  campaign_assignments_by_group: Record<string, number>;
-  most_assigned_campaign: {
-    campaign_id: string;
-    campaign_name: string;
-    assignment_count: number;
-  };
-  total_contacts_selected: number;
-  total_processing_duration_ms: number;
-  total_errors: number;
-  error_summary: {
-    campaign_errors: number;
-    processing_errors: number;
-    most_common_error: string;
-  };
-  performance_metrics: PerformanceMetrics;
-}
-
-export interface PerformanceMetrics {
-  total_database_queries: number;
-  average_query_duration_ms: number;
-  cache_hit_rate: number;
-  customers_per_second: number;
-}
 
 // Field metadata for the loan_campaign_data view
 export interface FieldMetadata {
@@ -161,7 +85,7 @@ export interface FieldMetadata {
 
 // Define all available fields with their types
 export const LOAN_CAMPAIGN_FIELDS: Record<string, FieldMetadata> = {
-  // Customer fields (excluding customer_id and cif as they're not used for campaign selection)
+  // Customer fields (cif is the primary identifier)
   segment: { name: 'segment', type: 'string', description: 'Customer segment' },
   customer_status: { name: 'customer_status', type: 'string', description: 'Customer status' },
   
