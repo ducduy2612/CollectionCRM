@@ -83,6 +83,10 @@ END $$;
 \echo 'Running scripts/09-seed-bank-sync-data.sql...'
 \i /docker-entrypoint-initdb.d/scripts/09-seed-bank-sync-data.sql
 
+-- 11. Campaign-Engine 
+\echo 'Running scripts/10-campaign-engine.sql...'
+\i /docker-entrypoint-initdb.d/scripts/10-campaign-engine.sql
+
 -- =============================================
 -- Verify installation
 -- =============================================

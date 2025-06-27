@@ -309,18 +309,11 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ cif, phones, em
                     {phone.number}
                   </div>
                 </div>
-                <div className={`w-2 h-8 rounded-full ${index === 0 ? 'bg-green-500' : index === 1 ? 'bg-yellow-500' : 'bg-red-500'} mr-3`}></div>
                 <div className="flex gap-2">
                   <Button size="sm" variant="primary">
                     <i className="bi bi-telephone mr-1"></i>
                     {t('customers:actions.make_call')}
                   </Button>
-                  {phone.type === 'MOBILE' && (
-                    <Button size="sm" variant="secondary">
-                      <i className="bi bi-chat mr-1"></i>
-                      {t('customers:contact_methods.sms')}
-                    </Button>
-                  )}
                   {phone.source === 'workflow' && phone.id && (
                     <>
                       <Button

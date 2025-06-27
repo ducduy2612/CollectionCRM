@@ -11,7 +11,7 @@ import { CustomerAction } from '../../customers/types';
 
 // Workflow-based performance metrics interface
 interface WorkflowPerformanceMetrics {
-  calls_made: number;
+  total_actions_today: number;
   successful_contacts: number;
   promises_to_pay: number;
   amount_promised: number;
@@ -42,29 +42,17 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({ onRefresh }) =>
     });
 
     // Calculate metrics based on actions
-    const totalActions = todayActions.length;
-    
-    // Count calls made (actions with call-related types)
-    const callActions = todayActions.filter(action =>
-      action.actionType?.code?.toLowerCase().includes('call') ||
-      action.actionSubtype?.code?.toLowerCase().includes('call') ||
-      action.actionType?.name?.toLowerCase().includes('call') ||
-      action.actionSubtype?.name?.toLowerCase().includes('call')
-    );
-    const calls_made = callActions.length;
+    const total_actions_today = todayActions.length;
 
-    // Count successful contacts (actions with successful results)
+    // Count successful contacts (actions without no_contact result)
     const unsuccessfulContacts = todayActions.filter(action =>
       action.actionResult?.code?.toLowerCase().includes('no_contact')
     );
-    const successful_contacts = calls_made - unsuccessfulContacts.length;
+    const successful_contacts = total_actions_today - unsuccessfulContacts.length;
 
     // Count promises to pay (actions with promise results)
     const promiseActions = todayActions.filter(action =>
-      action.actionResult?.code?.toLowerCase().includes('promise') ||
-      action.actionResult?.name?.toLowerCase().includes('promise') ||
-      action.actionResult?.code?.toLowerCase().includes('ptp') ||
-      action.actionResult?.name?.toLowerCase().includes('ptp')
+      action.actionResult?.isPromise
     );
     const promises_to_pay = promiseActions.length;
 
@@ -77,11 +65,13 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({ onRefresh }) =>
     }, 0);
 
     // Calculate rates
-    const contact_rate = calls_made > 0 ? successful_contacts / calls_made : 0;
+    // Contact rate = successful contacts / total actions
+    const contact_rate = total_actions_today > 0 ? successful_contacts / total_actions_today : 0;
+    // Promise rate = promises to pay / successful contacts
     const promise_rate = successful_contacts > 0 ? promises_to_pay / successful_contacts : 0;
 
     return {
-      calls_made,
+      total_actions_today,
       successful_contacts,
       promises_to_pay,
       amount_promised,
@@ -155,8 +145,8 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({ onRefresh }) =>
         ) : performance ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <div className="text-center p-4 bg-neutral-50 rounded-lg">
-              <div className="text-2xl font-bold text-primary-600 mb-1">{performance.calls_made}</div>
-              <div className="text-sm text-neutral-600">Calls Made</div>
+              <div className="text-2xl font-bold text-primary-600 mb-1">{performance.total_actions_today}</div>
+              <div className="text-sm text-neutral-600">Total Actions Made</div>
             </div>
             <div className="text-center p-4 bg-neutral-50 rounded-lg">
               <div className="text-2xl font-bold text-primary-600 mb-1">{performance.successful_contacts}</div>

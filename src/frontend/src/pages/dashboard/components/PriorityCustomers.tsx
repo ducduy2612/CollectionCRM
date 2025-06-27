@@ -106,9 +106,9 @@ const PriorityCustomers: React.FC<PriorityCustomersProps> = ({
                     
                     // Helper function to get status badge variant
                     const getStatusBadgeVariant = (status: string) => {
-                      if (status.toLowerCase().includes('active')) return 'success';
-                      if (status.toLowerCase().includes('pending')) return 'warning';
-                      if (status.toLowerCase().includes('collection')) return 'danger';
+                      const statusLower = status.toLowerCase();
+                      if (statusLower === 'inactive') return 'danger';
+                      if (statusLower === 'active') return 'success';
                       return 'neutral';
                     };
                     

@@ -23,6 +23,7 @@
     "credit_score": "Credit Score",
     "social_security": "Social Security Number",
     "tax_id": "Tax ID",
+    "national_id": "National ID",
     "passport": "Passport Number",
     "drivers_license": "Driver's License",
     "emergency_contact": "Emergency Contact",
