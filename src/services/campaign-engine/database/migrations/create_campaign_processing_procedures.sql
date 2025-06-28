@@ -86,12 +86,27 @@ BEGIN
         v_exclude_clause
     );
     
-    -- Debug: Print the customer selection SQL
+    -- Debug: Write the customer selection SQL to file
+    PERFORM campaign_engine.safe_file_write(
+        format('/tmp/campaign_debug_%s.sql', replace(p_campaign_id::text, '-', '_')), 
+        format('-- ==================== CAMPAIGN CUSTOMER SELECTION SQL ====================
+-- Campaign ID: %s
+-- WHERE clause: %s
+-- EXCLUDE clause: %s
+-- Generated at: %s
+
+%s;
+
+', p_campaign_id, v_where_clause, v_exclude_clause, now(), v_query), 
+        false
+    );
+    
     RAISE NOTICE '==================== CAMPAIGN CUSTOMER SELECTION SQL ====================';
     RAISE NOTICE 'Campaign ID: %', p_campaign_id;
     RAISE NOTICE 'WHERE clause: %', v_where_clause;
     RAISE NOTICE 'EXCLUDE clause: %', v_exclude_clause;
     RAISE NOTICE 'Full Query: %', v_query;
+    RAISE NOTICE 'SQL written to: /tmp/campaign_debug_%.sql', replace(p_campaign_id::text, '-', '_');
     RAISE NOTICE '========================================================================';
     
     EXECUTE v_query;
@@ -136,7 +151,19 @@ BEGIN
         replace(p_campaign_id::text, '-', '_')
     );
     
-    -- Debug: Print the final results SQL
+    -- Debug: Append the final results SQL to file
+    PERFORM campaign_engine.safe_file_write(
+        format('/tmp/campaign_debug_%s.sql', replace(p_campaign_id::text, '-', '_')), 
+        format('
+-- ==================== CAMPAIGN FINAL RESULTS SQL ====================
+-- Generated at: %s
+
+%s;
+
+', now(), v_query), 
+        true
+    );
+    
     RAISE NOTICE '==================== CAMPAIGN FINAL RESULTS SQL ====================';
     RAISE NOTICE 'Final Query: %', v_query;
     RAISE NOTICE '====================================================================';
@@ -332,7 +359,22 @@ BEGIN
         p_customers_table
     );
     
-    -- Debug: Print the contacts creation SQL
+    -- Debug: Append the contacts creation SQL to file
+    PERFORM campaign_engine.safe_file_write(
+        format('/tmp/campaign_debug_%s.sql', replace(p_campaign_id::text, '-', '_')), 
+        format('
+-- ==================== CONTACTS CREATION SQL ====================
+-- Campaign ID: %s
+-- Has rules: %s
+-- Target table: %s
+-- Generated at: %s
+
+%s;
+
+', p_campaign_id, v_has_rules, CASE WHEN v_has_rules THEN v_all_contacts_table ELSE v_table_name END, now(), v_query), 
+        true
+    );
+    
     RAISE NOTICE '==================== CONTACTS CREATION SQL ====================';
     RAISE NOTICE 'Campaign ID: %', p_campaign_id;
     RAISE NOTICE 'Has rules: %', v_has_rules;
@@ -402,7 +444,20 @@ BEGIN
                 v_conditions_where
             );
             
-            -- Debug: Print rule condition SQL
+            -- Debug: Append rule condition SQL to file
+            PERFORM campaign_engine.safe_file_write(
+                format('/tmp/campaign_debug_%s.sql', replace(p_campaign_id::text, '-', '_')), 
+                format('
+-- ==================== CONTACT RULE %s CONDITION SQL ====================
+-- Rule conditions WHERE: %s
+-- Generated at: %s
+
+%s;
+
+', v_rule_index, v_conditions_where, now(), v_query), 
+                true
+            );
+            
             RAISE NOTICE '==================== CONTACT RULE % CONDITION SQL ====================', v_rule_index;
             RAISE NOTICE 'Rule conditions WHERE: %', v_conditions_where;
             RAISE NOTICE 'Update Query: %', v_query;
@@ -414,7 +469,20 @@ BEGIN
             v_query := format('UPDATE %I SET rule_%s_applies = TRUE', 
                 p_all_contacts_table, v_rule_index);
                 
-            -- Debug: Print rule condition SQL
+            -- Debug: Append rule condition SQL to file
+            PERFORM campaign_engine.safe_file_write(
+                format('/tmp/campaign_debug_%s.sql', replace(p_campaign_id::text, '-', '_')), 
+                format('
+-- ==================== CONTACT RULE %s CONDITION SQL ====================
+-- Rule conditions WHERE: %s (applies to ALL)
+-- Generated at: %s
+
+%s;
+
+', v_rule_index, v_conditions_where, now(), v_query), 
+                true
+            );
+                
             RAISE NOTICE '==================== CONTACT RULE % CONDITION SQL ====================', v_rule_index;
             RAISE NOTICE 'Rule conditions WHERE: % (applies to ALL)', v_conditions_where;
             RAISE NOTICE 'Update Query: %', v_query;
@@ -487,7 +555,20 @@ BEGIN
         COALESCE(array_to_string(v_exclusion_conditions, ' OR '), 'FALSE')
     );
     
-    -- Debug: Print final exclusion SQL
+    -- Debug: Append final exclusion SQL to file
+    PERFORM campaign_engine.safe_file_write(
+        format('/tmp/campaign_debug_%s.sql', replace(p_campaign_id::text, '-', '_')), 
+        format('
+-- ==================== FINAL CONTACT EXCLUSION SQL ====================
+-- Exclusion conditions: %s
+-- Generated at: %s
+
+%s;
+
+', COALESCE(array_to_string(v_exclusion_conditions, ' OR '), 'FALSE'), now(), v_query), 
+        true
+    );
+    
     RAISE NOTICE '==================== FINAL CONTACT EXCLUSION SQL ====================';
     RAISE NOTICE 'Exclusion conditions: %', COALESCE(array_to_string(v_exclusion_conditions, ' OR '), 'FALSE');
     RAISE NOTICE 'Final Query: %', v_query;

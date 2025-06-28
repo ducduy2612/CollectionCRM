@@ -45,6 +45,12 @@ export interface ReferencesResponse {
   };
 }
 
+export interface PhoneType {
+  value: string;
+  label: string;
+  description?: string;
+}
+
 export const bankApi = {
   // Get customer by CIF
   getCustomer: async (cif: string): Promise<Customer> => {
@@ -150,6 +156,18 @@ export const bankApi = {
     
     if (!response.data.success) {
       throw new Error(response.data.message || 'Failed to fetch loan data');
+    }
+    
+    return response.data.data;
+  },
+
+  // Get phone types
+  getPhoneTypes: async (): Promise<PhoneType[]> => {
+    console.log('calling getPhoneTypes');
+    const response = await apiClient.get<BankApiResponse<PhoneType[]>>('/bank/phone-types');
+    
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch phone types');
     }
     
     return response.data.data;

@@ -3,8 +3,10 @@ import { Modal } from '../../../components/ui/Modal';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Select } from '../../../components/ui/Select';
+import { Spinner } from '../../../components/ui/Spinner';
 import { useTranslation } from '../../../i18n/hooks/useTranslation';
 import { WorkflowPhone, WorkflowEmail, WorkflowAddress, PhoneFormData, EmailFormData, AddressFormData } from '../types';
+import { bankApi, PhoneType } from '../../../services/api/bank.api';
 
 interface ContactEditModalProps {
   isOpen: boolean;
@@ -27,6 +29,34 @@ const ContactEditModal: React.FC<ContactEditModalProps> = ({
   const [formData, setFormData] = useState<any>({});
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [phoneTypes, setPhoneTypes] = useState<PhoneType[]>([]);
+  const [phoneTypesLoading, setPhoneTypesLoading] = useState(false);
+
+  // Fetch phone types when modal opens for phone editing
+  useEffect(() => {
+    if (isOpen && contactType === 'phone') {
+      const fetchPhoneTypes = async () => {
+        setPhoneTypesLoading(true);
+        try {
+          const types = await bankApi.getPhoneTypes();
+          setPhoneTypes(types);
+        } catch (error) {
+          console.error('Error fetching phone types:', error);
+          // Fallback to basic phone types if API fails
+          setPhoneTypes([
+            { value: 'mobile1', label: 'Mobile Phone 1' },
+            { value: 'home1', label: 'Home Phone 1' },
+            { value: 'work1', label: 'Work Phone 1' },
+            { value: 'other1', label: 'Other Phone 1' }
+          ]);
+        } finally {
+          setPhoneTypesLoading(false);
+        }
+      };
+
+      fetchPhoneTypes();
+    }
+  }, [isOpen, contactType]);
 
   useEffect(() => {
     if (isOpen) {
@@ -65,7 +95,7 @@ const ContactEditModal: React.FC<ContactEditModalProps> = ({
         // Reset form for new contact
         if (contactType === 'phone') {
           setFormData({
-            type: 'MOBILE',
+            type: phoneTypes.length > 0 ? phoneTypes[0].value : 'mobile1',
             number: '',
             isPrimary: false,
             isVerified: false
@@ -92,7 +122,7 @@ const ContactEditModal: React.FC<ContactEditModalProps> = ({
       }
       setErrors({});
     }
-  }, [isOpen, isEditing, contactData, contactType]);
+  }, [isOpen, isEditing, contactData, contactType, phoneTypes]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData((prev: any) => ({
@@ -169,17 +199,26 @@ const ContactEditModal: React.FC<ContactEditModalProps> = ({
         <label className="block text-sm font-medium text-neutral-700 mb-2">
           {t('customers:fields.phone_type')} *
         </label>
-        <Select
-          value={formData.type || ''}
-          onChange={(e) => handleInputChange('type', e.target.value)}
-          options={[
-            { value: 'MOBILE', label: t('customers:phone_types.mobile') },
-            { value: 'HOME', label: t('customers:phone_types.home') },
-            { value: 'WORK', label: t('customers:phone_types.work') },
-            { value: 'OTHER', label: t('customers:phone_types.other') }
-          ]}
-          error={errors.type}
-        />
+        {phoneTypesLoading ? (
+          <div className="flex items-center justify-center py-2">
+            <Spinner size="sm" />
+            <span className="ml-2 text-sm text-neutral-600">Loading phone types...</span>
+          </div>
+        ) : (
+          <Select
+            value={formData.type || ''}
+            onChange={(e) => handleInputChange('type', e.target.value)}
+            options={phoneTypes.map(type => ({
+              value: type.value,
+              label: type.label
+            }))}
+            error={errors.type}
+            disabled={phoneTypesLoading || phoneTypes.length === 0}
+          />
+        )}
+        {phoneTypes.length === 0 && !phoneTypesLoading && (
+          <p className="text-xs text-red-600 mt-1">Failed to load phone types. Please try again.</p>
+        )}
       </div>
       <div className="mb-4">
         <label className="block text-sm font-medium text-neutral-700 mb-2">

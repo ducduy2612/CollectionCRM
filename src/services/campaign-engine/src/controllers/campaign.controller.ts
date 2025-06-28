@@ -1,16 +1,19 @@
 import { Request, Response } from 'express';
 import { CampaignRepository } from '../repositories/campaign.repository';
 import { KafkaService } from '../services/kafka.service';
+import { BankSyncService } from '../services/bank-sync.service';
 import { logger } from '../utils/logger';
 import { DATA_SOURCE_FIELDS } from '../models/processing.models';
 
 export class CampaignController {
   private campaignRepository: CampaignRepository;
   private kafkaService: KafkaService;
+  private bankSyncService: BankSyncService;
 
   constructor() {
     this.campaignRepository = new CampaignRepository();
     this.kafkaService = KafkaService.getInstance();
+    this.bankSyncService = new BankSyncService();
   }
 
   // Campaign Groups
@@ -494,13 +497,8 @@ export class CampaignController {
 
   async getContactTypes(_req: Request, res: Response): Promise<void> {
     try {
-      const contactTypes = [
-        { value: 'mobile', label: 'Mobile Phone' },
-        { value: 'home', label: 'Home Phone' },
-        { value: 'work', label: 'Work Phone' },
-        { value: 'email', label: 'Email' },
-        { value: 'all', label: 'All Contact Types' }
-      ];
+      logger.info('Getting contact types from bank-sync-service');
+      const contactTypes = await this.bankSyncService.getPhoneTypes();
 
       res.json({
         success: true,

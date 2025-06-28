@@ -30,8 +30,9 @@ export const env = {
   KAFKA_DLQ_TOPIC: process.env.KAFKA_DLQ_TOPIC || 'campaign.process.dlq',
   
   // External Services
-  BANK_SYNC_SERVICE_URL: process.env.BANK_SYNC_SERVICE_URL || 'http://localhost:3002',
-  API_GATEWAY_URL: process.env.API_GATEWAY_URL || 'http://localhost:3000',
+  BANK_SYNC_SERVICE_URL: process.env.BANK_SYNC_SERVICE_URL || 'http://bank-sync-service:3002',
+  BANK_SYNC_API_PREFIX: process.env.BANK_SYNC_API_PREFIX || '/api/v1/bank-sync',
+  API_GATEWAY_URL: process.env.API_GATEWAY_URL || 'http://api-gateway:3000',
   
   // Cache Configuration
   CACHE_TTL: parseInt(process.env.CACHE_TTL || '3600', 10),

@@ -4,6 +4,7 @@ export * from './base.entity';
 // Customer-related entities
 export * from './customer.entity';
 export * from './phone.entity';
+export * from './phone-types.entity';
 export * from './address.entity';
 export * from './email.entity';
 

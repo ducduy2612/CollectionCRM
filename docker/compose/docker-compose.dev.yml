@@ -122,6 +122,8 @@ services:
       - ../../src/services/campaign-engine/.env
     environment:
       - CHOKIDAR_USEPOLLING=true  # For Docker file watching
+      - BANK_SYNC_SERVICE_URL=http://bank-sync-service:3002
+      - BANK_SYNC_API_PREFIX=/api/v1/bank-sync
     volumes:
       - ../../src/services/campaign-engine/src:/app/services/campaign-engine/src
     depends_on:

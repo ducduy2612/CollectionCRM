@@ -11,3 +11,4 @@ export * from './loan.repository';
 export * from './collateral.repository';
 export * from './reference-customer.repository';
 export * from './sync-status.repository';
+export * from './phone-types.repository';
