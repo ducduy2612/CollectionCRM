@@ -64,7 +64,7 @@ BEGIN
     END IF;
     
     -- Create temp table for campaign customers
-    EXECUTE format('
+    v_query := format('
         CREATE TEMP TABLE temp_campaign_customers_%s AS
         SELECT DISTINCT 
             lcd.cif,
@@ -86,6 +86,16 @@ BEGIN
         v_exclude_clause
     );
     
+    -- Debug: Print the customer selection SQL
+    RAISE NOTICE '==================== CAMPAIGN CUSTOMER SELECTION SQL ====================';
+    RAISE NOTICE 'Campaign ID: %', p_campaign_id;
+    RAISE NOTICE 'WHERE clause: %', v_where_clause;
+    RAISE NOTICE 'EXCLUDE clause: %', v_exclude_clause;
+    RAISE NOTICE 'Full Query: %', v_query;
+    RAISE NOTICE '========================================================================';
+    
+    EXECUTE v_query;
+    
     -- Create temp table for contacts
     PERFORM campaign_engine.create_contacts_temp_table(
         p_campaign_id,
@@ -94,7 +104,7 @@ BEGIN
     );
     
     -- Return final results
-    RETURN QUERY EXECUTE format('
+    v_query := format('
         SELECT 
             tc.cif,
             tc.segment,
@@ -125,6 +135,13 @@ BEGIN
         replace(p_campaign_id::text, '-', '_'),
         replace(p_campaign_id::text, '-', '_')
     );
+    
+    -- Debug: Print the final results SQL
+    RAISE NOTICE '==================== CAMPAIGN FINAL RESULTS SQL ====================';
+    RAISE NOTICE 'Final Query: %', v_query;
+    RAISE NOTICE '====================================================================';
+    
+    RETURN QUERY EXECUTE v_query;
     
     -- Clean up temp tables
     EXECUTE format('DROP TABLE IF EXISTS temp_campaign_contacts_%s', replace(p_campaign_id::text, '-', '_'));
@@ -209,6 +226,11 @@ BEGIN
         v_conditions := array_append(v_conditions, v_condition_sql);
     END LOOP;
     
+    -- Debug: Print the built WHERE clause
+    RAISE NOTICE '==================== CONDITIONS WHERE CLAUSE ====================';
+    RAISE NOTICE 'Built WHERE clause: %', array_to_string(v_conditions, ' AND ');
+    RAISE NOTICE '===============================================================';
+    
     RETURN array_to_string(v_conditions, ' AND ');
 END;
 $$ LANGUAGE plpgsql;
@@ -223,13 +245,14 @@ DECLARE
     v_table_name TEXT;
     v_all_contacts_table TEXT;
     v_has_rules BOOLEAN;
+    v_query TEXT;
 BEGIN
     v_table_name := format('temp_campaign_contacts_%s', replace(p_campaign_id::text, '-', '_'));
     v_all_contacts_table := v_table_name || '_all';
     v_has_rules := p_contact_rules IS NOT NULL AND jsonb_typeof(p_contact_rules) = 'array' AND jsonb_array_length(p_contact_rules) > 0;
     
     -- Create table with all contacts (using UNION to eliminate duplicates)
-    EXECUTE format('
+    v_query := format('
         CREATE TEMP TABLE %I AS
         SELECT DISTINCT ON (cif, contact_id)
             tc.cif,
@@ -309,6 +332,16 @@ BEGIN
         p_customers_table
     );
     
+    -- Debug: Print the contacts creation SQL
+    RAISE NOTICE '==================== CONTACTS CREATION SQL ====================';
+    RAISE NOTICE 'Campaign ID: %', p_campaign_id;
+    RAISE NOTICE 'Has rules: %', v_has_rules;
+    RAISE NOTICE 'Target table: %', CASE WHEN v_has_rules THEN v_all_contacts_table ELSE v_table_name END;
+    RAISE NOTICE 'Query: %', v_query;
+    RAISE NOTICE '================================================================';
+    
+    EXECUTE v_query;
+    
     -- If we have rules, apply exclusions
     IF v_has_rules THEN
         PERFORM campaign_engine.apply_contact_exclusion_rules(
@@ -340,6 +373,7 @@ DECLARE
     v_exclusion_conditions TEXT[];
     v_output JSONB;
     v_exclusion_parts TEXT[];
+    v_query TEXT;
 BEGIN
     -- Add columns for rule evaluations
     FOR v_rule IN SELECT * FROM jsonb_array_elements(p_contact_rules)
@@ -356,7 +390,7 @@ BEGIN
         -- Update rule evaluation column
         IF v_conditions_where != '1=1' THEN
             -- Apply rule only to contacts matching specific conditions
-            EXECUTE format('
+            v_query := format('
                 UPDATE %I tac
                 SET rule_%s_applies = TRUE
                 FROM %I tc
@@ -367,10 +401,26 @@ BEGIN
                 p_customers_table,
                 v_conditions_where
             );
+            
+            -- Debug: Print rule condition SQL
+            RAISE NOTICE '==================== CONTACT RULE % CONDITION SQL ====================', v_rule_index;
+            RAISE NOTICE 'Rule conditions WHERE: %', v_conditions_where;
+            RAISE NOTICE 'Update Query: %', v_query;
+            RAISE NOTICE '====================================================================';
+            
+            EXECUTE v_query;
         ELSE
             -- No conditions means apply rule to ALL contacts
-            EXECUTE format('UPDATE %I SET rule_%s_applies = TRUE', 
+            v_query := format('UPDATE %I SET rule_%s_applies = TRUE', 
                 p_all_contacts_table, v_rule_index);
+                
+            -- Debug: Print rule condition SQL
+            RAISE NOTICE '==================== CONTACT RULE % CONDITION SQL ====================', v_rule_index;
+            RAISE NOTICE 'Rule conditions WHERE: % (applies to ALL)', v_conditions_where;
+            RAISE NOTICE 'Update Query: %', v_query;
+            RAISE NOTICE '====================================================================';
+            
+            EXECUTE v_query;
         END IF;
         
         -- Build exclusion conditions for this rule
@@ -415,7 +465,7 @@ BEGIN
     END LOOP;
     
     -- Create final table with exclusions applied
-    EXECUTE format('
+    v_query := format('
         CREATE TEMP TABLE %I AS
         SELECT 
             cif,
@@ -436,6 +486,14 @@ BEGIN
         p_all_contacts_table,
         COALESCE(array_to_string(v_exclusion_conditions, ' OR '), 'FALSE')
     );
+    
+    -- Debug: Print final exclusion SQL
+    RAISE NOTICE '==================== FINAL CONTACT EXCLUSION SQL ====================';
+    RAISE NOTICE 'Exclusion conditions: %', COALESCE(array_to_string(v_exclusion_conditions, ' OR '), 'FALSE');
+    RAISE NOTICE 'Final Query: %', v_query;
+    RAISE NOTICE '======================================================================';
+    
+    EXECUTE v_query;
 END;
 $$ LANGUAGE plpgsql;
 

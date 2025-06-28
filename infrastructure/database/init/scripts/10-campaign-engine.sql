@@ -3,6 +3,14 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE SCHEMA IF NOT EXISTS campaign_engine;
 
+DROP TABLE IF EXISTS campaign_engine.campaign_groups CASCADE;
+DROP TABLE IF EXISTS campaign_engine.campaigns CASCADE;
+DROP TABLE IF EXISTS campaign_engine.base_conditions CASCADE;
+DROP TABLE IF EXISTS campaign_engine.contact_selection_rules CASCADE;
+DROP TABLE IF EXISTS campaign_engine.contact_rule_conditions CASCADE;
+DROP TABLE IF EXISTS campaign_engine.contact_rule_outputs CASCADE;
+DROP TABLE IF EXISTS campaign_engine.custom_fields CASCADE;
+
 -- Create campaign_groups table
 CREATE TABLE campaign_engine.campaign_groups (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
