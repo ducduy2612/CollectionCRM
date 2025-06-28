@@ -15,6 +15,7 @@ declare global {
         roles: string[];
         permissions: string[];
         agentId?: string; // Added for agent context
+        agentName?: string; // Added for agent name
       };
     }
   }
@@ -169,8 +170,9 @@ export const agentContextMiddleware = async (req: Request, res: Response, next: 
         });
       }
       
-      // Set the agent ID in the user object
+      // Set the agent ID and name in the user object
       req.user.agentId = agent.id;
+      req.user.agentName = agent.name;
     }
     next();
   } catch (error) {

@@ -73,6 +73,19 @@ export interface ActionRecordedEvent extends BaseEvent {
 }
 
 /**
+ * Action record created event - for customer case f_update
+ */
+export interface ActionRecordCreatedEvent extends BaseEvent {
+  actionIds: string[]; // All action IDs for this customer
+  cif: string;
+  loanAccountNumbers: string[]; // All loan account numbers for this customer
+  agentId: string; // Keep for reference
+  agentName: string; // Use this for direct updates
+  fUpdate: string; // ISO date string (latest)
+  actionDate: string; // ISO date string (latest)
+}
+
+/**
  * Customer assigned event
  */
 export interface CustomerAssignedEvent extends BaseEvent {

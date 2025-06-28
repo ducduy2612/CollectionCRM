@@ -15,6 +15,7 @@ export const KAFKA_TOPICS = {
   AGENT_CREATED: 'workflow-service.agent.created',
   AGENT_UPDATED: 'workflow-service.agent.updated',
   ACTION_RECORDED: 'workflow-service.action.recorded',
+  ACTION_RECORD_CREATED: 'workflow-service.action-record.created', // For customer case f_update
   CUSTOMER_ASSIGNED: 'workflow-service.assignment.created'
 };
 
@@ -22,7 +23,8 @@ export const KAFKA_TOPICS = {
  * Kafka consumer groups
  */
 export const CONSUMER_GROUPS = {
-  USER_EVENTS: 'workflow-service-user-events'
+  USER_EVENTS: 'workflow-service-user-events',
+  CUSTOMER_CASE_UPDATES: 'workflow-service-customer-case-updates'
 };
 
 /**

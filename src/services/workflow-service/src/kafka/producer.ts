@@ -80,7 +80,7 @@ export class KafkaProducer {
   }
 
   /**
-   * Send messages in a transaction
+   * Send messages in batch (without transactions to match campaign-engine pattern)
    * @param messages - Array of messages with topic, message, and optional key
    */
   async sendBatch<T>(messages: Array<{ topic: string; message: T; key?: string }>): Promise<void> {
@@ -89,34 +89,26 @@ export class KafkaProducer {
         await this.connect();
       }
 
-      const transaction = await this.producer.transaction();
-
-      try {
-        for (const { topic, message, key } of messages) {
-          await transaction.send({
-            topic,
-            messages: [
-              {
-                key: key || undefined,
-                value: JSON.stringify(message),
-                headers: {
-                  'content-type': 'application/json',
-                  timestamp: Date.now().toString()
-                }
+      // Send all messages individually to avoid transaction issues
+      for (const { topic, message, key } of messages) {
+        await this.producer.send({
+          topic,
+          messages: [
+            {
+              key: key || undefined,
+              value: JSON.stringify(message),
+              headers: {
+                'content-type': 'application/json',
+                timestamp: Date.now().toString()
               }
-            ]
-          });
-        }
-
-        await transaction.commit();
-        logger.debug({ message: 'Batch messages sent successfully', count: messages.length });
-      } catch (error) {
-        await transaction.abort();
-        logger.error({ message: 'Failed to send batch messages, transaction aborted', error });
-        throw error;
+            }
+          ]
+        });
       }
+
+      logger.debug({ message: 'Batch messages sent successfully', count: messages.length });
     } catch (error) {
-      logger.error({ message: 'Failed to create transaction for batch messages', error });
+      logger.error({ message: 'Failed to send batch messages', error });
       throw error;
     }
   }

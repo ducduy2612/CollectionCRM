@@ -11,6 +11,7 @@ import {
 import { Errors, OperationType, SourceSystemType } from '../utils/errors';
 import { ResponseUtil } from '../utils/response';
 import { logger } from '../utils/logger';
+import { actionRecordPublisher } from '../kafka/publishers/action-record.publisher';
 
 /**
  * Action controller
@@ -71,6 +72,31 @@ export class ActionController {
       if (visitLocation) {
         action.setVisitLocation(visitLocation as VisitLocation);
         await ActionRecordRepository.save(action);
+      }
+
+      // Publish Kafka event for customer case f_update (1 event per customer)
+      try {
+        await actionRecordPublisher.publishActionRecordCreated({
+          actionIds: [action.id],
+          cif: action.cif,
+          loanAccountNumbers: [action.loanAccountNumber],
+          agentId: action.agentId,
+          agentName: req.user?.agentName || req.user?.username || 'system',
+          fUpdate: action.fUpdate || new Date(),
+          actionDate: action.actionDate
+        });
+        
+        logger.debug({
+          actionId: action.id,
+          cif: action.cif
+        }, 'Published action record created event for customer f_update');
+      } catch (kafkaError) {
+        logger.warn({ 
+          kafkaError, 
+          actionId: action.id, 
+          cif 
+        }, 'Failed to publish action record created event, but action was saved successfully');
+        // Don't fail the request if Kafka publishing fails
       }
       
       logger.info({ actionId: action.id, cif }, 'Action recorded successfully');
@@ -211,6 +237,77 @@ export class ActionController {
           }
         }
       });
+
+      // Publish Kafka events for successful actions - group by CIF to send only 1 event per customer
+      if (results.successful.length > 0) {
+        try {
+          // Group successful actions by CIF and collect ALL action IDs and loan account numbers
+          const customerUpdates = new Map<string, {
+            actionIds: string[];
+            loanAccountNumbers: string[];
+            agentId: string;
+            agentName: string;
+            fUpdate: Date;
+            actionDate: Date;
+          }>();
+
+          results.successful.forEach(successfulAction => {
+            const originalAction = actions.find((_, index) => index === successfulAction.index);
+            const fUpdate = originalAction?.fUpdate ? new Date(originalAction.fUpdate) : new Date();
+            const actionDate = originalAction?.actionDate ? new Date(originalAction.actionDate) : new Date();
+            
+            const existing = customerUpdates.get(successfulAction.cif);
+            
+            if (!existing) {
+              // First action for this customer
+              customerUpdates.set(successfulAction.cif, {
+                actionIds: [successfulAction.actionId],
+                loanAccountNumbers: [successfulAction.loanAccountNumber],
+                agentId: req.user?.agentId || 'system',
+                agentName: req.user?.agentName || req.user?.username || 'system',
+                fUpdate,
+                actionDate
+              });
+            } else {
+              // Add to existing customer data
+              existing.actionIds.push(successfulAction.actionId);
+              existing.loanAccountNumbers.push(successfulAction.loanAccountNumber);
+              
+              // Keep the latest f_update and actionDate
+              if (fUpdate > existing.fUpdate) {
+                existing.fUpdate = fUpdate;
+                existing.actionDate = actionDate;
+              }
+            }
+          });
+
+          // Convert to array for batch publishing
+          const kafkaPayloads = Array.from(customerUpdates.entries()).map(([cif, data]) => ({
+            actionIds: data.actionIds,
+            cif,
+            loanAccountNumbers: data.loanAccountNumbers,
+            agentId: data.agentId,
+            agentName: data.agentName,
+            fUpdate: data.fUpdate,
+            actionDate: data.actionDate
+          }));
+
+          await actionRecordPublisher.publishBatchActionRecordCreated(kafkaPayloads);
+          
+          logger.info({
+            totalActions: results.successful.length,
+            uniqueCustomers: kafkaPayloads.length,
+            publishedEvents: kafkaPayloads.length
+          }, 'Published batch action record created events (1 per customer)');
+
+        } catch (kafkaError) {
+          logger.warn({ 
+            kafkaError, 
+            successfulCount: results.successful.length
+          }, 'Failed to publish batch action record created events, but actions were saved successfully');
+          // Don't fail the request if Kafka publishing fails
+        }
+      }
 
       logger.info({
         total: results.summary.total,
