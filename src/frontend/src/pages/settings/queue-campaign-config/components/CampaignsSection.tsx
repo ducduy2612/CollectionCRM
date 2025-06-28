@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { Button } from '../../../../components/ui/Button';
 import { Spinner } from '../../../../components/ui/Spinner';
 import { Alert } from '../../../../components/ui/Alert';
-import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { useToast } from '../../../../components/ui/ToastProvider';
 import { campaignGroupsApi, campaignsApi } from '../../../../services/api/campaign';
 import type { Campaign, CampaignGroup } from '../../../../services/api/campaign';
@@ -17,6 +17,8 @@ const CampaignsSection: React.FC = () => {
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | undefined>();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Fetch campaign groups for the filter dropdown
   const { data: groups } = useQuery(
@@ -25,10 +27,35 @@ const CampaignsSection: React.FC = () => {
   );
 
   // Fetch campaigns based on selected group
-  const { data: campaigns, isLoading, error } = useQuery(
+  const { data: allCampaigns, isLoading, error } = useQuery(
     ['campaigns', selectedGroupId],
     () => campaignsApi.getCampaigns(selectedGroupId || undefined)
   );
+
+  // Get unique campaign names for suggestions
+  const campaignNames = useMemo(() => {
+    if (!allCampaigns) return [];
+    return Array.from(new Set(allCampaigns.map(campaign => campaign.name)));
+  }, [allCampaigns]);
+
+  // Filter campaigns based on search term
+  const campaigns = useMemo(() => {
+    if (!allCampaigns) return [];
+    if (!searchTerm.trim()) return allCampaigns;
+    return allCampaigns.filter(campaign => {
+      const group = groups?.find(g => g.id === campaign.campaign_group_id);
+      return campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             (group?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
+    });
+  }, [allCampaigns, searchTerm, groups]);
+
+  // Get suggestions based on search term
+  const suggestions = useMemo(() => {
+    if (!searchTerm.trim()) return [];
+    return campaignNames.filter(name => 
+      name.toLowerCase().includes(searchTerm.toLowerCase()) && name !== searchTerm
+    ).slice(0, 5);
+  }, [campaignNames, searchTerm]);
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => campaignsApi.deleteCampaign(id),
@@ -91,8 +118,8 @@ const CampaignsSection: React.FC = () => {
         </Button>
       </div>
 
-      {/* Filter */}
-      <div className="flex items-center space-x-4">
+      {/* Filter and Search */}
+      <div className="flex items-end space-x-4">
         <div className="w-64">
           <label htmlFor="group-filter" className="block text-sm font-medium text-neutral-700 mb-1">
             {t('campaign_config.campaigns.filter.group_placeholder')}
@@ -111,6 +138,52 @@ const CampaignsSection: React.FC = () => {
             ))}
           </select>
         </div>
+        
+        {/* Search Box */}
+        <div className="flex-1 max-w-md relative">
+          <label htmlFor="campaign-search" className="block text-sm font-medium text-neutral-700 mb-1">
+            Search Campaigns
+          </label>
+          <div className="relative">
+            <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" />
+            <input
+              id="campaign-search"
+              type="text"
+              placeholder="Search by campaign name or group..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              className="w-full pl-10 pr-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+              >
+                ×
+              </button>
+            )}
+          </div>
+          
+          {/* Suggestions Dropdown */}
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-neutral-200 rounded-md shadow-lg z-10">
+              {suggestions.map((suggestion, index) => (
+                <button
+                  key={index}
+                  className="w-full text-left px-3 py-2 hover:bg-neutral-50 text-sm border-b border-neutral-100 last:border-b-0"
+                  onClick={() => {
+                    setSearchTerm(suggestion);
+                    setShowSuggestions(false);
+                  }}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Content */}
@@ -127,14 +200,18 @@ const CampaignsSection: React.FC = () => {
       ) : !campaigns || campaigns.length === 0 ? (
         <div className="text-center py-8">
           <div className="text-neutral-500 mb-4">
-            {selectedGroupId 
-              ? t('campaign_config.campaigns.empty.no_campaigns_for_group')
-              : t('campaign_config.campaigns.empty.no_campaigns')
+            {searchTerm 
+              ? `No campaigns found matching "${searchTerm}"`
+              : selectedGroupId 
+                ? t('campaign_config.campaigns.empty.no_campaigns_for_group')
+                : t('campaign_config.campaigns.empty.no_campaigns')
             }
           </div>
-          <p className="text-sm text-neutral-400">
-            {t('campaign_config.campaigns.empty.create_first')}
-          </p>
+          {!searchTerm && (
+            <p className="text-sm text-neutral-400">
+              {t('campaign_config.campaigns.empty.create_first')}
+            </p>
+          )}
         </div>
       ) : (
         <div className="bg-white shadow overflow-hidden sm:rounded-md">

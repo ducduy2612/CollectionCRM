@@ -18,9 +18,6 @@ export interface BatchProcessingResult {
   processed_count: number;
   success_count: number;
   error_count: number;
-  campaign_results: any[]; // Detailed structure returned from database
-  errors: any[]; // Error details from database
-  processing_summary: any; // Statistics from database
   started_at: string;
   completed_at: string;
   total_duration_ms: number;

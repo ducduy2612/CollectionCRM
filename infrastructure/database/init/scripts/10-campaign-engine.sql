@@ -1,15 +1,9 @@
+--/home/code/CollectionCRM/src/services/campaign-engine/database/migrations/create_campaign_tables.sql
+
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE SCHEMA IF NOT EXISTS campaign_engine;
-
-DROP TABLE IF EXISTS campaign_engine.campaign_groups CASCADE;
-DROP TABLE IF EXISTS campaign_engine.campaigns CASCADE;
-DROP TABLE IF EXISTS campaign_engine.base_conditions CASCADE;
-DROP TABLE IF EXISTS campaign_engine.contact_selection_rules CASCADE;
-DROP TABLE IF EXISTS campaign_engine.contact_rule_conditions CASCADE;
-DROP TABLE IF EXISTS campaign_engine.contact_rule_outputs CASCADE;
-DROP TABLE IF EXISTS campaign_engine.custom_fields CASCADE;
 
 -- Create campaign_groups table
 CREATE TABLE campaign_engine.campaign_groups (
@@ -177,6 +171,10 @@ CREATE TRIGGER update_custom_fields_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION campaign_engine.update_updated_at_column();
 
+
+-------------------------------------------
+-- /home/code/CollectionCRM/src/services/campaign-engine/database/migrations/create_campaign_results_tables.sql
+
 -- Create tables for storing campaign processing results and statistics
 
 -- Drop tables if they exist (for rerunning this script)
@@ -338,151 +336,8 @@ CREATE TRIGGER update_campaign_processing_runs_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION campaign_engine.update_updated_at_column();
 
-
--- Create assignment tracking table optimized for daily processing runs
--- Assignments are only valid within a single processing run and cleaned up daily
-
--- Drop table if it exists (for rerunning this script)
-DROP TABLE IF EXISTS campaign_engine.campaign_assignment_tracking CASCADE;
-
--- Create campaign assignment tracking table
-CREATE TABLE IF NOT EXISTS campaign_engine.campaign_assignment_tracking (
-    processing_run_id UUID NOT NULL,
-    campaign_group_id UUID NOT NULL,
-    cif VARCHAR(50) NOT NULL,
-    campaign_id UUID NOT NULL,
-    assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    
-    -- Primary key combines run + group + cif for uniqueness within run
-    PRIMARY KEY (processing_run_id, campaign_group_id, cif),
-    
-    -- Foreign key constraints
-    CONSTRAINT fk_assignment_tracking_processing_run
-        FOREIGN KEY (processing_run_id)
-        REFERENCES campaign_engine.campaign_processing_runs(id)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_assignment_tracking_campaign
-        FOREIGN KEY (campaign_id)
-        REFERENCES campaign_engine.campaigns(id)
-        ON DELETE CASCADE
-);
-
-COMMENT ON TABLE campaign_engine.campaign_assignment_tracking IS 'Tracks customer assignments within each processing run to prevent duplicates, cleaned up daily';
-
--- Create indexes optimized for daily processing
-CREATE INDEX idx_assignment_tracking_run_group ON campaign_engine.campaign_assignment_tracking(processing_run_id, campaign_group_id);
-CREATE INDEX idx_assignment_tracking_assigned_at ON campaign_engine.campaign_assignment_tracking(assigned_at);
-
--- Create function to get assigned CIFs for a campaign group within current run
-CREATE OR REPLACE FUNCTION campaign_engine.get_assigned_cifs_for_run_group(
-    p_processing_run_id UUID,
-    p_campaign_group_id UUID
-) RETURNS TEXT[] AS $$
-BEGIN
-    RETURN ARRAY(
-        SELECT cif 
-        FROM campaign_engine.campaign_assignment_tracking 
-        WHERE processing_run_id = p_processing_run_id 
-        AND campaign_group_id = p_campaign_group_id
-    );
-END;
-$$ LANGUAGE plpgsql;
-
--- Create function to record campaign assignments in bulk for current run
-CREATE OR REPLACE FUNCTION campaign_engine.record_run_campaign_assignments(
-    p_processing_run_id UUID,
-    p_campaign_group_id UUID,
-    p_campaign_id UUID,
-    p_assignments JSONB -- Array of {cif}
-) RETURNS INTEGER AS $$
-DECLARE
-    inserted_count INTEGER;
-BEGIN
-    -- Insert assignments using JSONB array with ON CONFLICT DO NOTHING
-    INSERT INTO campaign_engine.campaign_assignment_tracking (
-        processing_run_id,
-        campaign_group_id,
-        cif,
-        campaign_id,
-        assigned_at
-    )
-    SELECT 
-        p_processing_run_id,
-        p_campaign_group_id,
-        elem->>'cif',
-        p_campaign_id,
-        NOW()
-    FROM jsonb_array_elements(p_assignments) AS elem
-    ON CONFLICT (processing_run_id, campaign_group_id, cif) DO NOTHING;
-    
-    GET DIAGNOSTICS inserted_count = ROW_COUNT;
-    
-    RETURN inserted_count;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create function to cleanup assignments older than specified days (for daily cleanup)
-CREATE OR REPLACE FUNCTION campaign_engine.cleanup_old_assignments(
-    p_days_to_keep INTEGER DEFAULT 7
-) RETURNS INTEGER AS $$
-DECLARE
-    deleted_count INTEGER;
-BEGIN
-    -- Delete assignments from runs older than specified days
-    DELETE FROM campaign_engine.campaign_assignment_tracking 
-    WHERE assigned_at < NOW() - (p_days_to_keep || ' days')::INTERVAL;
-    
-    GET DIAGNOSTICS deleted_count = ROW_COUNT;
-    
-    RETURN deleted_count;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create function to cleanup assignments for completed processing runs older than 1 day
-CREATE OR REPLACE FUNCTION campaign_engine.cleanup_completed_run_assignments()
-RETURNS INTEGER AS $$
-DECLARE
-    deleted_count INTEGER;
-BEGIN
-    -- Delete assignments for processing runs that completed more than 1 day ago
-    DELETE FROM campaign_engine.campaign_assignment_tracking cat
-    WHERE EXISTS (
-        SELECT 1 FROM campaign_engine.campaign_processing_runs cpr
-        WHERE cpr.id = cat.processing_run_id
-        AND cpr.status IN ('completed', 'failed')
-        AND cpr.completed_at < NOW() - INTERVAL '1 day'
-    );
-    
-    GET DIAGNOSTICS deleted_count = ROW_COUNT;
-    
-    RETURN deleted_count;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create daily cleanup job function (to be called by cron or scheduler)
-CREATE OR REPLACE FUNCTION campaign_engine.daily_assignment_cleanup()
-RETURNS TABLE (
-    completed_runs_cleaned INTEGER,
-    old_assignments_cleaned INTEGER,
-    total_remaining INTEGER
-) AS $$
-DECLARE
-    completed_cleaned INTEGER;
-    old_cleaned INTEGER;
-    remaining INTEGER;
-BEGIN
-    -- Clean up assignments from completed runs
-    SELECT campaign_engine.cleanup_completed_run_assignments() INTO completed_cleaned;
-    
-    -- Clean up any remaining old assignments (fallback)
-    SELECT campaign_engine.cleanup_old_assignments(7) INTO old_cleaned;
-    
-    -- Count remaining assignments
-    SELECT COUNT(*) FROM campaign_engine.campaign_assignment_tracking INTO remaining;
-    
-    RETURN QUERY SELECT completed_cleaned, old_cleaned, remaining;
-END;
-$$ LANGUAGE plpgsql;
+-----------------------------------------------------------------------------
+-- /home/code/CollectionCRM/src/services/campaign-engine/database/migrations/create_campaign_processing_procedures.sql
 
 
 -- Create stored procedures for campaign processing
@@ -491,19 +346,20 @@ $$ LANGUAGE plpgsql;
 
 -- Drop functions if they exist (for rerunning this script)
 DROP FUNCTION IF EXISTS campaign_engine.process_campaign(UUID, UUID, JSONB, JSONB, TEXT[], INTEGER);
+DROP FUNCTION IF EXISTS campaign_engine.process_campaign(UUID, UUID, UUID, JSONB, JSONB, INTEGER);
 DROP FUNCTION IF EXISTS campaign_engine.build_conditions_where_clause(JSONB);
 DROP FUNCTION IF EXISTS campaign_engine.create_contacts_temp_table(UUID, JSONB, TEXT);
 DROP FUNCTION IF EXISTS campaign_engine.apply_contact_exclusion_rules(UUID, JSONB, TEXT, TEXT, TEXT);
 DROP FUNCTION IF EXISTS campaign_engine.build_rule_conditions_where(JSONB, TEXT);
 
 -- Function to process a single campaign and return results
--- Updated to work with the new batch processing system
+-- Updated to use EXISTS instead of array exclusion for better performance
 CREATE OR REPLACE FUNCTION campaign_engine.process_campaign(
     p_campaign_id UUID,
     p_campaign_group_id UUID,
+    p_processing_run_id UUID,
     p_base_conditions JSONB,
     p_contact_rules JSONB,
-    p_excluded_cifs TEXT[],
     p_max_contacts_per_customer INTEGER DEFAULT 3
 ) RETURNS TABLE (
     cif VARCHAR,
@@ -538,20 +394,16 @@ BEGIN
     -- Build WHERE clause from base conditions
     v_where_clause := campaign_engine.build_conditions_where_clause(p_base_conditions);
     
-    -- Build exclusion clause for already assigned customers
-    IF p_excluded_cifs IS NOT NULL AND array_length(p_excluded_cifs, 1) > 0 THEN
-        v_exclude_clause := format(' AND lcd.cif NOT IN (%s)', 
-            array_to_string(
-                ARRAY(SELECT quote_literal(excluded_cif) FROM unnest(p_excluded_cifs) AS excluded_cif), 
-                ','
-            )
-        );
-    ELSE
-        v_exclude_clause := '';
-    END IF;
+    -- Build exclusion clause using EXISTS for already assigned customers (much more efficient)
+    v_exclude_clause := format(' AND NOT EXISTS (
+        SELECT 1 FROM campaign_engine.campaign_assignment_tracking cat
+        WHERE cat.processing_run_id = %L
+        AND cat.campaign_group_id = %L
+        AND cat.cif = lcd.cif
+    )', p_processing_run_id, p_campaign_group_id);
     
     -- Create temp table for campaign customers
-    EXECUTE format('
+    v_query := format('
         CREATE TEMP TABLE temp_campaign_customers_%s AS
         SELECT DISTINCT 
             lcd.cif,
@@ -573,6 +425,31 @@ BEGIN
         v_exclude_clause
     );
     
+    -- Debug: Write the customer selection SQL to file
+    PERFORM campaign_engine.safe_file_write(
+        format('/tmp/campaign_debug_%s.sql', replace(p_campaign_id::text, '-', '_')), 
+        format('-- ==================== CAMPAIGN CUSTOMER SELECTION SQL ====================
+-- Campaign ID: %s
+-- WHERE clause: %s
+-- EXCLUDE clause: %s
+-- Generated at: %s
+
+%s;
+
+', p_campaign_id, v_where_clause, v_exclude_clause, now(), v_query), 
+        false
+    );
+    
+    RAISE NOTICE '==================== CAMPAIGN CUSTOMER SELECTION SQL ====================';
+    RAISE NOTICE 'Campaign ID: %', p_campaign_id;
+    RAISE NOTICE 'WHERE clause: %', v_where_clause;
+    RAISE NOTICE 'EXCLUDE clause: %', v_exclude_clause;
+    RAISE NOTICE 'Full Query: %', v_query;
+    RAISE NOTICE 'SQL written to: /tmp/campaign_debug_%.sql', replace(p_campaign_id::text, '-', '_');
+    RAISE NOTICE '========================================================================';
+    
+    EXECUTE v_query;
+    
     -- Create temp table for contacts
     PERFORM campaign_engine.create_contacts_temp_table(
         p_campaign_id,
@@ -581,7 +458,7 @@ BEGIN
     );
     
     -- Return final results
-    RETURN QUERY EXECUTE format('
+    v_query := format('
         SELECT 
             tc.cif,
             tc.segment,
@@ -612,6 +489,25 @@ BEGIN
         replace(p_campaign_id::text, '-', '_'),
         replace(p_campaign_id::text, '-', '_')
     );
+    
+    -- Debug: Append the final results SQL to file
+    PERFORM campaign_engine.safe_file_write(
+        format('/tmp/campaign_debug_%s.sql', replace(p_campaign_id::text, '-', '_')), 
+        format('
+-- ==================== CAMPAIGN FINAL RESULTS SQL ====================
+-- Generated at: %s
+
+%s;
+
+', now(), v_query), 
+        true
+    );
+    
+    RAISE NOTICE '==================== CAMPAIGN FINAL RESULTS SQL ====================';
+    RAISE NOTICE 'Final Query: %', v_query;
+    RAISE NOTICE '====================================================================';
+    
+    RETURN QUERY EXECUTE v_query;
     
     -- Clean up temp tables
     EXECUTE format('DROP TABLE IF EXISTS temp_campaign_contacts_%s', replace(p_campaign_id::text, '-', '_'));
@@ -696,6 +592,11 @@ BEGIN
         v_conditions := array_append(v_conditions, v_condition_sql);
     END LOOP;
     
+    -- Debug: Print the built WHERE clause
+    RAISE NOTICE '==================== CONDITIONS WHERE CLAUSE ====================';
+    RAISE NOTICE 'Built WHERE clause: %', array_to_string(v_conditions, ' AND ');
+    RAISE NOTICE '===============================================================';
+    
     RETURN array_to_string(v_conditions, ' AND ');
 END;
 $$ LANGUAGE plpgsql;
@@ -710,13 +611,14 @@ DECLARE
     v_table_name TEXT;
     v_all_contacts_table TEXT;
     v_has_rules BOOLEAN;
+    v_query TEXT;
 BEGIN
     v_table_name := format('temp_campaign_contacts_%s', replace(p_campaign_id::text, '-', '_'));
     v_all_contacts_table := v_table_name || '_all';
     v_has_rules := p_contact_rules IS NOT NULL AND jsonb_typeof(p_contact_rules) = 'array' AND jsonb_array_length(p_contact_rules) > 0;
     
     -- Create table with all contacts (using UNION to eliminate duplicates)
-    EXECUTE format('
+    v_query := format('
         CREATE TEMP TABLE %I AS
         SELECT DISTINCT ON (cif, contact_id)
             tc.cif,
@@ -796,6 +698,31 @@ BEGIN
         p_customers_table
     );
     
+    -- Debug: Append the contacts creation SQL to file
+    PERFORM campaign_engine.safe_file_write(
+        format('/tmp/campaign_debug_%s.sql', replace(p_campaign_id::text, '-', '_')), 
+        format('
+-- ==================== CONTACTS CREATION SQL ====================
+-- Campaign ID: %s
+-- Has rules: %s
+-- Target table: %s
+-- Generated at: %s
+
+%s;
+
+', p_campaign_id, v_has_rules, CASE WHEN v_has_rules THEN v_all_contacts_table ELSE v_table_name END, now(), v_query), 
+        true
+    );
+    
+    RAISE NOTICE '==================== CONTACTS CREATION SQL ====================';
+    RAISE NOTICE 'Campaign ID: %', p_campaign_id;
+    RAISE NOTICE 'Has rules: %', v_has_rules;
+    RAISE NOTICE 'Target table: %', CASE WHEN v_has_rules THEN v_all_contacts_table ELSE v_table_name END;
+    RAISE NOTICE 'Query: %', v_query;
+    RAISE NOTICE '================================================================';
+    
+    EXECUTE v_query;
+    
     -- If we have rules, apply exclusions
     IF v_has_rules THEN
         PERFORM campaign_engine.apply_contact_exclusion_rules(
@@ -827,6 +754,7 @@ DECLARE
     v_exclusion_conditions TEXT[];
     v_output JSONB;
     v_exclusion_parts TEXT[];
+    v_query TEXT;
 BEGIN
     -- Add columns for rule evaluations
     FOR v_rule IN SELECT * FROM jsonb_array_elements(p_contact_rules)
@@ -843,7 +771,7 @@ BEGIN
         -- Update rule evaluation column
         IF v_conditions_where != '1=1' THEN
             -- Apply rule only to contacts matching specific conditions
-            EXECUTE format('
+            v_query := format('
                 UPDATE %I tac
                 SET rule_%s_applies = TRUE
                 FROM %I tc
@@ -854,10 +782,52 @@ BEGIN
                 p_customers_table,
                 v_conditions_where
             );
+            
+            -- Debug: Append rule condition SQL to file
+            PERFORM campaign_engine.safe_file_write(
+                format('/tmp/campaign_debug_%s.sql', replace(p_campaign_id::text, '-', '_')), 
+                format('
+-- ==================== CONTACT RULE %s CONDITION SQL ====================
+-- Rule conditions WHERE: %s
+-- Generated at: %s
+
+%s;
+
+', v_rule_index, v_conditions_where, now(), v_query), 
+                true
+            );
+            
+            RAISE NOTICE '==================== CONTACT RULE % CONDITION SQL ====================', v_rule_index;
+            RAISE NOTICE 'Rule conditions WHERE: %', v_conditions_where;
+            RAISE NOTICE 'Update Query: %', v_query;
+            RAISE NOTICE '====================================================================';
+            
+            EXECUTE v_query;
         ELSE
             -- No conditions means apply rule to ALL contacts
-            EXECUTE format('UPDATE %I SET rule_%s_applies = TRUE', 
+            v_query := format('UPDATE %I SET rule_%s_applies = TRUE', 
                 p_all_contacts_table, v_rule_index);
+                
+            -- Debug: Append rule condition SQL to file
+            PERFORM campaign_engine.safe_file_write(
+                format('/tmp/campaign_debug_%s.sql', replace(p_campaign_id::text, '-', '_')), 
+                format('
+-- ==================== CONTACT RULE %s CONDITION SQL ====================
+-- Rule conditions WHERE: %s (applies to ALL)
+-- Generated at: %s
+
+%s;
+
+', v_rule_index, v_conditions_where, now(), v_query), 
+                true
+            );
+                
+            RAISE NOTICE '==================== CONTACT RULE % CONDITION SQL ====================', v_rule_index;
+            RAISE NOTICE 'Rule conditions WHERE: % (applies to ALL)', v_conditions_where;
+            RAISE NOTICE 'Update Query: %', v_query;
+            RAISE NOTICE '====================================================================';
+            
+            EXECUTE v_query;
         END IF;
         
         -- Build exclusion conditions for this rule
@@ -902,7 +872,7 @@ BEGIN
     END LOOP;
     
     -- Create final table with exclusions applied
-    EXECUTE format('
+    v_query := format('
         CREATE TEMP TABLE %I AS
         SELECT 
             cif,
@@ -923,6 +893,27 @@ BEGIN
         p_all_contacts_table,
         COALESCE(array_to_string(v_exclusion_conditions, ' OR '), 'FALSE')
     );
+    
+    -- Debug: Append final exclusion SQL to file
+    PERFORM campaign_engine.safe_file_write(
+        format('/tmp/campaign_debug_%s.sql', replace(p_campaign_id::text, '-', '_')), 
+        format('
+-- ==================== FINAL CONTACT EXCLUSION SQL ====================
+-- Exclusion conditions: %s
+-- Generated at: %s
+
+%s;
+
+', COALESCE(array_to_string(v_exclusion_conditions, ' OR '), 'FALSE'), now(), v_query), 
+        true
+    );
+    
+    RAISE NOTICE '==================== FINAL CONTACT EXCLUSION SQL ====================';
+    RAISE NOTICE 'Exclusion conditions: %', COALESCE(array_to_string(v_exclusion_conditions, ' OR '), 'FALSE');
+    RAISE NOTICE 'Final Query: %', v_query;
+    RAISE NOTICE '======================================================================';
+    
+    EXECUTE v_query;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -1023,22 +1014,24 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-
+------------------------------------------------
+-- /home/code/CollectionCRM/src/services/campaign-engine/database/migrations/create_batch_processing_procedures.sql
 -- Create batch processing stored procedures using direct inserts for optimal performance
 -- This approach handles millions of customers efficiently without JSONB overhead
 
 -- Drop functions if they exist (for rerunning this script)
 DROP FUNCTION IF EXISTS campaign_engine.process_campaigns_batch(UUID, JSONB);
 DROP FUNCTION IF EXISTS campaign_engine.process_single_campaign_direct(UUID, UUID, TEXT, JSONB);
-DROP FUNCTION IF EXISTS campaign_engine.create_processing_statistics_direct(UUID, BIGINT, INTEGER);
+DROP FUNCTION IF EXISTS campaign_engine.create_processing_statistics_direct(UUID, UUID, BIGINT, INTEGER);
 DROP FUNCTION IF EXISTS campaign_engine.get_processing_run_summary(UUID);
 
--- Main batch processing procedure that processes all campaigns in a processing run
+-- Main batch processing procedure that processes all campaigns for a single campaign group
 CREATE OR REPLACE FUNCTION campaign_engine.process_campaigns_batch(
     p_processing_run_id UUID,
-    p_campaign_groups JSONB -- Array of campaign group configurations
+    p_campaign_group JSONB -- Single campaign group configuration
 ) RETURNS TABLE (
     processing_run_id UUID,
+    campaign_group_id UUID,
     total_customers_processed INTEGER,
     total_campaigns_processed INTEGER,
     total_errors INTEGER,
@@ -1046,57 +1039,54 @@ CREATE OR REPLACE FUNCTION campaign_engine.process_campaigns_batch(
 ) AS $$
 DECLARE
     v_start_time TIMESTAMP := clock_timestamp();
-    v_group JSONB;
     v_campaign JSONB;
     v_total_customers INTEGER := 0;
     v_total_campaigns INTEGER := 0;
     v_total_errors INTEGER := 0;
     v_campaign_customers INTEGER;
+    v_campaign_group_id UUID := (p_campaign_group->>'id')::UUID;
 BEGIN
-    -- Process each campaign group
-    FOR v_group IN SELECT * FROM jsonb_array_elements(p_campaign_groups)
+    -- Process campaigns in priority order within the group
+    FOR v_campaign IN 
+        SELECT * FROM jsonb_array_elements(p_campaign_group->'campaigns') 
+        ORDER BY (value->>'priority')::INTEGER ASC
     LOOP
-        -- Process campaigns in priority order within each group
-        FOR v_campaign IN 
-            SELECT * FROM jsonb_array_elements(v_group->'campaigns') 
-            ORDER BY (value->>'priority')::INTEGER ASC
-        LOOP
-            BEGIN
-                -- Process single campaign with direct inserts
-                SELECT * INTO v_campaign_customers 
-                FROM campaign_engine.process_single_campaign_direct(
-                    p_processing_run_id,
-                    (v_group->>'id')::UUID,
-                    v_group->>'name',
-                    v_campaign
-                );
-                
-                -- Update totals
-                v_total_customers := v_total_customers + v_campaign_customers;
-                v_total_campaigns := v_total_campaigns + 1;
-                
-            EXCEPTION WHEN OTHERS THEN
-                -- Log error and continue with next campaign
-                INSERT INTO campaign_engine.processing_errors (
-                    processing_run_id,
-                    campaign_id,
-                    error_code,
-                    error_message
-                ) VALUES (
-                    p_processing_run_id,
-                    (v_campaign->>'id')::UUID,
-                    'CAMPAIGN_PROCESSING_ERROR',
-                    format('Failed to process campaign %s: %s', v_campaign->>'name', SQLERRM)
-                );
-                
-                v_total_errors := v_total_errors + 1;
-            END;
-        END LOOP;
+        BEGIN
+            -- Process single campaign with direct inserts
+            SELECT * INTO v_campaign_customers 
+            FROM campaign_engine.process_single_campaign_direct(
+                p_processing_run_id,
+                v_campaign_group_id,
+                p_campaign_group->>'name',
+                v_campaign
+            );
+            
+            -- Update totals
+            v_total_customers := v_total_customers + v_campaign_customers;
+            v_total_campaigns := v_total_campaigns + 1;
+            
+        EXCEPTION WHEN OTHERS THEN
+            -- Log error and continue with next campaign
+            INSERT INTO campaign_engine.processing_errors (
+                processing_run_id,
+                campaign_id,
+                error_code,
+                error_message
+            ) VALUES (
+                p_processing_run_id,
+                (v_campaign->>'id')::UUID,
+                'CAMPAIGN_PROCESSING_ERROR',
+                format('Failed to process campaign %s: %s', v_campaign->>'name', SQLERRM)
+            );
+            
+            v_total_errors := v_total_errors + 1;
+        END;
     END LOOP;
     
-    -- Create processing statistics
+    -- Create processing statistics for this campaign group
     PERFORM campaign_engine.create_processing_statistics_direct(
         p_processing_run_id,
+        v_campaign_group_id,
         EXTRACT(EPOCH FROM (clock_timestamp() - v_start_time) * 1000)::BIGINT,
         v_total_errors
     );
@@ -1104,6 +1094,7 @@ BEGIN
     -- Return processing summary
     RETURN QUERY SELECT 
         p_processing_run_id,
+        v_campaign_group_id,
         v_total_customers,
         v_total_campaigns,
         v_total_errors,
@@ -1125,7 +1116,6 @@ DECLARE
     v_base_conditions JSONB := p_campaign->'base_conditions';
     v_contact_rules JSONB := p_campaign->'contact_selection_rules';
     v_max_contacts INTEGER := 3;
-    v_excluded_cifs TEXT[];
     v_campaign_result_id UUID;
     v_customers_assigned INTEGER := 0;
     v_customers_with_contacts INTEGER := 0;
@@ -1133,20 +1123,14 @@ DECLARE
     v_start_time TIMESTAMP := clock_timestamp();
     v_processing_duration BIGINT;
 BEGIN
-    -- Get already assigned CIFs for this group in current run
-    v_excluded_cifs := campaign_engine.get_assigned_cifs_for_run_group(
-        p_processing_run_id, 
-        p_campaign_group_id
-    );
-    
-    -- Create temporary table for campaign results
+    -- Create temporary table for campaign results using new efficient function
     CREATE TEMP TABLE temp_campaign_processing AS
     SELECT * FROM campaign_engine.process_campaign(
         v_campaign_id,
         p_campaign_group_id,
+        p_processing_run_id,
         v_base_conditions,
         v_contact_rules,
-        v_excluded_cifs,
         v_max_contacts
     );
     
@@ -1233,16 +1217,22 @@ BEGIN
     )
     WHERE tcp.contact_id IS NOT NULL;
     
-    -- Record assignments in tracking table for duplicate prevention
-    PERFORM campaign_engine.record_run_campaign_assignments(
+    -- Record assignments in tracking table for duplicate prevention (direct insert)
+    INSERT INTO campaign_engine.campaign_assignment_tracking (
+        processing_run_id,
+        campaign_group_id,
+        cif,
+        campaign_id,
+        assigned_at
+    )
+    SELECT DISTINCT
         p_processing_run_id,
         p_campaign_group_id,
+        cif,
         v_campaign_id,
-        jsonb_agg(jsonb_build_object('cif', cif))
-    ) FROM (
-        SELECT DISTINCT cif 
-        FROM temp_campaign_processing
-    ) assigned_customers;
+        NOW()
+    FROM temp_campaign_processing
+    ON CONFLICT (processing_run_id, campaign_group_id, cif) DO NOTHING;
     
     -- Clean up temp table
     DROP TABLE temp_campaign_processing;
@@ -1251,9 +1241,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Create processing statistics using direct queries instead of JSONB manipulation
+-- Create processing statistics for a single campaign group using direct queries
 CREATE OR REPLACE FUNCTION campaign_engine.create_processing_statistics_direct(
     p_processing_run_id UUID,
+    p_campaign_group_id UUID,
     p_total_duration_ms BIGINT,
     p_total_errors INTEGER
 ) RETURNS VOID AS $$
@@ -1265,22 +1256,26 @@ DECLARE
     v_most_assigned_campaign_id UUID;
     v_most_assigned_campaign_name TEXT;
     v_most_assigned_count INTEGER;
+    v_campaign_group_name TEXT;
 BEGIN
-    -- Get basic statistics from campaign results
+    -- Get basic statistics from campaign results for this campaign group
     SELECT 
         COALESCE(SUM(customers_assigned), 0),
         COUNT(*),
-        COUNT(DISTINCT campaign_group_id),
-        COALESCE(SUM(total_contacts_selected), 0)
-    INTO v_total_customers, v_total_campaigns, v_total_groups, v_total_contacts
+        1, -- Only processing one group
+        COALESCE(SUM(total_contacts_selected), 0),
+        MAX(campaign_group_name) -- Get the group name
+    INTO v_total_customers, v_total_campaigns, v_total_groups, v_total_contacts, v_campaign_group_name
     FROM campaign_engine.campaign_results
-    WHERE processing_run_id = p_processing_run_id;
+    WHERE processing_run_id = p_processing_run_id
+    AND campaign_group_id = p_campaign_group_id;
     
-    -- Find most assigned campaign
+    -- Find most assigned campaign for this campaign group
     SELECT campaign_id, campaign_name, customers_assigned
     INTO v_most_assigned_campaign_id, v_most_assigned_campaign_name, v_most_assigned_count
     FROM campaign_engine.campaign_results
     WHERE processing_run_id = p_processing_run_id
+    AND campaign_group_id = p_campaign_group_id
     ORDER BY customers_assigned DESC
     LIMIT 1;
     
@@ -1306,15 +1301,12 @@ BEGIN
         v_total_groups,
         v_total_customers, -- All processed customers get assignments
         0, -- No customers without assignments
-        -- Campaign assignments by group (calculated as subquery)
-        (
-            SELECT jsonb_object_agg(campaign_group_id::TEXT, total_assigned)
-            FROM (
-                SELECT campaign_group_id, SUM(customers_assigned) as total_assigned
-                FROM campaign_engine.campaign_results
-                WHERE processing_run_id = p_processing_run_id
-                GROUP BY campaign_group_id
-            ) grouped
+        -- Campaign assignments for this group only
+        jsonb_build_object(
+            p_campaign_group_id::TEXT, jsonb_build_object(
+                'group_name', COALESCE(v_campaign_group_name, 'Unknown'),
+                'total_assigned', v_total_customers
+            )
         ),
         -- Most assigned campaign
         jsonb_build_object(
@@ -1331,14 +1323,12 @@ BEGIN
             'processing_errors', 0,
             'most_common_error', CASE WHEN p_total_errors > 0 THEN 'CAMPAIGN_PROCESSING_ERROR' ELSE 'None' END
         ),
-        -- Performance metrics
+        -- Performance metrics (simplified to meaningful metrics only)
         jsonb_build_object(
-            'total_database_queries', 1,
-            'average_query_duration_ms', p_total_duration_ms,
-            'cache_hit_rate', 0,
+            'total_duration_seconds', ROUND(p_total_duration_ms::NUMERIC / 1000, 2),
             'customers_per_second', 
             CASE 
-                WHEN p_total_duration_ms > 0 THEN (v_total_customers::NUMERIC / p_total_duration_ms * 1000)
+                WHEN p_total_duration_ms > 0 THEN ROUND(v_total_customers::NUMERIC / p_total_duration_ms * 1000, 2)
                 ELSE 0 
             END
         )
@@ -1347,6 +1337,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Utility function to get processing run summary (for TypeScript service)
+-- Aggregates data directly from campaign_statistics table
 CREATE OR REPLACE FUNCTION campaign_engine.get_processing_run_summary(
     p_processing_run_id UUID
 ) RETURNS TABLE (
@@ -1362,16 +1353,160 @@ CREATE OR REPLACE FUNCTION campaign_engine.get_processing_run_summary(
 BEGIN
     RETURN QUERY
     SELECT 
-        cpr.request_id,
-        COALESCE(cs.total_customers, 0),
-        COALESCE(cs.total_campaigns_processed, 0),
-        COALESCE(cs.total_groups_processed, 0),
-        COALESCE(cs.total_contacts_selected, 0),
-        COALESCE(cs.total_errors, 0),
-        COALESCE(cs.total_processing_duration_ms, 0)::BIGINT,
-        (SELECT COUNT(*) FROM campaign_engine.campaign_results WHERE processing_run_id = p_processing_run_id)::INTEGER
-    FROM campaign_engine.campaign_processing_runs cpr
-    LEFT JOIN campaign_engine.campaign_statistics cs ON cs.processing_run_id = cpr.id
-    WHERE cpr.id = p_processing_run_id;
+        (SELECT cpr.request_id FROM campaign_engine.campaign_processing_runs cpr WHERE cpr.id = p_processing_run_id),
+        COALESCE(SUM(cs.total_customers), 0)::INTEGER,
+        COALESCE(SUM(cs.total_campaigns_processed), 0)::INTEGER,
+        COALESCE(COUNT(*), 0)::INTEGER,
+        COALESCE(SUM(cs.total_contacts_selected), 0)::INTEGER,
+        COALESCE(SUM(cs.total_errors), 0)::INTEGER,
+        COALESCE(MAX(cs.total_processing_duration_ms), 0)::BIGINT,
+        (SELECT COUNT(*) FROM campaign_engine.campaign_results cr WHERE cr.processing_run_id = p_processing_run_id AND cr.customers_assigned > 0)::INTEGER
+    FROM campaign_engine.campaign_statistics cs
+    WHERE cs.processing_run_id = p_processing_run_id;
 END;
 $$ LANGUAGE plpgsql;
+
+-----------------------------------
+-- /home/code/CollectionCRM/src/services/campaign-engine/database/migrations/create_assignment_tracking_table.sql
+-- Create assignment tracking table optimized for daily processing runs
+-- Assignments are only valid within a single processing run and cleaned up daily
+
+DROP TABLE IF EXISTS campaign_engine.campaign_assignment_tracking CASCADE;
+
+-- Create campaign assignment tracking table
+CREATE TABLE IF NOT EXISTS campaign_engine.campaign_assignment_tracking (
+    processing_run_id UUID NOT NULL,
+    campaign_group_id UUID NOT NULL,
+    cif VARCHAR(50) NOT NULL,
+    campaign_id UUID NOT NULL,
+    assigned_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    
+    -- Primary key combines run + group + cif for uniqueness within run
+    PRIMARY KEY (processing_run_id, campaign_group_id, cif),
+    
+    -- Foreign key constraints
+    CONSTRAINT fk_assignment_tracking_processing_run
+        FOREIGN KEY (processing_run_id)
+        REFERENCES campaign_engine.campaign_processing_runs(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_assignment_tracking_campaign
+        FOREIGN KEY (campaign_id)
+        REFERENCES campaign_engine.campaigns(id)
+        ON DELETE CASCADE
+);
+
+COMMENT ON TABLE campaign_engine.campaign_assignment_tracking IS 'Tracks customer assignments within each processing run to prevent duplicates, cleaned up daily';
+
+-- Create indexes optimized for daily processing
+CREATE INDEX idx_assignment_tracking_run_group ON campaign_engine.campaign_assignment_tracking(processing_run_id, campaign_group_id);
+CREATE INDEX idx_assignment_tracking_assigned_at ON campaign_engine.campaign_assignment_tracking(assigned_at);
+
+-- Create function to cleanup assignments older than specified days (for daily cleanup)
+CREATE OR REPLACE FUNCTION campaign_engine.cleanup_old_assignments(
+    p_days_to_keep INTEGER DEFAULT 7
+) RETURNS INTEGER AS $$
+DECLARE
+    deleted_count INTEGER;
+BEGIN
+    -- Delete assignments from runs older than specified days
+    DELETE FROM campaign_engine.campaign_assignment_tracking 
+    WHERE assigned_at < NOW() - (p_days_to_keep || ' days')::INTERVAL;
+    
+    GET DIAGNOSTICS deleted_count = ROW_COUNT;
+    
+    RETURN deleted_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create function to cleanup assignments for completed processing runs older than 1 day
+CREATE OR REPLACE FUNCTION campaign_engine.cleanup_completed_run_assignments()
+RETURNS INTEGER AS $$
+DECLARE
+    deleted_count INTEGER;
+BEGIN
+    -- Delete assignments for processing runs that completed more than 1 day ago
+    DELETE FROM campaign_engine.campaign_assignment_tracking cat
+    WHERE EXISTS (
+        SELECT 1 FROM campaign_engine.campaign_processing_runs cpr
+        WHERE cpr.id = cat.processing_run_id
+        AND cpr.status IN ('completed', 'failed')
+        AND cpr.completed_at < NOW() - INTERVAL '1 day'
+    );
+    
+    GET DIAGNOSTICS deleted_count = ROW_COUNT;
+    
+    RETURN deleted_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create daily cleanup job function (to be called by cron or scheduler)
+CREATE OR REPLACE FUNCTION campaign_engine.daily_assignment_cleanup()
+RETURNS TABLE (
+    completed_runs_cleaned INTEGER,
+    old_assignments_cleaned INTEGER,
+    total_remaining INTEGER
+) AS $$
+DECLARE
+    completed_cleaned INTEGER;
+    old_cleaned INTEGER;
+    remaining INTEGER;
+BEGIN
+    -- Clean up assignments from completed runs
+    SELECT campaign_engine.cleanup_completed_run_assignments() INTO completed_cleaned;
+    
+    -- Clean up any remaining old assignments (fallback)
+    SELECT campaign_engine.cleanup_old_assignments(7) INTO old_cleaned;
+    
+    -- Count remaining assignments
+    SELECT COUNT(*) FROM campaign_engine.campaign_assignment_tracking INTO remaining;
+    
+    RETURN QUERY SELECT completed_cleaned, old_cleaned, remaining;
+END;
+$$ LANGUAGE plpgsql;
+
+----------------------------------------------
+-- /home/code/CollectionCRM/src/services/campaign-engine/database/migrations/enable_file_writing.sql
+
+-- Enable file writing capabilities for SQL debugging
+-- This migration enables the adminpack extension and creates helper functions
+
+-- Enable the adminpack extension for file operations
+CREATE EXTENSION IF NOT EXISTS adminpack;
+
+-- Create a helper function that safely writes to files with error handling
+CREATE OR REPLACE FUNCTION campaign_engine.safe_file_write(
+    p_filename TEXT,
+    p_content TEXT,
+    p_append BOOLEAN DEFAULT false
+) RETURNS BOOLEAN AS $$
+BEGIN
+    BEGIN
+        -- Try to write the file using pg_file_write from adminpack
+        PERFORM pg_file_write(p_filename, p_content, p_append);
+        RETURN true;
+    EXCEPTION WHEN OTHERS THEN
+        -- If file writing fails, log the error but don't fail the whole process
+        RAISE NOTICE 'Failed to write debug file %: %', p_filename, SQLERRM;
+        RETURN false;
+    END;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create a function to ensure debug directory exists (if possible)
+CREATE OR REPLACE FUNCTION campaign_engine.ensure_debug_directory()
+RETURNS BOOLEAN AS $$
+BEGIN
+    -- Try to create the debug directory (may fail due to permissions, that's OK)
+    BEGIN
+        PERFORM pg_file_write('/tmp/campaign_debug_test.txt', 'test', false);
+        PERFORM pg_file_unlink('/tmp/campaign_debug_test.txt');
+        RETURN true;
+    EXCEPTION WHEN OTHERS THEN
+        RAISE NOTICE 'Debug directory /tmp may not be writable: %', SQLERRM;
+        RETURN false;
+    END;
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION campaign_engine.safe_file_write(TEXT, TEXT, BOOLEAN) IS 'Safely writes content to files with error handling for SQL debugging';
+COMMENT ON FUNCTION campaign_engine.ensure_debug_directory() IS 'Checks if debug directory is writable';

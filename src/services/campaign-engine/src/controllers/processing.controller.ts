@@ -262,4 +262,36 @@ export class ProcessingController {
       });
     }
   }
+
+  // Get processing summary
+  async getProcessingSummary(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const summary = await this.resultsRepository.getProcessingSummary(id);
+      
+      if (!summary || !summary.request_id) {
+        res.status(404).json({
+          success: false,
+          data: null,
+          message: 'Processing summary not found',
+          errors: [{ code: 'NOT_FOUND', message: 'Processing summary not found' }]
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        data: summary,
+        message: 'Processing summary retrieved successfully'
+      });
+    } catch (error) {
+      logger.error('Error getting processing summary:', error);
+      res.status(500).json({
+        success: false,
+        data: null,
+        message: 'Failed to retrieve processing summary',
+        errors: [{ code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' }]
+      });
+    }
+  }
 }

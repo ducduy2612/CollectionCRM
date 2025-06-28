@@ -39,8 +39,8 @@ export const processingApi = {
     return response.data;
   },
 
-  // Get processing statistics
-  getProcessingStatistics: async (id: string): Promise<{ success: boolean; data: ProcessingStatistics; message: string }> => {
+  // Get processing statistics (now returns array of all statistics records)
+  getProcessingStatistics: async (id: string): Promise<{ success: boolean; data: ProcessingStatistics[]; message: string }> => {
     const response = await apiClient.get(`/campaigns/processing/runs/${id}/statistics`);
     return response.data;
   },
@@ -65,6 +65,12 @@ export const processingApi = {
     searchParams: SearchAssignmentsRequest
   ): Promise<{ success: boolean; data: CustomerAssignment[]; message: string }> => {
     const response = await apiClient.get('/campaigns/processing/assignments/search', { params: searchParams });
+    return response.data;
+  },
+
+  // Get processing summary
+  getProcessingSummary: async (id: string): Promise<{ success: boolean; data: any; message: string }> => {
+    const response = await apiClient.get(`/campaigns/processing/runs/${id}/summary`);
     return response.data;
   }
 };

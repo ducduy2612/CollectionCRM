@@ -4,15 +4,16 @@
 -- Drop functions if they exist (for rerunning this script)
 DROP FUNCTION IF EXISTS campaign_engine.process_campaigns_batch(UUID, JSONB);
 DROP FUNCTION IF EXISTS campaign_engine.process_single_campaign_direct(UUID, UUID, TEXT, JSONB);
-DROP FUNCTION IF EXISTS campaign_engine.create_processing_statistics_direct(UUID, BIGINT, INTEGER);
+DROP FUNCTION IF EXISTS campaign_engine.create_processing_statistics_direct(UUID, UUID, BIGINT, INTEGER);
 DROP FUNCTION IF EXISTS campaign_engine.get_processing_run_summary(UUID);
 
--- Main batch processing procedure that processes all campaigns in a processing run
+-- Main batch processing procedure that processes all campaigns for a single campaign group
 CREATE OR REPLACE FUNCTION campaign_engine.process_campaigns_batch(
     p_processing_run_id UUID,
-    p_campaign_groups JSONB -- Array of campaign group configurations
+    p_campaign_group JSONB -- Single campaign group configuration
 ) RETURNS TABLE (
     processing_run_id UUID,
+    campaign_group_id UUID,
     total_customers_processed INTEGER,
     total_campaigns_processed INTEGER,
     total_errors INTEGER,
@@ -20,57 +21,54 @@ CREATE OR REPLACE FUNCTION campaign_engine.process_campaigns_batch(
 ) AS $$
 DECLARE
     v_start_time TIMESTAMP := clock_timestamp();
-    v_group JSONB;
     v_campaign JSONB;
     v_total_customers INTEGER := 0;
     v_total_campaigns INTEGER := 0;
     v_total_errors INTEGER := 0;
     v_campaign_customers INTEGER;
+    v_campaign_group_id UUID := (p_campaign_group->>'id')::UUID;
 BEGIN
-    -- Process each campaign group
-    FOR v_group IN SELECT * FROM jsonb_array_elements(p_campaign_groups)
+    -- Process campaigns in priority order within the group
+    FOR v_campaign IN 
+        SELECT * FROM jsonb_array_elements(p_campaign_group->'campaigns') 
+        ORDER BY (value->>'priority')::INTEGER ASC
     LOOP
-        -- Process campaigns in priority order within each group
-        FOR v_campaign IN 
-            SELECT * FROM jsonb_array_elements(v_group->'campaigns') 
-            ORDER BY (value->>'priority')::INTEGER ASC
-        LOOP
-            BEGIN
-                -- Process single campaign with direct inserts
-                SELECT * INTO v_campaign_customers 
-                FROM campaign_engine.process_single_campaign_direct(
-                    p_processing_run_id,
-                    (v_group->>'id')::UUID,
-                    v_group->>'name',
-                    v_campaign
-                );
-                
-                -- Update totals
-                v_total_customers := v_total_customers + v_campaign_customers;
-                v_total_campaigns := v_total_campaigns + 1;
-                
-            EXCEPTION WHEN OTHERS THEN
-                -- Log error and continue with next campaign
-                INSERT INTO campaign_engine.processing_errors (
-                    processing_run_id,
-                    campaign_id,
-                    error_code,
-                    error_message
-                ) VALUES (
-                    p_processing_run_id,
-                    (v_campaign->>'id')::UUID,
-                    'CAMPAIGN_PROCESSING_ERROR',
-                    format('Failed to process campaign %s: %s', v_campaign->>'name', SQLERRM)
-                );
-                
-                v_total_errors := v_total_errors + 1;
-            END;
-        END LOOP;
+        BEGIN
+            -- Process single campaign with direct inserts
+            SELECT * INTO v_campaign_customers 
+            FROM campaign_engine.process_single_campaign_direct(
+                p_processing_run_id,
+                v_campaign_group_id,
+                p_campaign_group->>'name',
+                v_campaign
+            );
+            
+            -- Update totals
+            v_total_customers := v_total_customers + v_campaign_customers;
+            v_total_campaigns := v_total_campaigns + 1;
+            
+        EXCEPTION WHEN OTHERS THEN
+            -- Log error and continue with next campaign
+            INSERT INTO campaign_engine.processing_errors (
+                processing_run_id,
+                campaign_id,
+                error_code,
+                error_message
+            ) VALUES (
+                p_processing_run_id,
+                (v_campaign->>'id')::UUID,
+                'CAMPAIGN_PROCESSING_ERROR',
+                format('Failed to process campaign %s: %s', v_campaign->>'name', SQLERRM)
+            );
+            
+            v_total_errors := v_total_errors + 1;
+        END;
     END LOOP;
     
-    -- Create processing statistics
+    -- Create processing statistics for this campaign group
     PERFORM campaign_engine.create_processing_statistics_direct(
         p_processing_run_id,
+        v_campaign_group_id,
         EXTRACT(EPOCH FROM (clock_timestamp() - v_start_time) * 1000)::BIGINT,
         v_total_errors
     );
@@ -78,6 +76,7 @@ BEGIN
     -- Return processing summary
     RETURN QUERY SELECT 
         p_processing_run_id,
+        v_campaign_group_id,
         v_total_customers,
         v_total_campaigns,
         v_total_errors,
@@ -99,7 +98,6 @@ DECLARE
     v_base_conditions JSONB := p_campaign->'base_conditions';
     v_contact_rules JSONB := p_campaign->'contact_selection_rules';
     v_max_contacts INTEGER := 3;
-    v_excluded_cifs TEXT[];
     v_campaign_result_id UUID;
     v_customers_assigned INTEGER := 0;
     v_customers_with_contacts INTEGER := 0;
@@ -107,20 +105,14 @@ DECLARE
     v_start_time TIMESTAMP := clock_timestamp();
     v_processing_duration BIGINT;
 BEGIN
-    -- Get already assigned CIFs for this group in current run
-    v_excluded_cifs := campaign_engine.get_assigned_cifs_for_run_group(
-        p_processing_run_id, 
-        p_campaign_group_id
-    );
-    
-    -- Create temporary table for campaign results
+    -- Create temporary table for campaign results using new efficient function
     CREATE TEMP TABLE temp_campaign_processing AS
     SELECT * FROM campaign_engine.process_campaign(
         v_campaign_id,
         p_campaign_group_id,
+        p_processing_run_id,
         v_base_conditions,
         v_contact_rules,
-        v_excluded_cifs,
         v_max_contacts
     );
     
@@ -207,16 +199,22 @@ BEGIN
     )
     WHERE tcp.contact_id IS NOT NULL;
     
-    -- Record assignments in tracking table for duplicate prevention
-    PERFORM campaign_engine.record_run_campaign_assignments(
+    -- Record assignments in tracking table for duplicate prevention (direct insert)
+    INSERT INTO campaign_engine.campaign_assignment_tracking (
+        processing_run_id,
+        campaign_group_id,
+        cif,
+        campaign_id,
+        assigned_at
+    )
+    SELECT DISTINCT
         p_processing_run_id,
         p_campaign_group_id,
+        cif,
         v_campaign_id,
-        jsonb_agg(jsonb_build_object('cif', cif))
-    ) FROM (
-        SELECT DISTINCT cif 
-        FROM temp_campaign_processing
-    ) assigned_customers;
+        NOW()
+    FROM temp_campaign_processing
+    ON CONFLICT (processing_run_id, campaign_group_id, cif) DO NOTHING;
     
     -- Clean up temp table
     DROP TABLE temp_campaign_processing;
@@ -225,9 +223,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Create processing statistics using direct queries instead of JSONB manipulation
+-- Create processing statistics for a single campaign group using direct queries
 CREATE OR REPLACE FUNCTION campaign_engine.create_processing_statistics_direct(
     p_processing_run_id UUID,
+    p_campaign_group_id UUID,
     p_total_duration_ms BIGINT,
     p_total_errors INTEGER
 ) RETURNS VOID AS $$
@@ -239,22 +238,26 @@ DECLARE
     v_most_assigned_campaign_id UUID;
     v_most_assigned_campaign_name TEXT;
     v_most_assigned_count INTEGER;
+    v_campaign_group_name TEXT;
 BEGIN
-    -- Get basic statistics from campaign results
+    -- Get basic statistics from campaign results for this campaign group
     SELECT 
         COALESCE(SUM(customers_assigned), 0),
         COUNT(*),
-        COUNT(DISTINCT campaign_group_id),
-        COALESCE(SUM(total_contacts_selected), 0)
-    INTO v_total_customers, v_total_campaigns, v_total_groups, v_total_contacts
+        1, -- Only processing one group
+        COALESCE(SUM(total_contacts_selected), 0),
+        MAX(campaign_group_name) -- Get the group name
+    INTO v_total_customers, v_total_campaigns, v_total_groups, v_total_contacts, v_campaign_group_name
     FROM campaign_engine.campaign_results
-    WHERE processing_run_id = p_processing_run_id;
+    WHERE processing_run_id = p_processing_run_id
+    AND campaign_group_id = p_campaign_group_id;
     
-    -- Find most assigned campaign
+    -- Find most assigned campaign for this campaign group
     SELECT campaign_id, campaign_name, customers_assigned
     INTO v_most_assigned_campaign_id, v_most_assigned_campaign_name, v_most_assigned_count
     FROM campaign_engine.campaign_results
     WHERE processing_run_id = p_processing_run_id
+    AND campaign_group_id = p_campaign_group_id
     ORDER BY customers_assigned DESC
     LIMIT 1;
     
@@ -280,15 +283,12 @@ BEGIN
         v_total_groups,
         v_total_customers, -- All processed customers get assignments
         0, -- No customers without assignments
-        -- Campaign assignments by group (calculated as subquery)
-        (
-            SELECT jsonb_object_agg(campaign_group_id::TEXT, total_assigned)
-            FROM (
-                SELECT campaign_group_id, SUM(customers_assigned) as total_assigned
-                FROM campaign_engine.campaign_results
-                WHERE processing_run_id = p_processing_run_id
-                GROUP BY campaign_group_id
-            ) grouped
+        -- Campaign assignments for this group only
+        jsonb_build_object(
+            p_campaign_group_id::TEXT, jsonb_build_object(
+                'group_name', COALESCE(v_campaign_group_name, 'Unknown'),
+                'total_assigned', v_total_customers
+            )
         ),
         -- Most assigned campaign
         jsonb_build_object(
@@ -305,14 +305,12 @@ BEGIN
             'processing_errors', 0,
             'most_common_error', CASE WHEN p_total_errors > 0 THEN 'CAMPAIGN_PROCESSING_ERROR' ELSE 'None' END
         ),
-        -- Performance metrics
+        -- Performance metrics (simplified to meaningful metrics only)
         jsonb_build_object(
-            'total_database_queries', 1,
-            'average_query_duration_ms', p_total_duration_ms,
-            'cache_hit_rate', 0,
+            'total_duration_seconds', ROUND(p_total_duration_ms::NUMERIC / 1000, 2),
             'customers_per_second', 
             CASE 
-                WHEN p_total_duration_ms > 0 THEN (v_total_customers::NUMERIC / p_total_duration_ms * 1000)
+                WHEN p_total_duration_ms > 0 THEN ROUND(v_total_customers::NUMERIC / p_total_duration_ms * 1000, 2)
                 ELSE 0 
             END
         )
@@ -321,6 +319,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Utility function to get processing run summary (for TypeScript service)
+-- Aggregates data directly from campaign_statistics table
 CREATE OR REPLACE FUNCTION campaign_engine.get_processing_run_summary(
     p_processing_run_id UUID
 ) RETURNS TABLE (
@@ -336,16 +335,15 @@ CREATE OR REPLACE FUNCTION campaign_engine.get_processing_run_summary(
 BEGIN
     RETURN QUERY
     SELECT 
-        cpr.request_id,
-        COALESCE(cs.total_customers, 0),
-        COALESCE(cs.total_campaigns_processed, 0),
-        COALESCE(cs.total_groups_processed, 0),
-        COALESCE(cs.total_contacts_selected, 0),
-        COALESCE(cs.total_errors, 0),
-        COALESCE(cs.total_processing_duration_ms, 0)::BIGINT,
-        (SELECT COUNT(*) FROM campaign_engine.campaign_results WHERE processing_run_id = p_processing_run_id)::INTEGER
-    FROM campaign_engine.campaign_processing_runs cpr
-    LEFT JOIN campaign_engine.campaign_statistics cs ON cs.processing_run_id = cpr.id
-    WHERE cpr.id = p_processing_run_id;
+        (SELECT cpr.request_id FROM campaign_engine.campaign_processing_runs cpr WHERE cpr.id = p_processing_run_id),
+        COALESCE(SUM(cs.total_customers), 0)::INTEGER,
+        COALESCE(SUM(cs.total_campaigns_processed), 0)::INTEGER,
+        COALESCE(COUNT(*), 0)::INTEGER,
+        COALESCE(SUM(cs.total_contacts_selected), 0)::INTEGER,
+        COALESCE(SUM(cs.total_errors), 0)::INTEGER,
+        COALESCE(MAX(cs.total_processing_duration_ms), 0)::BIGINT,
+        (SELECT COUNT(*) FROM campaign_engine.campaign_results cr WHERE cr.processing_run_id = p_processing_run_id AND cr.customers_assigned > 0)::INTEGER
+    FROM campaign_engine.campaign_statistics cs
+    WHERE cs.processing_run_id = p_processing_run_id;
 END;
 $$ LANGUAGE plpgsql;

@@ -28,7 +28,7 @@ export class ProcessingService {
     const startTime = Date.now();
     const processingLogger = createLogger({ requestId: request.request_id });
     
-    processingLogger.info('Starting campaign processing using batch stored procedures');
+    processingLogger.info('Starting parallel campaign processing by campaign groups');
 
     // Create processing run in database
     const processingRunId = await this.resultsRepository.createProcessingRun({
@@ -48,8 +48,10 @@ export class ProcessingService {
         ? campaignConfig.campaign_groups.filter((g: ProcessingCampaignGroup) => request.campaign_group_ids!.includes(g.id))
         : campaignConfig.campaign_groups;
 
-      // Process all campaigns using single batch stored procedure
-      const batchResult = await this.processCampaignsBatch(
+      processingLogger.info(`Processing ${groupsToProcess.length} campaign groups in parallel`);
+
+      // Process campaign groups in parallel - one process per group
+      const groupResults = await this.processCampaignGroupsInParallel(
         processingRunId,
         groupsToProcess,
         processingLogger
@@ -58,32 +60,38 @@ export class ProcessingService {
       const endTime = Date.now();
       const totalDuration = endTime - startTime;
 
-      processingLogger.info(`Processing completed in ${totalDuration}ms`);
-      processingLogger.info(`Processed ${batchResult.total_customers_processed} customers across ${batchResult.total_campaigns_processed} campaigns`);
-      processingLogger.info(`Encountered ${batchResult.total_errors} errors`);
+      const successfulGroups = groupResults.filter(r => r.success).length;
+      const failedGroups = groupResults.filter(r => !r.success).length;
 
-      // Get detailed results for response
-      const result = await this.buildBatchProcessingResult(
-        request.request_id,
-        processingRunId,
-        batchResult,
-        new Date(startTime),
-        new Date(endTime),
-        totalDuration
-      );
+      processingLogger.info(`Parallel processing completed in ${totalDuration}ms`);
+      processingLogger.info(`Groups processed: ${successfulGroups} successful, ${failedGroups} failed`);
 
-      // Update processing run status
+      // Get processing summary to update run status correctly
+      const summary = await this.resultsRepository.getProcessingSummary(processingRunId);
+
+      // Update processing run status with actual processed counts
       await this.resultsRepository.updateProcessingRun(request.request_id, {
         status: 'completed',
         completedAt: new Date(endTime),
-        processedCount: result.processed_count,
-        successCount: result.success_count,
-        errorCount: result.error_count,
+        processedCount: summary.total_customers || 0,
+        successCount: summary.total_customers || 0,
+        errorCount: summary.total_errors || 0,
         totalDurationMs: totalDuration
       });
 
+      // Create simplified result for response
+      const result: BatchProcessingResult = {
+        request_id: request.request_id,
+        processed_count: summary.total_customers || 0,
+        success_count: summary.total_customers || 0,
+        error_count: summary.total_errors || 0,
+        started_at: new Date(startTime).toISOString(),
+        completed_at: new Date(endTime).toISOString(),
+        total_duration_ms: totalDuration
+      };
+
       // Publish result to Kafka
-      await this.publishResultToKafka(request.request_id, result);
+      await this.publishResultToKafka(result);
 
       return result;
 
@@ -100,100 +108,88 @@ export class ProcessingService {
     }
   }
 
-  private async processCampaignsBatch(
+  private async processCampaignGroupsInParallel(
     processingRunId: string,
     groups: ProcessingCampaignGroup[],
     logger: any
+  ): Promise<any[]> {
+    logger.info(`Processing ${groups.length} campaign groups in parallel`);
+    
+    // Process each group in parallel using Promise.all
+    const groupPromises = groups.map(async (group, index) => {
+      const groupLogger = createLogger({ 
+        requestId: processingRunId, 
+        groupId: group.id,
+        groupName: group.name 
+      });
+      
+      const groupStartTime = Date.now();
+      groupLogger.info(`Starting parallel processing for group: ${group.name} (${index + 1}/${groups.length})`);
+      
+      try {
+        // Process single group using stored procedure
+        const result = await this.processSingleCampaignGroup(
+          processingRunId,
+          group,
+          groupLogger
+        );
+        
+        const groupDuration = Date.now() - groupStartTime;
+        groupLogger.info(`Completed group ${group.name} in ${groupDuration}ms`);
+        
+        return {
+          group_id: group.id,
+          group_name: group.name,
+          success: true,
+          duration_ms: groupDuration,
+          result: result
+        };
+      } catch (error) {
+        const groupDuration = Date.now() - groupStartTime;
+        groupLogger.error(`Failed to process group ${group.name} after ${groupDuration}ms:`, error);
+        
+        return {
+          group_id: group.id,
+          group_name: group.name,
+          success: false,
+          duration_ms: groupDuration,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          result: null
+        };
+      }
+    });
+    
+    // Wait for all groups to complete
+    const results = await Promise.all(groupPromises);
+    
+    const successfulGroups = results.filter(r => r.success).length;
+    const failedGroups = results.filter(r => !r.success).length;
+    
+    logger.info(`Parallel processing summary: ${successfulGroups} successful, ${failedGroups} failed`);
+    
+    return results;
+  }
+
+  private async processSingleCampaignGroup(
+    processingRunId: string,
+    group: ProcessingCampaignGroup,
+    logger: any
   ): Promise<any> {
-    logger.info(`Processing ${groups.length} campaign groups using batch stored procedure`);
+    logger.info(`Processing campaign group: ${group.name} with ${group.campaigns.length} campaigns`);
     
-    // Convert groups to JSONB for stored procedure
-    const groupsJsonb = JSON.stringify(groups);
+    // Convert single group to JSONB for stored procedure
+    const groupJsonb = JSON.stringify(group);
     
-    // Execute single batch processing stored procedure
+    // Execute batch processing stored procedure for single group
     const result = await db.raw(
       `SELECT * FROM campaign_engine.process_campaigns_batch(?::uuid, ?::jsonb)`,
-      [processingRunId, groupsJsonb]
+      [processingRunId, groupJsonb]
     );
     
     return result.rows[0];
   }
 
-  private async buildBatchProcessingResult(
-    requestId: string,
-    processingRunId: string,
-    batchResult: any,
-    startTime: Date,
-    endTime: Date,
-    totalDuration: number
-  ): Promise<BatchProcessingResult> {
-    // Get processing run summary from database
-    const summaryResult = await db.raw(
-      `SELECT * FROM campaign_engine.get_processing_run_summary(?::uuid)`,
-      [processingRunId]
-    );
-    
-    const summary = summaryResult.rows[0];
-    
-    // Get campaign results from database
-    const campaignResults = await this.resultsRepository.getCampaignResults(processingRunId);
-    
-    // Get processing errors
-    const errors = await this.resultsRepository.getProcessingErrors(processingRunId);
-    
-    // Get processing statistics
-    const statistics = await this.resultsRepository.getProcessingStatistics(processingRunId);
-    
-    return {
-      request_id: requestId,
-      processed_count: summary.total_customers || 0,
-      success_count: summary.total_customers || 0,
-      error_count: summary.total_errors || 0,
-      campaign_results: campaignResults.map(cr => ({
-        campaign_id: cr.campaign_id,
-        campaign_name: cr.campaign_name,
-        campaign_group_id: cr.campaign_group_id,
-        campaign_group_name: cr.campaign_group_name,
-        priority: cr.priority,
-        customers_assigned: cr.customers_assigned,
-        customers_with_contacts: cr.customers_with_contacts,
-        total_contacts_selected: cr.total_contacts_selected,
-        processing_duration_ms: cr.processing_duration_ms,
-        customer_assignments: [] // Will be loaded on demand
-      })),
-      errors: errors.map(e => ({
-        campaign_id: e.campaign_id,
-        error_code: e.error_code,
-        error_message: e.error_message
-      })),
-      processing_summary: statistics || {
-        total_customers: summary.total_customers || 0,
-        total_campaigns_processed: summary.total_campaigns || 0,
-        total_groups_processed: summary.total_groups || 0,
-        customers_with_assignments: summary.total_customers || 0,
-        customers_without_assignments: 0,
-        campaign_assignments_by_group: {},
-        most_assigned_campaign: { campaign_id: '', campaign_name: '', assignment_count: 0 },
-        total_contacts_selected: summary.total_contacts || 0,
-        total_processing_duration_ms: totalDuration,
-        total_errors: summary.total_errors || 0,
-        error_summary: {
-          campaign_errors: summary.total_errors || 0,
-          processing_errors: 0,
-          most_common_error: 'None'
-        },
-        performance_metrics: {
-          total_database_queries: 1,
-          average_query_duration_ms: totalDuration,
-          cache_hit_rate: 0,
-          customers_per_second: totalDuration > 0 ? (summary.total_customers || 0) / totalDuration * 1000 : 0
-        }
-      },
-      started_at: startTime.toISOString(),
-      completed_at: endTime.toISOString(),
-      total_duration_ms: totalDuration
-    };
-  }
+
 
   // Removed - all processing now handled in SQL stored procedures
 
@@ -201,53 +197,16 @@ export class ProcessingService {
 
   // Removed - all result storage now handled in SQL stored procedures
 
-  private async publishResultToKafka(requestId: string, result: BatchProcessingResult): Promise<void> {
+  private async publishResultToKafka(result: BatchProcessingResult): Promise<void> {
     try {
-      // Simplified Kafka publishing with summary data
+      // Publish all available result data to Kafka
       await this.kafkaService.publishCampaignProcessResult({
-        requestId: requestId,
-        processedCount: result.processed_count,
-        results: [], // Detailed results available via API
-        errors: result.errors.map(e => ({
-          error: e.error_message,
-          code: e.error_code
-        })),
-        timestamp: new Date().toISOString(),
-        processingDuration: result.total_duration_ms
+        ...result,
+        timestamp: new Date().toISOString()
       });
     } catch (error) {
       logger.error('Failed to publish result to Kafka:', error);
       // Don't throw here - the processing was successful even if Kafka fails
     }
-  }
-
-  // Helper method to preview generated SQL for testing/debugging
-  public async previewCampaignSQL(campaign: ProcessingCampaign, assignedCifs: string[] = []): Promise<string> {
-    const baseConditions = JSON.stringify(campaign.base_conditions || []);
-    const contactRules = JSON.stringify(campaign.contact_selection_rules || []);
-    
-    const previewQuery = `
-      -- Campaign: ${campaign.name}
-      -- Priority: ${campaign.priority}
-      -- Base Conditions: ${campaign.base_conditions.length}
-      -- Contact Rules: ${campaign.contact_selection_rules.length}
-      
-      SELECT * FROM campaign_engine.process_campaign(
-        '${campaign.id}'::uuid,
-        '${campaign.id}'::uuid,
-        '${baseConditions}'::jsonb,
-        '${contactRules}'::jsonb,
-        ARRAY[${assignedCifs.map(cif => `'${cif}'`).join(',')}]::text[],
-        3
-      );
-    `;
-    
-    logger.info('='.repeat(80));
-    logger.info('CAMPAIGN SQL PREVIEW');
-    logger.info('='.repeat(80));
-    logger.info(previewQuery);
-    logger.info('='.repeat(80));
-    
-    return previewQuery;
   }
 }

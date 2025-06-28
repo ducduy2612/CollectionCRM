@@ -131,16 +131,16 @@ export class ProcessingResultsRepository {
   }
 
 
-  // Get processing statistics
-  async getProcessingStatistics(processingRunId: string): Promise<any> {
-    const stats = await db('campaign_engine.campaign_statistics')
+  // Get processing statistics (returns all records, not just first)
+  async getProcessingStatistics(processingRunId: string): Promise<any[]> {
+    const allStats = await db('campaign_engine.campaign_statistics')
       .where('processing_run_id', processingRunId)
-      .first();
+      .orderBy('created_at', 'desc');
     
-    if (!stats) return null;
+    if (!allStats || allStats.length === 0) return [];
     
-    // Parse JSON fields safely - they might already be parsed objects
-    return {
+    // Parse JSON fields safely for each record
+    return allStats.map(stats => ({
       ...stats,
       campaign_assignments_by_group: typeof stats.campaign_assignments_by_group === 'string' 
         ? JSON.parse(stats.campaign_assignments_by_group) 
@@ -154,7 +154,7 @@ export class ProcessingResultsRepository {
       performance_metrics: typeof stats.performance_metrics === 'string' 
         ? JSON.parse(stats.performance_metrics) 
         : stats.performance_metrics
-    };
+    }));
   }
 
   // Search customer assignments
@@ -191,6 +191,25 @@ export class ProcessingResultsRepository {
     }
     
     return assignments;
+  }
+
+  // Get processing summary using the stored procedure
+  async getProcessingSummary(processingRunId: string): Promise<any> {
+    const result = await db.raw(
+      `SELECT * FROM campaign_engine.get_processing_run_summary(?::uuid)`,
+      [processingRunId]
+    );
+    
+    return result.rows[0] || {
+      request_id: null,
+      total_customers: 0,
+      total_campaigns: 0,
+      total_groups: 0,
+      total_contacts: 0,
+      total_errors: 0,
+      processing_duration_ms: 0,
+      campaign_results_count: 0
+    };
   }
 
 

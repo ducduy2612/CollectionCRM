@@ -1,7 +1,6 @@
 -- Create assignment tracking table optimized for daily processing runs
 -- Assignments are only valid within a single processing run and cleaned up daily
 
--- Drop table if it exists (for rerunning this script)
 DROP TABLE IF EXISTS campaign_engine.campaign_assignment_tracking CASCADE;
 
 -- Create campaign assignment tracking table
@@ -31,54 +30,6 @@ COMMENT ON TABLE campaign_engine.campaign_assignment_tracking IS 'Tracks custome
 -- Create indexes optimized for daily processing
 CREATE INDEX idx_assignment_tracking_run_group ON campaign_engine.campaign_assignment_tracking(processing_run_id, campaign_group_id);
 CREATE INDEX idx_assignment_tracking_assigned_at ON campaign_engine.campaign_assignment_tracking(assigned_at);
-
--- Create function to get assigned CIFs for a campaign group within current run
-CREATE OR REPLACE FUNCTION campaign_engine.get_assigned_cifs_for_run_group(
-    p_processing_run_id UUID,
-    p_campaign_group_id UUID
-) RETURNS TEXT[] AS $$
-BEGIN
-    RETURN ARRAY(
-        SELECT cif 
-        FROM campaign_engine.campaign_assignment_tracking 
-        WHERE processing_run_id = p_processing_run_id 
-        AND campaign_group_id = p_campaign_group_id
-    );
-END;
-$$ LANGUAGE plpgsql;
-
--- Create function to record campaign assignments in bulk for current run
-CREATE OR REPLACE FUNCTION campaign_engine.record_run_campaign_assignments(
-    p_processing_run_id UUID,
-    p_campaign_group_id UUID,
-    p_campaign_id UUID,
-    p_assignments JSONB -- Array of {cif}
-) RETURNS INTEGER AS $$
-DECLARE
-    inserted_count INTEGER;
-BEGIN
-    -- Insert assignments using JSONB array with ON CONFLICT DO NOTHING
-    INSERT INTO campaign_engine.campaign_assignment_tracking (
-        processing_run_id,
-        campaign_group_id,
-        cif,
-        campaign_id,
-        assigned_at
-    )
-    SELECT 
-        p_processing_run_id,
-        p_campaign_group_id,
-        elem->>'cif',
-        p_campaign_id,
-        NOW()
-    FROM jsonb_array_elements(p_assignments) AS elem
-    ON CONFLICT (processing_run_id, campaign_group_id, cif) DO NOTHING;
-    
-    GET DIAGNOSTICS inserted_count = ROW_COUNT;
-    
-    RETURN inserted_count;
-END;
-$$ LANGUAGE plpgsql;
 
 -- Create function to cleanup assignments older than specified days (for daily cleanup)
 CREATE OR REPLACE FUNCTION campaign_engine.cleanup_old_assignments(

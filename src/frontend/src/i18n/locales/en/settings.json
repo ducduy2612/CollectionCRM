@@ -1122,7 +1122,9 @@
         "customers_assigned": "Customers Assigned",
         "customers_with_contacts": "With Contacts",
         "selected_contacts": "Selected Contacts",
-        "no_contacts_selected": "No contacts selected for this assignment"
+        "no_contacts_selected": "No contacts selected for this assignment",
+        "all_statistics": "All statistics",
+        "total_duration": "Duration"
       }
     }
   }

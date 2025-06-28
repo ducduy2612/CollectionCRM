@@ -348,10 +348,8 @@ export interface ProcessingStatistics {
     processing_errors: number;
   };
   performance_metrics: {
-    cache_hit_rate: number;
+    total_duration_seconds: number;
     customers_per_second: number;
-    total_database_queries: number;
-    average_query_duration_ms: number;
   };
   created_at: string;
 }

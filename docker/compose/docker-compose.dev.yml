@@ -151,6 +151,8 @@ services:
       - postgres-data:/var/lib/postgresql/data
       - ../../infrastructure/database/init:/docker-entrypoint-initdb.d:ro
       - ../../infrastructure/database/scripts:/scripts:ro
+      - ../../docker/config/postgresql.conf:/postgresql.conf:ro
+    command: postgres -c config_file=/postgresql.conf
     ports:
       - "5432:5432"
     healthcheck:
@@ -161,6 +163,14 @@ services:
     networks:
       - collectioncrm-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '16.0'        # Use up to 16 CPU cores
+          memory: 16G         # Use up to 16GB RAM
+        reservations:
+          cpus: '4.0'        # Reserve at least 4 cores
+          memory: 4G         # Reserve at least 4GB RAM
 
   # Redis
   redis:

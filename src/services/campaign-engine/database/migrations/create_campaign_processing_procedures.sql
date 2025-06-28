@@ -4,19 +4,20 @@
 
 -- Drop functions if they exist (for rerunning this script)
 DROP FUNCTION IF EXISTS campaign_engine.process_campaign(UUID, UUID, JSONB, JSONB, TEXT[], INTEGER);
+DROP FUNCTION IF EXISTS campaign_engine.process_campaign(UUID, UUID, UUID, JSONB, JSONB, INTEGER);
 DROP FUNCTION IF EXISTS campaign_engine.build_conditions_where_clause(JSONB);
 DROP FUNCTION IF EXISTS campaign_engine.create_contacts_temp_table(UUID, JSONB, TEXT);
 DROP FUNCTION IF EXISTS campaign_engine.apply_contact_exclusion_rules(UUID, JSONB, TEXT, TEXT, TEXT);
 DROP FUNCTION IF EXISTS campaign_engine.build_rule_conditions_where(JSONB, TEXT);
 
 -- Function to process a single campaign and return results
--- Updated to work with the new batch processing system
+-- Updated to use EXISTS instead of array exclusion for better performance
 CREATE OR REPLACE FUNCTION campaign_engine.process_campaign(
     p_campaign_id UUID,
     p_campaign_group_id UUID,
+    p_processing_run_id UUID,
     p_base_conditions JSONB,
     p_contact_rules JSONB,
-    p_excluded_cifs TEXT[],
     p_max_contacts_per_customer INTEGER DEFAULT 3
 ) RETURNS TABLE (
     cif VARCHAR,
@@ -51,17 +52,13 @@ BEGIN
     -- Build WHERE clause from base conditions
     v_where_clause := campaign_engine.build_conditions_where_clause(p_base_conditions);
     
-    -- Build exclusion clause for already assigned customers
-    IF p_excluded_cifs IS NOT NULL AND array_length(p_excluded_cifs, 1) > 0 THEN
-        v_exclude_clause := format(' AND lcd.cif NOT IN (%s)', 
-            array_to_string(
-                ARRAY(SELECT quote_literal(excluded_cif) FROM unnest(p_excluded_cifs) AS excluded_cif), 
-                ','
-            )
-        );
-    ELSE
-        v_exclude_clause := '';
-    END IF;
+    -- Build exclusion clause using EXISTS for already assigned customers (much more efficient)
+    v_exclude_clause := format(' AND NOT EXISTS (
+        SELECT 1 FROM campaign_engine.campaign_assignment_tracking cat
+        WHERE cat.processing_run_id = %L
+        AND cat.campaign_group_id = %L
+        AND cat.cif = lcd.cif
+    )', p_processing_run_id, p_campaign_group_id);
     
     -- Create temp table for campaign customers
     v_query := format('

@@ -76,6 +76,13 @@ router.get('/runs/:id/errors',
   processingController.getProcessingErrors.bind(processingController)
 );
 
+// Get processing summary
+router.get('/runs/:id/summary',
+  param('id').isUUID().withMessage('Invalid processing run ID'),
+  validateRequest,
+  processingController.getProcessingSummary.bind(processingController)
+);
+
 // Get customer assignments for a specific campaign result
 router.get('/results/:campaignResultId/assignments',
   [
