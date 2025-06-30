@@ -163,6 +163,7 @@ services:
     networks:
       - collectioncrm-network
     restart: unless-stopped
+    shm_size: 2g
     deploy:
       resources:
         limits:

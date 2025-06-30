@@ -12,9 +12,13 @@ import { getCorsOptions } from './config/cors.config';
 import { createSwaggerSpec } from './config/swagger.config';
 import { jwtAuth } from './middleware/jwt-auth.middleware';
 import { methodOverride } from './middleware/method-override.middleware';
+import { validateLicenseOnStartup, licenseWarningMiddleware, getLicenseStatus, licenseInfoMiddleware } from './middleware/license.middleware';
 
 // Load environment variables
 dotenv.config();
+
+// Validate license on startup
+validateLicenseOnStartup();
 
 // Initialize Express app
 const app = express();
@@ -41,6 +45,9 @@ app.use(methodOverride);
 // JWT authentication middleware
 app.use(jwtAuth);
 
+// License warning middleware (adds headers if license is expiring)
+app.use(licenseWarningMiddleware);
+
 // Redis-based rate limiting
 app.use(redisRateLimiter({
   max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10),
@@ -61,6 +68,9 @@ app.get('/health', (req, res) => {
     version: process.env.npm_package_version || '1.0.0'
   });
 });
+
+// License status endpoint (admin only)
+app.get('/license/status', licenseInfoMiddleware, getLicenseStatus);
 
 // Redis health check endpoint
 app.get('/health/redis', async (req, res) => {

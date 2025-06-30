@@ -15,7 +15,8 @@
     "moduleResolution": "node",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@collectioncrm/*": ["../../*"]
     },
     "typeRoots": ["./node_modules/@types", "./src/types"]
   },

@@ -60,51 +60,6 @@ services:
           cpus: '2'
           memory: 2G
 
-  # PostgreSQL Read Replica (Optional - for read scaling)
-  postgres-replica:
-    image: postgres:15-alpine
-    <<: *common-config
-    environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
-      - PGUSER=${DB_USER}
-      - POSTGRES_PRIMARY_HOST=postgres-primary
-      - POSTGRES_PRIMARY_PORT=5432
-      - POSTGRES_REPLICA_USER=${REPLICA_USER}
-      - POSTGRES_REPLICA_PASSWORD=${REPLICA_PASSWORD}
-    env_file:
-      - ../../config/postgres.prod.env
-    volumes:
-      - postgres-replica-data:/var/lib/postgresql/data
-      - ./postgres-replica-setup.sh:/docker-entrypoint-initdb.d/replica-setup.sh:ro
-    command: >
-      postgres
-      -c wal_level=replica
-      -c hot_standby=on
-      -c max_wal_senders=10
-      -c max_replication_slots=10
-      -c hot_standby_feedback=on
-    ports:
-      - "5433:5432"
-    depends_on:
-      postgres-primary:
-        condition: service_healthy
-    networks:
-      - collectioncrm-db-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 2G
-        reservations:
-          cpus: '1'
-          memory: 1G
 
   # PostgreSQL Connection Pooler (PgBouncer)
   pgbouncer:
@@ -184,8 +139,6 @@ services:
 
 volumes:
   postgres-prod-data:
-    driver: local
-  postgres-replica-data:
     driver: local
   postgres-prod-backups:
     driver: local

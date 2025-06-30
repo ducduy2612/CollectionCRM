@@ -61,6 +61,13 @@ bower_components/
 .eslintcache
 .stylelintcache
 
+# License server (contains private keys - NEVER commit!)
+scripts/license-server/
+*.pem
+*-license-*.txt
+*-public-key-*.txt
+*-record-*.json
+
 # Misc
 .DS_Store
 Thumbs.db

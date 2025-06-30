@@ -265,7 +265,6 @@ CREATE INDEX idx_addresses_country ON bank_sync_service.addresses(country);
 CREATE INDEX idx_addresses_cif ON bank_sync_service.addresses(cif);
 
 -- Email indexes
-CREATE INDEX idx_emails_address ON bank_sync_service.emails(address);
 CREATE INDEX idx_emails_cif ON bank_sync_service.emails(cif);
 
 -- Loan indexes
@@ -379,7 +378,6 @@ LEFT JOIN bank_sync_service.loan_custom_fields lcf ON l.account_number = lcf.acc
 -- Create indexes for performance
 CREATE UNIQUE INDEX idx_loan_campaign_data_account ON bank_sync_service.loan_campaign_data(account_number);
 CREATE INDEX idx_loan_campaign_data_cif ON bank_sync_service.loan_campaign_data(cif);
-CREATE INDEX idx_loan_campaign_data_customer_id ON bank_sync_service.loan_campaign_data(customer_id);
 CREATE INDEX idx_loan_campaign_data_segment ON bank_sync_service.loan_campaign_data(segment);
 CREATE INDEX idx_loan_campaign_data_customer_status ON bank_sync_service.loan_campaign_data(customer_status);
 CREATE INDEX idx_loan_campaign_data_client_outstanding ON bank_sync_service.loan_campaign_data(client_outstanding);

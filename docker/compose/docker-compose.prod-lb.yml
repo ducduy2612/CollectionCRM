@@ -23,7 +23,6 @@ services:
       - ../config/nginx/production.conf:/etc/nginx/nginx.conf:ro
       - ../config/nginx/ssl:/etc/nginx/ssl:ro
       - ../config/nginx/logs:/var/log/nginx
-      - ../../src/frontend/dist:/usr/share/nginx/html:ro
     networks:
       - collectioncrm-external-network
       - collectioncrm-lb-network
@@ -41,34 +40,6 @@ services:
           cpus: '1'
           memory: 512M
 
-  # HAProxy Alternative Load Balancer (Optional)
-  haproxy-lb:
-    image: haproxy:2.8-alpine
-    <<: *common-config
-    ports:
-      - "8080:80"
-      - "8443:443"
-      - "8404:8404"  # Stats page
-    volumes:
-      - ../config/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
-      - ../config/haproxy/ssl:/etc/ssl/certs:ro
-      - ../config/haproxy/logs:/var/log/haproxy
-    networks:
-      - collectioncrm-external-network
-      - collectioncrm-lb-network
-    healthcheck:
-      test: ["CMD", "haproxy", "-c", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 512M
-        reservations:
-          cpus: '0.5'
-          memory: 256M
 
   # Frontend Static Files Server
   frontend-static:
@@ -105,7 +76,7 @@ services:
     volumes:
       - certbot-data:/etc/letsencrypt
       - certbot-logs:/var/log/letsencrypt
-      - ../../src/frontend/dist:/var/www/html:ro
+      - certbot-webroot:/var/www/html
     command: >
       sh -c "while true; do
         certbot renew --webroot --webroot-path=/var/www/html --quiet
@@ -129,7 +100,6 @@ services:
     volumes:
       - ../config/fluentd/fluent.conf:/fluentd/etc/fluent.conf:ro
       - ../config/nginx/logs:/var/log/nginx:ro
-      - ../config/haproxy/logs:/var/log/haproxy:ro
       - fluentd-data:/fluentd/log
     ports:
       - "24224:24224"
@@ -194,6 +164,8 @@ volumes:
   certbot-data:
     driver: local
   certbot-logs:
+    driver: local
+  certbot-webroot:
     driver: local
   fluentd-data:
     driver: local
