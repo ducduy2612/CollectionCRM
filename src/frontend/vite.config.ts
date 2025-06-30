@@ -14,6 +14,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0', // Listen on all interfaces to allow Docker port mapping
     port: 5173,
+    allowedHosts: ['.daytona.work'],
     proxy: {
       '/api': {
         target: 'http://api-gateway:3000',

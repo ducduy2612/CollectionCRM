@@ -40,10 +40,11 @@ const kafkaConfig: KafkaConfig = {
   logCreator: () => {
     return ({ namespace, level, label, log }) => {
       const logMethod = level === 1 ? 'error' : level === 2 ? 'warn' : 'info';
+      const { message, ...logRest } = log;
       logger[logMethod]({
-        message: `[${label}] ${log.message}`,
+        message: `[${label}] ${message}`,
         namespace,
-        ...log
+        ...logRest
       });
     };
   }

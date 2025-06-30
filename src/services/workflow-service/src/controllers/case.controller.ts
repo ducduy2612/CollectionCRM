@@ -63,7 +63,7 @@ export class CaseController {
 
       const status = await CustomerStatusRepository.createStatus({
         cif,
-        agentId: req.user?.agentId,
+        agentId: req.user?.agentId || '',
         statusId,
         actionDate: actionDate ? new Date(actionDate) : new Date(),
         notes,
@@ -133,7 +133,7 @@ export class CaseController {
 
       const status = await LendingViolationStatusRepository.createStatus({
         cif,
-        agentId: req.user?.agentId,
+        agentId: req.user?.agentId || '',
         statusId,
         actionDate: actionDate ? new Date(actionDate) : new Date(),
         notes,
@@ -203,7 +203,7 @@ export class CaseController {
 
       const status = await RecoveryAbilityStatusRepository.createStatus({
         cif,
-        agentId: req.user?.agentId,
+        agentId: req.user?.agentId || '',
         statusId,
         actionDate: actionDate ? new Date(actionDate) : new Date(),
         notes,
@@ -273,7 +273,7 @@ export class CaseController {
 
       const status = await ProcessingStateStatusRepository.createStatus({
         cif,
-        agentId: req.user?.agentId,
+        agentId: req.user?.agentId || '',
         stateId,
         substateId,
         actionDate: actionDate ? new Date(actionDate) : new Date(),
@@ -345,7 +345,7 @@ export class CaseController {
       const status = await CollateralStatusRepository.createStatus({
         cif,
         collateralNumber,
-        agentId: req.user?.agentId,
+        agentId: req.user?.agentId || '',
         statusId,
         actionDate: actionDate ? new Date(actionDate) : new Date(),
         notes,

@@ -64,7 +64,7 @@ export class CustomerContactController {
         number,
         isPrimary: isPrimary || false,
         isVerified: isVerified || false,
-        verificationDate: verificationDate ? new Date(verificationDate) : null,
+        verificationDate: verificationDate ? new Date(verificationDate) : undefined,
         createdBy: req.user?.username || 'system',
         updatedBy: req.user?.username || 'system'
       });
@@ -214,7 +214,7 @@ export class CustomerContactController {
         country,
         isPrimary: isPrimary || false,
         isVerified: isVerified || false,
-        verificationDate: verificationDate ? new Date(verificationDate) : null,
+        verificationDate: verificationDate ? new Date(verificationDate) : undefined,
         createdBy: req.user?.username || 'system',
         updatedBy: req.user?.username || 'system'
       });
@@ -374,7 +374,7 @@ export class CustomerContactController {
         address,
         isPrimary: isPrimary || false,
         isVerified: isVerified || false,
-        verificationDate: verificationDate ? new Date(verificationDate) : null,
+        verificationDate: verificationDate ? new Date(verificationDate) : undefined,
         createdBy: req.user?.username || 'system',
         updatedBy: req.user?.username || 'system'
       });

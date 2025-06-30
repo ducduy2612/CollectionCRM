@@ -82,7 +82,7 @@ const CampaignGroupModal: React.FC<CampaignGroupModalProps> = ({ isOpen, onClose
     }
   };
 
-  const isLoading = createMutation.isPending || updateMutation.isPending;
+  const isLoading = createMutation.isLoading || updateMutation.isLoading;
 
   return (
     <Modal

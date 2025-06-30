@@ -198,7 +198,7 @@ export class ReferenceCustomerController {
         relationshipType,
         type,
         name,
-        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
         nationalId,
         gender,
         companyName,
