@@ -90,7 +90,7 @@ export class CustomerCaseUpdateConsumer {
       
       logger.debug({
         eventId: event.id,
-        actionId: event.actionId,
+        actionIds: event.actionIds,
         cif: event.cif,
         offset: message.offset
       }, 'Received action record created event');

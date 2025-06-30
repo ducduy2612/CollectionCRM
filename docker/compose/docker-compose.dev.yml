@@ -15,6 +15,8 @@ services:
     volumes:
       # Mount source code for hot-reloading
       - ../../src/frontend/src:/app/src
+      # Mount vite config for live updates
+      - ../../src/frontend/vite.config.ts:/app/vite.config.ts
     depends_on:
       - api-gateway
     networks:

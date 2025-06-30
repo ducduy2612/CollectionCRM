@@ -170,7 +170,7 @@ export const AddressRepository = AppDataSource.getRepository(Address).extend({
   async deleteAddress(id: string): Promise<boolean> {
     try {
       const result = await this.delete(id);
-      return result.affected > 0;
+      return (result.affected ?? 0) > 0;
     } catch (error) {
       throw Errors.wrap(
         error as Error,

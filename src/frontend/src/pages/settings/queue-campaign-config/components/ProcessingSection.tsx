@@ -55,9 +55,7 @@ const ProcessingSection: React.FC = () => {
         setProcessingRuns(runsResponse.data);
       }
       
-      if (groupsResponse.success) {
-        setCampaignGroups(groupsResponse.data.groups);
-      }
+      setCampaignGroups(groupsResponse);
     } catch (err) {
       console.error('Load initial data error:', err);
       setError(t('campaign_config.processing.error.load_failed'));
@@ -147,7 +145,7 @@ const ProcessingSection: React.FC = () => {
         </div>
 
         {error && (
-          <Alert variant="error" className="mb-4">
+          <Alert variant="danger" className="mb-4">
             <ExclamationTriangleIcon className="w-5 h-5" />
             <span>{error}</span>
           </Alert>

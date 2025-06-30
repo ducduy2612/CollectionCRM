@@ -192,7 +192,7 @@ export const ReferenceCustomerRepository = AppDataSource.getRepository(Reference
   async deleteReferenceCustomer(id: string): Promise<boolean> {
     try {
       const result = await this.delete(id);
-      return result.affected > 0;
+      return (result.affected ?? 0) > 0;
     } catch (error) {
       throw Errors.wrap(
         error as Error,

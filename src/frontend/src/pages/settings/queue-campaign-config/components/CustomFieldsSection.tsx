@@ -20,9 +20,13 @@ const CustomFieldModal: React.FC<CustomFieldModalProps> = ({ isOpen, onClose, fi
   const { t } = useTranslation('settings');
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    field_name: string;
+    data_type: 'string' | 'number' | 'date' | 'boolean';
+    description: string;
+  }>({
     field_name: '',
-    data_type: 'string' as const,
+    data_type: 'string',
     description: ''
   });
   const [errors, setErrors] = useState<{ field_name?: string; data_type?: string }>({});

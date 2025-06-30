@@ -5,7 +5,7 @@ import {
   UserGroupIcon,
   ClipboardDocumentListIcon
 } from '@heroicons/react/24/outline';
-import type { ModalTab } from '../hooks/useModalTabs';
+import type { ModalTab } from './useModalTabs';
 
 interface Tab {
   id: ModalTab;
