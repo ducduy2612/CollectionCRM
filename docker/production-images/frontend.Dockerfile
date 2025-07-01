@@ -25,10 +25,11 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy source code
 COPY src/frontend ./
 
-# Copy staging environment file as .env for build
-COPY src/frontend/.env.staging ./.env
+# Create .env with PLACEHOLDER for runtime substitution
+# Only include the environment variable that's actually used
+RUN echo 'VITE_API_BASE_URL=__API_BASE_URL__' > .env
 
-# Build the application with environment variables
+# Build the application with placeholder value
 RUN npm run build
 
 # Stage 3: Production - Nginx server
@@ -37,8 +38,9 @@ FROM nginxinc/nginx-unprivileged:stable-alpine AS production
 # Temporarily switch to root to install updates and copy files
 USER root
 
-# Install security updates
+# Install security updates and gettext for envsubst
 RUN apk update && apk upgrade && \
+    apk add --no-cache gettext && \
     rm -rf /var/cache/apk/*
 
 # Copy built application with proper ownership
@@ -51,6 +53,19 @@ COPY --chown=nginx:nginx docker/config/nginx/frontend.conf /etc/nginx/conf.d/def
 RUN find /usr/share/nginx/html -type d -print0 | xargs -0 chmod 755 && \
     find /usr/share/nginx/html -type f -print0 | xargs -0 chmod 644
 
+# Create entrypoint script for runtime environment variable substitution
+RUN echo '#!/bin/sh' > /docker-entrypoint.sh && \
+    echo 'echo "Substituting environment variables in frontend..."' >> /docker-entrypoint.sh && \
+    echo '# Set default values if not provided' >> /docker-entrypoint.sh && \
+    echo 'API_BASE_URL=${VITE_API_BASE_URL:-/api}' >> /docker-entrypoint.sh && \
+    echo 'echo "Using API_BASE_URL: $API_BASE_URL"' >> /docker-entrypoint.sh && \
+    echo '# Replace placeholder in JavaScript files' >> /docker-entrypoint.sh && \
+    echo 'find /usr/share/nginx/html -name "*.js" -type f -exec sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" {} \\;' >> /docker-entrypoint.sh && \
+    echo 'echo "Environment substitution completed"' >> /docker-entrypoint.sh && \
+    echo '# Start nginx' >> /docker-entrypoint.sh && \
+    echo 'exec nginx -g "daemon off;"' >> /docker-entrypoint.sh && \
+    chmod +x /docker-entrypoint.sh
+
 # Switch back to nginx user
 USER nginx
 
@@ -61,5 +76,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
-# Start nginx (CMD is inherited from base image)
-CMD ["nginx", "-g", "daemon off;"]
+# Use custom entrypoint that handles environment substitution
+ENTRYPOINT ["/docker-entrypoint.sh"]
