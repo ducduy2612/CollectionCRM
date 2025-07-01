@@ -1,5 +1,4 @@
 import { 
-  ProcessingCampaign,
   BatchProcessingRequest,
   BatchProcessingResult,
   CampaignConfiguration,

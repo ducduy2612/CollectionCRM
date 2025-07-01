@@ -249,9 +249,99 @@ jobs:
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
 
+  build-campaign-engine:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_PREFIX }}/collectioncrm-campaign-engine
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=${{ github.event.inputs.tag || 'latest' }}
+      
+      - name: Build and push Campaign Engine image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/production-images/campaign-engine.Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+  build-payment-service:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_PREFIX }}/collectioncrm-payment-service
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=${{ github.event.inputs.tag || 'latest' }}
+      
+      - name: Build and push Payment Service image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/production-images/payment-service.Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
   # Optional: Add a job to update deployment after successful builds
   update-deployment:
-    needs: [build-frontend, build-api-gateway, build-auth-service, build-bank-sync-service, build-workflow-service]
+    needs: [build-frontend, build-api-gateway, build-auth-service, build-bank-sync-service, build-workflow-service, build-campaign-engine, build-payment-service]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
     
@@ -265,3 +355,5 @@ jobs:
           echo "- ghcr.io/${{ github.repository_owner }}/collectioncrm-auth-service"
           echo "- ghcr.io/${{ github.repository_owner }}/collectioncrm-bank-sync-service"
           echo "- ghcr.io/${{ github.repository_owner }}/collectioncrm-workflow-service"
+          echo "- ghcr.io/${{ github.repository_owner }}/collectioncrm-campaign-engine"
+          echo "- ghcr.io/${{ github.repository_owner }}/collectioncrm-payment-service"

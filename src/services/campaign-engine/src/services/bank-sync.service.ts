@@ -87,17 +87,4 @@ export class BankSyncService {
     }
   }
 
-  /**
-   * Get fallback phone types when bank-sync-service is unavailable
-   * @returns ContactType[]
-   */
-  private getFallbackPhoneTypes(): ContactType[] {
-    return [
-      { value: 'mobile1', label: 'Mobile Phone 1', description: 'Primary mobile/cellular phone number' },
-      { value: 'mobile2', label: 'Mobile Phone 2', description: 'Secondary mobile/cellular phone number' },
-      { value: 'home1', label: 'Home Phone 1', description: 'Primary home landline phone number' },
-      { value: 'work1', label: 'Work Phone 1', description: 'Primary work/office phone number' },
-      { value: 'emergency1', label: 'Emergency Contact 1', description: 'Primary emergency contact phone number' },
-    ];
-  }
 }
