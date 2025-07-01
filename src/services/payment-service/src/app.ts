@@ -21,15 +21,15 @@ export class PaymentServiceApp {
   private server: any;
   
   // Dependencies
-  private knex: any;
-  private redisClient: any;
-  private paymentService: PaymentService;
-  private jobManager: JobManager;
-  private kafkaProducer: PaymentEventProducer;
+  private knex!: any;
+  private redisClient!: any;
+  private paymentService!: PaymentService;
+  private jobManager!: JobManager;
+  private kafkaProducer!: PaymentEventProducer;
   
   // Controllers
-  private webhookController: WebhookController;
-  private monitoringController: MonitoringController;
+  private webhookController!: WebhookController;
+  private monitoringController!: MonitoringController;
 
   constructor() {
     this.app = express();
@@ -118,9 +118,9 @@ export class PaymentServiceApp {
         },
         auth: {
           enabled: process.env.WEBHOOK_AUTH_ENABLED === 'true',
-          secret: process.env.WEBHOOK_AUTH_SECRET,
-          header_name: process.env.WEBHOOK_AUTH_HEADER || 'x-signature',
-          ip_whitelist: process.env.WEBHOOK_IP_WHITELIST?.split(','),
+          ...(process.env.WEBHOOK_AUTH_SECRET && { secret: process.env.WEBHOOK_AUTH_SECRET }),
+          ...(process.env.WEBHOOK_AUTH_HEADER && { header_name: process.env.WEBHOOK_AUTH_HEADER }),
+          ...(process.env.WEBHOOK_IP_WHITELIST && { ip_whitelist: process.env.WEBHOOK_IP_WHITELIST.split(',') }),
         },
         channels: {
           // Channel-specific configurations would be loaded here
@@ -242,11 +242,11 @@ export class PaymentServiceApp {
     this.app.get('/health', this.monitoringController.healthCheck);
 
     // API routes
-    this.app.use('/api/v1/payments', createWebhookRoutes(this.webhookController));
-    this.app.use('/api/v1/monitoring', createMonitoringRoutes(this.monitoringController));
+    this.app.use('/api/v1/payment/webhook', createWebhookRoutes(this.webhookController));
+    this.app.use('/api/v1/payment/monitoring', createMonitoringRoutes(this.monitoringController));
 
     // Root endpoint
-    this.app.get('/', (req, res) => {
+    this.app.get('/', (_req, res) => {
       res.json({
         service: 'payment-service',
         version: process.env.npm_package_version || '1.0.0',
@@ -269,7 +269,7 @@ export class PaymentServiceApp {
     });
 
     // Global error handler
-    this.app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    this.app.use((error: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
       const requestId = req.headers['x-request-id'];
       
       this.logger.error({

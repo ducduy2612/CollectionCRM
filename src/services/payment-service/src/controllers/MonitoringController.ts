@@ -21,7 +21,7 @@ export class MonitoringController {
   }
 
   // Health check endpoint
-  healthCheck = async (req: Request, res: Response): Promise<void> => {
+  healthCheck = async (_req: Request, res: Response): Promise<void> => {
     try {
       const health = await this.paymentService.getHealthCheck();
 
@@ -47,7 +47,7 @@ export class MonitoringController {
   };
 
   // Readiness check endpoint
-  readinessCheck = async (req: Request, res: Response): Promise<void> => {
+  readinessCheck = async (_req: Request, res: Response): Promise<void> => {
     try {
       const health = await this.paymentService.getHealthCheck();
       const jobsHealth = await this.jobManager.getJobsHealth();
@@ -86,7 +86,7 @@ export class MonitoringController {
   };
 
   // Prometheus metrics endpoint
-  getMetrics = async (req: Request, res: Response): Promise<void> => {
+  getMetrics = async (_req: Request, res: Response): Promise<void> => {
     try {
       const metrics = await register.metrics();
       res.set('Content-Type', register.contentType);
@@ -106,7 +106,7 @@ export class MonitoringController {
   };
 
   // Payment service statistics
-  getStats = async (req: Request, res: Response): Promise<void> => {
+  getStats = async (_req: Request, res: Response): Promise<void> => {
     try {
       const stats = await this.paymentService.getStats();
 
@@ -130,7 +130,7 @@ export class MonitoringController {
   };
 
   // Jobs status and health
-  getJobsStatus = async (req: Request, res: Response): Promise<void> => {
+  getJobsStatus = async (_req: Request, res: Response): Promise<void> => {
     try {
       const [status, health] = await Promise.all([
         this.jobManager.getJobsStatus(),
@@ -160,7 +160,7 @@ export class MonitoringController {
   };
 
   // Partition information
-  getPartitionInfo = async (req: Request, res: Response): Promise<void> => {
+  getPartitionInfo = async (_req: Request, res: Response): Promise<void> => {
     try {
       const partitionInfo = await this.jobManager.getPartitionInfo();
 
@@ -184,7 +184,7 @@ export class MonitoringController {
   };
 
   // Manual job execution endpoints
-  runStagingIngestion = async (req: Request, res: Response): Promise<void> => {
+  runStagingIngestion = async (_req: Request, res: Response): Promise<void> => {
     try {
       this.logger.info('Manual staging ingestion triggered');
       
@@ -212,7 +212,7 @@ export class MonitoringController {
     }
   };
 
-  runPartitionMaintenance = async (req: Request, res: Response): Promise<void> => {
+  runPartitionMaintenance = async (_req: Request, res: Response): Promise<void> => {
     try {
       this.logger.info('Manual partition maintenance triggered');
       
@@ -240,7 +240,7 @@ export class MonitoringController {
     }
   };
 
-  runCacheCleanup = async (req: Request, res: Response): Promise<void> => {
+  runCacheCleanup = async (_req: Request, res: Response): Promise<void> => {
     try {
       this.logger.info('Manual cache cleanup triggered');
       
@@ -307,7 +307,7 @@ export class MonitoringController {
     }
   };
 
-  clearCache = async (req: Request, res: Response): Promise<void> => {
+  clearCache = async (_req: Request, res: Response): Promise<void> => {
     try {
       this.logger.info('Manual cache clear triggered');
       

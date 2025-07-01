@@ -79,9 +79,9 @@ export class PaymentStagingModel {
       total_records: parseInt(totalResult?.total_records as string) || 0,
       processed_records: parseInt(totalResult?.processed_records as string) || 0,
       unprocessed_records: parseInt(totalResult?.unprocessed_records as string) || 0,
-      oldest_unprocessed_date: totalResult?.oldest_unprocessed_date 
-        ? new Date(totalResult.oldest_unprocessed_date) 
-        : undefined,
+      ...(totalResult?.oldest_unprocessed_date && {
+        oldest_unprocessed_date: new Date(totalResult.oldest_unprocessed_date)
+      }),
       processing_rate_per_hour: recentProcessed,
     };
   }
@@ -121,10 +121,10 @@ export class PaymentStagingModel {
       cif: row.cif,
       amount: parseFloat(row.amount),
       payment_date: new Date(row.payment_date),
-      payment_channel: row.payment_channel,
-      metadata: row.metadata ? JSON.parse(row.metadata) : undefined,
+      ...(row.payment_channel && { payment_channel: row.payment_channel }),
+      ...(row.metadata && { metadata: JSON.parse(row.metadata) }),
       processed: row.processed,
-      processed_at: row.processed_at ? new Date(row.processed_at) : undefined,
+      ...(row.processed_at && { processed_at: new Date(row.processed_at) }),
       created_at: new Date(row.created_at),
     };
   }

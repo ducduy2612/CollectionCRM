@@ -1,8 +1,6 @@
 import { Knex } from 'knex';
-import { RedisClientType } from 'redis';
 import pino from 'pino';
 import { PaymentStagingModel } from '@/models/PaymentStaging';
-import { PaymentModel } from '@/models/Payment';
 import { StagingProcessLogModel } from '@/models/StagingProcessLog';
 import { DeduplicationService } from '@/services/DeduplicationService';
 import { PaymentStaging, Payment, BatchProcessResult } from '@/types/payment.types';
@@ -18,12 +16,10 @@ export interface StagingProcessorConfig {
 
 export class StagingProcessor {
   private knex: Knex;
-  private redisClient: RedisClientType;
   private logger: pino.Logger;
   private config: StagingProcessorConfig;
   
   private stagingModel: PaymentStagingModel;
-  private paymentModel: PaymentModel;
   private processLogModel: StagingProcessLogModel;
   private deduplicationService: DeduplicationService;
   
@@ -32,19 +28,16 @@ export class StagingProcessor {
 
   constructor(
     knex: Knex,
-    redisClient: RedisClientType,
     deduplicationService: DeduplicationService,
     logger: pino.Logger,
     config: StagingProcessorConfig
   ) {
     this.knex = knex;
-    this.redisClient = redisClient;
     this.deduplicationService = deduplicationService;
     this.logger = logger;
     this.config = config;
 
     this.stagingModel = new PaymentStagingModel(knex);
-    this.paymentModel = new PaymentModel(knex);
     this.processLogModel = new StagingProcessLogModel(knex);
   }
 
@@ -106,8 +99,6 @@ export class StagingProcessor {
         duplicate_records: 0,
         error_records: 0,
         status: 'processing',
-        completed_at: undefined,
-        error_details: undefined,
       });
       processLogId = processLog.id;
 
@@ -174,7 +165,6 @@ export class StagingProcessor {
     const startTime = Date.now();
     let successful_inserts = 0;
     let duplicates_found = 0;
-    let errors = 0;
 
     try {
       // Extract reference numbers for bulk duplicate check
@@ -215,9 +205,9 @@ export class StagingProcessor {
         cif: record.cif,
         amount: record.amount,
         payment_date: record.payment_date,
-        payment_channel: record.payment_channel,
+        ...(record.payment_channel && { payment_channel: record.payment_channel }),
         source: 'staging' as const,
-        metadata: record.metadata,
+        ...(record.metadata && { metadata: record.metadata }),
       }));
 
       // Use transaction for consistency

@@ -29,3 +29,6 @@ export function createWebhookRoutes(webhookController: WebhookController): Route
 
   return router;
 }
+
+// Default export for backward compatibility
+export default { createWebhookRoutes };

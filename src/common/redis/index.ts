@@ -29,15 +29,20 @@ export class RedisConnectionManager {
   private defaultConfig: RedisConfig;
 
   private constructor() {
-    this.defaultConfig = {
+    const baseConfig: RedisConfig = {
       host: process.env.REDIS_HOST || 'redis',
       port: parseInt(process.env.REDIS_PORT || '6379', 10),
-      password: process.env.REDIS_PASSWORD || undefined,
       maxRetriesPerRequest: 3,
       connectTimeout: 10000,
       commandTimeout: 5000,
       autoResubscribe: true,
     };
+    
+    if (process.env.REDIS_PASSWORD) {
+      baseConfig.password = process.env.REDIS_PASSWORD;
+    }
+    
+    this.defaultConfig = baseConfig;
   }
 
   /**
@@ -63,16 +68,21 @@ export class RedisConnectionManager {
 
     // Create new client with merged configuration
     const clientConfig = { ...this.defaultConfig, ...config };
+    const socketOptions: any = {
+      reconnectStrategy: (retries: number) => {
+        // Exponential backoff with max 10 seconds
+        const delay = Math.min(Math.pow(2, retries) * 100, 10000);
+        return delay;
+      },
+    };
+    
+    if (clientConfig.connectTimeout !== undefined) {
+      socketOptions.connectTimeout = clientConfig.connectTimeout;
+    }
+    
     const client = createClient({
       url: `redis://${clientConfig.password ? `:${clientConfig.password}@` : ''}${clientConfig.host}:${clientConfig.port}`,
-      socket: {
-        connectTimeout: clientConfig.connectTimeout,
-        reconnectStrategy: (retries: number) => {
-          // Exponential backoff with max 10 seconds
-          const delay = Math.min(Math.pow(2, retries) * 100, 10000);
-          return delay;
-        },
-      },
+      socket: socketOptions,
       commandsQueueMaxLength: 1000,
     });
 

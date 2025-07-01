@@ -61,6 +61,23 @@ export const rateLimitConfigs = {
       windowSizeInSeconds: 60, // 1 minute
       prefix: 'campaign:customfield:'
     }
+  },
+  payment: {
+    webhookProcess: {
+      max: 100,
+      windowSizeInSeconds: 60, // 1 minute
+      prefix: 'payment:webhook:'
+    },
+    jobExecution: {
+      max: 5,
+      windowSizeInSeconds: 300, // 5 minutes
+      prefix: 'payment:job:'
+    },
+    cacheOperation: {
+      max: 10,
+      windowSizeInSeconds: 60, // 1 minute
+      prefix: 'payment:cache:'
+    }
   }
 };
 
@@ -116,10 +133,36 @@ export const serviceRoutes: Record<string, ProxyConfig> = {
   },
   payment: {
     path: '/api/payment',
-    target: process.env.PAYMENT_SERVICE_URL || 'http://payment-service:3000',
-    pathRewrite: { '^/api/payment': '' },
+    target: process.env.PAYMENT_SERVICE_URL || 'http://payment-service:3005',
+    pathRewrite: { '^/api/payment': '/api/v1/payment' },
     timeout: parseInt(process.env.PAYMENT_SERVICE_TIMEOUT || '30000', 10),
-    serviceName: 'Payment Service'
+    serviceName: 'Payment Service',
+    routes: {
+      // Monitoring routes (/api/v1/payment/monitoring)
+      health: '/monitoring/health',
+      ready: '/monitoring/ready',
+      metrics: '/monitoring/metrics',
+      stats: '/monitoring/stats',
+      jobsStatus: '/monitoring/jobs/status',
+      partitions: '/monitoring/partitions',
+      runStagingIngestion: '/monitoring/jobs/staging-ingestion/run',
+      runPartitionMaintenance: '/monitoring/jobs/partition-maintenance/run',
+      runCacheCleanup: '/monitoring/jobs/cache-cleanup/run',
+      warmCache: '/monitoring/cache/warm',
+      clearCache: '/monitoring/cache/clear',
+      paymentsByLoan: '/monitoring/payments/loan/:loan_account_number',
+      paymentSummary: '/monitoring/payments/summary/:loan_account_number',
+      // Webhook routes (/api/v1/payment/webhook)
+      webhook: '/webhook/webhook',
+      webhookChannel: '/webhook/webhook/:channel',
+      webhookStats: '/webhook/webhook/stats',
+      duplicateCheck: '/webhook/webhook/duplicate/:reference_number',
+      paymentByReference: '/webhook/webhook/payment/:reference_number'
+    },
+    requiresAuth: {
+      all: true,
+      except: ['/monitoring/health', '/monitoring/ready', '/webhook/webhook', '/webhook/webhook/:channel']
+    }
   },
   workflow: {
     path: '/api/workflow',

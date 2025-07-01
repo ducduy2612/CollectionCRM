@@ -12,8 +12,6 @@ export interface JobManagerConfig {
 }
 
 export class JobManager {
-  private paymentService: PaymentService;
-  private knex: Knex;
   private logger: pino.Logger;
   private config: JobManagerConfig;
 
@@ -29,8 +27,6 @@ export class JobManager {
     logger: pino.Logger,
     config: JobManagerConfig
   ) {
-    this.paymentService = paymentService;
-    this.knex = knex;
     this.logger = logger;
     this.config = config;
 
@@ -231,7 +227,20 @@ export class JobManager {
 
     return {
       overall_health,
-      jobs: issues,
+      jobs: issues as {
+        staging_ingestion: {
+          status: 'healthy' | 'warning' | 'error';
+          issues: string[];
+        };
+        partition_maintenance: {
+          status: 'healthy' | 'warning' | 'error';
+          issues: string[];
+        };
+        cache_cleanup: {
+          status: 'healthy' | 'warning' | 'error';
+          issues: string[];
+        };
+      },
     };
   }
 

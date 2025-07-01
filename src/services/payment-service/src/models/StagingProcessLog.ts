@@ -127,7 +127,9 @@ export class StagingProcessLogModel {
       total_processed_records: parseInt(result.total_processed_records) || 0,
       total_duplicate_records: parseInt(result.total_duplicate_records) || 0,
       total_error_records: parseInt(result.total_error_records) || 0,
-      average_batch_time_ms: result.average_batch_time_ms ? parseFloat(result.average_batch_time_ms) : undefined,
+      ...(result.average_batch_time_ms && {
+        average_batch_time_ms: parseFloat(result.average_batch_time_ms)
+      }),
     };
   }
 
@@ -164,8 +166,8 @@ export class StagingProcessLogModel {
       error_records: row.error_records,
       status: row.status,
       started_at: new Date(row.started_at),
-      completed_at: row.completed_at ? new Date(row.completed_at) : undefined,
-      error_details: row.error_details ? JSON.parse(row.error_details) : undefined,
+      ...(row.completed_at && { completed_at: new Date(row.completed_at) }),
+      ...(row.error_details && { error_details: JSON.parse(row.error_details) }),
     };
   }
 }

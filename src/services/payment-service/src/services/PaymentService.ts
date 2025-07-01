@@ -10,8 +10,6 @@ import { StagingProcessor } from '@/processors/StagingProcessor';
 import { WebhookProcessor } from '@/processors/WebhookProcessor';
 import { 
   Payment, 
-  PaymentCreateRequest, 
-  PaymentResponse, 
   PaymentStats,
   HealthCheckResult,
   BatchProcessResult 
@@ -67,7 +65,6 @@ export class PaymentService {
   private knex: Knex;
   private redisClient: RedisClientType;
   private logger: pino.Logger;
-  private config: PaymentServiceConfig;
 
   private paymentModel: PaymentModel;
   private paymentRefModel: PaymentReferenceModel;
@@ -87,7 +84,6 @@ export class PaymentService {
     this.knex = knex;
     this.redisClient = redisClient;
     this.logger = logger;
-    this.config = config;
 
     // Initialize models
     this.paymentModel = new PaymentModel(knex);
@@ -105,7 +101,6 @@ export class PaymentService {
 
     this.stagingProcessor = new StagingProcessor(
       knex,
-      redisClient,
       this.deduplicationService,
       logger,
       config.staging
@@ -126,7 +121,7 @@ export class PaymentService {
     channel?: string,
     clientIp?: string,
     signature?: string
-  ): Promise<PaymentResponse> {
+  ): Promise<WebhookProcessingResult> {
     try {
       const result = await this.webhookProcessor.processWebhookPayment(
         paymentData,
@@ -139,11 +134,7 @@ export class PaymentService {
         throw new Error(result.error || 'Payment processing failed');
       }
 
-      return {
-        status: result.duplicate ? 'duplicate' : 'created',
-        payment_id: result.payment_id!,
-        message: result.duplicate ? 'Payment already exists' : 'Payment created successfully',
-      };
+      return result;
 
     } catch (error) {
       this.logger.error({
@@ -259,12 +250,11 @@ export class PaymentService {
 
       const stagingProcessStats = await this.processLogModel.getProcessingStats();
 
-      return {
+      const result: PaymentStats = {
         staging: {
           processed_today: paymentStats.staging_payments,
           pending_count: stagingStats.pending_count,
           average_batch_time_ms: stagingProcessStats.average_batch_time_ms || 0,
-          last_processed_id: stagingStats.last_processed_id ? BigInt(stagingStats.last_processed_id) : undefined,
         },
         webhooks: {
           received_today: webhookStats.requests_today,
@@ -278,6 +268,12 @@ export class PaymentService {
         },
       };
 
+      if (stagingStats.last_processed_id) {
+        result.staging.last_processed_id = BigInt(stagingStats.last_processed_id);
+      }
+
+      return result;
+
     } catch (error) {
       this.logger.error({
         error: error instanceof Error ? error.message : String(error)
@@ -287,12 +283,17 @@ export class PaymentService {
   }
 
   async getHealthCheck(): Promise<HealthCheckResult> {
-    const checks = {
-      database: 'error' as const,
-      kafka: 'error' as const,
-      redis: 'error' as const,
+    const checks: {
+      database: 'ok' | 'error';
+      kafka: 'ok' | 'error';
+      redis: 'ok' | 'error';
+      staging_backlog: number;
+      last_staging_run?: string;
+    } = {
+      database: 'error',
+      kafka: 'error',
+      redis: 'error',
       staging_backlog: 0,
-      last_staging_run: undefined as string | undefined,
     };
 
     try {
@@ -325,8 +326,8 @@ export class PaymentService {
 
       // Get last staging run
       const lastLog = await this.processLogModel.findByStatus('completed', 1);
-      if (lastLog.length > 0) {
-        checks.last_staging_run = lastLog[0].completed_at?.toISOString();
+      if (lastLog.length > 0 && lastLog[0].completed_at) {
+        checks.last_staging_run = lastLog[0].completed_at.toISOString();
       }
     } catch (error) {
       this.logger.error({ error }, 'Staging health check failed');

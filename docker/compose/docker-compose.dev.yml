@@ -41,6 +41,7 @@ services:
       - bank-sync-service
       - workflow-service
       - campaign-engine
+      - payment-service
       - redis
     networks:
       - collectioncrm-network
@@ -128,6 +129,30 @@ services:
       - BANK_SYNC_API_PREFIX=/api/v1/bank-sync
     volumes:
       - ../../src/services/campaign-engine/src:/app/services/campaign-engine/src
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - collectioncrm-network
+    restart: unless-stoppedc
+
+  # Payment Service
+  payment-service:
+    build:
+      context: ../../
+      dockerfile: docker/base-images/payment-service.Dockerfile
+    ports:
+      - "3005:3005"
+    env_file:
+      - ../../src/services/payment-service/.env
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # For Docker file watching
+    volumes:
+      - ../../src/services/payment-service/src:/app/services/payment-service/src
     depends_on:
       postgres:
         condition: service_healthy

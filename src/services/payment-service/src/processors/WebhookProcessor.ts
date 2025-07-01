@@ -11,7 +11,7 @@ import {
   RateLimitInfo,
   WebhookMetrics 
 } from '@/types/webhook.types';
-import { PaymentCreateRequest, PaymentResponse } from '@/types/payment.types';
+import { Payment } from '@/types/payment.types';
 
 export interface WebhookProcessorConfig {
   timeout_ms: number;
@@ -32,7 +32,6 @@ export interface WebhookProcessorConfig {
 }
 
 export class WebhookProcessor {
-  private knex: Knex;
   private redisClient: RedisClientType;
   private logger: pino.Logger;
   private config: WebhookProcessorConfig;
@@ -48,7 +47,6 @@ export class WebhookProcessor {
     logger: pino.Logger,
     config: WebhookProcessorConfig
   ) {
-    this.knex = knex;
     this.redisClient = redisClient;
     this.deduplicationService = deduplicationService;
     this.logger = logger;
@@ -62,7 +60,6 @@ export class WebhookProcessor {
       duplicate_requests: 0,
       failed_requests: 0,
       average_response_time: 0,
-      last_request_at: undefined,
     };
   }
 
@@ -146,33 +143,32 @@ export class WebhookProcessor {
       }
 
       // 4. Process payment
-      const paymentRequest: PaymentCreateRequest = {
+      const paymentDate = typeof paymentData.payment_date === 'string' 
+        ? new Date(paymentData.payment_date) 
+        : paymentData.payment_date;
+
+      const paymentCreateData: Omit<Payment, 'id' | 'created_at'> = {
         reference_number: paymentData.reference_number,
         loan_account_number: paymentData.loan_account_number,
         cif: paymentData.cif,
         amount: paymentData.amount,
-        payment_date: typeof paymentData.payment_date === 'string' 
-          ? new Date(paymentData.payment_date) 
-          : paymentData.payment_date,
-        payment_channel: paymentData.payment_channel || channel,
+        payment_date: paymentDate,
+        source: 'webhook',
         metadata: {
-          ...paymentData.metadata,
-          webhook_channel: channel,
-          client_ip: clientIp,
+          ...(paymentData.metadata || {}),
+          ...(channel && { webhook_channel: channel }),
+          ...(clientIp && { client_ip: clientIp }),
           request_id: requestId,
         },
       };
 
-      const payment = await this.paymentModel.create({
-        reference_number: paymentRequest.reference_number,
-        loan_account_number: paymentRequest.loan_account_number,
-        cif: paymentRequest.cif,
-        amount: paymentRequest.amount,
-        payment_date: paymentRequest.payment_date,
-        payment_channel: paymentRequest.payment_channel,
-        source: 'webhook',
-        metadata: paymentRequest.metadata,
-      });
+      // Add payment_channel if available
+      const effectiveChannel = paymentData.payment_channel || channel;
+      if (effectiveChannel) {
+        paymentCreateData.payment_channel = effectiveChannel;
+      }
+
+      const payment = await this.paymentModel.create(paymentCreateData);
 
       // 5. Add to deduplication cache
       await this.deduplicationService.addReference(
@@ -339,7 +335,6 @@ export class WebhookProcessor {
       duplicate_requests: 0,
       failed_requests: 0,
       average_response_time: 0,
-      last_request_at: undefined,
     };
   }
 

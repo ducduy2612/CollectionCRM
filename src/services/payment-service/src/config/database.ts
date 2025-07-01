@@ -38,7 +38,7 @@ export function createDatabaseConfig(): DatabaseConfig {
 }
 
 export function createKnexConfig(dbConfig: DatabaseConfig): Knex.Config {
-  return {
+  const knexConfig: Knex.Config = {
     client: 'postgresql',
     connection: {
       host: dbConfig.host,
@@ -55,7 +55,6 @@ export function createKnexConfig(dbConfig: DatabaseConfig): Knex.Config {
       idleTimeoutMillis: dbConfig.pool.idleTimeoutMillis,
     },
     searchPath: [dbConfig.schema, 'public'],
-    debug: dbConfig.debug,
     asyncStackTraces: process.env.NODE_ENV === 'development',
     migrations: {
       directory: path.join(__dirname, '../migrations'),
@@ -66,6 +65,12 @@ export function createKnexConfig(dbConfig: DatabaseConfig): Knex.Config {
       directory: path.join(__dirname, '../seeds'),
     },
   };
+  
+  if (dbConfig.debug !== undefined) {
+    knexConfig.debug = dbConfig.debug;
+  }
+  
+  return knexConfig;
 }
 
 export async function createDatabaseConnection(dbConfig: DatabaseConfig): Promise<Knex> {
@@ -82,6 +87,10 @@ export async function createDatabaseConnection(dbConfig: DatabaseConfig): Promis
     throw error;
   }
 }
+
+// Default export for simple usage
+const defaultConnection = createDatabaseConnection(createDatabaseConfig());
+export default defaultConnection;
 
 export async function closeDatabaseConnection(knex: Knex): Promise<void> {
   try {

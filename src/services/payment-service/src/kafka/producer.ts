@@ -129,7 +129,7 @@ export class PaymentEventProducer {
         source: payment.source,
         metadata: payment.metadata || {},
       },
-      context,
+      ...(context && { context }),
     };
 
     await this.publishEvent(event, payment.reference_number);
@@ -159,7 +159,7 @@ export class PaymentEventProducer {
         batch_start_id: batchResult.batch_start_id.toString(),
         batch_end_id: batchResult.batch_end_id.toString(),
       },
-      context,
+      ...(context && { context }),
     };
 
     await this.publishEvent(event, batchResult.batch_id);
@@ -188,7 +188,7 @@ export class PaymentEventProducer {
         source: payment.source,
         metadata: payment.metadata || {},
       },
-      context,
+      ...(context && { context }),
     }));
 
     await this.publishEventsBatch(events);

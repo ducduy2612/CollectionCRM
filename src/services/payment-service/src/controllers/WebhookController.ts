@@ -111,10 +111,10 @@ export class WebhookController {
       this.logger.info({
         request_id: requestId,
         payment_id: result.payment_id,
-        status: result.status
+        duplicate: result.duplicate
       }, 'Webhook payment processed successfully');
 
-      res.status(result.status === 'duplicate' ? 200 : 201).json({
+      res.status(result.duplicate ? 200 : 201).json({
         success: true,
         data: result,
       });
@@ -209,10 +209,10 @@ export class WebhookController {
         request_id: requestId,
         channel,
         payment_id: result.payment_id,
-        status: result.status
+        duplicate: result.duplicate
       }, 'Channel webhook payment processed successfully');
 
-      res.status(result.status === 'duplicate' ? 200 : 201).json({
+      res.status(result.duplicate ? 200 : 201).json({
         success: true,
         data: result,
       });
@@ -236,7 +236,7 @@ export class WebhookController {
   };
 
   // Get webhook statistics
-  getWebhookStats = async (req: Request, res: Response): Promise<void> => {
+  getWebhookStats = async (_req: Request, res: Response): Promise<void> => {
     try {
       const stats = await this.paymentService.getStats();
 

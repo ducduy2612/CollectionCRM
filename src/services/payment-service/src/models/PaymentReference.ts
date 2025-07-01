@@ -88,8 +88,12 @@ export class PaymentReferenceModel {
 
     return {
       total_references: parseInt(result.total_references) || 0,
-      oldest_reference_date: result.oldest_reference_date ? new Date(result.oldest_reference_date) : undefined,
-      newest_reference_date: result.newest_reference_date ? new Date(result.newest_reference_date) : undefined,
+      ...(result.oldest_reference_date && {
+        oldest_reference_date: new Date(result.oldest_reference_date)
+      }),
+      ...(result.newest_reference_date && {
+        newest_reference_date: new Date(result.newest_reference_date)
+      }),
     };
   }
 
