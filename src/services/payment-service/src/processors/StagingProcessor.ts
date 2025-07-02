@@ -214,16 +214,34 @@ export class StagingProcessor {
       await this.knex.transaction(async (trx) => {
         // Bulk insert payments
         await trx('payment_service.payments').insert(
-          payments.map(payment => ({
-            reference_number: payment.reference_number,
-            loan_account_number: payment.loan_account_number,
-            cif: payment.cif,
-            amount: payment.amount,
-            payment_date: payment.payment_date,
-            payment_channel: payment.payment_channel,
-            source: payment.source,
-            metadata: payment.metadata ? JSON.stringify(payment.metadata) : null,
-          }))
+          payments.map(payment => {
+            let metadataString = null;
+            if (payment.metadata) {
+              try {
+                // Ensure metadata is properly stringified
+                metadataString = typeof payment.metadata === 'string' 
+                  ? payment.metadata 
+                  : JSON.stringify(payment.metadata);
+              } catch (error) {
+                this.logger.warn({
+                  reference_number: payment.reference_number,
+                  error: error instanceof Error ? error.message : String(error)
+                }, 'Failed to stringify metadata, setting to null');
+                metadataString = null;
+              }
+            }
+
+            return {
+              reference_number: payment.reference_number,
+              loan_account_number: payment.loan_account_number,
+              cif: payment.cif,
+              amount: payment.amount,
+              payment_date: payment.payment_date,
+              payment_channel: payment.payment_channel,
+              source: payment.source,
+              metadata: metadataString,
+            };
+          })
         );
 
         // Get the inserted payment IDs by querying back

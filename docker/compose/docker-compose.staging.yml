@@ -77,6 +77,10 @@ services:
         condition: service_healthy
       workflow-service:
         condition: service_healthy
+      campaign-engine:
+        condition: service_healthy
+      payment-service:
+        condition: service_healthy
       redis:
         condition: service_healthy
     networks:
@@ -193,6 +197,84 @@ services:
       - collectioncrm-network
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Campaign Engine Service
+  campaign-engine:
+    build:
+      context: ../../
+      dockerfile: docker/production-images/campaign-engine.Dockerfile
+    image: ghcr.io/$GITHUB_REPOSITORY_OWNER/collectioncrm-campaign-engine:${IMAGE_TAG:-latest}
+    <<: *common-config
+    env_file:
+      - ../../src/services/campaign-engine/.env.staging
+    environment:
+      - NODE_ENV=staging
+      - PORT=3004
+      - KAFKAJS_NO_PARTITIONER_WARNING=1
+      - BANK_SYNC_SERVICE_URL=http://bank-sync-service:3002
+      - BANK_SYNC_API_PREFIX=/api/v1/bank-sync
+    expose:
+      - "3004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - collectioncrm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Payment Service
+  payment-service:
+    build:
+      context: ../../
+      dockerfile: docker/production-images/payment-service.Dockerfile
+    image: ghcr.io/$GITHUB_REPOSITORY_OWNER/collectioncrm-payment-service:${IMAGE_TAG:-latest}
+    <<: *common-config
+    env_file:
+      - ../../src/services/payment-service/.env.staging
+    environment:
+      - NODE_ENV=staging
+      - PORT=3005
+      - KAFKAJS_NO_PARTITIONER_WARNING=1
+    expose:
+      - "3005"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - collectioncrm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3005/health"]
       interval: 30s
       timeout: 10s
       retries: 3

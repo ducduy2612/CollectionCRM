@@ -114,6 +114,25 @@ export class PaymentStagingModel {
   }
 
   private mapDbResult(row: any): PaymentStaging {
+    let metadata = null;
+    
+    // Safe JSON parsing for metadata
+    if (row.metadata) {
+      try {
+        // If it's already an object, use it directly
+        if (typeof row.metadata === 'object') {
+          metadata = row.metadata;
+        } else if (typeof row.metadata === 'string') {
+          // Try to parse JSON string
+          metadata = JSON.parse(row.metadata);
+        }
+      } catch (error) {
+        // If JSON parsing fails, log the error and set metadata to null
+        console.warn(`Failed to parse metadata for staging record ${row.id}:`, error);
+        metadata = null;
+      }
+    }
+
     return {
       id: BigInt(row.id),
       reference_number: row.reference_number,
@@ -122,7 +141,7 @@ export class PaymentStagingModel {
       amount: parseFloat(row.amount),
       payment_date: new Date(row.payment_date),
       ...(row.payment_channel && { payment_channel: row.payment_channel }),
-      ...(row.metadata && { metadata: JSON.parse(row.metadata) }),
+      ...(metadata && { metadata }),
       processed: row.processed,
       ...(row.processed_at && { processed_at: new Date(row.processed_at) }),
       created_at: new Date(row.created_at),
