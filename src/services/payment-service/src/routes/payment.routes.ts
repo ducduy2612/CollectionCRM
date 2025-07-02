@@ -1,14 +1,15 @@
 import { Router } from 'express';
+import { PaymentController } from '@/controllers/PaymentController';
 
-export function createPaymentRoutes(): Router {
+export function createPaymentRoutes(paymentController: PaymentController): Router {
   const router = Router();
 
-  // TODO: Implement payment routes
-  // GET /payments - List payments
-  // GET /payments/:id - Get payment by ID
-  // POST /payments - Create payment
-  // PUT /payments/:id - Update payment
-  // DELETE /payments/:id - Delete payment
+  // Payment query routes - Get payments by CIF with optional filters
+  router.get(
+    '/cif/:cif',
+    PaymentController.validatePaymentByCifQueries,
+    paymentController.getPaymentsByCif
+  );
 
   return router;
 }

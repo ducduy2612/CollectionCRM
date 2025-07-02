@@ -41,6 +41,6 @@ export class PhoneTypesRepository {
 
   async deactivate(id: string): Promise<boolean> {
     const result = await this.repository.update(id, { is_active: false });
-    return result.affected > 0;
+    return (result.affected ?? 0) > 0;
   }
 }

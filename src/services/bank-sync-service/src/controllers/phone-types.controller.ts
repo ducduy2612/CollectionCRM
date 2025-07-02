@@ -32,7 +32,7 @@ export class PhoneTypesController {
         message: 'Phone types retrieved successfully'
       });
     } catch (error) {
-      logger.error('Error getting phone types:', error);
+      logger.error('Error getting phone types:', error instanceof Error ? error : new Error(String(error)));
       next(error);
     }
   };
@@ -66,7 +66,7 @@ export class PhoneTypesController {
         message: 'Phone type retrieved successfully'
       });
     } catch (error) {
-      logger.error(`Error getting phone type by value ${req.params.value}:`, error);
+      logger.error(`Error getting phone type by value ${req.params.value}:`, error instanceof Error ? error : new Error(String(error)));
       next(error);
     }
   };
@@ -99,7 +99,7 @@ export class PhoneTypesController {
         message: 'Phone type created successfully'
       });
     } catch (error) {
-      logger.error('Error creating phone type:', error);
+      logger.error('Error creating phone type:', error instanceof Error ? error : new Error(String(error)));
       next(error);
     }
   };
@@ -140,7 +140,7 @@ export class PhoneTypesController {
         message: 'Phone type updated successfully'
       });
     } catch (error) {
-      logger.error(`Error updating phone type ${req.params.id}:`, error);
+      logger.error(`Error updating phone type ${req.params.id}:`, error instanceof Error ? error : new Error(String(error)));
       next(error);
     }
   };
@@ -169,7 +169,7 @@ export class PhoneTypesController {
         message: 'Phone type deactivated successfully'
       });
     } catch (error) {
-      logger.error(`Error deactivating phone type ${req.params.id}:`, error);
+      logger.error(`Error deactivating phone type ${req.params.id}:`, error instanceof Error ? error : new Error(String(error)));
       next(error);
     }
   };

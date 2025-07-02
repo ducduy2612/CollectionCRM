@@ -138,7 +138,7 @@ services:
         condition: service_healthy
     networks:
       - collectioncrm-network
-    restart: unless-stoppedc
+    restart: unless-stopped
 
   # Payment Service
   payment-service:

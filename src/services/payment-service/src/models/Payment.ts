@@ -79,6 +79,45 @@ export class PaymentModel {
     return results.map(this.mapDbResult);
   }
 
+  async findByCifWithFilters(
+    cif: string,
+    filters: {
+      loan_account_number?: string;
+      start_date?: Date;
+      end_date?: Date;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<Payment[]> {
+    const {
+      loan_account_number,
+      start_date,
+      end_date,
+      limit = 100,
+      offset = 0
+    } = filters;
+
+    let query = this.knex(this.tableName)
+      .where('cif', cif);
+
+    // Add loan account number filter if provided
+    if (loan_account_number) {
+      query = query.where('loan_account_number', loan_account_number);
+    }
+
+    // Add date range filter if provided
+    if (start_date && end_date) {
+      query = query.whereBetween('payment_date', [start_date, end_date]);
+    }
+
+    const results = await query
+      .orderBy('payment_date', 'desc')
+      .limit(limit)
+      .offset(offset);
+
+    return results.map(this.mapDbResult);
+  }
+
   async findByDateRange(
     start_date: Date,
     end_date: Date,
@@ -94,29 +133,6 @@ export class PaymentModel {
     return results.map(this.mapDbResult);
   }
 
-  async getPaymentSummary(loan_account_number: string): Promise<{
-    total_payments: number;
-    total_amount: number;
-    first_payment_date?: Date;
-    last_payment_date?: Date;
-  }> {
-    const result = await this.knex(this.tableName)
-      .where('loan_account_number', loan_account_number)
-      .select(
-        this.knex.raw('COUNT(*) as total_payments'),
-        this.knex.raw('SUM(amount) as total_amount'),
-        this.knex.raw('MIN(payment_date) as first_payment_date'),
-        this.knex.raw('MAX(payment_date) as last_payment_date')
-      )
-      .first();
-
-    return {
-      total_payments: parseInt(result.total_payments) || 0,
-      total_amount: parseFloat(result.total_amount) || 0,
-      first_payment_date: result.first_payment_date || undefined,
-      last_payment_date: result.last_payment_date || undefined,
-    };
-  }
 
   async getTodayStats(): Promise<{
     total_payments: number;

@@ -25,8 +25,8 @@ COPY src/services/campaign-engine /app/services/campaign-engine
 WORKDIR /app/services/campaign-engine
 RUN npm install
 
-# Build Campaign Engine Service (with less strict TypeScript for external modules)
-RUN sed -i 's/"strict": true/"strict": false/' tsconfig.json && npm run build
+# Build Campaign Engine Service
+RUN npm run build
 
 # Stage 2: Production
 FROM base AS production

@@ -26,7 +26,7 @@ WORKDIR /app/services/api-gateway
 RUN npm install
 
 # Build API Gateway (with less strict TypeScript for external modules)
-RUN sed -i 's/"strict": true/"strict": false/' tsconfig.json && npm run build
+RUN npm run build
 
 # Stage 2: Production
 FROM base AS production

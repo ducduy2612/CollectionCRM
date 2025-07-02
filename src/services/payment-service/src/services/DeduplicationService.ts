@@ -257,6 +257,72 @@ export class DeduplicationService {
     }
   }
 
+  /**
+   * Check for duplicates both within the batch and against existing references
+   * Returns an object with:
+   * - duplicateRefs: All duplicate reference numbers
+   * - intraBatchDuplicates: Map of reference_number to indices where it appears in the batch
+   */
+  async bulkCheckDuplicatesWithIntraBatch(reference_numbers: string[]): Promise<{
+    duplicateRefs: string[];
+    intraBatchDuplicates: Map<string, number[]>;
+  }> {
+    if (reference_numbers.length === 0) {
+      return { duplicateRefs: [], intraBatchDuplicates: new Map() };
+    }
+
+    // First, find duplicates within the batch itself
+    const intraBatchDuplicates = new Map<string, number[]>();
+    const batchRefCounts = new Map<string, number[]>();
+    
+    // Count occurrences within the batch
+    reference_numbers.forEach((ref, index) => {
+      if (!batchRefCounts.has(ref)) {
+        batchRefCounts.set(ref, []);
+      }
+      batchRefCounts.get(ref)!.push(index);
+    });
+
+    // Identify which references appear multiple times in the batch
+    for (const [ref, indices] of batchRefCounts.entries()) {
+      if (indices.length > 1) {
+        intraBatchDuplicates.set(ref, indices);
+        this.logger.debug({ 
+          reference_number: ref, 
+          occurrences: indices.length,
+          indices 
+        }, 'Intra-batch duplicate detected');
+      }
+    }
+
+    // Get unique references to check against existing data
+    const uniqueReferences = Array.from(batchRefCounts.keys());
+    
+    // Check these unique references against existing data
+    const existingDuplicates = await this.bulkCheckDuplicates(uniqueReferences);
+    
+    // Combine results: all references that are either existing duplicates or appear multiple times in batch
+    const allDuplicateRefs = new Set<string>(existingDuplicates);
+    
+    // Add intra-batch duplicates (all occurrences) to the duplicate set
+    for (const ref of intraBatchDuplicates.keys()) {
+      allDuplicateRefs.add(ref);
+    }
+
+    this.logger.info({
+      total_refs: reference_numbers.length,
+      unique_refs: uniqueReferences.length,
+      existing_duplicates: existingDuplicates.length,
+      intra_batch_duplicate_refs: intraBatchDuplicates.size,
+      total_duplicate_refs: allDuplicateRefs.size
+    }, 'Bulk duplicate check with intra-batch detection completed');
+
+    return {
+      duplicateRefs: Array.from(allDuplicateRefs),
+      intraBatchDuplicates
+    };
+  }
+
   async warmCache(limit: number = 10000): Promise<void> {
     try {
       this.logger.info({ limit }, 'Starting cache warming');

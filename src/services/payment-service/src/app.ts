@@ -10,8 +10,10 @@ import { PaymentService, PaymentServiceConfig } from './services/PaymentService'
 import { JobManager, JobManagerConfig } from './jobs/JobManager';
 import { WebhookController } from './controllers/WebhookController';
 import { MonitoringController } from './controllers/MonitoringController';
+import { PaymentController } from './controllers/PaymentController';
 import { createWebhookRoutes } from './routes/webhook.routes';
 import { createMonitoringRoutes } from './routes/monitoring.routes';
+import { createPaymentRoutes } from './routes/payment.routes';
 import { PaymentEventProducer, KafkaConfig } from './kafka/producer';
 import { collectDefaultMetrics, register } from 'prom-client';
 
@@ -30,6 +32,7 @@ export class PaymentServiceApp {
   // Controllers
   private webhookController!: WebhookController;
   private monitoringController!: MonitoringController;
+  private paymentController!: PaymentController;
 
   constructor() {
     this.app = express();
@@ -195,6 +198,11 @@ export class PaymentServiceApp {
       this.logger.child({ component: 'monitoring-controller' })
     );
 
+    this.paymentController = new PaymentController(
+      this.paymentService,
+      this.logger.child({ component: 'payment-controller' })
+    );
+
     this.logger.info('Controllers initialized');
   }
 
@@ -244,6 +252,7 @@ export class PaymentServiceApp {
     // API routes
     this.app.use('/api/v1/payment/webhook', createWebhookRoutes(this.webhookController));
     this.app.use('/api/v1/payment/monitoring', createMonitoringRoutes(this.monitoringController));
+    this.app.use('/api/v1/payment/payments', createPaymentRoutes(this.paymentController));
 
     // Root endpoint
     this.app.get('/', (_req, res) => {

@@ -170,22 +170,53 @@ export class StagingProcessor {
       // Extract reference numbers for bulk duplicate check
       const referenceNumbers = stagingRecords.map(record => record.reference_number);
       
-      // Bulk check for duplicates
-      const duplicateRefs = await this.deduplicationService.bulkCheckDuplicates(referenceNumbers);
+      // Bulk check for duplicates including intra-batch duplicates
+      const { duplicateRefs, intraBatchDuplicates } = await this.deduplicationService.bulkCheckDuplicatesWithIntraBatch(referenceNumbers);
       const duplicateRefSet = new Set(duplicateRefs);
       
-      duplicates_found = duplicateRefs.length;
+      // Count duplicate records more accurately
+      // For existing duplicates: count all occurrences
+      // For intra-batch duplicates: count all occurrences except the first one
+      let totalDuplicateRecords = 0;
+      const existingDuplicateRefs = new Set(duplicateRefs.filter(ref => !intraBatchDuplicates.has(ref)));
+      
+      stagingRecords.forEach((record, index) => {
+        if (existingDuplicateRefs.has(record.reference_number)) {
+          // Existing duplicate - count all occurrences
+          totalDuplicateRecords++;
+        } else if (intraBatchDuplicates.has(record.reference_number)) {
+          // Intra-batch duplicate - count all except the first occurrence
+          const indices = intraBatchDuplicates.get(record.reference_number)!;
+          if (index !== indices[0]) {
+            totalDuplicateRecords++;
+          }
+        }
+      });
+      duplicates_found = totalDuplicateRecords;
       
       this.logger.debug({
         total_records: stagingRecords.length,
         duplicates_found,
-        unique_records: stagingRecords.length - duplicates_found
-      }, 'Bulk duplicate check completed');
+        unique_references: stagingRecords.length - duplicateRefs.length,
+        intra_batch_duplicates: intraBatchDuplicates.size
+      }, 'Bulk duplicate check with intra-batch detection completed');
 
-      // Filter out duplicates
-      const uniqueRecords = stagingRecords.filter(
-        record => !duplicateRefSet.has(record.reference_number)
-      );
+      // For intra-batch duplicates, we only want to process the first occurrence
+      const processedIntraBatchRefs = new Set<string>();
+      const uniqueRecords = stagingRecords.filter(record => {
+        // Skip if it's a known duplicate from existing data
+        if (duplicateRefSet.has(record.reference_number)) {
+          // But if it's an intra-batch duplicate, allow the first occurrence
+          if (intraBatchDuplicates.has(record.reference_number)) {
+            if (!processedIntraBatchRefs.has(record.reference_number)) {
+              processedIntraBatchRefs.add(record.reference_number);
+              return true; // Process the first occurrence
+            }
+          }
+          return false; // Skip all other duplicates
+        }
+        return true; // Not a duplicate
+      });
 
       if (uniqueRecords.length === 0) {
         this.logger.info({ batch_id: processLogId }, 'All records were duplicates, skipping insert');

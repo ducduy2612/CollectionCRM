@@ -203,6 +203,28 @@ export class PaymentService {
     }
   }
 
+  async getPaymentsByCifWithFilters(
+    cif: string,
+    filters: {
+      loan_account_number?: string;
+      start_date?: Date;
+      end_date?: Date;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<Payment[]> {
+    try {
+      return await this.paymentModel.findByCifWithFilters(cif, filters);
+    } catch (error) {
+      this.logger.error({
+        error: error instanceof Error ? error.message : String(error),
+        cif,
+        filters
+      }, 'Error fetching payments by CIF with filters');
+      throw error;
+    }
+  }
+
   async getPaymentsByDateRange(
     start_date: Date,
     end_date: Date,
@@ -221,22 +243,6 @@ export class PaymentService {
     }
   }
 
-  async getPaymentSummary(loan_account_number: string): Promise<{
-    total_payments: number;
-    total_amount: number;
-    first_payment_date?: Date;
-    last_payment_date?: Date;
-  }> {
-    try {
-      return await this.paymentModel.getPaymentSummary(loan_account_number);
-    } catch (error) {
-      this.logger.error({
-        error: error instanceof Error ? error.message : String(error),
-        loan_account_number
-      }, 'Error fetching payment summary');
-      throw error;
-    }
-  }
 
   // Statistics and Monitoring
   async getStats(): Promise<PaymentStats> {

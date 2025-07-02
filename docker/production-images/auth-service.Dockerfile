@@ -25,8 +25,8 @@ COPY src/services/auth-service /app/services/auth-service
 WORKDIR /app/services/auth-service
 RUN npm install
 
-# Build Auth Service (with less strict TypeScript for external modules)
-RUN sed -i 's/"strict": true/"strict": false/' tsconfig.json && npm run build
+# Build Auth Service
+RUN npm run build
 
 # Stage 2: Production
 FROM base AS production

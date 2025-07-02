@@ -25,8 +25,8 @@ COPY src/services/bank-sync-service /app/services/bank-sync-service
 WORKDIR /app/services/bank-sync-service
 RUN npm install
 
-# Build Bank Sync Service (with less strict TypeScript for external modules)
-RUN sed -i 's/"strict": true/"strict": false/' tsconfig.json && npm run build
+# Build Bank Sync Service
+RUN npm run build
 
 # Stage 2: Production
 FROM base AS production

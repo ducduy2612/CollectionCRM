@@ -60,11 +60,6 @@ INSERT INTO payment_service.payment_staging (
     ('REF-2025-001255', 'LOAN20000005', 'CIF20000005', 1000.00, '2025-07-02 18:00:00', 'CASH', '{"collector_id":"COL003","receipt_number":"RC20250702002","note":"Minimum payment"}', false),
     ('REF-2025-001256', 'LOAN20000006', 'CIF20000006', 500.00, '2025-07-02 18:30:00', 'CASH', '{"collector_id":"COL003","receipt_number":"RC20250702003","note":"Token payment"}', false);
 
--- Update processed_at timestamp for processed records
-UPDATE payment_service.payment_staging 
-SET processed_at = payment_date + INTERVAL '5 minutes'
-WHERE processed = true;
-
 -- Add some duplicate reference numbers (for testing deduplication)
 INSERT INTO payment_service.payment_staging (
     reference_number,

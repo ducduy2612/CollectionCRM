@@ -77,6 +77,11 @@ export const rateLimitConfigs = {
       max: 10,
       windowSizeInSeconds: 60, // 1 minute
       prefix: 'payment:cache:'
+    },
+    paymentQueries: {
+      max: 50,
+      windowSizeInSeconds: 60, // 1 minute
+      prefix: 'payment:queries:'
     }
   }
 };
@@ -150,8 +155,7 @@ export const serviceRoutes: Record<string, ProxyConfig> = {
       runCacheCleanup: '/monitoring/jobs/cache-cleanup/run',
       warmCache: '/monitoring/cache/warm',
       clearCache: '/monitoring/cache/clear',
-      paymentsByLoan: '/monitoring/payments/loan/:loan_account_number',
-      paymentSummary: '/monitoring/payments/summary/:loan_account_number',
+      paymentsByCif: '/payments/cif/:cif',
       // Webhook routes (/api/v1/payment/webhook)
       webhook: '/webhook/webhook',
       webhookChannel: '/webhook/webhook/:channel',

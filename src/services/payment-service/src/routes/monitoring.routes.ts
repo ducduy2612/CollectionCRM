@@ -27,17 +27,5 @@ export function createMonitoringRoutes(monitoringController: MonitoringControlle
   );
   router.post('/cache/clear', monitoringController.clearCache);
 
-  // Payment queries
-  router.get(
-    '/payments/loan/:loan_account_number',
-    MonitoringController.validatePaymentQueries,
-    monitoringController.getPaymentsByLoanAccount
-  );
-  
-  router.get(
-    '/payments/summary/:loan_account_number',
-    monitoringController.getPaymentSummary
-  );
-
   return router;
 }
