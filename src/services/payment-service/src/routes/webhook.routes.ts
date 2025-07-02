@@ -6,26 +6,26 @@ export function createWebhookRoutes(webhookController: WebhookController): Route
 
   // Generic webhook endpoint
   router.post(
-    '/webhook',
+    '/',
     WebhookController.validateWebhookPayment,
     webhookController.processWebhookPayment
   );
 
   // Channel-specific webhook endpoint
   router.post(
-    '/webhook/:channel',
+    '/:channel',
     WebhookController.validateWebhookPayment,
     webhookController.processChannelWebhookPayment
   );
 
   // Webhook statistics
-  router.get('/webhook/stats', webhookController.getWebhookStats);
+  router.get('/stats', webhookController.getWebhookStats);
 
   // Check for duplicate payment reference
-  router.get('/webhook/duplicate/:reference_number', webhookController.checkDuplicate);
+  router.get('/duplicate/:reference_number', webhookController.checkDuplicate);
 
   // Get payment by reference number
-  router.get('/webhook/payment/:reference_number', webhookController.getPaymentByReference);
+  router.get('/payment/:reference_number', webhookController.getPaymentByReference);
 
   return router;
 }

@@ -157,15 +157,15 @@ export const serviceRoutes: Record<string, ProxyConfig> = {
       clearCache: '/monitoring/cache/clear',
       paymentsByCif: '/payments/cif/:cif',
       // Webhook routes (/api/v1/payment/webhook)
-      webhook: '/webhook/webhook',
-      webhookChannel: '/webhook/webhook/:channel',
-      webhookStats: '/webhook/webhook/stats',
-      duplicateCheck: '/webhook/webhook/duplicate/:reference_number',
-      paymentByReference: '/webhook/webhook/payment/:reference_number'
+      webhook: '/webhook',
+      webhookChannel: '/webhook/:channel',
+      webhookStats: '/webhook/stats',
+      duplicateCheck: '/webhook/duplicate/:reference_number',
+      paymentByReference: '/webhook/payment/:reference_number'
     },
     requiresAuth: {
       all: true,
-      except: ['/monitoring/health', '/monitoring/ready', '/webhook/webhook', '/webhook/webhook/:channel']
+      except: ['/monitoring/health', '/monitoring/ready', '/webhook', '/webhook/:channel']
     }
   },
   workflow: {

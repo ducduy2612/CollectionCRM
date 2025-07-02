@@ -325,10 +325,24 @@ export interface AgentDetail {
   userId: string;
 }
 
-export interface Payment {
-  date: string;
+// New Payment interface matching backend API
+export interface PaymentHistoryItem {
+  id: string;
+  reference_number: string;
+  loan_account_number: string;
+  cif: string;
   amount: number;
-  method: string;
+  payment_date: string;
+  payment_channel: string | null;
+  source: string;
+  metadata: Record<string, any>;
+  created_at: string;
+}
+
+export interface PaymentHistoryFilters {
+  loan_account_number?: string;
+  start_date?: string;
+  end_date?: string;
 }
 
 // =============================================

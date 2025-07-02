@@ -173,7 +173,7 @@ export class PaymentModel {
       payment_date: new Date(row.payment_date),
       payment_channel: row.payment_channel,
       source: row.source,
-      metadata: row.metadata ? JSON.parse(row.metadata) : undefined,
+      metadata: row.metadata ? (typeof row.metadata === 'string' ? JSON.parse(row.metadata) : row.metadata) : undefined,
       created_at: new Date(row.created_at),
     };
   }

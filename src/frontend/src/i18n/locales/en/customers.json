@@ -223,7 +223,8 @@
     "duplicate_phone_type": "A phone number with this type already exists for this customer. Please choose a different type or update the existing one.",
     "duplicate_address_type": "An address with this type already exists for this customer. Please choose a different type or update the existing one.",
     "failed_to_load_assignments": "Failed to load assignment history",
-    "no_assignment_history": "No assignment history available"
+    "no_assignment_history": "No assignment history available",
+    "no_payments": "No payments found"
   },
   "action_search": {
     "title": "Search Action History",

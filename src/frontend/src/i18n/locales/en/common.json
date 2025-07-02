@@ -95,6 +95,7 @@
     "unknown": "Unknown"
   },
   "loading": "Loading...",
+  "ref": "Reference: ",
   "messages": {
     "copyright": "© 2025 Collection CRM. All rights reserved.",
     "no_data": "No data available",
@@ -163,6 +164,7 @@
   "selectFile": "Select File",
   "cancel": "Cancel",
   "activities": "Activities",
+  "not_specified":"Not specified",
   "labels": {
     "current": "Current",
     "unassigned": "Unassigned",

@@ -110,10 +110,10 @@ services:
       - ../../src/services/auth-service/.env.staging
     environment:
       - NODE_ENV=staging
-      - PORT=3000
+      - PORT=3001
       - KAFKAJS_NO_PARTITIONER_WARNING=1
     expose:
-      - "3000"
+      - "3001"
     depends_on:
       postgres:
         condition: service_healthy

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Customer, Loan, CustomerAction, Payment } from './types';
+import { Customer, Loan, CustomerAction, PaymentHistoryItem, PaymentHistoryFilters } from './types';
 import CustomerHeader from './components/CustomerHeader';
 import CustomerTabs from './components/CustomerTabs';
 import ContactInformation from './components/ContactInformation';
@@ -13,6 +13,7 @@ import ActionPanel from './components/ActionPanel';
 import CustomerList from './components/CustomerList';
 import { bankApi } from '../../services/api/bank.api';
 import { workflowApi } from '../../services/api/workflow.api';
+import { paymentApi } from '../../services/api/payment.api';
 import { Spinner } from '../../components/ui/Spinner';
 import { useTranslation } from '../../i18n/hooks/useTranslation';
 
@@ -22,12 +23,15 @@ const CustomersPage: React.FC = () => {
   const { t } = useTranslation(['customers', 'common', 'errors']);
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loans, setLoans] = useState<Loan[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([]);
+  const [payments, setPayments] = useState<PaymentHistoryItem[]>([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(false);
+  const [paymentsError, setPaymentsError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastContactDate, setLastContactDate] = useState<string | undefined>(undefined);
 
+  // Fetch customer data
   useEffect(() => {
     const fetchCustomerData = async () => {
       if (!cif) {
@@ -39,40 +43,69 @@ const CustomersPage: React.FC = () => {
       setError(null);
 
       try {
-        // Fetch customer details
         const customerData = await bankApi.getCustomer(cif);
         setCustomer(customerData);
 
-        // Set loans from customer data
         if (customerData.loans) {
           setLoans(customerData.loans);
         }
-
-        // Last contact date will be set by ActionHistory component
-
-        // Fetch customer case status
-        // const statusData = await workflowApi.getCustomerCaseStatus(cif);
-        
-        // For payments, we would typically have an endpoint like /api/bank/customers/{cif}/payments
-        // Since we don't have that in the swagger, we'll use mock data for now
-        // In a real implementation, you would fetch this from the appropriate endpoint
-        setPayments([
-          { date: 'April 15, 2025', amount: 5000000, method: 'Bank Transfer' },
-          { date: 'March 20, 2025', amount: 15000000, method: 'Cash' },
-          { date: 'February 18, 2025', amount: 15000000, method: 'Bank Transfer' },
-          { date: 'January 15, 2025', amount: 15000000, method: 'Bank Transfer' },
-          { date: 'December 18, 2024', amount: 15000000, method: 'Cash' }
-        ]);
-
       } catch (err) {
         console.error('Error fetching customer data:', err);
-        setError(t('customers:messages.failed_to_load'));
+        setError('Failed to load customer data');
       } finally {
         setLoading(false);
       }
     };
 
     fetchCustomerData();
+  }, [cif]);
+
+  // Fetch payments
+  useEffect(() => {
+    const fetchInitialPayments = async () => {
+      if (!cif) return;
+      
+      setPaymentsLoading(true);
+      setPaymentsError(null);
+      
+      try {
+        const response = await paymentApi.getPaymentsByCif(cif, { limit: 50, offset: 0 });
+        setPayments(response.data.payments);
+      } catch (err) {
+        console.error('Error fetching payments:', err);
+        setPaymentsError('Failed to load payments');
+      } finally {
+        setPaymentsLoading(false);
+      }
+    };
+
+    fetchInitialPayments();
+  }, [cif]);
+
+  // Handle payment filter changes
+  const fetchPayments = useCallback(async (filters?: PaymentHistoryFilters) => {
+    if (!cif) return;
+    
+    setPaymentsLoading(true);
+    setPaymentsError(null);
+    
+    try {
+      const params = {
+        limit: 50,
+        offset: 0,
+        ...(filters?.loan_account_number && { loan_account_number: filters.loan_account_number }),
+        ...(filters?.start_date && { start_date: filters.start_date }),
+        ...(filters?.end_date && { end_date: filters.end_date })
+      };
+      
+      const response = await paymentApi.getPaymentsByCif(cif, params);
+      setPayments(response.data.payments);
+    } catch (err) {
+      console.error('Error fetching payments:', err);
+      setPaymentsError('Failed to load payments');
+    } finally {
+      setPaymentsLoading(false);
+    }
   }, [cif]);
 
   const handleTabChange = (tab: string) => {
@@ -169,7 +202,14 @@ const CustomersPage: React.FC = () => {
           {/* Top row: ContactInformation, LoanSummary, PaymentHistory */}
           <div className="grid grid-cols-3 gap-4">
             {loans && loans.length > 0 && <LoanSummary loans={loans} />}
-            {payments && payments.length > 0 && <PaymentHistory payments={payments} />}
+            {cif && <PaymentHistory 
+              cif={cif} 
+              loans={loans} 
+              payments={payments}
+              loading={paymentsLoading}
+              error={paymentsError}
+              onFiltersChange={fetchPayments}
+            />}
             {assignmentHistoryComponent}
           </div>
         </div>
@@ -189,7 +229,14 @@ const CustomersPage: React.FC = () => {
 
       {activeTab === 'payments' && (
         <div className="space-y-4">
-          {payments && payments.length > 0 && <PaymentHistory payments={payments} />}
+          {cif && <PaymentHistory 
+            cif={cif} 
+            loans={loans} 
+            payments={payments}
+            loading={paymentsLoading}
+            error={paymentsError}
+            onFiltersChange={fetchPayments}
+          />}
         </div>
       )}
 
