@@ -11,6 +11,7 @@ import AssignmentHistory from './components/AssignmentHistory';
 import CustomerStatusComponent from './components/CustomerStatus';
 import ActionPanel from './components/ActionPanel';
 import CustomerList from './components/CustomerList';
+import DocumentHistory from './components/DocumentHistory';
 import { bankApi } from '../../services/api/bank.api';
 import { workflowApi } from '../../services/api/workflow.api';
 import { paymentApi } from '../../services/api/payment.api';
@@ -241,9 +242,11 @@ const CustomersPage: React.FC = () => {
       )}
 
       {activeTab === 'documents' && (
-        <div className="bg-white rounded-lg border border-neutral-200 p-8 text-center">
-          <p className="text-neutral-600">{t('customers:tabs.documents')} - {t('customers:messages.under_development')}</p>
-        </div>
+        <DocumentHistory 
+          cif={cif!}
+          loans={loans}
+          className="space-y-4"
+        />
       )}
 
       {activeTab === 'references' && (

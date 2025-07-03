@@ -380,6 +380,74 @@
       "notes_max_length": "Notes cannot exceed 500 characters"
     }
   },
+  "documents": {
+    "title": "Documents",
+    "customer_documents": "Customer Documents",
+    "loan_documents": "Loan Documents",
+    "upload_documents": "Upload Documents",
+    "no_documents": "No documents found",
+    "filters": {
+      "document_type": "Document Type",
+      "document_category": "Document Category",
+      "loan_account": "Loan Account",
+      "date_range": "Date Range",
+      "search": "Search documents",
+      "clear_filters": "Clear Filters"
+    },
+    "actions": {
+      "view": "View",
+      "download": "Download",
+      "delete": "Delete",
+      "upload": "Upload"
+    },
+    "upload": {
+      "drag_drop": "Drag and drop files here",
+      "browse": "or click to browse",
+      "supported_formats": "Supported formats: PDF, JPG, PNG, DOC, XLS",
+      "max_size": "Max size: 50MB per file",
+      "select_type": "Select document type",
+      "select_category": "Select document category",
+      "optional_loan": "Loan account (optional)",
+      "tags": "Tags",
+      "uploading": "Uploading...",
+      "upload_success": "Upload successful",
+      "upload_error": "Upload failed",
+      "file_size_exceeded": "File size exceeds limit",
+      "invalid_file_type": "Invalid file type",
+      "upload_timeout": "Upload timeout"
+    },
+    "document_types": {
+      "NATIONAL_ID": "National ID",
+      "PASSPORT": "Passport",
+      "BANK_STATEMENT": "Bank Statement",
+      "SALARY_SLIP": "Salary Slip",
+      "LOAN_AGREEMENT": "Loan Agreement",
+      "PAYMENT_RECEIPT": "Payment Receipt",
+      "CORRESPONDENCE": "Correspondence",
+      "OTHER": "Other"
+    },
+    "document_categories": {
+      "IDENTITY": "Identity",
+      "FINANCIAL": "Financial",
+      "LOAN": "Loan",
+      "COLLECTION": "Collection",
+      "LEGAL": "Legal",
+      "OTHER": "Other"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "PROCESSED": "Processed",
+      "FAILED": "Failed",
+      "DELETED": "Deleted",
+      "active": "Active"
+    },
+    "confirm_delete": "Are you sure you want to delete this document?",
+    "delete_success": "Document deleted successfully",
+    "delete_error": "Failed to delete document",
+    "download_error": "Failed to download document",
+    "view_error": "Failed to view document",
+    "file_info": "{{size}} • {{date}}"
+  },
   "validation": {
     "first_name_required": "First name is required",
     "last_name_required": "Last name is required",

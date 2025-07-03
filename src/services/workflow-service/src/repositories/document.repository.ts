@@ -28,7 +28,10 @@ export const DocumentRepository = AppDataSource.getRepository(Document).extend({
    */
   async findById(id: string): Promise<Document | null> {
     try {
-      return await this.findOneBy({ id });
+      return await this.findOne({
+        where: { id },
+        relations: ['uploadedByAgent']
+      });
     } catch (error) {
       throw Errors.wrap(
         error as Error,
@@ -48,6 +51,7 @@ export const DocumentRepository = AppDataSource.getRepository(Document).extend({
   async findByCustomer(cif: string, options: Partial<DocumentSearchCriteria> = {}): Promise<Document[]> {
     try {
       const queryBuilder = this.createQueryBuilder('document')
+        .leftJoinAndSelect('document.uploadedByAgent', 'agent')
         .where('document.cif = :cif', { cif })
         .andWhere('document.status = :status', { status: 'active' });
 
@@ -88,6 +92,7 @@ export const DocumentRepository = AppDataSource.getRepository(Document).extend({
           loanAccountNumber,
           status: 'active'
         },
+        relations: ['uploadedByAgent'],
         order: {
           createdAt: 'DESC'
         }

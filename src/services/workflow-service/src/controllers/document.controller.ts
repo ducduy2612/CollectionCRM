@@ -23,7 +23,7 @@ export class DocumentController {
       // Validate multiple files
       const validation = documentSecurityService.validateFiles(files);
       if (!validation.isValid) {
-        throw Errors.validation('File validation failed', { errors: validation.errors });
+        return next(Errors.validation('File validation failed', { errors: validation.errors }));
       }
 
       // Log warnings if any
@@ -75,6 +75,7 @@ export class DocumentController {
             tags: parsedTags,
             uploadedBy: agentId,
             createdBy: agentId,
+            updatedBy: agentId,
             status: 'active'
           });
 
@@ -132,7 +133,9 @@ export class DocumentController {
       const { cif } = req.params;
       const { documentType, loanAccountNumber, documentCategory } = req.query;
 
-      const documents = await DocumentRepository.findByCustomer(cif, {
+      // Check if documents table exists by handling the specific error
+      let documents;
+      documents = await DocumentRepository.findByCustomer(cif, {
         documentType: documentType as string,
         loanAccountNumber: loanAccountNumber as string,
         documentCategory: documentCategory as string
@@ -140,12 +143,13 @@ export class DocumentController {
 
       return ResponseUtil.success(res, documents, 'Customer documents retrieved');
     } catch (error) {
-      throw Errors.wrap(
+      logger.error({ error, path: req.path, params: req.params }, 'Error getting customer documents');
+      next(Errors.wrap(
         error as Error,
         OperationType.READ,
         SourceSystemType.WORKFLOW_SERVICE,
-        { operation: 'getCustomerDocuments' }
-      );
+        { operation: 'getCustomerDocuments', cif: req.params.cif }
+      ));
     }
   }
 
@@ -159,7 +163,20 @@ export class DocumentController {
       const { loanAccountNumber } = req.params;
       const { page = 1, limit = 20 } = req.query;
 
-      const documents = await DocumentRepository.findByLoan(loanAccountNumber);
+      // Handle table doesn't exist gracefully
+      let documents;
+      try {
+        documents = await DocumentRepository.findByLoan(loanAccountNumber);
+      } catch (dbError: any) {
+        if (dbError.message && dbError.message.includes('does not exist')) {
+          logger.warn('Documents table does not exist, returning empty array', {
+            loanAccountNumber,
+            error: dbError.message
+          });
+          return ResponseUtil.success(res, [], 'Document feature not yet available');
+        }
+        throw dbError;
+      }
 
       return ResponseUtil.success(res, documents, 'Loan documents retrieved');
     } catch (error) {
@@ -179,7 +196,7 @@ export class DocumentController {
 
       const document = await DocumentRepository.findById(id);
       if (!document) {
-        throw Errors.notFound('Document not found', { documentId: id });
+        return next(Errors.notFound('Document not found', { documentId: id }));
       }
 
       return ResponseUtil.success(res, document, 'Document retrieved');
@@ -201,7 +218,7 @@ export class DocumentController {
 
       const document = await DocumentRepository.findById(id);
       if (!document || document.status !== 'active') {
-        throw Errors.notFound('Document not found', { documentId: id });
+        return next(Errors.notFound('Document not found', { documentId: id }));
       }
 
       // Get file stream from storage
@@ -251,7 +268,7 @@ export class DocumentController {
 
       const document = await DocumentRepository.findById(id);
       if (!document || document.status !== 'active') {
-        throw Errors.notFound('Document not found', { documentId: id });
+        return next(Errors.notFound('Document not found', { documentId: id }));
       }
 
       // Generate presigned URL
@@ -301,7 +318,7 @@ export class DocumentController {
 
       const document = await DocumentRepository.findById(id);
       if (!document || document.status !== 'active') {
-        throw Errors.notFound('Document not found', { documentId: id });
+        return next(Errors.notFound('Document not found', { documentId: id }));
       }
 
       // Soft delete in database

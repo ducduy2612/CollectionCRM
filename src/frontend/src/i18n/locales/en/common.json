@@ -171,5 +171,21 @@
     "created_at": "Created At",
     "updated_at": "Updated At"
   },
-  "refresh": "Refresh"
+  "refresh": "Refresh",
+  "all": "All",
+  "browse_files": "Browse Files",
+  "selected_files": "Selected Files",
+  "enter_tags": "Enter tags (comma separated)",
+  "separate_with_commas": "Separate with commas",
+  "file_size": "File Size",
+  "file_type": "File Type",
+  "uploaded_by": "Uploaded By",
+  "uploaded_at": "Uploaded At",
+  "metadata": "Metadata",
+  "active_filters": "Active Filters",
+  "start_date": "Start Date",
+  "end_date": "End Date",
+  "from": "From",
+  "to": "To",
+  "select_option": "Select an option"
 }

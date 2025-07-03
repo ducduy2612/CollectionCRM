@@ -91,12 +91,6 @@ FROM workflow_service.documents
 WHERE status = 'active'
 GROUP BY document_type, document_category;
 
--- Grant permissions
-GRANT SELECT, INSERT, UPDATE, DELETE ON workflow_service.documents TO workflow_service_user;
-GRANT SELECT, INSERT ON workflow_service.document_access_logs TO workflow_service_user;
-GRANT SELECT ON workflow_service.document_statistics TO workflow_service_user;
-GRANT SELECT ON workflow_service.document_types_summary TO workflow_service_user;
-
 -- Add comments
 COMMENT ON TABLE workflow_service.documents IS 'Stores metadata for all uploaded documents in the collection system';
 COMMENT ON TABLE workflow_service.document_access_logs IS 'Audit trail for all document access and modifications';
