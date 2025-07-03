@@ -16,3 +16,7 @@ export * from './phone.repository';
 export * from './address.repository';
 export * from './email.repository';
 export * from './reference-customer.repository';
+
+// Document Storage Repositories
+export * from './document.repository';
+export * from './document-access-log.repository';

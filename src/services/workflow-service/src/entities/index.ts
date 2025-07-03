@@ -31,3 +31,7 @@ export * from './collateral-status.entity';
 export * from './processing-state-status.entity';
 export * from './lending-violation-status.entity';
 export * from './recovery-ability-status.entity';
+
+// Document Storage Entities
+export * from './document.entity';
+export * from './document-access-log.entity';
