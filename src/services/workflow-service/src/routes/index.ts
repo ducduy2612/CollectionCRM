@@ -7,6 +7,7 @@ import caseRoutes from './case.routes';
 import statusDictRoutes from './status-dict.routes';
 import customerContactRoutes from './customer-contact.routes';
 import referenceCustomerRoutes from './reference-customer.routes';
+import documentRoutes from './document.routes';
 
 const router = Router();
 
@@ -19,5 +20,6 @@ router.use('/cases', caseRoutes);
 router.use('/status-dict', statusDictRoutes);
 router.use('/customers', customerContactRoutes);
 router.use('/reference-customers', referenceCustomerRoutes);
+router.use('/documents', documentRoutes);
 
 export default router;

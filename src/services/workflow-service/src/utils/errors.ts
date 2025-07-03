@@ -193,5 +193,53 @@ export const Errors = {
     } else {
       return 500;
     }
+  },
+
+  /**
+   * Create a validation error
+   */
+  validation: (
+    message: string,
+    context?: Record<string, any>
+  ): AppError => {
+    return Errors.create(
+      ValidationErrorCodes.INVALID_VALUE,
+      message,
+      OperationType.VALIDATION,
+      SourceSystemType.WORKFLOW_SERVICE,
+      context
+    );
+  },
+
+  /**
+   * Create a not found error
+   */
+  notFound: (
+    message: string,
+    context?: Record<string, any>
+  ): AppError => {
+    return Errors.create(
+      DatabaseErrorCodes.RECORD_NOT_FOUND,
+      message,
+      OperationType.READ,
+      SourceSystemType.WORKFLOW_SERVICE,
+      context
+    );
+  },
+
+  /**
+   * Create a forbidden error
+   */
+  forbidden: (
+    message: string,
+    context?: Record<string, any>
+  ): AppError => {
+    return Errors.create(
+      AuthErrorCodes.FORBIDDEN,
+      message,
+      OperationType.AUTHORIZATION,
+      SourceSystemType.WORKFLOW_SERVICE,
+      context
+    );
   }
 };

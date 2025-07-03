@@ -43,6 +43,16 @@ export const rateLimitConfigs = {
       max: 30,
       windowSizeInSeconds: 60, // 1 minute
       prefix: 'workflow:action:record:'
+    },
+    documentUpload: {
+      max: 10,
+      windowSizeInSeconds: 60, // 1 minute
+      prefix: 'workflow:document:upload:'
+    },
+    documentDownload: {
+      max: 50,
+      windowSizeInSeconds: 60, // 1 minute
+      prefix: 'workflow:document:download:'
     }
   },
   campaign: {
@@ -171,7 +181,7 @@ export const serviceRoutes: Record<string, ProxyConfig> = {
   workflow: {
     path: '/api/workflow',
     target: process.env.WORKFLOW_SERVICE_URL || 'http://workflow-service:3003',
-    pathRewrite: { '^/api/workflow': '/api/v1/collection' },
+    pathRewrite: { '^/api/workflow': '/api/v1/workflow' },
     timeout: parseInt(process.env.WORKFLOW_SERVICE_TIMEOUT || '30000', 10),
     serviceName: 'Workflow Service',
     routes: {
@@ -184,6 +194,13 @@ export const serviceRoutes: Record<string, ProxyConfig> = {
       actionById: '/actions/:id',
       assignments: '/assignments',
       assignmentById: '/assignments/:id',
+      documents: '/documents',
+      documentUpload: '/documents/upload',
+      documentsByCustomer: '/documents/customer/:cif',
+      documentsByLoan: '/documents/loan/:loanAccountNumber',
+      documentDownload: '/documents/:id/download',
+      documentPresignedUrl: '/documents/:id/presigned-url',
+      documentById: '/documents/:id',
       health: '/health'
     },
     requiresAuth: {

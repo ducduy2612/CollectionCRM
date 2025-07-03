@@ -28,19 +28,21 @@ export const storageConfig: StorageConfig = {
   },
   upload: {
     maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '52428800'), // 50MB
-    allowedMimeTypes: [
-      'application/pdf',
-      'image/jpeg',
-      'image/jpg',
-      'image/png',
-      'image/gif',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'text/plain',
-      'text/csv'
-    ],
+    allowedMimeTypes: process.env.ALLOWED_MIME_TYPES 
+      ? process.env.ALLOWED_MIME_TYPES.split(',').map(type => type.trim())
+      : [
+          'application/pdf',
+          'image/jpeg',
+          'image/jpg',
+          'image/png',
+          'image/gif',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/vnd.ms-excel',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'text/plain',
+          'text/csv'
+        ],
     chunkSize: 5 * 1024 * 1024 // 5MB chunks for multipart upload
   }
 };

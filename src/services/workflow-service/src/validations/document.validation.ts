@@ -1,4 +1,5 @@
-import { body, param, query } from 'express-validator';
+import { body, param, query, validationResult, ValidationChain } from 'express-validator';
+import { Request, Response, NextFunction } from 'express';
 
 // Document types that are allowed
 const DOCUMENT_TYPES = [
@@ -307,7 +308,49 @@ export const documentValidation = {
       .optional()
       .isInt({ min: 1, max: 100 })
       .withMessage('Page size must be between 1 and 100')
+  ],
+
+  /**
+   * Validation for document statistics
+   */
+  getStatistics: [
+    param('cif')
+      .notEmpty()
+      .withMessage('Customer CIF is required')
+      .isString()
+      .withMessage('CIF must be a string')
+      .isLength({ min: 1, max: 50 })
+      .withMessage('CIF must be between 1 and 50 characters')
   ]
+};
+
+/**
+ * Middleware to validate request using express-validator
+ * @param validations Array of express-validator validation chains
+ */
+export const validateRequest = (validations: ValidationChain[]) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    // Run all validations
+    for (const validation of validations) {
+      await validation.run(req);
+    }
+
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array().map(error => ({
+          field: error.type === 'field' ? (error as any).path : error.type,
+          message: error.msg,
+          value: error.type === 'field' ? (error as any).value : undefined
+        }))
+      });
+    }
+
+    next();
+  };
 };
 
 export { DOCUMENT_TYPES, DOCUMENT_CATEGORIES };

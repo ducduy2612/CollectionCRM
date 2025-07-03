@@ -3,10 +3,7 @@ import { EntityManager } from 'typeorm';
 import { ActionRecordRepository } from '../repositories/action-record.repository';
 import {
   ActionRecord,
-  VisitLocation,
-  ActionType,
-  ActionSubtype,
-  ActionResult
+  VisitLocation
 } from '../entities';
 import { Errors, OperationType, SourceSystemType } from '../utils/errors';
 import { ResponseUtil } from '../utils/response';
