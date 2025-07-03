@@ -166,11 +166,16 @@ class ResponseHeadersMiddleware implements ResponseMiddleware {
     
     // Headers that should not be forwarded to prevent conflicts
     const excludedHeaders = [
-      'content-length',
       'transfer-encoding',
       'connection',
       'keep-alive'
     ];
+    
+    // For file downloads, preserve Content-Length and Content-Disposition
+    const isFileDownload = req.url.includes('/download') || req.url.includes('/export');
+    if (!isFileDownload) {
+      excludedHeaders.push('content-length');
+    }
     
     // Forward response headers
     for (const [key, value] of Object.entries(proxyRes.headers)) {
@@ -316,6 +321,11 @@ class AxiosProxyService {
         responseType: 'json', // Default to JSON for API responses
       };
 
+      // Handle file download requests
+      if (req.url.includes('/download') || req.url.includes('/export')) {
+        axiosConfig.responseType = 'stream';
+      }
+
       // Handle multipart/form-data (file uploads)
       const contentType = req.headers['content-type'];
       if (contentType && contentType.includes('multipart/form-data')) {
@@ -345,7 +355,10 @@ class AxiosProxyService {
       res.status(response.status);
       
       // Handle response data
-      if (typeof response.data === 'object') {
+      if (axiosConfig.responseType === 'stream') {
+        // For file downloads, pipe the stream directly
+        response.data.pipe(res);
+      } else if (typeof response.data === 'object') {
         res.json(response.data);
       } else {
         res.send(response.data);

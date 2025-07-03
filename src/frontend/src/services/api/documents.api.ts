@@ -1,21 +1,21 @@
 import { api } from './client';
-import { Document, DocumentFilters, UploadResult, ApiResponse } from '../../types/document';
+import { Document, DocumentFilters, UploadResponse, ApiResponse } from '../../types/document';
 
 export const documentsApi = {
   /**
    * Upload documents for a customer
    * @param cif Customer identification number
    * @param formData Form data containing files and metadata
-   * @returns Promise<ApiResponse<UploadResult[]>>
+   * @returns Promise<UploadResponse>
    */
-  upload: async (cif: string, formData: FormData): Promise<ApiResponse<UploadResult[]>> => {
-    const response = await api.post<UploadResult[]>('/workflow/documents/upload', formData, {
+  upload: async (cif: string, formData: FormData): Promise<UploadResponse> => {
+    const response = await api.post<UploadResponse>('/workflow/documents/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
       params: { cif },
     });
-    return response;
+    return response.data;
   },
 
   /**

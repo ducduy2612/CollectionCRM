@@ -73,6 +73,12 @@ export interface UploadResult {
   error?: string;
 }
 
+export interface UploadResponse {
+  success: boolean;
+  message?: string;
+  data: UploadResult[];
+}
+
 export interface ApiResponse<T> {
   data: T;
   success: boolean;
