@@ -36,6 +36,7 @@ COMMENT ON TABLE bank_sync_service.customers IS 'Stores information about indivi
 CREATE TABLE bank_sync_service.phones (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     cif VARCHAR(20) NOT NULL,
+    ref_cif VARCHAR(20) NULL,
     type VARCHAR(20) NOT NULL,
     number VARCHAR(20) NOT NULL,
     is_primary BOOLEAN NOT NULL DEFAULT FALSE,
@@ -46,17 +47,19 @@ CREATE TABLE bank_sync_service.phones (
     updated_by VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    is_editable BOOLEAN NOT NULL DEFAULT FALSE,
     last_synced_at TIMESTAMP,
-    UNIQUE (cif, type)
+    CONSTRAINT phones_customer_fk FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif) ON DELETE CASCADE,
+    CONSTRAINT phones_reference_customer_fk FOREIGN KEY (ref_cif) REFERENCES bank_sync_service.reference_customers(ref_cif) ON DELETE CASCADE,
+    UNIQUE (cif, ref_cif, type)
 );
 
-COMMENT ON TABLE bank_sync_service.phones IS 'Stores phone numbers associated with customers';
+COMMENT ON TABLE bank_sync_service.phones IS 'Stores phone numbers associated with customers and optionally reference customers';
 
 -- Addresses table
 CREATE TABLE bank_sync_service.addresses (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     cif VARCHAR(20) NOT NULL,
+    ref_cif VARCHAR(20) NULL,
     type VARCHAR(20) NOT NULL,
     address_line1 VARCHAR(100) NOT NULL,
     address_line2 VARCHAR(100),
@@ -72,17 +75,19 @@ CREATE TABLE bank_sync_service.addresses (
     updated_by VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    is_editable BOOLEAN NOT NULL DEFAULT FALSE,
     last_synced_at TIMESTAMP,
-    UNIQUE (cif, type)
+    CONSTRAINT addresses_customer_fk FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif) ON DELETE CASCADE,
+    CONSTRAINT addresses_reference_customer_fk FOREIGN KEY (ref_cif) REFERENCES bank_sync_service.reference_customers(ref_cif) ON DELETE CASCADE,
+    UNIQUE (cif, ref_cif, type)
 );
 
-COMMENT ON TABLE bank_sync_service.addresses IS 'Stores physical addresses associated with customers';
+COMMENT ON TABLE bank_sync_service.addresses IS 'Stores physical addresses associated with customers and optionally reference customers';
 
 -- Emails table
 CREATE TABLE bank_sync_service.emails (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     cif VARCHAR(20) NOT NULL,
+    ref_cif VARCHAR(20) NULL,
     address VARCHAR(100) NOT NULL,
     is_primary BOOLEAN NOT NULL DEFAULT FALSE,
     is_verified BOOLEAN NOT NULL DEFAULT FALSE,
@@ -92,9 +97,10 @@ CREATE TABLE bank_sync_service.emails (
     updated_by VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    is_editable BOOLEAN NOT NULL DEFAULT FALSE,
     last_synced_at TIMESTAMP,
-    UNIQUE (cif, address)
+    CONSTRAINT emails_customer_fk FOREIGN KEY (cif) REFERENCES bank_sync_service.customers(cif) ON DELETE CASCADE,
+    CONSTRAINT emails_reference_customer_fk FOREIGN KEY (ref_cif) REFERENCES bank_sync_service.reference_customers(ref_cif) ON DELETE CASCADE,
+    UNIQUE (cif, ref_cif, address)
 );
 
 COMMENT ON TABLE bank_sync_service.emails IS 'Stores email addresses associated with customers';

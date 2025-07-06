@@ -16,10 +16,12 @@ export const contactsApi = {
   // =============================================
 
   // Get all contact information for a customer
-  getAllContacts: async (cif: string): Promise<WorkflowContactInfo> => {
+  getAllContacts: async (cif: string, refCif?: string | null): Promise<WorkflowContactInfo> => {
     console.log('calling contactsApi - getAllContacts');
+    // Build query params - if refCif is provided (even if null), include it
+    const queryParams = refCif !== undefined ? `?ref_cif=${refCif}` : '';
     const response = await apiClient.get<WorkflowApiResponse<WorkflowContactInfo>>(
-      `/workflow/customers/${cif}/contacts`
+      `/workflow/customers/${cif}/contacts${queryParams}`
     );
     if (!response.data.success) {
       throw new Error(response.data.message || 'Failed to fetch contact information');
@@ -31,7 +33,7 @@ export const contactsApi = {
   // PHONE OPERATIONS
   // =============================================
 
-  createPhone: async (cif: string, phoneData: PhoneFormData): Promise<WorkflowPhone> => {
+  createPhone: async (cif: string, phoneData: PhoneFormData & { refCif?: string }): Promise<WorkflowPhone> => {
     console.log('calling contactsApi - createPhone');
     const response = await apiClient.post<WorkflowApiResponse<WorkflowPhone>>(
       `/workflow/customers/${cif}/phones`,
@@ -70,7 +72,7 @@ export const contactsApi = {
   // EMAIL OPERATIONS
   // =============================================
 
-  createEmail: async (cif: string, emailData: EmailFormData): Promise<WorkflowEmail> => {
+  createEmail: async (cif: string, emailData: EmailFormData & { refCif?: string }): Promise<WorkflowEmail> => {
     console.log('calling contactsApi - createEmail');
     const response = await apiClient.post<WorkflowApiResponse<WorkflowEmail>>(
       `/workflow/customers/${cif}/emails`,
@@ -109,7 +111,7 @@ export const contactsApi = {
   // ADDRESS OPERATIONS
   // =============================================
 
-  createAddress: async (cif: string, addressData: AddressFormData): Promise<WorkflowAddress> => {
+  createAddress: async (cif: string, addressData: AddressFormData & { refCif?: string }): Promise<WorkflowAddress> => {
     console.log('calling contactsApi - createAddress');
     const response = await apiClient.post<WorkflowApiResponse<WorkflowAddress>>(
       `/workflow/customers/${cif}/addresses`,

@@ -104,11 +104,13 @@ export const ReferenceCustomerRepository = AppDataSource.getRepository(Reference
    */
   async findByPrimaryCifWithContacts(primaryCif: string): Promise<ReferenceCustomer[]> {
     try {
-      return await this.find({
-        where: { primaryCif },
-        relations: ['phones', 'addresses', 'emails'],
-        order: { createdAt: 'DESC' }
-      });
+      return await this.createQueryBuilder('referenceCustomer')
+        .leftJoinAndSelect('referenceCustomer.phones', 'phones')
+        .leftJoinAndSelect('referenceCustomer.addresses', 'addresses')
+        .leftJoinAndSelect('referenceCustomer.emails', 'emails')
+        .where('referenceCustomer.primary_cif = :primaryCif', { primaryCif })
+        .orderBy('referenceCustomer.created_at', 'DESC')
+        .getMany();
     } catch (error) {
       console.error(`Error finding reference customers with contacts by primary CIF ${primaryCif}:`, error);
       throw new Error(`Failed to find reference customers with contacts by primary CIF: ${(error as Error).message}`);

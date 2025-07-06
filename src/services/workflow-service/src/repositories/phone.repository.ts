@@ -2,6 +2,7 @@ import { Phone } from '../entities/phone.entity';
 import { AppDataSource } from '../config/data-source';
 import { Errors, OperationType, SourceSystemType } from '../utils/errors';
 import { ResponseUtil, PaginatedResponse } from '../utils/response';
+import { IsNull } from 'typeorm';
 
 /**
  * Search criteria for phones
@@ -32,6 +33,48 @@ export const PhoneRepository = AppDataSource.getRepository(Phone).extend({
         OperationType.DATABASE,
         SourceSystemType.WORKFLOW_SERVICE,
         { cif, operation: 'findByCif' }
+      );
+    }
+  },
+
+  /**
+   * Find phones by CIF for primary customer only (refCif is null)
+   * @param cif Customer CIF
+   * @returns Array of phones for the primary customer only
+   */
+  async findByCifPrimaryOnly(cif: string): Promise<Phone[]> {
+    try {
+      return await this.find({ 
+        where: { 
+          cif,
+          refCif: IsNull() 
+        } 
+      });
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { cif, operation: 'findByCifPrimaryOnly' }
+      );
+    }
+  },
+
+  /**
+   * Find phones by reference CIF
+   * @param primaryCif Primary customer CIF
+   * @param refCif Reference customer CIF
+   * @returns Array of phones for the reference customer
+   */
+  async findByRefCif(primaryCif: string, refCif: string): Promise<Phone[]> {
+    try {
+      return await this.findBy({ cif: primaryCif, refCif });
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { primaryCif, refCif, operation: 'findByRefCif' }
       );
     }
   },
@@ -90,6 +133,26 @@ export const PhoneRepository = AppDataSource.getRepository(Phone).extend({
    */
   async createPhone(phone: Partial<Phone>): Promise<Phone> {
     try {
+      // Check for duplicate phone before creating
+      if (phone.cif && phone.type) {
+        const existingPhone = await this.findOne({
+          where: {
+            cif: phone.cif,
+            refCif: phone.refCif || IsNull(),
+            type: phone.type
+          }
+        });
+        
+        if (existingPhone) {
+          throw Errors.create(
+            Errors.Database.DUPLICATE_ENTRY,
+            `Phone with type ${phone.type} already exists for this ${phone.refCif ? 'reference customer' : 'customer'}`,
+            OperationType.DATABASE,
+            SourceSystemType.WORKFLOW_SERVICE
+          );
+        }
+      }
+      
       // If this is set as primary, unset other primary phones for the same CIF
       if (phone.isPrimary && phone.cif) {
         await this.update(

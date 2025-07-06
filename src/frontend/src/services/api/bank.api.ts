@@ -149,6 +149,23 @@ export const bankApi = {
     return response.data.data;
   },
 
+  // Get customer references with contacts
+  getCustomerReferencesWithContacts: async (cif: string, params?: {
+    page?: number;
+    pageSize?: number;
+  }): Promise<ReferencesResponse> => {
+    console.log('calling getCustomerReferencesWithContacts');
+    const response = await apiClient.get<BankApiResponse<ReferencesResponse>>(
+      `/bank/customers/${cif}/references-with-contacts`,
+      { params }
+    );
+    
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch customer references with contacts');
+    }
+    return response.data.data;
+  },
+
   // Get loan by account number
   getLoan: async (accountNumber: string): Promise<Loan> => {
     console.log('calling getLoan');

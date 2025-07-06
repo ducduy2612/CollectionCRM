@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Customer, Loan, CustomerAction, PaymentHistoryItem, PaymentHistoryFilters } from './types';
+import { Customer, Loan, PaymentHistoryItem, PaymentHistoryFilters } from './types';
 import CustomerHeader from './components/CustomerHeader';
 import CustomerTabs from './components/CustomerTabs';
 import ContactInformation from './components/ContactInformation';
@@ -12,8 +12,8 @@ import CustomerStatusComponent from './components/CustomerStatus';
 import ActionPanel from './components/ActionPanel';
 import CustomerList from './components/CustomerList';
 import DocumentHistory from './components/DocumentHistory';
+import ReferenceCustomers from './components/ReferenceCustomers';
 import { bankApi } from '../../services/api/bank.api';
-import { workflowApi } from '../../services/api/workflow.api';
 import { paymentApi } from '../../services/api/payment.api';
 import { Spinner } from '../../components/ui/Spinner';
 import { useTranslation } from '../../i18n/hooks/useTranslation';
@@ -32,34 +32,35 @@ const CustomersPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [lastContactDate, setLastContactDate] = useState<string | undefined>(undefined);
 
-  // Fetch customer data
-  useEffect(() => {
-    const fetchCustomerData = async () => {
-      if (!cif) {
-        setLoading(false);
-        return;
+  // Fetch customer data function
+  const fetchCustomerData = useCallback(async () => {
+    if (!cif) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const customerData = await bankApi.getCustomer(cif);
+      setCustomer(customerData);
+
+      if (customerData.loans) {
+        setLoans(customerData.loans);
       }
-
-      setLoading(true);
-      setError(null);
-
-      try {
-        const customerData = await bankApi.getCustomer(cif);
-        setCustomer(customerData);
-
-        if (customerData.loans) {
-          setLoans(customerData.loans);
-        }
-      } catch (err) {
-        console.error('Error fetching customer data:', err);
-        setError('Failed to load customer data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCustomerData();
+    } catch (err) {
+      console.error('Error fetching customer data:', err);
+      setError('Failed to load customer data');
+    } finally {
+      setLoading(false);
+    }
   }, [cif]);
+
+  // Fetch customer data on mount
+  useEffect(() => {
+    fetchCustomerData();
+  }, [fetchCustomerData]);
 
   // Fetch payments
   useEffect(() => {
@@ -249,10 +250,12 @@ const CustomersPage: React.FC = () => {
         />
       )}
 
-      {activeTab === 'references' && (
-        <div className="bg-white rounded-lg border border-neutral-200 p-8 text-center">
-          <p className="text-neutral-600">{t('customers:tabs.references')} - {t('customers:messages.under_development')}</p>
-        </div>
+      {activeTab === 'references' && customer && (
+        <ReferenceCustomers 
+          primaryCif={customer.cif}
+          referenceCustomers={customer.referenceCustomers || []}
+          onRefresh={fetchCustomerData}
+        />
       )}
 
       {/* ActionHistory - Rendered once and positioned based on active tab */}

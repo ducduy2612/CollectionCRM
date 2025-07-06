@@ -2,6 +2,7 @@ import { Email } from '../entities/email.entity';
 import { AppDataSource } from '../config/data-source';
 import { Errors, OperationType, SourceSystemType } from '../utils/errors';
 import { ResponseUtil, PaginatedResponse } from '../utils/response';
+import { IsNull } from 'typeorm';
 
 /**
  * Search criteria for emails
@@ -32,6 +33,48 @@ export const EmailRepository = AppDataSource.getRepository(Email).extend({
         OperationType.DATABASE,
         SourceSystemType.WORKFLOW_SERVICE,
         { cif, operation: 'findByCif' }
+      );
+    }
+  },
+
+  /**
+   * Find emails by CIF for primary customer only (refCif is null)
+   * @param cif Customer CIF
+   * @returns Array of emails for the primary customer only
+   */
+  async findByCifPrimaryOnly(cif: string): Promise<Email[]> {
+    try {
+      return await this.find({ 
+        where: { 
+          cif,
+          refCif: IsNull() 
+        } 
+      });
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { cif, operation: 'findByCifPrimaryOnly' }
+      );
+    }
+  },
+
+  /**
+   * Find emails by reference CIF
+   * @param primaryCif Primary customer CIF
+   * @param refCif Reference customer CIF
+   * @returns Array of emails for the reference customer
+   */
+  async findByRefCif(primaryCif: string, refCif: string): Promise<Email[]> {
+    try {
+      return await this.findBy({ cif: primaryCif, refCif });
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { primaryCif, refCif, operation: 'findByRefCif' }
       );
     }
   },
@@ -91,6 +134,26 @@ export const EmailRepository = AppDataSource.getRepository(Email).extend({
    */
   async createEmail(email: Partial<Email>): Promise<Email> {
     try {
+      // Check for duplicate email before creating
+      if (email.cif && email.address) {
+        const existingEmail = await this.findOne({
+          where: {
+            cif: email.cif,
+            refCif: email.refCif || IsNull(),
+            address: email.address
+          }
+        });
+        
+        if (existingEmail) {
+          throw Errors.create(
+            Errors.Database.DUPLICATE_ENTRY,
+            `Email address ${email.address} already exists for this ${email.refCif ? 'reference customer' : 'customer'}`,
+            OperationType.DATABASE,
+            SourceSystemType.WORKFLOW_SERVICE
+          );
+        }
+      }
+      
       // If this is set as primary, unset other primary emails for the same CIF
       if (email.isPrimary && email.cif) {
         await this.update(

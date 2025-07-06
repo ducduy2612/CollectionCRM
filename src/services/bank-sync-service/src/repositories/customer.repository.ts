@@ -164,9 +164,9 @@ export const CustomerRepository = AppDataSource.getRepository(Customer).extend({
   async getCustomerWithDetails(cif: string): Promise<Customer | undefined> {
     try {
       const customer = await this.createQueryBuilder('customer')
-        .leftJoinAndSelect('customer.phones', 'phones')
-        .leftJoinAndSelect('customer.addresses', 'addresses')
-        .leftJoinAndSelect('customer.emails', 'emails')
+        .leftJoinAndSelect('customer.phones', 'phones', 'phones.refCif IS NULL')
+        .leftJoinAndSelect('customer.addresses', 'addresses', 'addresses.refCif IS NULL')
+        .leftJoinAndSelect('customer.emails', 'emails', 'emails.refCif IS NULL')
         .leftJoinAndSelect('customer.loans', 'loans')
         .leftJoinAndSelect('customer.collaterals', 'collaterals')
         .leftJoinAndSelect('customer.referenceCustomers', 'referenceCustomers')

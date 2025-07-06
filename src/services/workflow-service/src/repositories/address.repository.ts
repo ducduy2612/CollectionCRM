@@ -2,6 +2,7 @@ import { Address } from '../entities/address.entity';
 import { AppDataSource } from '../config/data-source';
 import { Errors, OperationType, SourceSystemType } from '../utils/errors';
 import { ResponseUtil, PaginatedResponse } from '../utils/response';
+import { IsNull } from 'typeorm';
 
 /**
  * Search criteria for addresses
@@ -34,6 +35,48 @@ export const AddressRepository = AppDataSource.getRepository(Address).extend({
         OperationType.DATABASE,
         SourceSystemType.WORKFLOW_SERVICE,
         { cif, operation: 'findByCif' }
+      );
+    }
+  },
+
+  /**
+   * Find addresses by CIF for primary customer only (refCif is null)
+   * @param cif Customer CIF
+   * @returns Array of addresses for the primary customer only
+   */
+  async findByCifPrimaryOnly(cif: string): Promise<Address[]> {
+    try {
+      return await this.find({ 
+        where: { 
+          cif,
+          refCif: IsNull() 
+        } 
+      });
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { cif, operation: 'findByCifPrimaryOnly' }
+      );
+    }
+  },
+
+  /**
+   * Find addresses by reference CIF
+   * @param primaryCif Primary customer CIF
+   * @param refCif Reference customer CIF
+   * @returns Array of addresses for the reference customer
+   */
+  async findByRefCif(primaryCif: string, refCif: string): Promise<Address[]> {
+    try {
+      return await this.findBy({ cif: primaryCif, refCif });
+    } catch (error) {
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.WORKFLOW_SERVICE,
+        { primaryCif, refCif, operation: 'findByRefCif' }
       );
     }
   },
@@ -101,6 +144,26 @@ export const AddressRepository = AppDataSource.getRepository(Address).extend({
    */
   async createAddress(address: Partial<Address>): Promise<Address> {
     try {
+      // Check for duplicate address before creating
+      if (address.cif && address.type) {
+        const existingAddress = await this.findOne({
+          where: {
+            cif: address.cif,
+            refCif: address.refCif || IsNull(),
+            type: address.type
+          }
+        });
+        
+        if (existingAddress) {
+          throw Errors.create(
+            Errors.Database.DUPLICATE_ENTRY,
+            `Address with type ${address.type} already exists for this ${address.refCif ? 'reference customer' : 'customer'}`,
+            OperationType.DATABASE,
+            SourceSystemType.WORKFLOW_SERVICE
+          );
+        }
+      }
+      
       // If this is set as primary, unset other primary addresses for the same CIF
       if (address.isPrimary && address.cif) {
         await this.update(

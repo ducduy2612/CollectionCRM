@@ -85,6 +85,7 @@ DROP TABLE IF EXISTS workflow_service.reference_customers CASCADE;
 CREATE TABLE workflow_service.phones (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     cif VARCHAR(20) NOT NULL,
+    ref_cif VARCHAR(20) NULL,
     type VARCHAR(20) NOT NULL,
     number VARCHAR(20) NOT NULL,
     is_primary BOOLEAN NOT NULL DEFAULT FALSE,
@@ -94,7 +95,8 @@ CREATE TABLE workflow_service.phones (
     updated_by VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    UNIQUE (cif, type)
+    CONSTRAINT phones_reference_customer_fk FOREIGN KEY (ref_cif) REFERENCES workflow_service.reference_customers(ref_cif) ON DELETE CASCADE,
+    UNIQUE (cif, ref_cif, type)
 );
 
 COMMENT ON TABLE workflow_service.phones IS 'Stores phone numbers associated with customers - user input';
@@ -103,6 +105,7 @@ COMMENT ON TABLE workflow_service.phones IS 'Stores phone numbers associated wit
 CREATE TABLE workflow_service.addresses (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     cif VARCHAR(20) NOT NULL,
+    ref_cif VARCHAR(20) NULL,
     type VARCHAR(20) NOT NULL,
     address_line1 VARCHAR(100) NOT NULL,
     address_line2 VARCHAR(100),
@@ -117,7 +120,8 @@ CREATE TABLE workflow_service.addresses (
     updated_by VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    UNIQUE (cif, type)
+    CONSTRAINT addresses_reference_customer_fk FOREIGN KEY (ref_cif) REFERENCES workflow_service.reference_customers(ref_cif) ON DELETE CASCADE,
+    UNIQUE (cif, ref_cif, type)
 );
 
 COMMENT ON TABLE workflow_service.addresses IS 'Stores physical addresses associated with customers - user input';
@@ -126,6 +130,7 @@ COMMENT ON TABLE workflow_service.addresses IS 'Stores physical addresses associ
 CREATE TABLE workflow_service.emails (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     cif VARCHAR(20) NOT NULL,
+    ref_cif VARCHAR(20) NULL,
     address VARCHAR(100) NOT NULL,
     is_primary BOOLEAN NOT NULL DEFAULT FALSE,
     is_verified BOOLEAN NOT NULL DEFAULT FALSE,
@@ -134,7 +139,8 @@ CREATE TABLE workflow_service.emails (
     updated_by VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    UNIQUE (cif, address)
+    CONSTRAINT emails_reference_customer_fk FOREIGN KEY (ref_cif) REFERENCES workflow_service.reference_customers(ref_cif) ON DELETE CASCADE,
+    UNIQUE (cif, ref_cif, address)
 );
 
 COMMENT ON TABLE workflow_service.emails IS 'Stores email addresses associated with customers - user input';
@@ -769,16 +775,19 @@ CREATE INDEX idx_recovery_ability_status_cif_action_date ON workflow_service.rec
 -- Phone indexes
 CREATE INDEX idx_phones_number ON workflow_service.phones(number);
 CREATE INDEX idx_phones_cif ON workflow_service.phones(cif);
+CREATE INDEX idx_phones_ref_cif ON workflow_service.phones(ref_cif);
 
 -- Address indexes
 CREATE INDEX idx_addresses_city ON workflow_service.addresses(city);
 CREATE INDEX idx_addresses_state ON workflow_service.addresses(state);
 CREATE INDEX idx_addresses_country ON workflow_service.addresses(country);
 CREATE INDEX idx_addresses_cif ON workflow_service.addresses(cif);
+CREATE INDEX idx_addresses_ref_cif ON workflow_service.addresses(ref_cif);
 
 -- Email indexes
 CREATE INDEX idx_emails_address ON workflow_service.emails(address);
 CREATE INDEX idx_emails_cif ON workflow_service.emails(cif);
+CREATE INDEX idx_emails_ref_cif ON workflow_service.emails(ref_cif);
 
 -- Reference Customer indexes
 CREATE INDEX idx_reference_customers_primary_cif ON workflow_service.reference_customers(primary_cif);

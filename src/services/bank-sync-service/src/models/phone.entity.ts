@@ -1,6 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Customer } from './customer.entity';
+import { ReferenceCustomer } from './reference-customer.entity';
 
 /**
  * Phone entity for customer contact information
@@ -22,11 +23,19 @@ export class Phone extends BaseEntity {
   @Column({ name: 'verification_date', type: 'timestamp', nullable: true })
   verificationDate: Date;
 
-  @ManyToOne(() => Customer, customer => customer.phones, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Customer, customer => customer.phones, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'cif', referencedColumnName: 'cif' })
   @Index()
-  customer: Customer;
+  customer?: Customer;
+
+  @ManyToOne(() => ReferenceCustomer, referenceCustomer => referenceCustomer.phones, { onDelete: 'CASCADE', nullable: true })
+  @JoinColumn({ name: 'ref_cif', referencedColumnName: 'refCif' })
+  referenceCustomer?: ReferenceCustomer;
 
   @Column({ name: 'cif' })
   cif: string;
+
+  @Column({ name: 'ref_cif', nullable: true })
+  @Index()
+  refCif?: string;
 }

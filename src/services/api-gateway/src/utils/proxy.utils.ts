@@ -1,7 +1,5 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError, AxiosInstance } from 'axios';
-import { IncomingHttpHeaders } from 'http';
-import { URL } from 'url';
 import { logger } from './logger.utils';
 
 /**

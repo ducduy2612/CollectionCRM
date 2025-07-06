@@ -260,4 +260,53 @@ export class CustomerController {
       next(error);
     }
   }
+
+  /**
+   * Get customer references with contact information
+   * @route GET /customers/:cif/references-with-contacts
+   */
+  async getCustomerReferencesWithContacts(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { cif } = req.params;
+      const { relationshipType, page = 1, pageSize = 10 } = req.query;
+      
+      if (!cif) {
+        throw Errors.create(
+          ValidationErrorCodes.REQUIRED_FIELD_MISSING,
+          'CIF is required',
+          OperationType.VALIDATION,
+          SourceSystemType.OTHER
+        );
+      }
+      
+      const customer = await CustomerRepository.findByNaturalKey(cif);
+      
+      if (!customer) {
+        throw Errors.create(
+          Errors.Database.RECORD_NOT_FOUND,
+          `Customer with CIF ${cif} not found`,
+          OperationType.DATABASE,
+          SourceSystemType.OTHER
+        );
+      }
+      
+      const result = await ReferenceCustomerRepository.findByPrimaryCifWithContacts(cif);
+      return res.status(200).json({
+        success: true,
+        data: {
+          references: result,
+          pagination: {
+            page: 1,
+            pageSize: result.length,
+            totalPages: 1,
+            totalItems: result.length
+          }
+        },
+        message: 'Customer references with contacts retrieved successfully',
+        errors: []
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

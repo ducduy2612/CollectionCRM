@@ -24,8 +24,16 @@ export class CustomerContactController {
   async getPhonesByCif(req: Request, res: Response, next: NextFunction) {
     try {
       const { cif } = req.params;
+      const { ref_cif } = req.query;
       
-      const phones = await PhoneRepository.findByCif(cif);
+      let phones;
+      if (ref_cif) {
+        // Get phones for reference customer
+        phones = await PhoneRepository.findByRefCif(cif, ref_cif as string);
+      } else {
+        // Get phones for primary customer
+        phones = await PhoneRepository.findByCif(cif);
+      }
       
       return ResponseUtil.success(
         res,
@@ -45,7 +53,7 @@ export class CustomerContactController {
   async createPhone(req: Request, res: Response, next: NextFunction) {
     try {
       const { cif } = req.params;
-      const { type, number, isPrimary, isVerified, verificationDate } = req.body;
+      const { type, number, isPrimary, isVerified, verificationDate, refCif } = req.body;
       
       // Validate required fields
       if (!type || !number) {
@@ -60,6 +68,7 @@ export class CustomerContactController {
       // Create phone
       const phone = await PhoneRepository.createPhone({
         cif,
+        refCif,
         type,
         number,
         isPrimary: isPrimary || false,
@@ -69,7 +78,7 @@ export class CustomerContactController {
         updatedBy: req.user?.username || 'system'
       });
       
-      logger.info({ phoneId: phone.id, cif }, 'Phone created successfully');
+      logger.info({ phoneId: phone.id, cif, refCif }, 'Phone created successfully');
       
       return ResponseUtil.success(
         res,
@@ -158,8 +167,16 @@ export class CustomerContactController {
   async getAddressesByCif(req: Request, res: Response, next: NextFunction) {
     try {
       const { cif } = req.params;
+      const { ref_cif } = req.query;
       
-      const addresses = await AddressRepository.findByCif(cif);
+      let addresses;
+      if (ref_cif) {
+        // Get addresses for reference customer
+        addresses = await AddressRepository.findByRefCif(cif, ref_cif as string);
+      } else {
+        // Get addresses for primary customer
+        addresses = await AddressRepository.findByCif(cif);
+      }
       
       return ResponseUtil.success(
         res,
@@ -189,7 +206,8 @@ export class CustomerContactController {
         country, 
         isPrimary, 
         isVerified, 
-        verificationDate 
+        verificationDate,
+        refCif 
       } = req.body;
       
       // Validate required fields
@@ -205,6 +223,7 @@ export class CustomerContactController {
       // Create address
       const address = await AddressRepository.createAddress({
         cif,
+        refCif,
         type,
         addressLine1,
         addressLine2,
@@ -219,7 +238,7 @@ export class CustomerContactController {
         updatedBy: req.user?.username || 'system'
       });
       
-      logger.info({ addressId: address.id, cif }, 'Address created successfully');
+      logger.info({ addressId: address.id, cif, refCif }, 'Address created successfully');
       
       return ResponseUtil.success(
         res,
@@ -324,8 +343,16 @@ export class CustomerContactController {
   async getEmailsByCif(req: Request, res: Response, next: NextFunction) {
     try {
       const { cif } = req.params;
+      const { ref_cif } = req.query;
       
-      const emails = await EmailRepository.findByCif(cif);
+      let emails;
+      if (ref_cif) {
+        // Get emails for reference customer
+        emails = await EmailRepository.findByRefCif(cif, ref_cif as string);
+      } else {
+        // Get emails for primary customer
+        emails = await EmailRepository.findByCif(cif);
+      }
       
       return ResponseUtil.success(
         res,
@@ -345,7 +372,7 @@ export class CustomerContactController {
   async createEmail(req: Request, res: Response, next: NextFunction) {
     try {
       const { cif } = req.params;
-      const { address, isPrimary, isVerified, verificationDate } = req.body;
+      const { address, isPrimary, isVerified, verificationDate, refCif } = req.body;
       
       // Validate required fields
       if (!address) {
@@ -371,6 +398,7 @@ export class CustomerContactController {
       // Create email
       const email = await EmailRepository.createEmail({
         cif,
+        refCif,
         address,
         isPrimary: isPrimary || false,
         isVerified: isVerified || false,
@@ -379,7 +407,7 @@ export class CustomerContactController {
         updatedBy: req.user?.username || 'system'
       });
       
-      logger.info({ emailId: email.id, cif }, 'Email created successfully');
+      logger.info({ emailId: email.id, cif, refCif }, 'Email created successfully');
       
       return ResponseUtil.success(
         res,
@@ -480,12 +508,25 @@ export class CustomerContactController {
   async getAllContactsByCif(req: Request, res: Response, next: NextFunction) {
     try {
       const { cif } = req.params;
+      const { ref_cif } = req.query;
       
-      const [phones, addresses, emails] = await Promise.all([
-        PhoneRepository.findByCif(cif),
-        AddressRepository.findByCif(cif),
-        EmailRepository.findByCif(cif)
-      ]);
+      let phones, addresses, emails;
+      
+      if (ref_cif) {
+        // Get contacts for a specific reference customer
+        [phones, addresses, emails] = await Promise.all([
+          PhoneRepository.findByRefCif(cif, ref_cif as string),
+          AddressRepository.findByRefCif(cif, ref_cif as string),
+          EmailRepository.findByRefCif(cif, ref_cif as string)
+        ]);
+      } else {
+        // Get contacts for the primary customer only (ref_cif = null)
+        [phones, addresses, emails] = await Promise.all([
+          PhoneRepository.findByCifPrimaryOnly(cif),
+          AddressRepository.findByCifPrimaryOnly(cif),
+          EmailRepository.findByCifPrimaryOnly(cif)
+        ]);
+      }
       
       return ResponseUtil.success(
         res,

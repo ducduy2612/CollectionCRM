@@ -65,4 +65,16 @@ router.get(
   customerController.getCustomerReferences
 );
 
+/**
+ * @route GET /customers/:cif/references-with-contacts
+ * @desc Get customer references with contact information
+ * @access Private - Requires authentication and appropriate roles
+ */
+router.get(
+  '/:cif/references-with-contacts',
+  requireAuth,
+  validatePagination,
+  customerController.getCustomerReferencesWithContacts
+);
+
 export default router;

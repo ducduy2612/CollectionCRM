@@ -176,6 +176,30 @@ export interface ReferenceCustomer {
   taxId?: string;
   createdAt?: string;
   updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  source?: 'bank' | 'workflow'; // To distinguish between bank-sync and workflow service data
+  phones?: WorkflowPhone[];
+  emails?: WorkflowEmail[];
+  addresses?: WorkflowAddress[];
+}
+
+/**
+ * Reference Customer Form Data
+ * Used for creating/updating reference customers
+ */
+export interface ReferenceCustomerFormData {
+  refCif: string;
+  primaryCif?: string;
+  relationshipType: string;
+  type: 'INDIVIDUAL' | 'ORGANIZATION';
+  name?: string;
+  dateOfBirth?: string;
+  nationalId?: string;
+  gender?: string;
+  companyName?: string;
+  registrationNumber?: string;
+  taxId?: string;
 }
 
 export interface DueSegmentation {

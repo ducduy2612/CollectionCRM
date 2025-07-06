@@ -1,6 +1,9 @@
-import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
+import { Entity, Column, ManyToOne, OneToMany, JoinColumn, Index } from 'typeorm';
 import { SynchronizedEntity } from './base.entity';
 import { Customer } from './customer.entity';
+import { Phone } from './phone.entity';
+import { Email } from './email.entity';
+import { Address } from './address.entity';
 import { CustomerType, Gender } from './customer-types';
 
 /**
@@ -77,4 +80,14 @@ export class ReferenceCustomer extends SynchronizedEntity {
 
   @Column({ name: 'tax_id', nullable: true })
   taxId: string;
+
+  // Relations with contact information using refCif
+  @OneToMany(() => Phone, phone => phone.referenceCustomer, { cascade: true })
+  phones: Phone[];
+
+  @OneToMany(() => Email, email => email.referenceCustomer, { cascade: true })
+  emails: Email[];
+
+  @OneToMany(() => Address, address => address.referenceCustomer, { cascade: true })
+  addresses: Address[];
 }

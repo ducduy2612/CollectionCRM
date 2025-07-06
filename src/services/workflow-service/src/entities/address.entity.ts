@@ -1,15 +1,20 @@
-import { Entity, Column, Index, Unique } from 'typeorm';
+import { Entity, Column, Index, Unique, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
+import { ReferenceCustomer } from './reference-customer.entity';
 
 /**
  * Address entity
  */
 @Entity('addresses', { schema: 'workflow_service' })
-@Unique(['cif', 'type'])
+@Unique(['cif', 'refCif', 'type'])
 export class Address extends BaseEntity {
   @Column({ length: 20 })
   @Index()
   cif: string;
+
+  @Column({ name: 'ref_cif', length: 20, nullable: true })
+  @Index()
+  refCif?: string;
 
   @Column({ length: 20 })
   type: string;
@@ -40,4 +45,8 @@ export class Address extends BaseEntity {
 
   @Column({ name: 'verification_date', nullable: true })
   verificationDate: Date;
+
+  @ManyToOne(() => ReferenceCustomer, referenceCustomer => referenceCustomer.addresses, { nullable: true })
+  @JoinColumn({ name: 'ref_cif', referencedColumnName: 'refCif' })
+  referenceCustomer?: ReferenceCustomer;
 }

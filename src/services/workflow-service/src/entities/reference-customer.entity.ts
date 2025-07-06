@@ -1,4 +1,4 @@
-import { Entity, Column, Index, OneToMany, JoinColumn } from 'typeorm';
+import { Entity, Column, Index, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Phone } from './phone.entity';
 import { Address } from './address.entity';
@@ -55,15 +55,12 @@ export class ReferenceCustomer extends BaseEntity {
   taxId: string;
 
   // Relations - join with contact information using refCif
-  @OneToMany(() => Phone, phone => phone.cif, { eager: false })
-  @JoinColumn({ name: 'ref_cif', referencedColumnName: 'cif' })
+  @OneToMany(() => Phone, phone => phone.referenceCustomer, { eager: false })
   phones: Phone[];
 
-  @OneToMany(() => Address, address => address.cif, { eager: false })
-  @JoinColumn({ name: 'ref_cif', referencedColumnName: 'cif' })
+  @OneToMany(() => Address, address => address.referenceCustomer, { eager: false })
   addresses: Address[];
 
-  @OneToMany(() => Email, email => email.cif, { eager: false })
-  @JoinColumn({ name: 'ref_cif', referencedColumnName: 'cif' })
+  @OneToMany(() => Email, email => email.referenceCustomer, { eager: false })
   emails: Email[];
 }

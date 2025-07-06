@@ -40,6 +40,7 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ cif, phones, em
       setError(null);
       
       try {
+        // Get contacts for primary customer only (not reference customers)
         const contactData = await workflowApi.getAllContacts(cif);
         setWorkflowContacts(contactData);
       } catch (err) {

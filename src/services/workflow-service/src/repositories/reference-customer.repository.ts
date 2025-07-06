@@ -26,11 +26,13 @@ export const ReferenceCustomerRepository = AppDataSource.getRepository(Reference
    */
   async findByPrimaryCifWithContacts(primaryCif: string): Promise<ReferenceCustomer[]> {
     try {
-      return await this.find({
-        where: { primaryCif },
-        relations: ['phones', 'addresses', 'emails'],
-        order: { createdAt: 'DESC' }
-      });
+      return await this.createQueryBuilder('referenceCustomer')
+        .leftJoinAndSelect('referenceCustomer.phones', 'phones')
+        .leftJoinAndSelect('referenceCustomer.addresses', 'addresses')
+        .leftJoinAndSelect('referenceCustomer.emails', 'emails')
+        .where('referenceCustomer.primaryCif = :primaryCif', { primaryCif })
+        .orderBy('referenceCustomer.createdAt', 'DESC')
+        .getMany();
     } catch (error) {
       throw Errors.wrap(
         error as Error,
@@ -66,10 +68,12 @@ export const ReferenceCustomerRepository = AppDataSource.getRepository(Reference
    */
   async findByIdWithContacts(id: string): Promise<ReferenceCustomer | null> {
     try {
-      return await this.findOne({
-        where: { id },
-        relations: ['phones', 'addresses', 'emails']
-      });
+      return await this.createQueryBuilder('referenceCustomer')
+        .leftJoinAndSelect('phones', 'phones', 'phones.cif = referenceCustomer.refCif')
+        .leftJoinAndSelect('addresses', 'addresses', 'addresses.cif = referenceCustomer.refCif')
+        .leftJoinAndSelect('emails', 'emails', 'emails.cif = referenceCustomer.refCif')
+        .where('referenceCustomer.id = :id', { id })
+        .getOne();
     } catch (error) {
       throw Errors.wrap(
         error as Error,

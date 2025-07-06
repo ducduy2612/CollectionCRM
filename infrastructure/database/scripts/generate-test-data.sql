@@ -105,6 +105,7 @@ CREATE TABLE staging_bank.customers (
 CREATE TABLE staging_bank.phones (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     cif VARCHAR(20) NOT NULL,
+    ref_cif VARCHAR(20) NULL,
     type VARCHAR(20) NOT NULL,
     number VARCHAR(20) NOT NULL,
     is_primary BOOLEAN NOT NULL DEFAULT FALSE,
@@ -115,14 +116,14 @@ CREATE TABLE staging_bank.phones (
     updated_by VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    is_editable BOOLEAN NOT NULL DEFAULT FALSE,
     last_synced_at TIMESTAMP,
-    UNIQUE (cif, type)
+    UNIQUE (cif, ref_cif, type)
 );
 
 CREATE TABLE staging_bank.addresses (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     cif VARCHAR(20) NOT NULL,
+    ref_cif VARCHAR(20) NULL,
     type VARCHAR(20) NOT NULL,
     address_line1 VARCHAR(100) NOT NULL,
     address_line2 VARCHAR(100),
@@ -138,14 +139,14 @@ CREATE TABLE staging_bank.addresses (
     updated_by VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    is_editable BOOLEAN NOT NULL DEFAULT FALSE,
     last_synced_at TIMESTAMP,
-    UNIQUE (cif, type)
+    UNIQUE (cif, ref_cif, type)
 );
 
 CREATE TABLE staging_bank.emails (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     cif VARCHAR(20) NOT NULL,
+    ref_cif VARCHAR(20) NULL,
     address VARCHAR(100) NOT NULL,
     is_primary BOOLEAN NOT NULL DEFAULT FALSE,
     is_verified BOOLEAN NOT NULL DEFAULT FALSE,
@@ -155,9 +156,8 @@ CREATE TABLE staging_bank.emails (
     updated_by VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    is_editable BOOLEAN NOT NULL DEFAULT FALSE,
     last_synced_at TIMESTAMP,
-    UNIQUE (cif, address)
+    UNIQUE (cif, ref_cif, address)
 );
 
 CREATE TABLE staging_bank.loans (
@@ -620,9 +620,10 @@ BEGIN
         
         -- Insert phone for reference customer
         INSERT INTO staging_bank.phones (
-            cif, type, number, is_primary, is_verified, verification_date,
+            cif, ref_cif, type, number, is_primary, is_verified, verification_date,
             source_system, created_by, updated_by, last_synced_at
         ) VALUES (
+            primary_cif,
             ref_cif,
             'MOBILE',
             '0' || (800000000 + floor(random() * 99999999))::text,
@@ -639,10 +640,11 @@ BEGIN
         SELECT * FROM staging_bank.generate_vietnamese_address() INTO address_rec;
         
         INSERT INTO staging_bank.addresses (
-            cif, type, address_line1, address_line2, city, state, district, country,
+            cif, ref_cif, type, address_line1, address_line2, city, state, district, country,
             is_primary, is_verified, verification_date,
             source_system, created_by, updated_by, last_synced_at
         ) VALUES (
+            primary_cif,
             ref_cif,
             'HOME',
             address_rec.address_line1,
@@ -662,9 +664,10 @@ BEGIN
         
         -- Insert email for reference customer
         INSERT INTO staging_bank.emails (
-            cif, address, is_primary, is_verified, verification_date,
+            cif, ref_cif, address, is_primary, is_verified, verification_date,
             source_system, created_by, updated_by, last_synced_at
         ) VALUES (
+            primary_cif,
             ref_cif,
             LOWER(REPLACE(REPLACE(CASE WHEN ref_type = 'INDIVIDUAL' 
                 THEN staging_bank.generate_vietnamese_name(false) 
@@ -826,16 +829,19 @@ CREATE INDEX idx_staging_customers_type ON staging_bank.customers(type);
 -- Phone indexes
 CREATE INDEX idx_staging_phones_number ON staging_bank.phones(number);
 CREATE INDEX idx_staging_phones_cif ON staging_bank.phones(cif);
+CREATE INDEX idx_staging_phones_ref_cif ON staging_bank.phones(ref_cif);
 
 -- Address indexes
 CREATE INDEX idx_staging_addresses_city ON staging_bank.addresses(city);
 CREATE INDEX idx_staging_addresses_state ON staging_bank.addresses(state);
 CREATE INDEX idx_staging_addresses_country ON staging_bank.addresses(country);
 CREATE INDEX idx_staging_addresses_cif ON staging_bank.addresses(cif);
+CREATE INDEX idx_staging_addresses_ref_cif ON staging_bank.addresses(ref_cif);
 
 -- Email indexes
 CREATE INDEX idx_staging_emails_address ON staging_bank.emails(address);
 CREATE INDEX idx_staging_emails_cif ON staging_bank.emails(cif);
+CREATE INDEX idx_staging_emails_ref_cif ON staging_bank.emails(ref_cif);
 
 -- Loan indexes
 CREATE INDEX idx_staging_loans_cif ON staging_bank.loans(cif);

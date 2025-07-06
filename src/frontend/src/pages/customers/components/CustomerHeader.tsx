@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Customer, ReferenceCustomer } from '../types';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
@@ -6,6 +6,7 @@ import { Avatar } from '../../../components/ui/Avatar';
 import { Badge } from '../../../components/ui/Badge';
 import { getCustomerInitials, getCustomerDisplayName } from '../../../utils/customer.utils';
 import { useTranslation } from '../../../i18n/hooks/useTranslation';
+import { referenceCustomersApi } from '../../../services/api/workflow/reference-customers.api';
 
 interface CustomerHeaderProps {
   customer: Customer;
@@ -14,6 +15,32 @@ interface CustomerHeaderProps {
 
 const CustomerHeader: React.FC<CustomerHeaderProps> = ({ customer, onReferenceClick }) => {
   const { t } = useTranslation(['customers', 'common']);
+  const [allReferences, setAllReferences] = useState<ReferenceCustomer[]>(customer.referenceCustomers || []);
+  
+  // Fetch workflow reference customers and merge with bank references
+  useEffect(() => {
+    const fetchWorkflowReferences = async () => {
+      try {
+        // Get workflow reference customers
+        const workflowReferences = await referenceCustomersApi.getReferenceCustomersByPrimaryCifWithContacts(customer.cif);
+        
+        // Combine bank references (from customer prop) with workflow references
+        const bankReferences = customer.referenceCustomers?.map(ref => ({ ...ref, source: 'bank' as const })) || [];
+        const workflowRefs = workflowReferences.map((ref: any) => ({ ...ref, source: 'workflow' as const }));
+        
+        const combined = [...bankReferences, ...workflowRefs];
+        setAllReferences(combined);
+      } catch (error) {
+        console.error('Error fetching workflow references:', error);
+        // Fall back to bank references only
+        setAllReferences(customer.referenceCustomers?.map(ref => ({ ...ref, source: 'bank' as const })) || []);
+      }
+    };
+
+    if (customer.cif) {
+      fetchWorkflowReferences();
+    }
+  }, [customer.cif, customer.referenceCustomers]);
   
   // Handle click on reference customer
   const handleReferenceClick = () => {
@@ -70,9 +97,9 @@ const CustomerHeader: React.FC<CustomerHeaderProps> = ({ customer, onReferenceCl
           <div className="w-1/2 pl-4 border-l border-neutral-200">
             <h3 className="text-sm font-semibold mb-2">{t('customers:titles.references')}</h3>
             
-            {customer.referenceCustomers && customer.referenceCustomers.length > 0 ? (
+            {allReferences && allReferences.length > 0 ? (
               <div className="grid grid-cols-1 gap-2">
-                {customer.referenceCustomers.map((ref, index) => (
+                {allReferences.map((ref, index) => (
                   <div
                     key={index}
                     className="p-2 cursor-pointer hover:bg-neutral-100 rounded border border-neutral-100 transition-colors"
@@ -82,7 +109,12 @@ const CustomerHeader: React.FC<CustomerHeaderProps> = ({ customer, onReferenceCl
                       <div className="font-medium text-sm">
                         {ref.type === 'INDIVIDUAL' ? ref.name : ref.companyName}
                       </div>
-                      <Badge variant="neutral" className="text-xs">{ref.relationshipType}</Badge>
+                      <div className="flex gap-1">
+                        <Badge variant="neutral" className="text-xs">{ref.relationshipType}</Badge>
+                        <Badge variant={ref.source === 'workflow' ? 'success' : 'neutral'} className="text-xs">
+                          {ref.source === 'workflow' ? 'User' : 'Bank'}
+                        </Badge>
+                      </div>
                     </div>
                     
                     <div className="text-neutral-500 text-xs mt-1">
