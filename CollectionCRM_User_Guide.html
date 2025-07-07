@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CollectionCRM User Guide - For Collection Agents</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        header {
+            background-color: #1e3a8a;
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        h2 {
+            color: #1e3a8a;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #1e3a8a;
+        }
+        
+        h3 {
+            color: #2563eb;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        
+        h4 {
+            color: #3b82f6;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .toc {
+            background-color: #f0f9ff;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 40px;
+            border-radius: 8px;
+        }
+        
+        .toc h2 {
+            margin-top: 0;
+            border: none;
+            color: #1e3a8a;
+        }
+        
+        .toc ul {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        
+        .toc li {
+            margin: 8px 0;
+        }
+        
+        .toc a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        
+        .screenshot-placeholder {
+            background-color: #f3f4f6;
+            border: 2px dashed #9ca3af;
+            padding: 60px 20px;
+            text-align: center;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        .screenshot-placeholder p {
+            color: #6b7280;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+        
+        .screenshot-instruction {
+            background-color: #fef3c7;
+            border: 1px solid #fbbf24;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        
+        .note {
+            background-color: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .tip {
+            background-color: #d1fae5;
+            border-left: 4px solid #10b981;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .warning {
+            background-color: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .step {
+            margin: 20px 0;
+            padding-left: 20px;
+        }
+        
+        .step-number {
+            font-weight: bold;
+            color: #1e3a8a;
+            margin-right: 10px;
+        }
+        
+        code {
+            background-color: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f3f4f6;
+            font-weight: bold;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .feature-card {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .button-example {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #3b82f6;
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            margin: 5px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.875em;
+            font-weight: 500;
+        }
+        
+        .status-active { background-color: #d1fae5; color: #065f46; }
+        .status-pending { background-color: #fef3c7; color: #92400e; }
+        .status-collection { background-color: #dbeafe; color: #1e40af; }
+        .status-closed { background-color: #e5e7eb; color: #374151; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CollectionCRM User Guide</h1>
+        <p>For Collection Agents</p>
+    </header>
+
+    <div class="container">
+        <!-- Table of Contents -->
+        <div class="toc">
+            <h2>Table of Contents</h2>
+            <ul>
+                <li><a href="#getting-started">1. Getting Started</a>
+                    <ul>
+                        <li><a href="#login">1.1 Logging In</a></li>
+                        <li><a href="#navigation">1.2 Navigation Overview</a></li>
+                        <li><a href="#language">1.3 Language Settings</a></li>
+                    </ul>
+                </li>
+                <li><a href="#dashboard">2. Dashboard</a>
+                    <ul>
+                        <li><a href="#performance-metrics">2.1 Performance Metrics</a></li>
+                        <li><a href="#priority-customers">2.2 Priority Customers</a></li>
+                        <li><a href="#recent-activities">2.3 Recent Activities</a></li>
+                    </ul>
+                </li>
+                <li><a href="#customer-management">3. Customer Management</a>
+                    <ul>
+                        <li><a href="#customer-search">3.1 Finding Customers</a></li>
+                        <li><a href="#customer-details">3.2 Customer Details</a></li>
+                        <li><a href="#recording-actions">3.3 Recording Actions</a></li>
+                        <li><a href="#quick-actions">3.4 Quick Actions Panel</a></li>
+                    </ul>
+                </li>
+                <li><a href="#workflows">4. Collection Workflows</a>
+                    <ul>
+                        <li><a href="#action-types">4.1 Action Types</a></li>
+                        <li><a href="#promises">4.2 Promise to Pay</a></li>
+                        <li><a href="#fud">4.3 Follow-Up Dates</a></li>
+                    </ul>
+                </li>
+                <li><a href="#documents">5. Document Management</a></li>
+                <li><a href="#best-practices">6. Best Practices</a></li>
+                <li><a href="#troubleshooting">7. Troubleshooting</a></li>
+            </ul>
+        </div>
+
+        <!-- Content Sections -->
+        <section id="getting-started">
+            <h2>1. Getting Started</h2>
+            
+            <h3 id="login">1.1 Logging In</h3>
+            <p>To access CollectionCRM, follow these steps:</p>
+            
+            <div class="step">
+                <span class="step-number">Step 1:</span> Open your web browser and navigate to the CollectionCRM login page.
+            </div>
+            
+            <div class="screenshot-placeholder">
+                <p>Login Page Screenshot</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Navigate to the login page, ensure the language switcher and login form are visible. 
+                    Capture the entire login screen including the CollectionCRM logo, username/password fields, and "Remember Me" checkbox.
+                </div>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 2:</span> Enter your username and password provided by your administrator.
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 3:</span> (Optional) Check "Remember Me" to stay logged in on this device.
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 4:</span> Click the "Login" button.
+            </div>
+            
+            <div class="note">
+                <strong>Note:</strong> Your session will automatically refresh every 14 minutes to keep you logged in during active use.
+            </div>
+            
+            <h3 id="navigation">1.2 Navigation Overview</h3>
+            <p>After logging in, you'll see the main interface with:</p>
+            
+            <div class="screenshot-placeholder">
+                <p>Main Interface Screenshot</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> After login, capture the full screen showing the header with user info, 
+                    sidebar navigation (Dashboard, Customers, Settings), and the main dashboard content area.
+                </div>
+            </div>
+            
+            <ul>
+                <li><strong>Header Bar:</strong> Shows the CollectionCRM logo, your username, role, and logout button</li>
+                <li><strong>Sidebar Navigation:</strong> Access to Dashboard, Customers, and Settings (if authorized)</li>
+                <li><strong>Main Content Area:</strong> Displays the current page content</li>
+            </ul>
+            
+            <h3 id="language">1.3 Language Settings</h3>
+            <p>CollectionCRM supports both English and Vietnamese languages.</p>
+            
+            <div class="step">
+                <span class="step-number">To change language:</span> Click the language switcher in the top-right corner of the header.
+            </div>
+            
+            <div class="tip">
+                <strong>Tip:</strong> The language preference is saved and will be remembered for your next login.
+            </div>
+        </section>
+
+        <section id="dashboard">
+            <h2>2. Dashboard</h2>
+            <p>The dashboard is your home screen, providing an overview of your daily performance and assigned customers.</p>
+            
+            <div class="screenshot-placeholder">
+                <p>Dashboard Overview Screenshot</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Navigate to the Dashboard. Capture the full page showing all three sections: 
+                    Performance Metrics cards at the top, Priority Customers list in the middle, and Recent Activities at the bottom.
+                </div>
+            </div>
+            
+            <h3 id="performance-metrics">2.1 Performance Metrics</h3>
+            <p>The top section displays your key performance indicators for today:</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Total Actions Made</h4>
+                    <p>Number of collection actions you've recorded today</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Successful Contacts</h4>
+                    <p>Number of customers successfully reached</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Promises to Pay</h4>
+                    <p>Number of payment commitments received</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Amount Promised</h4>
+                    <p>Total amount in payment promises (in VND)</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Contact Rate</h4>
+                    <p>Percentage of attempted contacts that were successful</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Promise Rate</h4>
+                    <p>Percentage of contacts that resulted in payment promises</p>
+                </div>
+            </div>
+            
+            <div class="tip">
+                <strong>Tip:</strong> Click the refresh button to update your metrics in real-time.
+            </div>
+            
+            <h3 id="priority-customers">2.2 Priority Customers</h3>
+            <p>This section shows customers assigned to you that require attention:</p>
+            
+            <div class="screenshot-placeholder">
+                <p>Priority Customers List Screenshot</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> In the Dashboard, scroll to the Priority Customers section. 
+                    Show the search bar and at least 3-4 customer entries with their CIF, name, company, segment, and status badges.
+                </div>
+            </div>
+            
+            <ul>
+                <li><strong>Search:</strong> Find specific customers by their CIF (Customer ID)</li>
+                <li><strong>Customer Information:</strong> View CIF, name, company, segment, and current status</li>
+                <li><strong>Quick Access:</strong> Click on any customer to view their detailed information</li>
+            </ul>
+            
+            <h3 id="recent-activities">2.3 Recent Activities</h3>
+            <p>Track your recent collection actions:</p>
+            
+            <ul>
+                <li>Shows your latest recorded actions</li>
+                <li>Includes action type, customer, and timestamp</li>
+                <li>Paginated for easy browsing through history</li>
+            </ul>
+        </section>
+
+        <section id="customer-management">
+            <h2>3. Customer Management</h2>
+            
+            <h3 id="customer-search">3.1 Finding Customers</h3>
+            <p>Access the customer list by clicking "Customers" in the sidebar navigation.</p>
+            
+            <div class="screenshot-placeholder">
+                <p>Customer List Page Screenshot</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Navigate to Customers page. Show both the basic search bar and 
+                    the "Advanced Search" button. Include the customer table with various status badges visible.
+                </div>
+            </div>
+            
+            <h4>Basic Search</h4>
+            <p>Use the search bar to quickly find customers by their CIF (Customer ID).</p>
+            
+            <h4>Advanced Search</h4>
+            <p>Click "Advanced Search" to access additional filters:</p>
+            
+            <div class="screenshot-placeholder">
+                <p>Advanced Search Filters Screenshot</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Click "Advanced Search" to expand the filter panel. 
+                    Show all available filter fields including name, ID numbers, segment dropdown, and status dropdown.
+                </div>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Filter</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Full Name</td>
+                        <td>Search by customer's full name</td>
+                    </tr>
+                    <tr>
+                        <td>National ID/Tax ID</td>
+                        <td>Search by identification number</td>
+                    </tr>
+                    <tr>
+                        <td>Company Name</td>
+                        <td>Search by employer/company name</td>
+                    </tr>
+                    <tr>
+                        <td>Registration Number</td>
+                        <td>Search by business registration number</td>
+                    </tr>
+                    <tr>
+                        <td>Customer Segment</td>
+                        <td>Filter by: Retail, SME, Corporate, or Premium</td>
+                    </tr>
+                    <tr>
+                        <td>Status</td>
+                        <td>Filter by: Active, Pending, Collection, or Closed</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3 id="customer-details">3.2 Customer Details</h3>
+            <p>Click on any customer to view their comprehensive profile:</p>
+            
+            <div class="screenshot-placeholder">
+                <p>Customer Detail Page Screenshot</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Open any customer detail page. Capture the header section showing 
+                    customer name, CIF, status, and contact information. Include the tab navigation showing all available tabs.
+                </div>
+            </div>
+            
+            <h4>Customer Information Tabs</h4>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Overview Tab</h4>
+                    <ul>
+                        <li>Loan Summary</li>
+                        <li>Payment History</li>
+                        <li>Assignment History</li>
+                        <li>Recent Actions</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>Loans Tab</h4>
+                    <ul>
+                        <li>All loans for this customer</li>
+                        <li>Loan details and status</li>
+                        <li>Outstanding amounts</li>
+                        <li>Payment schedules</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>Actions Tab</h4>
+                    <ul>
+                        <li>Complete action history</li>
+                        <li>Filter by date range</li>
+                        <li>Action types and results</li>
+                        <li>Agent notes</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>Payments Tab</h4>
+                    <ul>
+                        <li>Payment transaction history</li>
+                        <li>Payment channels used</li>
+                        <li>Filter by loan account</li>
+                        <li>Export functionality</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>Documents Tab</h4>
+                    <ul>
+                        <li>Upload new documents</li>
+                        <li>View existing documents</li>
+                        <li>Download documents</li>
+                        <li>Organize by loan</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <h3 id="recording-actions">3.3 Recording Actions</h3>
+            <p>Recording collection actions is a core function. Access it by clicking "Record Action" button.</p>
+            
+            <div class="screenshot-placeholder">
+                <p>Record Action Modal Screenshot</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Click "Record Action" button to open the modal. 
+                    Show the action recording interface with action type dropdown, subtype, result, and the loan list 
+                    with checkboxes. Include the FUD date field and notes section.
+                </div>
+            </div>
+            
+            <h4>Recording Process</h4>
+            
+            <div class="step">
+                <span class="step-number">Step 1:</span> Choose recording mode:
+                <ul>
+                    <li><strong>Customer Level:</strong> Apply same action to all loans</li>
+                    <li><strong>Loan Level:</strong> Record different actions for each loan</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 2:</span> Select loans to include (checkboxes)
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 3:</span> Choose action details:
+                <ul>
+                    <li><strong>Action Type:</strong> CALL, SMS, EMAIL, VISIT, etc.</li>
+                    <li><strong>Action Subtype:</strong> More specific categorization</li>
+                    <li><strong>Action Result:</strong> Outcome of the action</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 4:</span> Set Follow-Up Date (FUD) if required
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 5:</span> Add notes (optional but recommended)
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 6:</span> For "Promise to Pay" results:
+                <ul>
+                    <li>Enter promised amount</li>
+                    <li>Set promise date</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 7:</span> Click "Save" to record the action
+            </div>
+            
+            <h3 id="quick-actions">3.4 Quick Actions Panel</h3>
+            <p>The fixed action panel at the bottom provides quick access to common actions:</p>
+            
+            <div class="screenshot-placeholder">
+                <p>Quick Actions Panel Screenshot</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> On any customer detail page, scroll to show the fixed bottom panel. 
+                    Include all quick action buttons (SMS, Email, Call, Record Action) and the last contact information.
+                </div>
+            </div>
+            
+            <ul>
+                <li><span class="button-example">Send SMS</span> - Quick SMS to customer</li>
+                <li><span class="button-example">Send Email</span> - Quick email to customer</li>
+                <li><span class="button-example">Make Call</span> - Initiate phone call</li>
+                <li><span class="button-example">Record Action</span> - Open action recording modal</li>
+            </ul>
+            
+            <div class="note">
+                <strong>Note:</strong> The panel also shows "Last Contact" date and "Days Since Contact" for quick reference.
+            </div>
+        </section>
+
+        <section id="workflows">
+            <h2>4. Collection Workflows</h2>
+            
+            <h3 id="action-types">4.1 Action Types</h3>
+            <p>Understanding action types helps you record activities accurately:</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Action Type</th>
+                        <th>Description</th>
+                        <th>Common Subtypes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>CALL</strong></td>
+                        <td>Phone calls to customers</td>
+                        <td>Outbound Call, Follow-up Call, Collection Call</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SMS</strong></td>
+                        <td>Text messages sent</td>
+                        <td>Reminder SMS, Payment Due SMS, Custom SMS</td>
+                    </tr>
+                    <tr>
+                        <td><strong>EMAIL</strong></td>
+                        <td>Email communications</td>
+                        <td>Statement Email, Reminder Email, Notice Email</td>
+                    </tr>
+                    <tr>
+                        <td><strong>VISIT</strong></td>
+                        <td>Field visits to customer</td>
+                        <td>Home Visit, Office Visit, Business Visit</td>
+                    </tr>
+                    <tr>
+                        <td><strong>PAYMENT</strong></td>
+                        <td>Payment-related actions</td>
+                        <td>Payment Received, Partial Payment, Payment Plan</td>
+                    </tr>
+                    <tr>
+                        <td><strong>NOTE</strong></td>
+                        <td>General documentation</td>
+                        <td>Customer Update, Internal Note, Special Instruction</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3 id="promises">4.2 Promise to Pay</h3>
+            <p>When a customer commits to making a payment:</p>
+            
+            <div class="screenshot-placeholder">
+                <p>Promise to Pay Form Screenshot</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> In the Record Action modal, select an action result that triggers 
+                    Promise to Pay (PTP). Show the additional PTP fields for amount and date that appear.
+                </div>
+            </div>
+            
+            <ol>
+                <li>Select action result that indicates promise (e.g., "Customer Promised to Pay")</li>
+                <li>Enter the promised amount in VND</li>
+                <li>Select the promise date using the date picker</li>
+                <li>Add specific notes about the promise details</li>
+            </ol>
+            
+            <div class="tip">
+                <strong>Best Practice:</strong> Always document specific payment details in notes, including:
+                <ul>
+                    <li>Payment method customer will use</li>
+                    <li>Any conditions or special arrangements</li>
+                    <li>Customer's reason for delay (if applicable)</li>
+                </ul>
+            </div>
+            
+            <h3 id="fud">4.3 Follow-Up Dates (FUD)</h3>
+            <p>The system can automatically calculate follow-up dates based on action results:</p>
+            
+            <ul>
+                <li><strong>Automatic FUD:</strong> System calculates based on configured rules</li>
+                <li><strong>Manual Override:</strong> You can set a custom follow-up date</li>
+                <li><strong>FUD Types:</strong>
+                    <ul>
+                        <li>Based on Promise Date (for payment promises)</li>
+                        <li>Based on Action Date (for general follow-ups)</li>
+                    </ul>
+                </li>
+            </ul>
+            
+            <div class="note">
+                <strong>Important:</strong> Always review the suggested FUD date and adjust if necessary based on customer circumstances.
+            </div>
+        </section>
+
+        <section id="documents">
+            <h2>5. Document Management</h2>
+            <p>Managing customer documents is essential for maintaining complete records.</p>
+            
+            <div class="screenshot-placeholder">
+                <p>Documents Tab Screenshot</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Navigate to a customer's Documents tab. Show the upload area, 
+                    filter options, and at least 2-3 document cards with their action buttons (View, Download, Delete).
+                </div>
+            </div>
+            
+            <h3>Uploading Documents</h3>
+            
+            <div class="step">
+                <span class="step-number">Step 1:</span> Navigate to the customer's Documents tab
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 2:</span> Click "Upload Document" button
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 3:</span> Select document details:
+                <ul>
+                    <li>Document Type</li>
+                    <li>Document Category</li>
+                    <li>Associated Loan (if applicable)</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 4:</span> Choose file to upload (drag-and-drop or click to browse)
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 5:</span> Click "Upload" to save the document
+            </div>
+            
+            <h3>Document Actions</h3>
+            
+            <ul>
+                <li><strong>View:</strong> Opens document in a modal window</li>
+                <li><strong>Download:</strong> Downloads document to your computer</li>
+                <li><strong>Delete:</strong> Removes document (requires confirmation)</li>
+            </ul>
+            
+            <h3>Document Filtering</h3>
+            
+            <p>Use filters to find specific documents:</p>
+            <ul>
+                <li>Filter by document type</li>
+                <li>Filter by category</li>
+                <li>Filter by loan account</li>
+                <li>Filter by upload date range</li>
+            </ul>
+        </section>
+
+        <section id="best-practices">
+            <h2>6. Best Practices</h2>
+            
+            <h3>Effective Collection Strategies</h3>
+            
+            <div class="tip">
+                <h4>1. Start Your Day Right</h4>
+                <ul>
+                    <li>Review your dashboard metrics</li>
+                    <li>Check priority customers list</li>
+                    <li>Plan your call schedule based on customer availability</li>
+                </ul>
+            </div>
+            
+            <div class="tip">
+                <h4>2. Document Everything</h4>
+                <ul>
+                    <li>Record all customer interactions immediately</li>
+                    <li>Include detailed notes about conversations</li>
+                    <li>Update customer status after each contact</li>
+                </ul>
+            </div>
+            
+            <div class="tip">
+                <h4>3. Follow-Up Management</h4>
+                <ul>
+                    <li>Set realistic follow-up dates</li>
+                    <li>Honor promised callback times</li>
+                    <li>Review FUD dates daily</li>
+                </ul>
+            </div>
+            
+            <div class="tip">
+                <h4>4. Promise to Pay Best Practices</h4>
+                <ul>
+                    <li>Get specific commitment amounts and dates</li>
+                    <li>Confirm customer's payment method</li>
+                    <li>Send confirmation SMS/email when possible</li>
+                    <li>Follow up one day before promise date</li>
+                </ul>
+            </div>
+            
+            <h3>Communication Tips</h3>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Situation</th>
+                        <th>Best Practice</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>First Contact</td>
+                        <td>Be professional and courteous, verify customer identity, explain purpose clearly</td>
+                    </tr>
+                    <tr>
+                        <td>Difficult Customer</td>
+                        <td>Remain calm, listen actively, document threats or abuse, escalate if needed</td>
+                    </tr>
+                    <tr>
+                        <td>Payment Negotiation</td>
+                        <td>Understand customer situation, offer realistic options, get firm commitments</td>
+                    </tr>
+                    <tr>
+                        <td>No Contact</td>
+                        <td>Try different times/methods, update contact information, consider field visit</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="troubleshooting">
+            <h2>7. Troubleshooting</h2>
+            
+            <h3>Common Issues and Solutions</h3>
+            
+            <div class="warning">
+                <h4>Cannot Log In</h4>
+                <ul>
+                    <li>Verify your username and password are correct</li>
+                    <li>Check if Caps Lock is on</li>
+                    <li>Clear browser cache and cookies</li>
+                    <li>Contact your administrator if password needs reset</li>
+                </ul>
+            </div>
+            
+            <div class="warning">
+                <h4>Session Timeout</h4>
+                <ul>
+                    <li>System auto-refreshes every 14 minutes during active use</li>
+                    <li>If logged out, simply log in again</li>
+                    <li>Your work is auto-saved before timeout</li>
+                </ul>
+            </div>
+            
+            <div class="warning">
+                <h4>Cannot Find Customer</h4>
+                <ul>
+                    <li>Verify the CIF is correct</li>
+                    <li>Try advanced search with partial information</li>
+                    <li>Check if customer might be under different status</li>
+                    <li>Contact supervisor if customer should be assigned to you</li>
+                </ul>
+            </div>
+            
+            <div class="warning">
+                <h4>Action Not Saving</h4>
+                <ul>
+                    <li>Ensure all required fields are filled</li>
+                    <li>Check your internet connection</li>
+                    <li>Refresh the page and try again</li>
+                    <li>Contact IT support if problem persists</li>
+                </ul>
+            </div>
+            
+            <h3>Getting Help</h3>
+            
+            <p>If you encounter issues not covered here:</p>
+            <ol>
+                <li>Check with your team lead or supervisor</li>
+                <li>Contact IT support for technical issues</li>
+                <li>Refer to system announcements for known issues</li>
+                <li>Submit a support ticket through proper channels</li>
+            </ol>
+        </section>
+
+        <footer style="margin-top: 60px; padding-top: 30px; border-top: 1px solid #ddd; text-align: center; color: #666;">
+            <p>CollectionCRM User Guide - Version 1.0</p>
+            <p>Last Updated: 2025</p>
+        </footer>
+    </div>
+</body>
+</html>

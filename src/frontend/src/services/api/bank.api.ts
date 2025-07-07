@@ -51,6 +51,18 @@ export interface PhoneType {
   description?: string;
 }
 
+export interface AddressType {
+  value: string;
+  label: string;
+  description?: string;
+}
+
+export interface RelationshipType {
+  value: string;
+  label: string;
+  description?: string;
+}
+
 export const bankApi = {
   // Get customer by CIF
   getCustomer: async (cif: string): Promise<Customer> => {
@@ -185,6 +197,30 @@ export const bankApi = {
     
     if (!response.data.success) {
       throw new Error(response.data.message || 'Failed to fetch phone types');
+    }
+    
+    return response.data.data;
+  },
+
+  // Get address types
+  getAddressTypes: async (): Promise<AddressType[]> => {
+    console.log('calling getAddressTypes');
+    const response = await apiClient.get<BankApiResponse<AddressType[]>>('/bank/address-types');
+    
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch address types');
+    }
+    
+    return response.data.data;
+  },
+
+  // Get relationship types
+  getRelationshipTypes: async (): Promise<RelationshipType[]> => {
+    console.log('calling getRelationshipTypes');
+    const response = await apiClient.get<BankApiResponse<RelationshipType[]>>('/bank/relationship-types');
+    
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch relationship types');
     }
     
     return response.data.data;

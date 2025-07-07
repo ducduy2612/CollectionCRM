@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../../../components/ui/Modal';
 import { Button } from '../../../components/ui/Button';
-import { Input } from '../../../components/ui/Input';
-import { Select } from '../../../components/ui/Select';
-import { Spinner } from '../../../components/ui/Spinner';
 import { useTranslation } from '../../../i18n/hooks/useTranslation';
-import { WorkflowPhone, WorkflowEmail, WorkflowAddress, PhoneFormData, EmailFormData, AddressFormData } from '../types';
-import { bankApi, PhoneType } from '../../../services/api/bank.api';
+import { WorkflowPhone, WorkflowEmail, WorkflowAddress } from '../types';
+import PhoneForm from './forms/PhoneForm';
+import EmailForm from './forms/EmailForm';
+import AddressForm from './forms/AddressForm';
+import { usePhoneTypes, useAddressTypes } from '../hooks/useContactTypes';
 
 interface ContactEditModalProps {
   isOpen: boolean;
@@ -29,35 +29,12 @@ const ContactEditModal: React.FC<ContactEditModalProps> = ({
   const [formData, setFormData] = useState<any>({});
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [phoneTypes, setPhoneTypes] = useState<PhoneType[]>([]);
-  const [phoneTypesLoading, setPhoneTypesLoading] = useState(false);
+  
+  // Use custom hooks for type fetching
+  const { phoneTypes, loading: phoneTypesLoading } = usePhoneTypes();
+  const { addressTypes, loading: addressTypesLoading } = useAddressTypes();
 
-  // Fetch phone types when modal opens for phone editing
-  useEffect(() => {
-    if (isOpen && contactType === 'phone') {
-      const fetchPhoneTypes = async () => {
-        setPhoneTypesLoading(true);
-        try {
-          const types = await bankApi.getPhoneTypes();
-          setPhoneTypes(types);
-        } catch (error) {
-          console.error('Error fetching phone types:', error);
-          // Fallback to basic phone types if API fails
-          setPhoneTypes([
-            { value: 'mobile1', label: 'Mobile Phone 1' },
-            { value: 'home1', label: 'Home Phone 1' },
-            { value: 'work1', label: 'Work Phone 1' },
-            { value: 'other1', label: 'Other Phone 1' }
-          ]);
-        } finally {
-          setPhoneTypesLoading(false);
-        }
-      };
-
-      fetchPhoneTypes();
-    }
-  }, [isOpen, contactType]);
-
+  // Initialize form data when modal opens or data changes
   useEffect(() => {
     if (isOpen) {
       if (isEditing && contactData) {
@@ -93,36 +70,40 @@ const ContactEditModal: React.FC<ContactEditModalProps> = ({
         }
       } else {
         // Reset form for new contact
-        if (contactType === 'phone') {
-          setFormData({
-            type: phoneTypes.length > 0 ? phoneTypes[0].value : 'mobile1',
-            number: '',
-            isPrimary: false,
-            isVerified: false
-          });
-        } else if (contactType === 'email') {
-          setFormData({
-            address: '',
-            isPrimary: false,
-            isVerified: false
-          });
-        } else if (contactType === 'address') {
-          setFormData({
-            type: 'HOME',
-            addressLine1: '',
-            addressLine2: '',
-            city: '',
-            state: '',
-            district: '',
-            country: 'Vietnam',
-            isPrimary: false,
-            isVerified: false
-          });
-        }
+        resetForm();
       }
       setErrors({});
     }
-  }, [isOpen, isEditing, contactData, contactType, phoneTypes]);
+  }, [isOpen, isEditing, contactData, contactType, phoneTypes, addressTypes]);
+
+  const resetForm = () => {
+    if (contactType === 'phone') {
+      setFormData({
+        type: phoneTypes.length > 0 ? phoneTypes[0].value : 'mobile1',
+        number: '',
+        isPrimary: false,
+        isVerified: false
+      });
+    } else if (contactType === 'email') {
+      setFormData({
+        address: '',
+        isPrimary: false,
+        isVerified: false
+      });
+    } else if (contactType === 'address') {
+      setFormData({
+        type: addressTypes.length > 0 ? addressTypes[0].value : 'home1',
+        addressLine1: '',
+        addressLine2: '',
+        city: '',
+        state: '',
+        district: '',
+        country: 'Vietnam',
+        isPrimary: false,
+        isVerified: false
+      });
+    }
+  };
 
   const handleInputChange = (field: string, value: any) => {
     setFormData((prev: any) => ({
@@ -179,7 +160,7 @@ const ContactEditModal: React.FC<ContactEditModalProps> = ({
     } catch (error: any) {
       console.error('Error saving contact:', error);
       // Show user-friendly error message
-      alert(error.message || t('customers:messages.save_failed'));
+      alert(error.message);
     } finally {
       setLoading(false);
     }
@@ -193,220 +174,51 @@ const ContactEditModal: React.FC<ContactEditModalProps> = ({
     return action;
   };
 
-  const renderPhoneForm = () => (
-    <>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-neutral-700 mb-2">
-          {t('customers:fields.phone_type')} *
-        </label>
-        {phoneTypesLoading ? (
-          <div className="flex items-center justify-center py-2">
-            <Spinner size="sm" />
-            <span className="ml-2 text-sm text-neutral-600">Loading phone types...</span>
-          </div>
-        ) : (
-          <Select
-            value={formData.type || ''}
-            onChange={(e) => handleInputChange('type', e.target.value)}
-            options={phoneTypes.map(type => ({
-              value: type.value,
-              label: type.label
-            }))}
-            error={errors.type}
-            disabled={phoneTypesLoading || phoneTypes.length === 0}
+  const renderForm = () => {
+    switch (contactType) {
+      case 'phone':
+        return (
+          <PhoneForm
+            formData={formData}
+            errors={errors}
+            phoneTypes={phoneTypes}
+            phoneTypesLoading={phoneTypesLoading}
+            onChange={handleInputChange}
+            showCheckboxes={true}
           />
-        )}
-        {phoneTypes.length === 0 && !phoneTypesLoading && (
-          <p className="text-xs text-red-600 mt-1">Failed to load phone types. Please try again.</p>
-        )}
-      </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-neutral-700 mb-2">
-          {t('customers:fields.phone_number')} *
-        </label>
-        <Input
-          type="tel"
-          value={formData.number || ''}
-          onChange={(e) => handleInputChange('number', e.target.value)}
-          error={errors.number}
-          placeholder={t('customers:placeholders.phone_number')}
-        />
-      </div>
-      <div className="flex gap-4 mb-4">
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            checked={formData.isPrimary || false}
-            onChange={(e) => handleInputChange('isPrimary', e.target.checked)}
-            className="mr-2"
+        );
+      
+      case 'email':
+        return (
+          <EmailForm
+            formData={formData}
+            errors={errors}
+            onChange={handleInputChange}
+            showCheckboxes={true}
           />
-          {t('forms:options.primary')}
-        </label>
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            checked={formData.isVerified || false}
-            onChange={(e) => handleInputChange('isVerified', e.target.checked)}
-            className="mr-2"
+        );
+      
+      case 'address':
+        return (
+          <AddressForm
+            formData={formData}
+            errors={errors}
+            addressTypes={addressTypes}
+            addressTypesLoading={addressTypesLoading}
+            onChange={handleInputChange}
+            showCheckboxes={true}
           />
-          {t('forms:options.verified')}
-        </label>
-      </div>
-    </>
-  );
-
-  const renderEmailForm = () => (
-    <>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-neutral-700 mb-2">
-          {t('customers:fields.email_address')} *
-        </label>
-        <Input
-          type="email"
-          value={formData.address || ''}
-          onChange={(e) => handleInputChange('address', e.target.value)}
-          error={errors.address}
-          placeholder={t('customers:placeholders.email_address')}
-        />
-      </div>
-      <div className="flex gap-4 mb-4">
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            checked={formData.isPrimary || false}
-            onChange={(e) => handleInputChange('isPrimary', e.target.checked)}
-            className="mr-2"
-          />
-          {t('forms:options.primary')}
-        </label>
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            checked={formData.isVerified || false}
-            onChange={(e) => handleInputChange('isVerified', e.target.checked)}
-            className="mr-2"
-          />
-          {t('forms:options.verified')}
-        </label>
-      </div>
-    </>
-  );
-
-  const renderAddressForm = () => (
-    <>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-neutral-700 mb-2">
-          {t('customers:fields.address_type')} *
-        </label>
-        <Select
-          value={formData.type || ''}
-          onChange={(e) => handleInputChange('type', e.target.value)}
-          options={[
-            { value: 'HOME', label: t('customers:address_types.home') },
-            { value: 'WORK', label: t('customers:address_types.work') },
-            { value: 'OTHER', label: t('customers:address_types.other') }
-          ]}
-          error={errors.type}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-neutral-700 mb-2">
-          {t('customers:fields.address_line1')} *
-        </label>
-        <Input
-          value={formData.addressLine1 || ''}
-          onChange={(e) => handleInputChange('addressLine1', e.target.value)}
-          error={errors.addressLine1}
-          placeholder={t('customers:placeholders.address_line1')}
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-neutral-700 mb-2">
-          {t('customers:fields.address_line2')}
-        </label>
-        <Input
-          value={formData.addressLine2 || ''}
-          onChange={(e) => handleInputChange('addressLine2', e.target.value)}
-          placeholder={t('customers:placeholders.address_line2')}
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-2">
-            {t('customers:fields.city')} *
-          </label>
-          <Input
-            value={formData.city || ''}
-            onChange={(e) => handleInputChange('city', e.target.value)}
-            error={errors.city}
-            placeholder={t('customers:placeholders.city')}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-2">
-            {t('customers:fields.state')} *
-          </label>
-          <Input
-            value={formData.state || ''}
-            onChange={(e) => handleInputChange('state', e.target.value)}
-            error={errors.state}
-            placeholder={t('customers:placeholders.state')}
-          />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-2">
-            {t('customers:fields.district')} *
-          </label>
-          <Input
-            value={formData.district || ''}
-            onChange={(e) => handleInputChange('district', e.target.value)}
-            error={errors.district}
-            placeholder={t('customers:placeholders.district')}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-2">
-            {t('customers:fields.country')} *
-          </label>
-          <Input
-            value={formData.country || ''}
-            onChange={(e) => handleInputChange('country', e.target.value)}
-            error={errors.country}
-            placeholder={t('customers:placeholders.country')}
-          />
-        </div>
-      </div>
-      <div className="flex gap-4 mb-4">
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            checked={formData.isPrimary || false}
-            onChange={(e) => handleInputChange('isPrimary', e.target.checked)}
-            className="mr-2"
-          />
-          {t('forms:options.primary')}
-        </label>
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            checked={formData.isVerified || false}
-            onChange={(e) => handleInputChange('isVerified', e.target.checked)}
-            className="mr-2"
-          />
-          {t('forms:options.verified')}
-        </label>
-      </div>
-    </>
-  );
+        );
+      
+      default:
+        return null;
+    }
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={getModalTitle()}>
       <form onSubmit={handleSubmit}>
-        {contactType === 'phone' && renderPhoneForm()}
-        {contactType === 'email' && renderEmailForm()}
-        {contactType === 'address' && renderAddressForm()}
+        {renderForm()}
         
         <div className="flex justify-end gap-3 pt-4 border-t">
           <Button

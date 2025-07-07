@@ -66,7 +66,14 @@
     "email_address": "Email Address",
     "address_type": "Address Type",
     "address_line1": "Address Line 1",
-    "address_line2": "Address Line 2"
+    "address_line2": "Address Line 2",
+    "basic_info": "Basic Information",
+    "phones": "Phone Numbers",
+    "addresses": "Addresses",
+    "emails": "Email Addresses",
+    "company_name": "Company Name",
+    "registration_number": "Registration Number",
+    "tax_id": "Tax ID"
   },
   "labels": {
     "assignment_period": "Assignment Period",
@@ -92,7 +99,12 @@
     "city": "Input city",
     "state": "Input state",
     "district": "Input district",
-    "country": "Input country"
+    "country": "Input country",
+    "full_name": "Enter full name",
+    "national_id": "Enter national ID",
+    "company_name": "Enter company name",
+    "registration_number": "Enter registration number",
+    "tax_id": "Enter tax ID"
   },
   "status": {
     "customer_status": "Customer Status",
@@ -114,7 +126,8 @@
     "under_review": "Under Review",
     "approved": "Approved",
     "rejected": "Rejected",
-    "blacklisted": "Blacklisted"
+    "blacklisted": "Blacklisted",
+    "dormant": "Dormant"
   },
   "collection_status": {
     "current": "Current",
@@ -159,7 +172,8 @@
     "export_data": "Export Data",
     "merge_customers": "Merge Customers",
     "archive_customer": "Archive Customer",
-    "restore_customer": "Restore Customer"
+    "restore_customer": "Restore Customer",
+    "add_first_reference": "Add First Reference"
   },
   "tabs": {
     "overview": "Overview",
@@ -223,11 +237,11 @@
     "contact_not_found": "Contact not found",
     "delete_failed": "Failed to delete contact",
     "delete_requires_admin_role": "Delete operation requires admin role",
-    "duplicate_phone_type": "A phone number with this type already exists for this customer. Please choose a different type or update the existing one.",
-    "duplicate_address_type": "An address with this type already exists for this customer. Please choose a different type or update the existing one.",
+    "duplicate_contact_type": "A contact with this type already exists for this customer. Please choose a different type or update the existing one.",
     "failed_to_load_assignments": "Failed to load assignment history",
     "no_assignment_history": "No assignment history available",
-    "no_payments": "No payments found"
+    "no_payments": "No payments found",
+    "no_references": "No reference customers found"
   },
   "action_search": {
     "title": "Search Action History",

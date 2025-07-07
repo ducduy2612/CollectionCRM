@@ -156,7 +156,7 @@ export const AddressRepository = AppDataSource.getRepository(Address).extend({
         
         if (existingAddress) {
           throw Errors.create(
-            Errors.Database.DUPLICATE_ENTRY,
+            Errors.Database.DUPLICATE_RECORD,
             `Address with type ${address.type} already exists for this ${address.refCif ? 'reference customer' : 'customer'}`,
             OperationType.DATABASE,
             SourceSystemType.WORKFLOW_SERVICE

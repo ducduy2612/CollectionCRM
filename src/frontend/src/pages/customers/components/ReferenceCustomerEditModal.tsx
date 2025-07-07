@@ -4,7 +4,8 @@ import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Select } from '../../../components/ui/Select';
 import { useTranslation } from '../../../i18n/hooks/useTranslation';
-import { ReferenceCustomer, ReferenceCustomerFormData, RelationshipType } from '../types';
+import { ReferenceCustomer, ReferenceCustomerFormData } from '../types';
+import { bankApi, RelationshipType } from '../../../services/api/bank.api';
 
 interface ReferenceCustomerEditModalProps {
   isOpen: boolean;
@@ -27,7 +28,7 @@ const ReferenceCustomerEditModal: React.FC<ReferenceCustomerEditModalProps> = ({
   const [formData, setFormData] = useState<ReferenceCustomerFormData>({
     refCif: '',
     primaryCif: primaryCif,
-    relationshipType: RelationshipType.OTHER,
+    relationshipType: '',
     type: 'INDIVIDUAL',
     name: '',
     dateOfBirth: '',
@@ -39,6 +40,8 @@ const ReferenceCustomerEditModal: React.FC<ReferenceCustomerEditModalProps> = ({
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [relationshipTypes, setRelationshipTypes] = useState<RelationshipType[]>([]);
+  const [relationshipTypesLoading, setRelationshipTypesLoading] = useState(true);
 
   useEffect(() => {
     if (isOpen) {
@@ -47,7 +50,7 @@ const ReferenceCustomerEditModal: React.FC<ReferenceCustomerEditModalProps> = ({
         setFormData({
           refCif: referenceData.refCif || '',
           primaryCif: primaryCif,
-          relationshipType: referenceData.relationshipType || RelationshipType.OTHER,
+          relationshipType: referenceData.relationshipType || '',
           type: referenceData.type === 'ORGANIZATION' ? 'ORGANIZATION' : 'INDIVIDUAL',
           name: referenceData.name || '',
           dateOfBirth: referenceData.dateOfBirth || '',
@@ -58,11 +61,11 @@ const ReferenceCustomerEditModal: React.FC<ReferenceCustomerEditModalProps> = ({
           taxId: referenceData.taxId || ''
         });
       } else {
-        // Reset form for new reference customer
+        // Reset form for new reference customer (refCif auto-generated)
         setFormData({
           refCif: '',
           primaryCif: primaryCif,
-          relationshipType: RelationshipType.OTHER,
+          relationshipType: '',
           type: 'INDIVIDUAL',
           name: '',
           dateOfBirth: '',
@@ -76,6 +79,31 @@ const ReferenceCustomerEditModal: React.FC<ReferenceCustomerEditModalProps> = ({
       setErrors({});
     }
   }, [isOpen, isEditing, referenceData, primaryCif]);
+
+  // Fetch relationship types on component mount
+  useEffect(() => {
+    const fetchRelationshipTypes = async () => {
+      try {
+        setRelationshipTypesLoading(true);
+        const types = await bankApi.getRelationshipTypes();
+        setRelationshipTypes(types);
+      } catch (error) {
+        console.error('Error fetching relationship types:', error);
+        // Set fallback types if API fails
+        setRelationshipTypes([
+          { value: 'spouse', label: 'Spouse' },
+          { value: 'parent', label: 'Parent' },
+          { value: 'child', label: 'Child' },
+          { value: 'sibling', label: 'Sibling' },
+          { value: 'other', label: 'Other' }
+        ]);
+      } finally {
+        setRelationshipTypesLoading(false);
+      }
+    };
+
+    fetchRelationshipTypes();
+  }, []);
 
   const handleInputChange = (field: keyof ReferenceCustomerFormData, value: any) => {
     setFormData((prev) => ({
@@ -94,10 +122,6 @@ const ReferenceCustomerEditModal: React.FC<ReferenceCustomerEditModalProps> = ({
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    // Required fields for all
-    if (!formData.refCif) {
-      newErrors.refCif = t('forms:validation.required');
-    }
     if (!formData.relationshipType) {
       newErrors.relationshipType = t('forms:validation.required');
     }
@@ -142,27 +166,14 @@ const ReferenceCustomerEditModal: React.FC<ReferenceCustomerEditModalProps> = ({
     return `${action} ${t('customers:titles.references')}`;
   };
 
-  const relationshipOptions = Object.values(RelationshipType).map(type => ({
-    value: type,
-    label: type
+  const relationshipOptions = relationshipTypes.map(type => ({
+    value: type.value,
+    label: type.label
   }));
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={getModalTitle()} size="lg">
       <form onSubmit={handleSubmit}>
-        {/* Reference CIF */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-700 mb-2">
-            {t('customers:fields.reference_cif')} *
-          </label>
-          <Input
-            value={formData.refCif}
-            onChange={(e) => handleInputChange('refCif', e.target.value)}
-            error={errors.refCif}
-            placeholder={t('customers:placeholders.reference_cif')}
-            disabled={isEditing}
-          />
-        </div>
 
         {/* Relationship Type */}
         <div className="mb-4">
@@ -172,8 +183,12 @@ const ReferenceCustomerEditModal: React.FC<ReferenceCustomerEditModalProps> = ({
           <Select
             value={formData.relationshipType}
             onChange={(e) => handleInputChange('relationshipType', e.target.value)}
-            options={relationshipOptions}
+            options={[
+              { value: '', label: t('forms:buttons.select') },
+              ...relationshipOptions
+            ]}
             error={errors.relationshipType}
+            disabled={relationshipTypesLoading}
           />
         </div>
 

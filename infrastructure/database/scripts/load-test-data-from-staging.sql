@@ -66,6 +66,9 @@ SELECT * FROM staging_bank.loan_custom_fields;
 -- Re-enable foreign key checks
 SET session_replication_role = 'origin';
 
+-- Sync customer cases
+SELECT * FROM workflow_service.sync_customer_cases();
+
 -- Analyze tables for query optimization
 ANALYZE bank_sync_service.customers;
 ANALYZE bank_sync_service.phones;
@@ -103,4 +106,6 @@ UNION ALL
 SELECT 'Loan Collaterals', COUNT(*) FROM bank_sync_service.loan_collaterals
 UNION ALL
 SELECT 'Loan Custom Fields', COUNT(*) FROM bank_sync_service.loan_custom_fields
+UNION ALL
+SELECT 'Customer Cases (Workflow Service)', COUNT(*) FROM workflow_service.customer_cases
 ORDER BY table_name;

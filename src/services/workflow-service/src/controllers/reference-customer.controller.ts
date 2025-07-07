@@ -143,13 +143,47 @@ export class ReferenceCustomerController {
   }
   
   /**
+   * Generate a unique reference CIF (20 characters)
+   * Format: REF + 17 random alphanumeric characters
+   * @returns A unique reference CIF string
+   */
+  private static async generateUniqueCif(): Promise<string> {
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let attempt = 0;
+    
+    while (attempt < 50) {
+      // Generate 17 random characters after "REF" prefix
+      let randomSuffix = '';
+      for (let i = 0; i < 17; i++) {
+        randomSuffix += charset.charAt(Math.floor(Math.random() * charset.length));
+      }
+      
+      const generatedCif = `REF${randomSuffix}`;
+      
+      // Check if CIF already exists
+      const existing = await ReferenceCustomerRepository.findOneBy({ refCif: generatedCif });
+      if (!existing) {
+        return generatedCif;
+      }
+      
+      attempt++;
+    }
+    
+    throw Errors.create(
+      Errors.Database.QUERY_ERROR,
+      'Failed to generate unique reference CIF after multiple attempts',
+      OperationType.DATABASE,
+      SourceSystemType.WORKFLOW_SERVICE
+    );
+  }
+
+  /**
    * Create a new reference customer
    * @route POST /reference-customers
    */
   async createReferenceCustomer(req: Request, res: Response, next: NextFunction) {
     try {
       const { 
-        refCif,
         primaryCif, 
         relationshipType, 
         type, 
@@ -162,15 +196,18 @@ export class ReferenceCustomerController {
         taxId 
       } = req.body;
       
-      // Validate required fields
-      if (!refCif || !primaryCif || !relationshipType || !type) {
+      // Validate required fields (refCif is now auto-generated)
+      if (!primaryCif || !relationshipType || !type) {
         throw Errors.create(
           Errors.Validation.REQUIRED_FIELD_MISSING,
-          'Missing required fields: refCif, primaryCif, relationshipType, type',
+          'Missing required fields: primaryCif, relationshipType, type',
           OperationType.VALIDATION,
           SourceSystemType.WORKFLOW_SERVICE
         );
       }
+
+      // Generate unique reference CIF
+      const refCif = await ReferenceCustomerController.generateUniqueCif();
 
       // Validate customer type specific fields
       if (type === CustomerType.INDIVIDUAL && !name) {

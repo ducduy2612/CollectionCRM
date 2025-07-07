@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CollectionCRM Admin Guide - For Supervisors and Administrators</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        header {
+            background-color: #7c3aed;
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        h2 {
+            color: #7c3aed;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #7c3aed;
+        }
+        
+        h3 {
+            color: #8b5cf6;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        
+        h4 {
+            color: #a78bfa;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .toc {
+            background-color: #f3e8ff;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 40px;
+            border-radius: 8px;
+        }
+        
+        .toc h2 {
+            margin-top: 0;
+            border: none;
+            color: #7c3aed;
+        }
+        
+        .toc ul {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        
+        .toc li {
+            margin: 8px 0;
+        }
+        
+        .toc a {
+            color: #8b5cf6;
+            text-decoration: none;
+        }
+        
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        
+        .screenshot-placeholder {
+            background-color: #f3f4f6;
+            border: 2px dashed #9ca3af;
+            padding: 60px 20px;
+            text-align: center;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        .screenshot-placeholder p {
+            color: #6b7280;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+        
+        .screenshot-instruction {
+            background-color: #fef3c7;
+            border: 1px solid #fbbf24;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        
+        .note {
+            background-color: #ede9fe;
+            border-left: 4px solid #8b5cf6;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .tip {
+            background-color: #d1fae5;
+            border-left: 4px solid #10b981;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .warning {
+            background-color: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .permission-required {
+            background-color: #fef3c7;
+            border: 1px solid #f59e0b;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        
+        .permission-badge {
+            display: inline-block;
+            background-color: #7c3aed;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.875em;
+            font-weight: 500;
+            font-family: monospace;
+        }
+        
+        .step {
+            margin: 20px 0;
+            padding-left: 20px;
+        }
+        
+        .step-number {
+            font-weight: bold;
+            color: #7c3aed;
+            margin-right: 10px;
+        }
+        
+        code {
+            background-color: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f3f4f6;
+            font-weight: bold;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .feature-card {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .button-example {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #8b5cf6;
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            margin: 5px;
+        }
+        
+        .tab-nav {
+            display: flex;
+            border-bottom: 2px solid #e5e7eb;
+            margin: 20px 0;
+        }
+        
+        .tab-button {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            margin-right: 10px;
+            font-size: 1em;
+        }
+        
+        .tab-button.active {
+            border-bottom-color: #8b5cf6;
+            color: #8b5cf6;
+            font-weight: 500;
+        }
+        
+        .permission-matrix {
+            background-color: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .permission-matrix h4 {
+            margin-top: 0;
+        }
+        
+        ul.permission-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        ul.permission-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        ul.permission-list li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CollectionCRM Admin Guide</h1>
+        <p>For Supervisors and Administrators</p>
+    </header>
+
+    <div class="container">
+        <!-- Table of Contents -->
+        <div class="toc">
+            <h2>Table of Contents</h2>
+            <ul>
+                <li><a href="#overview">1. Administrative Overview</a>
+                    <ul>
+                        <li><a href="#permissions">1.1 Permission System</a></li>
+                        <li><a href="#access-settings">1.2 Accessing Settings</a></li>
+                    </ul>
+                </li>
+                <li><a href="#user-management">2. User Management</a>
+                    <ul>
+                        <li><a href="#managing-users">2.1 Managing Users</a></li>
+                        <li><a href="#managing-roles">2.2 Managing Roles</a></li>
+                        <li><a href="#user-sessions">2.3 User Sessions</a></li>
+                    </ul>
+                </li>
+                <li><a href="#action-config">3. Actions Configuration</a>
+                    <ul>
+                        <li><a href="#action-types">3.1 Action Types</a></li>
+                        <li><a href="#action-subtypes">3.2 Action Subtypes</a></li>
+                        <li><a href="#action-results">3.3 Action Results</a></li>
+                        <li><a href="#action-mappings">3.4 Mappings</a></li>
+                        <li><a href="#processing-states">3.5 Processing States</a></li>
+                    </ul>
+                </li>
+                <li><a href="#fud-config">4. FUD Auto Configuration</a>
+                    <ul>
+                        <li><a href="#fud-rules">4.1 Creating FUD Rules</a></li>
+                        <li><a href="#fud-management">4.2 Managing Rules</a></li>
+                    </ul>
+                </li>
+                <li><a href="#campaign-management">5. Campaign Management</a>
+                    <ul>
+                        <li><a href="#campaign-groups">5.1 Campaign Groups</a></li>
+                        <li><a href="#campaigns">5.2 Campaigns</a></li>
+                        <li><a href="#custom-fields">5.3 Custom Fields</a></li>
+                        <li><a href="#processing-runs">5.4 Processing Runs</a></li>
+                    </ul>
+                </li>
+                <li><a href="#customer-assignment">6. Customer Assignment Upload</a></li>
+                <li><a href="#system-config">7. System Configuration</a></li>
+                <li><a href="#best-practices-admin">8. Administrative Best Practices</a></li>
+                <li><a href="#troubleshooting-admin">9. Troubleshooting for Admins</a></li>
+            </ul>
+        </div>
+
+        <!-- Content Sections -->
+        <section id="overview">
+            <h2>1. Administrative Overview</h2>
+            
+            <p>The CollectionCRM administrative interface provides comprehensive tools for managing users, configuring workflows, and optimizing collection operations. Access to these features is controlled through a granular permission system.</p>
+            
+            <h3 id="permissions">1.1 Permission System</h3>
+            
+            <p>CollectionCRM uses a role-based access control (RBAC) system with permissions following the format: <code>resource:action</code></p>
+            
+            <div class="permission-matrix">
+                <h4>Key Administrative Permissions</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Permission</th>
+                            <th>Description</th>
+                            <th>Typical Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="permission-badge">user_management</span></td>
+                            <td>Create, edit, delete users and manage roles</td>
+                            <td>Admin, HR Manager</td>
+                        </tr>
+                        <tr>
+                            <td><span class="permission-badge">action_config</span></td>
+                            <td>Configure action types, subtypes, and results</td>
+                            <td>Operations Manager</td>
+                        </tr>
+                        <tr>
+                            <td><span class="permission-badge">FUD_config:edit</span></td>
+                            <td>Manage Follow-Up Date automation rules</td>
+                            <td>Supervisor, Manager</td>
+                        </tr>
+                        <tr>
+                            <td><span class="permission-badge">campaign_management</span></td>
+                            <td>Create and manage collection campaigns</td>
+                            <td>Campaign Manager</td>
+                        </tr>
+                        <tr>
+                            <td><span class="permission-badge">customer_assignment</span></td>
+                            <td>Upload bulk customer assignments</td>
+                            <td>Team Lead, Supervisor</td>
+                        </tr>
+                        <tr>
+                            <td><span class="permission-badge">system_admin</span></td>
+                            <td>Access system-wide configuration</td>
+                            <td>System Administrator</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <h3 id="access-settings">1.2 Accessing Settings</h3>
+            
+            <div class="step">
+                <span class="step-number">Step 1:</span> Click "Settings" in the sidebar navigation
+            </div>
+            
+            <div class="screenshot-placeholder">
+                <p>Settings Dashboard Screenshot</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Navigate to Settings page. Capture the full settings dashboard showing 
+                    all available configuration cards. Ensure various cards are visible based on permissions.
+                </div>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 2:</span> You'll see configuration cards for features you have permission to access
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 3:</span> Click on any card to access that configuration area
+            </div>
+            
+            <div class="note">
+                <strong>Note:</strong> If a settings area is not visible, you don't have the required permission. Contact your system administrator if you need access.
+            </div>
+        </section>
+
+        <section id="user-management">
+            <h2>2. User Management</h2>
+            
+            <div class="permission-required">
+                <strong>Required Permission:</strong> <span class="permission-badge">user_management</span>
+            </div>
+            
+            <p>The User Management module allows you to manage system users, roles, and permissions.</p>
+            
+            <div class="screenshot-placeholder">
+                <p>User Management Main Screen</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Navigate to Settings > User Management. Show the main screen with 
+                    user list table and the "Users" and "Roles" tabs visible at the top.
+                </div>
+            </div>
+            
+            <h3 id="managing-users">2.1 Managing Users</h3>
+            
+            <h4>Creating a New User</h4>
+            
+            <div class="step">
+                <span class="step-number">Step 1:</span> Click the "Create User" button
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 2:</span> Fill in the user details:
+                <ul>
+                    <li><strong>Username:</strong> Unique login identifier</li>
+                    <li><strong>Email:</strong> User's email address</li>
+                    <li><strong>Full Name:</strong> Display name</li>
+                    <li><strong>Password:</strong> Initial password (user should change on first login)</li>
+                    <li><strong>Roles:</strong> Select one or more roles</li>
+                    <li><strong>Active:</strong> Toggle to enable/disable account</li>
+                </ul>
+            </div>
+            
+            <div class="screenshot-placeholder">
+                <p>Create User Modal</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Click "Create User" to open the modal. Show all fields including 
+                    the role selection dropdown and active toggle switch.
+                </div>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 3:</span> Click "Create" to save the new user
+            </div>
+            
+            <h4>Editing Users</h4>
+            
+            <ul>
+                <li>Click the edit icon next to any user</li>
+                <li>Update user information as needed</li>
+                <li>Note: Username cannot be changed after creation</li>
+                <li>Leave password field blank to keep existing password</li>
+            </ul>
+            
+            <h4>User Actions</h4>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th>Description</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Activate/Deactivate</td>
+                        <td>Enable or disable user access</td>
+                        <td>Deactivated users cannot log in</td>
+                    </tr>
+                    <tr>
+                        <td>View Sessions</td>
+                        <td>See user's active sessions</td>
+                        <td>Can terminate sessions if needed</td>
+                    </tr>
+                    <tr>
+                        <td>Delete User</td>
+                        <td>Permanently remove user</td>
+                        <td>Requires confirmation; cannot be undone</td>
+                    </tr>
+                    <tr>
+                        <td>Reset Password</td>
+                        <td>Set new password for user</td>
+                        <td>User should change on next login</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3 id="managing-roles">2.2 Managing Roles</h3>
+            
+            <p>Roles group permissions together for easier user management.</p>
+            
+            <div class="screenshot-placeholder">
+                <p>Roles Tab</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Click on the "Roles" tab. Show the roles list with at least 3-4 roles, 
+                    their descriptions, and action buttons.
+                </div>
+            </div>
+            
+            <h4>Creating a New Role</h4>
+            
+            <div class="step">
+                <span class="step-number">Step 1:</span> Navigate to the Roles tab
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 2:</span> Click "Create Role"
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 3:</span> Enter role details:
+                <ul>
+                    <li><strong>Role Name:</strong> Unique identifier (e.g., "supervisor", "team_lead")</li>
+                    <li><strong>Description:</strong> Clear description of role purpose</li>
+                    <li><strong>Permissions:</strong> Select all required permissions</li>
+                </ul>
+            </div>
+            
+            <div class="screenshot-placeholder">
+                <p>Create Role Modal with Permissions</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Open Create Role modal. Show the permissions selection area with 
+                    several permissions checked. Include both resource:action format permissions.
+                </div>
+            </div>
+            
+            <h4>Managing Role Permissions</h4>
+            
+            <ul>
+                <li>Permissions follow <code>resource:action</code> format</li>
+                <li>Can assign multiple permissions to a role</li>
+                <li>Changes to role permissions affect all users with that role</li>
+                <li>System tracks which users have each role</li>
+            </ul>
+            
+            <div class="tip">
+                <strong>Best Practice:</strong> Create roles that match your organizational structure (e.g., Agent, Team Lead, Supervisor, Manager, Admin) rather than creating custom roles for individual users.
+            </div>
+            
+            <h3 id="user-sessions">2.3 User Sessions</h3>
+            
+            <p>Monitor and manage active user sessions for security and troubleshooting.</p>
+            
+            <div class="screenshot-placeholder">
+                <p>User Sessions Modal</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Click "View Sessions" for any user. Show the sessions list with 
+                    device info, IP addresses, and last activity times.
+                </div>
+            </div>
+            
+            <h4>Session Information Displayed</h4>
+            
+            <ul>
+                <li><strong>Device Type:</strong> Browser and operating system</li>
+                <li><strong>IP Address:</strong> Connection origin</li>
+                <li><strong>Login Time:</strong> When session started</li>
+                <li><strong>Last Activity:</strong> Most recent action</li>
+                <li><strong>Status:</strong> Active or expired</li>
+            </ul>
+            
+            <h4>Session Management Actions</h4>
+            
+            <ul>
+                <li><strong>Terminate Session:</strong> Force logout of specific session</li>
+                <li><strong>Terminate All Sessions:</strong> Force logout from all devices</li>
+                <li>Use for security incidents or troubleshooting access issues</li>
+            </ul>
+        </section>
+
+        <section id="action-config">
+            <h2>3. Actions Configuration</h2>
+            
+            <div class="permission-required">
+                <strong>Required Permission:</strong> <span class="permission-badge">action_config</span>
+            </div>
+            
+            <p>Configure the action types, subtypes, and results that agents use when recording customer interactions.</p>
+            
+            <div class="screenshot-placeholder">
+                <p>Actions Configuration Main Screen</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Navigate to Settings > Actions Config. Show the tab navigation with 
+                    all five tabs visible: Action Types, Action Subtypes, Action Results, Mappings, and Statistics.
+                </div>
+            </div>
+            
+            <h3 id="action-types">3.1 Action Types</h3>
+            
+            <p>Define the primary categories of collection actions.</p>
+            
+            <h4>Standard Action Types</h4>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Action Type</th>
+                        <th>Code</th>
+                        <th>Typical Use</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Phone Call</td>
+                        <td>CALL</td>
+                        <td>Outbound and inbound calls</td>
+                    </tr>
+                    <tr>
+                        <td>SMS Message</td>
+                        <td>SMS</td>
+                        <td>Text message communications</td>
+                    </tr>
+                    <tr>
+                        <td>Email</td>
+                        <td>EMAIL</td>
+                        <td>Email correspondence</td>
+                    </tr>
+                    <tr>
+                        <td>Field Visit</td>
+                        <td>VISIT</td>
+                        <td>In-person customer visits</td>
+                    </tr>
+                    <tr>
+                        <td>Payment</td>
+                        <td>PAYMENT</td>
+                        <td>Payment-related actions</td>
+                    </tr>
+                    <tr>
+                        <td>Note</td>
+                        <td>NOTE</td>
+                        <td>General documentation</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h4>Creating Action Types</h4>
+            
+            <div class="step">
+                <span class="step-number">Step 1:</span> Click "Add Action Type"
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 2:</span> Enter:
+                <ul>
+                    <li><strong>Type Code:</strong> Short uppercase code (e.g., "LETTER")</li>
+                    <li><strong>Type Name:</strong> Display name (e.g., "Letter Sent")</li>
+                    <li><strong>Description:</strong> When to use this action type</li>
+                    <li><strong>Active:</strong> Enable/disable the type</li>
+                </ul>
+            </div>
+            
+            <h3 id="action-subtypes">3.2 Action Subtypes</h3>
+            
+            <p>Create specific categories within each action type.</p>
+            
+            <div class="screenshot-placeholder">
+                <p>Action Subtypes Tab</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Click on Action Subtypes tab. Show the list with parent action type 
+                    column and several subtypes for different action types.
+                </div>
+            </div>
+            
+            <h4>Example Subtypes</h4>
+            
+            <ul>
+                <li><strong>For CALL:</strong>
+                    <ul>
+                        <li>First Call</li>
+                        <li>Follow-up Call</li>
+                        <li>Final Notice Call</li>
+                        <li>Courtesy Call</li>
+                    </ul>
+                </li>
+                <li><strong>For VISIT:</strong>
+                    <ul>
+                        <li>Home Visit</li>
+                        <li>Office Visit</li>
+                        <li>Business Location Visit</li>
+                    </ul>
+                </li>
+            </ul>
+            
+            <h3 id="action-results">3.3 Action Results</h3>
+            
+            <p>Define possible outcomes for each action.</p>
+            
+            <h4>Common Action Results</h4>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Result</th>
+                        <th>Description</th>
+                        <th>Typical Follow-up</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Contact Successful</td>
+                        <td>Reached and spoke with customer</td>
+                        <td>Based on conversation outcome</td>
+                    </tr>
+                    <tr>
+                        <td>No Answer</td>
+                        <td>No response to contact attempt</td>
+                        <td>Retry in 1-2 days</td>
+                    </tr>
+                    <tr>
+                        <td>Promise to Pay</td>
+                        <td>Customer committed to payment</td>
+                        <td>Follow up on promise date</td>
+                    </tr>
+                    <tr>
+                        <td>Wrong Number</td>
+                        <td>Contact information incorrect</td>
+                        <td>Update contact info</td>
+                    </tr>
+                    <tr>
+                        <td>Refused to Pay</td>
+                        <td>Customer unwilling to pay</td>
+                        <td>Escalate to supervisor</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3 id="action-mappings">3.4 Mappings</h3>
+            
+            <p>Define which subtypes and results are available for each action type.</p>
+            
+            <div class="screenshot-placeholder">
+                <p>Mappings Configuration</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Navigate to Mappings tab. Show the interface for linking action types 
+                    with their available subtypes and results.
+                </div>
+            </div>
+            
+            <h4>Mapping Benefits</h4>
+            
+            <ul>
+                <li>Ensures agents only see relevant options</li>
+                <li>Improves data quality and consistency</li>
+                <li>Simplifies the action recording process</li>
+                <li>Enables better reporting and analytics</li>
+            </ul>
+            
+            <h3 id="processing-states">3.5 Processing States</h3>
+            
+            <p>Configure customer status and processing states used throughout the system.</p>
+            
+            <h4>State Categories</h4>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Processing States</h4>
+                    <ul>
+                        <li>New Assignment</li>
+                        <li>In Progress</li>
+                        <li>Promise Made</li>
+                        <li>Escalated</li>
+                        <li>Closed</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>Customer Status</h4>
+                    <ul>
+                        <li>Active</li>
+                        <li>Pending</li>
+                        <li>Collection</li>
+                        <li>Legal</li>
+                        <li>Closed</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>Recovery Status</h4>
+                    <ul>
+                        <li>High Recovery Potential</li>
+                        <li>Medium Recovery Potential</li>
+                        <li>Low Recovery Potential</li>
+                        <li>Write-off Candidate</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="fud-config">
+            <h2>4. FUD Auto Configuration</h2>
+            
+            <div class="permission-required">
+                <strong>Required Permission:</strong> <span class="permission-badge">FUD_config:edit</span>
+            </div>
+            
+            <p>Follow-Up Date (FUD) automation helps ensure timely follow-ups based on action results.</p>
+            
+            <div class="screenshot-placeholder">
+                <p>FUD Configuration Main Screen</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Navigate to Settings > FUD Auto Config. Show the list of FUD rules 
+                    with columns for action result, calculation type, days offset, priority, and active status.
+                </div>
+            </div>
+            
+            <h3 id="fud-rules">4.1 Creating FUD Rules</h3>
+            
+            <div class="step">
+                <span class="step-number">Step 1:</span> Click "Create FUD Rule"
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 2:</span> Configure the rule:
+                <ul>
+                    <li><strong>Action Result:</strong> Which result triggers this rule</li>
+                    <li><strong>Calculation Type:</strong>
+                        <ul>
+                            <li>Based on Promise Date (for payment promises)</li>
+                            <li>Based on Action Date (for general follow-ups)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Days Offset:</strong> Number of days to add/subtract</li>
+                    <li><strong>Priority:</strong> Rule priority (1-10, higher = more important)</li>
+                    <li><strong>Active:</strong> Enable/disable the rule</li>
+                </ul>
+            </div>
+            
+            <div class="screenshot-placeholder">
+                <p>Create FUD Rule Modal</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Open Create FUD Rule modal. Show all fields including the 
+                    calculation type dropdown and days offset input.
+                </div>
+            </div>
+            
+            <h4>Example FUD Rules</h4>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Action Result</th>
+                        <th>Calculation</th>
+                        <th>Days</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Promise to Pay</td>
+                        <td>From Promise Date</td>
+                        <td>-1</td>
+                        <td>Follow up 1 day before payment due</td>
+                    </tr>
+                    <tr>
+                        <td>No Answer</td>
+                        <td>From Action Date</td>
+                        <td>+2</td>
+                        <td>Try again in 2 days</td>
+                    </tr>
+                    <tr>
+                        <td>Requested Callback</td>
+                        <td>From Action Date</td>
+                        <td>+1</td>
+                        <td>Call back next day</td>
+                    </tr>
+                    <tr>
+                        <td>Payment Arrangement</td>
+                        <td>From Promise Date</td>
+                        <td>+1</td>
+                        <td>Confirm payment received</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3 id="fud-management">4.2 Managing Rules</h3>
+            
+            <h4>Rule Priority</h4>
+            
+            <ul>
+                <li>Higher priority rules override lower priority ones</li>
+                <li>If multiple rules match, highest priority wins</li>
+                <li>Use priority to handle special cases</li>
+            </ul>
+            
+            <h4>Testing Rules</h4>
+            
+            <div class="tip">
+                <strong>Tip:</strong> Test new rules with a small group before enabling system-wide:
+                <ol>
+                    <li>Create rule as inactive</li>
+                    <li>Test with specific agents</li>
+                    <li>Review results and adjust</li>
+                    <li>Activate for all users</li>
+                </ol>
+            </div>
+            
+            <div class="warning">
+                <strong>Warning:</strong> Changes to FUD rules affect all future actions immediately. Existing FUD dates are not retroactively updated.
+            </div>
+        </section>
+
+        <section id="campaign-management">
+            <h2>5. Campaign Management</h2>
+            
+            <div class="permission-required">
+                <strong>Required Permission:</strong> <span class="permission-badge">campaign_management</span>
+            </div>
+            
+            <p>Create and manage collection campaigns to organize and prioritize collection efforts.</p>
+            
+            <div class="screenshot-placeholder">
+                <p>Campaign Management Overview</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Navigate to Settings > Queue Campaign Config. Show the four tabs: 
+                    Campaign Groups, Campaigns, Custom Fields, and Processing.
+                </div>
+            </div>
+            
+            <h3 id="campaign-groups">5.1 Campaign Groups</h3>
+            
+            <p>Organize campaigns into logical groups for better management.</p>
+            
+            <h4>Creating Campaign Groups</h4>
+            
+            <div class="step">
+                <span class="step-number">Step 1:</span> Navigate to Campaign Groups tab
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 2:</span> Click "Create Group"
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 3:</span> Enter:
+                <ul>
+                    <li><strong>Group Name:</strong> Descriptive name</li>
+                    <li><strong>Description:</strong> Purpose and scope</li>
+                </ul>
+            </div>
+            
+            <h4>Example Campaign Groups</h4>
+            
+            <ul>
+                <li><strong>Early Stage:</strong> 1-30 days past due</li>
+                <li><strong>Mid Stage:</strong> 31-90 days past due</li>
+                <li><strong>Late Stage:</strong> 90+ days past due</li>
+                <li><strong>Legal:</strong> Accounts in legal process</li>
+                <li><strong>Special Handling:</strong> VIP or sensitive accounts</li>
+            </ul>
+            
+            <h3 id="campaigns">5.2 Campaigns</h3>
+            
+            <p>Create specific campaigns within groups with defined criteria and rules.</p>
+            
+            <div class="screenshot-placeholder">
+                <p>Campaign Creation Form</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Click "Create Campaign" in the Campaigns tab. Show the form with 
+                    campaign group selection, name, base conditions, and contact rules fields.
+                </div>
+            </div>
+            
+            <h4>Campaign Configuration</h4>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Setting</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Campaign Name</td>
+                        <td>Unique identifier</td>
+                        <td>"Q1 2025 Early Stage"</td>
+                    </tr>
+                    <tr>
+                        <td>Campaign Group</td>
+                        <td>Parent group</td>
+                        <td>"Early Stage"</td>
+                    </tr>
+                    <tr>
+                        <td>Base Conditions</td>
+                        <td>Criteria for inclusion</td>
+                        <td>DPD 1-30, Balance > 1M VND</td>
+                    </tr>
+                    <tr>
+                        <td>Contact Rules</td>
+                        <td>How to contact customers</td>
+                        <td>Max 3 calls/day, SMS after 2 failed calls</td>
+                    </tr>
+                    <tr>
+                        <td>Priority</td>
+                        <td>Campaign importance</td>
+                        <td>High/Medium/Low</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3 id="custom-fields">5.3 Custom Fields</h3>
+            
+            <p>Define additional data fields for campaigns to capture specific information.</p>
+            
+            <h4>Common Custom Fields</h4>
+            
+            <ul>
+                <li><strong>Risk Score:</strong> Customer risk rating</li>
+                <li><strong>Payment History:</strong> Previous payment behavior</li>
+                <li><strong>Contact Preference:</strong> Preferred contact method</li>
+                <li><strong>Special Instructions:</strong> Account-specific notes</li>
+            </ul>
+            
+            <h3 id="processing-runs">5.4 Processing Runs</h3>
+            
+            <p>Monitor campaign execution and results.</p>
+            
+            <div class="screenshot-placeholder">
+                <p>Processing Runs List</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Navigate to Processing tab. Show the list of processing runs with 
+                    status, start/end times, and statistics. Include at least one completed and one running process.
+                </div>
+            </div>
+            
+            <h4>Processing Run Details</h4>
+            
+            <div class="tab-nav">
+                <button class="tab-button active">Overview</button>
+                <button class="tab-button">Assignments</button>
+                <button class="tab-button">Results</button>
+                <button class="tab-button">Errors</button>
+            </div>
+            
+            <ul>
+                <li><strong>Overview Tab:</strong> Summary statistics and run parameters</li>
+                <li><strong>Assignments Tab:</strong> How accounts were distributed to agents</li>
+                <li><strong>Results Tab:</strong> Campaign performance metrics</li>
+                <li><strong>Errors Tab:</strong> Any processing errors or issues</li>
+            </ul>
+            
+            <h4>Key Metrics</h4>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Processing Stats</h4>
+                    <ul>
+                        <li>Total accounts processed</li>
+                        <li>Successful assignments</li>
+                        <li>Failed assignments</li>
+                        <li>Processing duration</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>Assignment Distribution</h4>
+                    <ul>
+                        <li>Accounts per agent</li>
+                        <li>Distribution method used</li>
+                        <li>Load balancing results</li>
+                        <li>Special handling cases</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="customer-assignment">
+            <h2>6. Customer Assignment Upload</h2>
+            
+            <div class="permission-required">
+                <strong>Required Permission:</strong> <span class="permission-badge">customer_assignment</span>
+            </div>
+            
+            <p>Bulk upload customer assignments to quickly distribute accounts to collection agents.</p>
+            
+            <div class="screenshot-placeholder">
+                <p>Customer Assignment Upload Screen</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Navigate to Settings > Customer Assignment Upload. Show the upload 
+                    interface with drag-and-drop area and the "Download Template" button.
+                </div>
+            </div>
+            
+            <h3>Upload Process</h3>
+            
+            <div class="step">
+                <span class="step-number">Step 1:</span> Download the CSV template
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 2:</span> Fill in the template with:
+                <ul>
+                    <li><strong>CIF:</strong> Customer Identification Number (required)</li>
+                    <li><strong>AssignedCallAgentName:</strong> Username for call agent</li>
+                    <li><strong>AssignedFieldAgentName:</strong> Username for field agent</li>
+                </ul>
+            </div>
+            
+            <div class="note">
+                <strong>Note:</strong> At least one agent (call or field) must be specified for each customer.
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 3:</span> Save the file as CSV format
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 4:</span> Upload the file:
+                <ul>
+                    <li>Drag and drop onto the upload area, OR</li>
+                    <li>Click to browse and select file</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 5:</span> Review upload results:
+                <ul>
+                    <li>Success count</li>
+                    <li>Error count with details</li>
+                    <li>Processing statistics</li>
+                </ul>
+            </div>
+            
+            <h3>File Requirements</h3>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Requirement</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>File Format</td>
+                        <td>CSV (Comma-Separated Values)</td>
+                    </tr>
+                    <tr>
+                        <td>Maximum Size</td>
+                        <td>10 MB</td>
+                    </tr>
+                    <tr>
+                        <td>Encoding</td>
+                        <td>UTF-8 recommended</td>
+                    </tr>
+                    <tr>
+                        <td>Required Columns</td>
+                        <td>CIF, at least one agent name</td>
+                    </tr>
+                    <tr>
+                        <td>Header Row</td>
+                        <td>Must match template exactly</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>Common Upload Errors</h3>
+            
+            <div class="warning">
+                <h4>Invalid CIF</h4>
+                <p>Ensure CIF exists in the system and is correctly formatted</p>
+            </div>
+            
+            <div class="warning">
+                <h4>Agent Not Found</h4>
+                <p>Verify agent usernames match exactly (case-sensitive)</p>
+            </div>
+            
+            <div class="warning">
+                <h4>Missing Required Field</h4>
+                <p>Each row must have CIF and at least one agent assigned</p>
+            </div>
+            
+            <div class="tip">
+                <strong>Best Practice:</strong> Start with a small test file (10-20 records) to verify format before uploading large batches.
+            </div>
+        </section>
+
+        <section id="system-config">
+            <h2>7. System Configuration</h2>
+            
+            <div class="permission-required">
+                <strong>Required Permission:</strong> <span class="permission-badge">system_admin</span>
+            </div>
+            
+            <p>System-wide configuration for advanced administrators.</p>
+            
+            <div class="screenshot-placeholder">
+                <p>System Configuration Screen</p>
+                <div class="screenshot-instruction">
+                    <strong>How to capture:</strong> Navigate to Settings > System Configuration. Show the main 
+                    configuration categories available.
+                </div>
+            </div>
+            
+            <h3>Configuration Areas</h3>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Database Settings</h4>
+                    <ul>
+                        <li>Connection parameters</li>
+                        <li>Pool settings</li>
+                        <li>Timeout configurations</li>
+                        <li>Backup schedules</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>API Configuration</h4>
+                    <ul>
+                        <li>Endpoint URLs</li>
+                        <li>Authentication settings</li>
+                        <li>Rate limiting</li>
+                        <li>CORS policies</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>Security Settings</h4>
+                    <ul>
+                        <li>Password policies</li>
+                        <li>Session timeout</li>
+                        <li>IP whitelisting</li>
+                        <li>Audit logging</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>Service Health</h4>
+                    <ul>
+                        <li>Service status monitoring</li>
+                        <li>Health check intervals</li>
+                        <li>Alert configurations</li>
+                        <li>Performance metrics</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="warning">
+                <strong>Caution:</strong> System configuration changes can affect all users. Always test changes in a staging environment first.
+            </div>
+        </section>
+
+        <section id="best-practices-admin">
+            <h2>8. Administrative Best Practices</h2>
+            
+            <h3>User Management</h3>
+            
+            <div class="tip">
+                <h4>Access Control</h4>
+                <ul>
+                    <li>Follow principle of least privilege</li>
+                    <li>Regular audit of user permissions</li>
+                    <li>Deactivate accounts promptly when employees leave</li>
+                    <li>Use roles instead of individual permissions</li>
+                </ul>
+            </div>
+            
+            <div class="tip">
+                <h4>Password Policies</h4>
+                <ul>
+                    <li>Enforce strong password requirements</li>
+                    <li>Require regular password changes</li>
+                    <li>Never share or display passwords</li>
+                    <li>Use temporary passwords for new accounts</li>
+                </ul>
+            </div>
+            
+            <h3>Configuration Management</h3>
+            
+            <div class="tip">
+                <h4>Change Control</h4>
+                <ul>
+                    <li>Document all configuration changes</li>
+                    <li>Test changes before implementation</li>
+                    <li>Schedule changes during low-activity periods</li>
+                    <li>Have rollback plans ready</li>
+                </ul>
+            </div>
+            
+            <div class="tip">
+                <h4>Monitoring and Maintenance</h4>
+                <ul>
+                    <li>Regular review of system logs</li>
+                    <li>Monitor campaign performance</li>
+                    <li>Track FUD rule effectiveness</li>
+                    <li>Analyze action configuration usage</li>
+                </ul>
+            </div>
+            
+            <h3>Data Management</h3>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Task</th>
+                        <th>Frequency</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>User audit</td>
+                        <td>Monthly</td>
+                        <td>Verify active users and permissions</td>
+                    </tr>
+                    <tr>
+                        <td>Configuration backup</td>
+                        <td>Weekly</td>
+                        <td>Preserve system settings</td>
+                    </tr>
+                    <tr>
+                        <td>Performance review</td>
+                        <td>Monthly</td>
+                        <td>Optimize campaigns and workflows</td>
+                    </tr>
+                    <tr>
+                        <td>Security review</td>
+                        <td>Quarterly</td>
+                        <td>Ensure compliance and security</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="troubleshooting-admin">
+            <h2>9. Troubleshooting for Admins</h2>
+            
+            <h3>Common Administrative Issues</h3>
+            
+            <div class="warning">
+                <h4>User Cannot Access Features</h4>
+                <ol>
+                    <li>Verify user is active</li>
+                    <li>Check assigned roles</li>
+                    <li>Confirm role has required permissions</li>
+                    <li>Have user log out and back in</li>
+                    <li>Clear browser cache if needed</li>
+                </ol>
+            </div>
+            
+            <div class="warning">
+                <h4>Campaign Not Processing</h4>
+                <ol>
+                    <li>Check campaign is active</li>
+                    <li>Verify base conditions are valid</li>
+                    <li>Ensure campaign group is active</li>
+                    <li>Review processing logs for errors</li>
+                    <li>Check system resources</li>
+                </ol>
+            </div>
+            
+            <div class="warning">
+                <h4>FUD Rules Not Working</h4>
+                <ol>
+                    <li>Confirm rule is active</li>
+                    <li>Check rule priority</li>
+                    <li>Verify action result mapping</li>
+                    <li>Test with sample action</li>
+                    <li>Review calculation logic</li>
+                </ol>
+            </div>
+            
+            <div class="warning">
+                <h4>Upload Failures</h4>
+                <ol>
+                    <li>Verify file format (CSV)</li>
+                    <li>Check file size (<10MB)</li>
+                    <li>Confirm column headers match template</li>
+                    <li>Validate data in each row</li>
+                    <li>Look for special characters or encoding issues</li>
+                </ol>
+            </div>
+            
+            <h3>System Health Checks</h3>
+            
+            <div class="tip">
+                <h4>Daily Checks</h4>
+                <ul>
+                    <li>Review error logs</li>
+                    <li>Check active user count</li>
+                    <li>Monitor system performance</li>
+                    <li>Verify scheduled jobs ran</li>
+                </ul>
+            </div>
+            
+            <div class="tip">
+                <h4>Weekly Checks</h4>
+                <ul>
+                    <li>Review user activity reports</li>
+                    <li>Check campaign effectiveness</li>
+                    <li>Analyze action usage patterns</li>
+                    <li>Update documentation as needed</li>
+                </ul>
+            </div>
+            
+            <h3>Escalation Procedures</h3>
+            
+            <ol>
+                <li><strong>Level 1:</strong> Check documentation and known issues</li>
+                <li><strong>Level 2:</strong> Consult with senior administrators</li>
+                <li><strong>Level 3:</strong> Contact technical support team</li>
+                <li><strong>Level 4:</strong> Engage vendor support if needed</li>
+            </ol>
+        </section>
+
+        <footer style="margin-top: 60px; padding-top: 30px; border-top: 1px solid #ddd; text-align: center; color: #666;">
+            <p>CollectionCRM Admin Guide - Version 1.0</p>
+            <p>Last Updated: 2025</p>
+            <p style="margin-top: 10px;">
+                <strong>Support Contact:</strong> Contact your IT department for technical assistance
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

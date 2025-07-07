@@ -32,6 +32,32 @@ CREATE TABLE bank_sync_service.customers (
 
 COMMENT ON TABLE bank_sync_service.customers IS 'Stores information about individual and organizational customers';
 
+-- Reference Customers table
+CREATE TABLE bank_sync_service.reference_customers (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    ref_cif VARCHAR(20) NOT NULL UNIQUE,
+    primary_cif VARCHAR(20) NOT NULL,
+    relationship_type VARCHAR(30) NOT NULL,
+    type customer_type NOT NULL,
+    name VARCHAR(100),
+    date_of_birth DATE,
+    national_id VARCHAR(20),
+    gender VARCHAR(10),
+    company_name VARCHAR(100),
+    registration_number VARCHAR(20),
+    tax_id VARCHAR(20),
+    source_system source_system_type NOT NULL,
+    created_by VARCHAR(50) NOT NULL,
+    updated_by VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    is_editable BOOLEAN NOT NULL DEFAULT FALSE,
+    last_synced_at TIMESTAMP,
+    CONSTRAINT fk_primary_customer FOREIGN KEY (primary_cif) REFERENCES bank_sync_service.customers(cif)
+);
+
+COMMENT ON TABLE bank_sync_service.reference_customers IS 'Stores related contacts to customers (such as guarantors, spouses, or other related parties)';
+
 -- Phones table
 CREATE TABLE bank_sync_service.phones (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -193,32 +219,6 @@ CREATE TABLE bank_sync_service.due_segmentations (
 );
 
 COMMENT ON TABLE bank_sync_service.due_segmentations IS 'Stores due segmentation amounts for different due dates for loans';
-
--- Reference Customers table
-CREATE TABLE bank_sync_service.reference_customers (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    ref_cif VARCHAR(20) NOT NULL UNIQUE,
-    primary_cif VARCHAR(20) NOT NULL,
-    relationship_type VARCHAR(30) NOT NULL,
-    type customer_type NOT NULL,
-    name VARCHAR(100),
-    date_of_birth DATE,
-    national_id VARCHAR(20),
-    gender VARCHAR(10),
-    company_name VARCHAR(100),
-    registration_number VARCHAR(20),
-    tax_id VARCHAR(20),
-    source_system source_system_type NOT NULL,
-    created_by VARCHAR(50) NOT NULL,
-    updated_by VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    is_editable BOOLEAN NOT NULL DEFAULT FALSE,
-    last_synced_at TIMESTAMP,
-    CONSTRAINT fk_primary_customer FOREIGN KEY (primary_cif) REFERENCES bank_sync_service.customers(cif)
-);
-
-COMMENT ON TABLE bank_sync_service.reference_customers IS 'Stores related contacts to customers (such as guarantors, spouses, or other related parties)';
 
 -- Loan Collaterals junction table
 CREATE TABLE bank_sync_service.loan_collaterals (

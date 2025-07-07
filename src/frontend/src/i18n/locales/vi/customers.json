@@ -221,8 +221,7 @@
     "delete_failed": "Xóa thông tin liên hệ thất bại",
     "save_failed": "Lưu thông tin liên hệ thất bại",
     "required_fields_missing": "Thiếu các trường bắt buộc",
-    "duplicate_phone_type": "Số điện thoại với loại này đã tồn tại cho khách hàng này. Vui lòng chọn loại khác hoặc cập nhật số hiện có.",
-    "duplicate_address_type": "Địa chỉ với loại này đã tồn tại cho khách hàng này. Vui lòng chọn loại khác hoặc cập nhật địa chỉ hiện có.",
+    "duplicate_contact_type": "Thông tin liên hệ với loại này đã tồn tại cho khách hàng này. Vui lòng chọn loại khác hoặc cập nhật thông tin hiện có.",
     "failed_to_load_assignments": "Không thể tải lịch sử phân công",
     "no_assignment_history": "Không có lịch sử phân công"
   },

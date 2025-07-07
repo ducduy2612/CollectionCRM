@@ -137,6 +137,9 @@ export const serviceRoutes: Record<string, ProxyConfig> = {
       loanById: '/loans/:accountNumber',
       collaterals: '/collaterals',
       collateralById: '/collaterals/:collateralNumber',
+      phoneTypes: '/phone-types',
+      addressTypes: '/address-types',
+      relationshipTypes: '/relationship-types',
       syncStatus: '/sync/status',
       syncRun: '/sync/run',
       health: '/health'

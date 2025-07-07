@@ -228,16 +228,12 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ cif, phones, em
         errorMessage = t('common:messages.permission_denied');
       } else if (err.response?.status === 404) {
         errorMessage = t('customers:messages.contact_not_found');
+      } else if (err.response?.status === 409) {
+        errorMessage = t('customers:messages.duplicate_contact_type');
       } else if (err.response?.status >= 500) {
-        const backendMessage = err.response?.data?.message;
-        if (backendMessage?.includes('duplicate key value violates unique constraint') && backendMessage?.includes('phones_cif_type_key')) {
-          errorMessage = t('customers:messages.duplicate_phone_type');
-        } else if (backendMessage?.includes('duplicate key value violates unique constraint') && backendMessage?.includes('addresses_cif_type_key')) {
-          errorMessage = t('customers:messages.duplicate_address_type');
-        } else {
-          errorMessage = t('common:messages.server_error');
-        }
+        errorMessage = t('common:messages.server_error');
       }
+      
       
       // Create a new error with user-friendly message
       const userError = new Error(errorMessage);

@@ -81,6 +81,28 @@ DROP TABLE IF EXISTS workflow_service.reference_customers CASCADE;
 -- CREATE TABLES - WORKFLOW_SERVICE SCHEMA
 -- =============================================
 
+-- Reference Customers table
+CREATE TABLE workflow_service.reference_customers (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    ref_cif VARCHAR(20) NOT NULL UNIQUE,
+    primary_cif VARCHAR(20) NOT NULL,
+    relationship_type VARCHAR(30) NOT NULL,
+    type customer_type NOT NULL,
+    name VARCHAR(100),
+    date_of_birth DATE,
+    national_id VARCHAR(20),
+    gender VARCHAR(10),
+    company_name VARCHAR(100),
+    registration_number VARCHAR(20),
+    tax_id VARCHAR(20),
+    created_by VARCHAR(50) NOT NULL,
+    updated_by VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+COMMENT ON TABLE workflow_service.reference_customers IS 'Stores related contacts to customers (such as guarantors, spouses, or other related parties) - user input';
+
 -- Phones table
 CREATE TABLE workflow_service.phones (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -95,7 +117,6 @@ CREATE TABLE workflow_service.phones (
     updated_by VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT phones_reference_customer_fk FOREIGN KEY (ref_cif) REFERENCES workflow_service.reference_customers(ref_cif) ON DELETE CASCADE,
     UNIQUE (cif, ref_cif, type)
 );
 
@@ -120,7 +141,6 @@ CREATE TABLE workflow_service.addresses (
     updated_by VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT addresses_reference_customer_fk FOREIGN KEY (ref_cif) REFERENCES workflow_service.reference_customers(ref_cif) ON DELETE CASCADE,
     UNIQUE (cif, ref_cif, type)
 );
 
@@ -139,33 +159,10 @@ CREATE TABLE workflow_service.emails (
     updated_by VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT emails_reference_customer_fk FOREIGN KEY (ref_cif) REFERENCES workflow_service.reference_customers(ref_cif) ON DELETE CASCADE,
     UNIQUE (cif, ref_cif, address)
 );
 
 COMMENT ON TABLE workflow_service.emails IS 'Stores email addresses associated with customers - user input';
-
--- Reference Customers table
-CREATE TABLE workflow_service.reference_customers (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    ref_cif VARCHAR(20) NOT NULL UNIQUE,
-    primary_cif VARCHAR(20) NOT NULL,
-    relationship_type VARCHAR(30) NOT NULL,
-    type customer_type NOT NULL,
-    name VARCHAR(100),
-    date_of_birth DATE,
-    national_id VARCHAR(20),
-    gender VARCHAR(10),
-    company_name VARCHAR(100),
-    registration_number VARCHAR(20),
-    tax_id VARCHAR(20),
-    created_by VARCHAR(50) NOT NULL,
-    updated_by VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
-COMMENT ON TABLE workflow_service.reference_customers IS 'Stores related contacts to customers (such as guarantors, spouses, or other related parties) - user input';
 
 -- Agents table
 CREATE TABLE workflow_service.agents (

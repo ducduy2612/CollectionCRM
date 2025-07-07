@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../../../components/ui/Modal';
 import { Button } from '../../../components/ui/Button';
-import { Input } from '../../../components/ui/Input';
-import { Select } from '../../../components/ui/Select';
 import { useTranslation } from '../../../i18n/hooks/useTranslation';
 import { contactsApi } from '../../../services/api/workflow/contacts.api';
 import { ReferenceCustomer } from '../types';
+import ContactListItem from './ContactListItem';
+import PhoneForm from './forms/PhoneForm';
+import EmailForm from './forms/EmailForm';
+import AddressForm from './forms/AddressForm';
+import { usePhoneTypes, useAddressTypes } from '../hooks/useContactTypes';
 
 interface ContactItem {
   id: string;
@@ -38,6 +41,10 @@ const ReferenceContactModal: React.FC<ReferenceContactModalProps> = ({
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState<any>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  // Use custom hooks for fetching types
+  const { phoneTypes, loading: phoneTypesLoading } = usePhoneTypes();
+  const { addressTypes, loading: addressTypesLoading } = useAddressTypes();
 
   // Load contacts when modal opens
   useEffect(() => {
@@ -63,12 +70,17 @@ const ReferenceContactModal: React.FC<ReferenceContactModalProps> = ({
 
   const resetForm = () => {
     if (contactType === 'phones') {
-      setFormData({ number: '', type: 'MOBILE', isPrimary: false, isVerified: false });
+      setFormData({ 
+        number: '', 
+        type: phoneTypes.length > 0 ? phoneTypes[0].value : 'mobile1', 
+        isPrimary: false, 
+        isVerified: false 
+      });
     } else if (contactType === 'emails') {
       setFormData({ address: '', isPrimary: false, isVerified: false });
     } else if (contactType === 'addresses') {
       setFormData({
-        type: 'HOME',
+        type: addressTypes.length > 0 ? addressTypes[0].value : 'home1',
         addressLine1: '',
         addressLine2: '',
         city: '',
@@ -96,7 +108,7 @@ const ReferenceContactModal: React.FC<ReferenceContactModalProps> = ({
     if (contactType === 'phones') {
       setFormData({
         number: contact.number || '',
-        type: contact.type || 'MOBILE',
+        type: contact.type || phoneTypes[0]?.value || 'mobile1',
         isPrimary: contact.isPrimary || false,
         isVerified: contact.isVerified || false
       });
@@ -108,7 +120,7 @@ const ReferenceContactModal: React.FC<ReferenceContactModalProps> = ({
       });
     } else if (contactType === 'addresses') {
       setFormData({
-        type: contact.type || 'HOME',
+        type: contact.type || addressTypes[0]?.value || 'home1',
         addressLine1: contact.line1 || contact.addressLine1 || '',
         addressLine2: contact.line2 || contact.addressLine2 || '',
         city: contact.city || '',
@@ -144,9 +156,21 @@ const ReferenceContactModal: React.FC<ReferenceContactModalProps> = ({
       onRefresh();
       loadContacts();
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting contact:', error);
-      alert(t('customers:messages.delete_failed'));
+      
+      // Extract error message from the response
+      let errorMessage = t('customers:messages.delete_failed');
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -195,8 +219,6 @@ const ReferenceContactModal: React.FC<ReferenceContactModalProps> = ({
       setLoading(true);
       
       // Use refCif for reference customer contacts
-      // For bank reference customers, this will be their refCif field (contains their CIF)
-      // For workflow reference customers, this will also be their refCif field
       const refCif = reference.refCif;
       const data = { ...formData, refCif };
       
@@ -226,9 +248,21 @@ const ReferenceContactModal: React.FC<ReferenceContactModalProps> = ({
       onRefresh();
       loadContacts();
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving contact:', error);
-      alert(t('customers:messages.save_failed'));
+      
+      // Extract error message from the response
+      let errorMessage = t('customers:messages.save_failed');
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -245,73 +279,15 @@ const ReferenceContactModal: React.FC<ReferenceContactModalProps> = ({
   const renderContactList = () => (
     <div className="space-y-3">
       {contacts.map((contact, idx) => (
-        <div key={idx} className="p-4 border rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow flex justify-between items-start">
-          <div className="flex-1">
-            {contactType === 'phones' && (
-              <div>
-                <div className="font-medium">{contact.number}</div>
-                <div className="text-sm text-neutral-600">
-                  Type: {contact.type} {contact.isPrimary && '(Primary)'} {contact.isVerified && '(Verified)'}
-                </div>
-              </div>
-            )}
-            {contactType === 'emails' && (
-              <div>
-                <div className="font-medium">{contact.address}</div>
-                <div className="text-sm text-neutral-600">
-                  {contact.isPrimary && '(Primary)'} {contact.isVerified && '(Verified)'}
-                </div>
-              </div>
-            )}
-            {contactType === 'addresses' && (
-              <div>
-                <div className="font-medium">{contact.line1 || contact.addressLine1}</div>
-                {(contact.line2 || contact.addressLine2) && <div className="text-sm">{contact.line2 || contact.addressLine2}</div>}
-                <div className="text-sm text-neutral-600">
-                  {contact.city}, {contact.state}, {contact.country}
-                </div>
-                <div className="text-xs text-neutral-500">
-                  Type: {contact.type} {contact.isPrimary && '(Primary)'} {contact.isVerified && '(Verified)'}
-                </div>
-              </div>
-            )}
-          </div>
-          
-          {canEdit && (
-            <div className="flex gap-2 ml-4">
-              {/* Only show edit/delete for workflow contacts that have IDs */}
-              {contact.source === 'workflow' && contact.id && (
-                <>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => handleEdit(contact)}
-                    disabled={loading}
-                    title="Edit contact"
-                  >
-                    <i className="bi bi-pencil-square mr-1"></i>
-                    Edit
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="danger"
-                    onClick={() => handleDelete(contact)}
-                    disabled={loading}
-                    title="Delete contact"
-                  >
-                    <i className="bi bi-trash mr-1"></i>
-                    Delete
-                  </Button>
-                </>
-              )}
-              
-              {/* Show source indicator */}
-              <span className="text-xs px-2 py-1 rounded bg-neutral-100 text-neutral-600">
-                {contact.source === 'workflow' ? 'Workflow Data' : 'Bank Data'}
-              </span>
-            </div>
-          )}
-        </div>
+        <ContactListItem
+          key={idx}
+          contact={contact}
+          contactType={contactType}
+          canEdit={canEdit}
+          loading={loading}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
       ))}
       
       {contacts.length === 0 && (
@@ -323,148 +299,41 @@ const ReferenceContactModal: React.FC<ReferenceContactModalProps> = ({
   );
 
   const renderForm = () => {
-    if (contactType === 'phones') {
-      return (
-        <>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Phone Number *
-            </label>
-            <Input
-              type="tel"
-              value={formData.number || ''}
-              onChange={(e) => handleInputChange('number', e.target.value)}
-              error={errors.number}
-              placeholder="Enter phone number"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Type
-            </label>
-            <Select
-              value={formData.type || 'MOBILE'}
-              onChange={(e) => handleInputChange('type', e.target.value)}
-              options={[
-                { value: 'MOBILE', label: 'Mobile' },
-                { value: 'HOME', label: 'Home' },
-                { value: 'WORK', label: 'Work' },
-                { value: 'OTHER', label: 'Other' }
-              ]}
-            />
-          </div>
-        </>
-      );
-    }
-    
-    if (contactType === 'emails') {
-      return (
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-700 mb-2">
-            Email Address *
-          </label>
-          <Input
-            type="email"
-            value={formData.address || ''}
-            onChange={(e) => handleInputChange('address', e.target.value)}
-            error={errors.address}
-            placeholder="Enter email address"
+    switch (contactType) {
+      case 'phones':
+        return (
+          <PhoneForm
+            formData={formData}
+            errors={errors}
+            phoneTypes={phoneTypes}
+            phoneTypesLoading={phoneTypesLoading}
+            onChange={handleInputChange}
           />
-        </div>
-      );
+        );
+      
+      case 'emails':
+        return (
+          <EmailForm
+            formData={formData}
+            errors={errors}
+            onChange={handleInputChange}
+          />
+        );
+      
+      case 'addresses':
+        return (
+          <AddressForm
+            formData={formData}
+            errors={errors}
+            addressTypes={addressTypes}
+            addressTypesLoading={addressTypesLoading}
+            onChange={handleInputChange}
+          />
+        );
+      
+      default:
+        return null;
     }
-    
-    if (contactType === 'addresses') {
-      return (
-        <>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Type
-            </label>
-            <Select
-              value={formData.type || 'HOME'}
-              onChange={(e) => handleInputChange('type', e.target.value)}
-              options={[
-                { value: 'HOME', label: 'Home' },
-                { value: 'WORK', label: 'Work' },
-                { value: 'OTHER', label: 'Other' }
-              ]}
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Address Line 1 *
-            </label>
-            <Input
-              value={formData.addressLine1 || ''}
-              onChange={(e) => handleInputChange('addressLine1', e.target.value)}
-              error={errors.addressLine1}
-              placeholder="Enter address line 1"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Address Line 2
-            </label>
-            <Input
-              value={formData.addressLine2 || ''}
-              onChange={(e) => handleInputChange('addressLine2', e.target.value)}
-              placeholder="Enter address line 2"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                City *
-              </label>
-              <Input
-                value={formData.city || ''}
-                onChange={(e) => handleInputChange('city', e.target.value)}
-                error={errors.city}
-                placeholder="Enter city"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                State *
-              </label>
-              <Input
-                value={formData.state || ''}
-                onChange={(e) => handleInputChange('state', e.target.value)}
-                error={errors.state}
-                placeholder="Enter state"
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                District *
-              </label>
-              <Input
-                value={formData.district || ''}
-                onChange={(e) => handleInputChange('district', e.target.value)}
-                error={errors.district}
-                placeholder="Enter district"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Country *
-              </label>
-              <Input
-                value={formData.country || ''}
-                onChange={(e) => handleInputChange('country', e.target.value)}
-                error={errors.country}
-                placeholder="Enter country"
-              />
-            </div>
-          </div>
-        </>
-      );
-    }
-    
-    return null;
   };
 
   return (

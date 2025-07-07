@@ -145,7 +145,7 @@ export const PhoneRepository = AppDataSource.getRepository(Phone).extend({
         
         if (existingPhone) {
           throw Errors.create(
-            Errors.Database.DUPLICATE_ENTRY,
+            Errors.Database.DUPLICATE_RECORD,
             `Phone with type ${phone.type} already exists for this ${phone.refCif ? 'reference customer' : 'customer'}`,
             OperationType.DATABASE,
             SourceSystemType.WORKFLOW_SERVICE

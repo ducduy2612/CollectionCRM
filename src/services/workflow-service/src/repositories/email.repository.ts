@@ -146,7 +146,7 @@ export const EmailRepository = AppDataSource.getRepository(Email).extend({
         
         if (existingEmail) {
           throw Errors.create(
-            Errors.Database.DUPLICATE_ENTRY,
+            Errors.Database.DUPLICATE_RECORD,
             `Email address ${email.address} already exists for this ${email.refCif ? 'reference customer' : 'customer'}`,
             OperationType.DATABASE,
             SourceSystemType.WORKFLOW_SERVICE

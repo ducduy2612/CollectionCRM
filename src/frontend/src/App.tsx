@@ -41,7 +41,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ToastProvider>
-          <Router>
+          <Router
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true
+            }}
+          >
             <Routes>
               {/* Auth routes */}
               <Route element={<AuthLayout />}>

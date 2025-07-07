@@ -51,7 +51,7 @@ execute_sql() {
 
 # Function to check disk space
 check_disk_space() {
-    local required_gb=50  # Estimated space needed in GB
+    local required_gb=5  # Estimated space needed in GB
     local available_gb=$(df -BG . | awk 'NR==2 {print $4}' | sed 's/G//')
     
     if [ "$available_gb" -lt "$required_gb" ]; then
