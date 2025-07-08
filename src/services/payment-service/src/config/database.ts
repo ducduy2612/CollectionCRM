@@ -88,9 +88,7 @@ export async function createDatabaseConnection(dbConfig: DatabaseConfig): Promis
   }
 }
 
-// Default export for simple usage
-const defaultConnection = createDatabaseConnection(createDatabaseConfig());
-export default defaultConnection;
+// No default connection - connections should be created explicitly
 
 export async function closeDatabaseConnection(knex: Knex): Promise<void> {
   try {

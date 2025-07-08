@@ -40,7 +40,9 @@ INFRA_IMAGES=(
     "confluentinc/cp-zookeeper:7.5.0"
     "confluentinc/cp-kafka:7.5.0"
     "prodrigestivill/postgres-backup-local:15"
-    "pgbouncer/pgbouncer:latest"
+    "edoburu/pgbouncer:latest"
+    "provectuslabs/kafka-ui:latest"
+    "minio/minio:latest"
 )
 
 # Function to print colored output
@@ -429,7 +431,7 @@ main() {
         REQUESTED_TARGET="$1"
         
         # Check if it's a service
-        if [[ " ${SERVICES[@]} " =~ " ${REQUESTED_TARGET} " ]]; thens
+        if [[ " ${SERVICES[@]} " =~ " ${REQUESTED_TARGET} " ]]; then
             log "Building only service: ${REQUESTED_TARGET}"
             SERVICES=("${REQUESTED_TARGET}")
             INFRA_IMAGES=()  # Skip infrastructure images

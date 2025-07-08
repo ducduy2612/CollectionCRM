@@ -54,9 +54,7 @@ export class PaymentEventProducer {
     });
 
     this.producer = this.kafka.producer({
-      allowAutoTopicCreation: false,
-      maxInFlightRequests: 1,
-      idempotent: true,
+      allowAutoTopicCreation: true,
       transactionTimeout: 30000,
       retry: {
         initialRetryTime: 100,

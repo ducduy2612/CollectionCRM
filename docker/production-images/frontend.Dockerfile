@@ -60,7 +60,7 @@ RUN echo '#!/bin/sh' > /docker-entrypoint.sh && \
     echo 'API_BASE_URL=${VITE_API_BASE_URL:-/api}' >> /docker-entrypoint.sh && \
     echo 'echo "Using API_BASE_URL: $API_BASE_URL"' >> /docker-entrypoint.sh && \
     echo '# Replace placeholder in JavaScript files' >> /docker-entrypoint.sh && \
-    echo 'find /usr/share/nginx/html -name "*.js" -type f -exec sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" {} \\;' >> /docker-entrypoint.sh && \
+    echo 'find /usr/share/nginx/html -name "*.js" -type f -exec sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" {} +' >> /docker-entrypoint.sh && \
     echo 'echo "Environment substitution completed"' >> /docker-entrypoint.sh && \
     echo '# Start nginx' >> /docker-entrypoint.sh && \
     echo 'exec nginx -g "daemon off;"' >> /docker-entrypoint.sh && \

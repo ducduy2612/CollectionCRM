@@ -8,6 +8,7 @@ import { PaymentStagingModel } from '@/models/PaymentStaging';
 import { DeduplicationService } from '@/services/DeduplicationService';
 import { StagingProcessor } from '@/processors/StagingProcessor';
 import { WebhookProcessor } from '@/processors/WebhookProcessor';
+import { PaymentEventProducer } from '@/kafka/producer';
 import { 
   Payment, 
   PaymentStats,
@@ -78,6 +79,7 @@ export class PaymentService {
   constructor(
     knex: Knex,
     redisClient: RedisClientType,
+    eventProducer: PaymentEventProducer,
     logger: pino.Logger,
     config: PaymentServiceConfig
   ) {
@@ -102,6 +104,7 @@ export class PaymentService {
     this.stagingProcessor = new StagingProcessor(
       knex,
       this.deduplicationService,
+      eventProducer,
       logger,
       config.staging
     );

@@ -143,6 +143,7 @@ export class PaymentServiceApp {
     this.paymentService = new PaymentService(
       this.knex,
       this.redisClient,
+      this.kafkaProducer,
       this.logger.child({ component: 'payment-service' }),
       paymentServiceConfig
     );
@@ -306,10 +307,9 @@ export class PaymentServiceApp {
 
   async start(): Promise<void> {
     const port = parseInt(process.env.PORT || '3004', 10);
-    const host = process.env.HOST || '0.0.0.0';
 
-    this.server = this.app.listen(port, host, () => {
-      this.logger.info(`Payment Service started on ${host}:${port}`);
+    this.server = this.app.listen(port, () => {
+      this.logger.info(`Payment Service started on port ${port}`);
     });
 
     // Graceful shutdown handling

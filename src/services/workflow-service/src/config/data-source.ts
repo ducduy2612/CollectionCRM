@@ -23,9 +23,6 @@ export const AppDataSource = new DataSource({
     idleTimeoutMillis: parseInt(process.env.DB_POOL_IDLE_TIMEOUT || '30000', 10), // How long a connection can be idle before being removed
     connectionTimeoutMillis: parseInt(process.env.DB_POOL_ACQUIRE_TIMEOUT || '60000', 10), // Maximum time to wait for a connection
     
-    // Statement timeout to prevent long-running queries
-    statement_timeout: parseInt(process.env.DB_STATEMENT_TIMEOUT || '120000', 10), // 2 minutes default
-    
     // Application name for monitoring
     application_name: 'workflow-service'
   }

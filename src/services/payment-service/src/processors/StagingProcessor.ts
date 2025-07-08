@@ -4,6 +4,7 @@ import { PaymentStagingModel } from '@/models/PaymentStaging';
 import { StagingProcessLogModel } from '@/models/StagingProcessLog';
 import { DeduplicationService } from '@/services/DeduplicationService';
 import { PaymentStaging, Payment, BatchProcessResult } from '@/types/payment.types';
+import { PaymentEventProducer } from '@/kafka/producer';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface StagingProcessorConfig {
@@ -22,6 +23,7 @@ export class StagingProcessor {
   private stagingModel: PaymentStagingModel;
   private processLogModel: StagingProcessLogModel;
   private deduplicationService: DeduplicationService;
+  private eventProducer: PaymentEventProducer;
   
   private isProcessing: boolean = false;
   private lastProcessedId: bigint | null = null;
@@ -29,11 +31,13 @@ export class StagingProcessor {
   constructor(
     knex: Knex,
     deduplicationService: DeduplicationService,
+    eventProducer: PaymentEventProducer,
     logger: pino.Logger,
     config: StagingProcessorConfig
   ) {
     this.knex = knex;
     this.deduplicationService = deduplicationService;
+    this.eventProducer = eventProducer;
     this.logger = logger;
     this.config = config;
 
@@ -125,6 +129,21 @@ export class StagingProcessor {
         batch_id: processLogId,
         ...result
       }, 'Staging batch processing completed');
+
+      // Publish batch processed event
+      try {
+        await this.eventProducer.publishBatchProcessed({
+          ...result,
+          batch_id: processLogId,
+          batch_start_id: batchStartId,
+          batch_end_id: batchEndId,
+        });
+      } catch (eventError) {
+        this.logger.warn({
+          error: eventError instanceof Error ? eventError.message : String(eventError),
+          batch_id: processLogId,
+        }, 'Failed to publish batch processed event');
+      }
 
       return result;
 
