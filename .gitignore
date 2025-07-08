@@ -47,6 +47,7 @@ out/
 # Docker
 .docker/
 docker-volumes/
+docker-images/
 
 # Temporary files
 tmp/

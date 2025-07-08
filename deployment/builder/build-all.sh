@@ -40,6 +40,7 @@ INFRA_IMAGES=(
     "confluentinc/cp-zookeeper:7.5.0"
     "confluentinc/cp-kafka:7.5.0"
     "prodrigestivill/postgres-backup-local:15"
+    "pgbouncer/pgbouncer:latest"
 )
 
 # Function to print colored output
@@ -86,10 +87,29 @@ setup_directories() {
     log "Setting up directories..."
     mkdir -p "$OUTPUT_DIR"
     
-    # Clean old images
-    if [ -d "$OUTPUT_DIR" ] && [ "$(ls -A "$OUTPUT_DIR" 2>/dev/null)" ]; then
-        warning "Cleaning old images in $OUTPUT_DIR"
-        rm -f "$OUTPUT_DIR"/*.tar.gz
+    # Clean images based on what we're building
+    if [ -d "$OUTPUT_DIR" ]; then
+        if [ $# -eq 0 ]; then
+            # Building all - clean everything
+            if [ "$(ls -A "$OUTPUT_DIR" 2>/dev/null)" ]; then
+                warning "Cleaning all old images in $OUTPUT_DIR"
+                rm -f "$OUTPUT_DIR"/*.tar.gz
+            fi
+        elif [ $# -eq 1 ]; then
+            # Building specific target - clean only that target's files
+            local target="$1"
+            
+            # For services, clean service-specific files
+            if [[ " ${SERVICES[@]} " =~ " ${target} " ]]; then
+                warning "Cleaning old images for service: $target"
+                rm -f "$OUTPUT_DIR/${target}-"*.tar.gz
+            # For infra images, clean that specific image file
+            elif [[ " ${INFRA_IMAGES[@]} " =~ " ${target} " ]]; then
+                local filename=$(echo "$target" | sed 's/[:/]/_/g').tar.gz
+                warning "Cleaning old image: $filename"
+                rm -f "$OUTPUT_DIR/$filename"
+            fi
+        fi
     fi
 }
 
@@ -404,6 +424,28 @@ generate_checksums() {
 
 # Main build process
 main() {
+    # Check if specific service or infra image was requested
+    if [ $# -gt 0 ]; then
+        REQUESTED_TARGET="$1"
+        
+        # Check if it's a service
+        if [[ " ${SERVICES[@]} " =~ " ${REQUESTED_TARGET} " ]]; thens
+            log "Building only service: ${REQUESTED_TARGET}"
+            SERVICES=("${REQUESTED_TARGET}")
+            INFRA_IMAGES=()  # Skip infrastructure images
+        # Check if it's an infra image
+        elif [[ " ${INFRA_IMAGES[@]} " =~ " ${REQUESTED_TARGET} " ]]; then
+            log "Building only infrastructure image: ${REQUESTED_TARGET}"
+            SERVICES=()  # Skip application services
+            INFRA_IMAGES=("${REQUESTED_TARGET}")
+        else
+            error "Unknown target: ${REQUESTED_TARGET}"
+            error "Available services: ${SERVICES[*]}"
+            error "Available infra images: ${INFRA_IMAGES[*]}"
+            exit 1
+        fi
+    fi
+    
     log "Starting CollectionCRM build process..."
     log "Version: ${VERSION}"
     log "Build Number: ${BUILD_NUMBER}"
@@ -416,32 +458,36 @@ main() {
     check_prerequisites
     
     # Setup directories
-    setup_directories
+    setup_directories "$@"
     
     # Build all application services
-    build_failed=false
-    for service in "${SERVICES[@]}"; do
-        if ! build_service "$service"; then
-            build_failed=true
-            break
+    if [ ${#SERVICES[@]} -gt 0 ]; then
+        build_failed=false
+        for service in "${SERVICES[@]}"; do
+            if ! build_service "$service"; then
+                build_failed=true
+                break
+            fi
+        done
+        
+        if [ "$build_failed" = true ]; then
+            error "Build failed. Aborting."
+            exit 1
         fi
-    done
-    
-    if [ "$build_failed" = true ]; then
-        error "Build failed. Aborting."
-        exit 1
+        
+        log "All services built successfully!"
+        
+        # Save application images
+        log "Saving application images..."
+        for service in "${SERVICES[@]}"; do
+            save_image "collectioncrm/${service}:${VERSION}" "${service}-${VERSION}.tar.gz"
+        done
     fi
     
-    log "All services built successfully!"
-    
-    # Save application images
-    log "Saving application images..."
-    for service in "${SERVICES[@]}"; do
-        save_image "collectioncrm/${service}:${VERSION}" "${service}-${VERSION}.tar.gz"
-    done
-    
     # Save infrastructure images
-    save_infra_images
+    if [ ${#INFRA_IMAGES[@]} -gt 0 ]; then
+        save_infra_images
+    fi
     
     # Generate manifest
     generate_manifest

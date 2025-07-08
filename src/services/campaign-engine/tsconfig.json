@@ -23,7 +23,6 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "sourceMap": true,
-    "incremental": true,
     "types": ["node", "jest"]
   },
   "include": ["src/**/*"],
