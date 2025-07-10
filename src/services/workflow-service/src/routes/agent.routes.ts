@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { AgentController } from '../controllers/agent.controller';
-import { requireAuth, requireRoles, agentContextMiddleware } from '../middleware/auth.middleware';
+import { requireAuth, requirePermissions, agentContextMiddleware } from '../middleware/auth.middleware';
 import { validatePagination } from '../middleware/validation.middleware';
 
 const router = Router();
@@ -26,7 +26,7 @@ router.get(
 router.post(
   '/',
   requireAuth,
-  requireRoles(['ADMIN', 'SUPERVISOR']),
+  requirePermissions(['user_management:user']),
   agentController.createAgent
 );
 
@@ -38,7 +38,7 @@ router.post(
 router.put(
   '/:id',
   requireAuth,
-  requireRoles(['ADMIN', 'SUPERVISOR']),
+  requirePermissions(['user_management:user']),
   agentController.updateAgent
 );
 
@@ -72,7 +72,7 @@ router.get(
 router.post(
   '/link-user',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['user_management:user']),
   agentController.linkAgentToUser
 );
 

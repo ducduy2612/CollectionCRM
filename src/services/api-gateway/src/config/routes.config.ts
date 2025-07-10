@@ -23,7 +23,7 @@ export const rateLimitConfigs = {
   },
   bank: {
     customerSearch: {
-      max: 30,
+      max: 60,
       windowSizeInSeconds: 60, // 1 minute
       prefix: 'bank:customer:search:'
     },
@@ -40,12 +40,12 @@ export const rateLimitConfigs = {
       prefix: 'workflow:case:create:'
     },
     actionRecord: {
-      max: 30,
+      max: 60,
       windowSizeInSeconds: 60, // 1 minute
       prefix: 'workflow:action:record:'
     },
     documentUpload: {
-      max: 10,
+      max: 20,
       windowSizeInSeconds: 60, // 1 minute
       prefix: 'workflow:document:upload:'
     },
@@ -84,7 +84,7 @@ export const rateLimitConfigs = {
       prefix: 'payment:job:'
     },
     cacheOperation: {
-      max: 10,
+      max: 30,
       windowSizeInSeconds: 60, // 1 minute
       prefix: 'payment:cache:'
     },
@@ -102,7 +102,7 @@ export const rateLimitConfigs = {
 export const serviceRoutes: Record<string, ProxyConfig> = {
   auth: {
     path: '/api/auth',
-    target: process.env.AUTH_SERVICE_URL || 'http://auth-service:3000',
+    target: process.env.AUTH_SERVICE_URL || 'http://auth-service:3001',
     pathRewrite: { '^/api/auth': '/api/v1/auth' },
     timeout: parseInt(process.env.AUTH_SERVICE_TIMEOUT || '60000', 10),
     serviceName: 'Authentication Service',
@@ -124,7 +124,7 @@ export const serviceRoutes: Record<string, ProxyConfig> = {
   },
   bank: {
     path: '/api/bank',
-    target: process.env.BANK_SERVICE_URL || 'http://bank-sync-service:3000',
+    target: process.env.BANK_SERVICE_URL || 'http://bank-sync-service:3002',
     pathRewrite: { '^/api/bank': '/api/v1/bank-sync' },
     timeout: parseInt(process.env.BANK_SERVICE_TIMEOUT || '30000', 10),
     serviceName: 'Bank Sync Service',

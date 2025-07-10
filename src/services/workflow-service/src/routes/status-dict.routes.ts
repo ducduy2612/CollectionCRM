@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { StatusDictController } from '../controllers/status-dict.controller';
-import { requireAuth, requireRoles } from '../middleware/auth.middleware';
+import { requireAuth, requirePermissions } from '../middleware/auth.middleware';
 
 const router = Router();
 const statusDictController = new StatusDictController();
@@ -28,7 +28,7 @@ router.get(
 router.post(
   '/customer-status',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.addCustomerStatus
 );
 
@@ -40,7 +40,7 @@ router.post(
 router.put(
   '/customer-status/:code',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.updateCustomerStatus
 );
 
@@ -52,7 +52,7 @@ router.put(
 router.delete(
   '/customer-status/:code',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.deactivateCustomerStatus
 );
 
@@ -79,7 +79,7 @@ router.get(
 router.post(
   '/collateral-status',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.addCollateralStatus
 );
 
@@ -91,7 +91,7 @@ router.post(
 router.put(
   '/collateral-status/:code',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.updateCollateralStatus
 );
 
@@ -103,7 +103,7 @@ router.put(
 router.delete(
   '/collateral-status/:code',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.deactivateCollateralStatus
 );
 
@@ -152,7 +152,7 @@ router.get(
 router.post(
   '/processing-state',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.addProcessingState
 );
 
@@ -164,7 +164,7 @@ router.post(
 router.post(
   '/processing-substate',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.addProcessingSubstate
 );
 
@@ -176,7 +176,7 @@ router.post(
 router.post(
   '/processing-state-mapping',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.mapStateToSubstate
 );
 
@@ -188,7 +188,7 @@ router.post(
 router.delete(
   '/processing-state-mapping',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.removeStateSubstateMapping
 );
 
@@ -200,7 +200,7 @@ router.delete(
 router.put(
   '/processing-state/:code',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.updateProcessingState
 );
 
@@ -212,7 +212,7 @@ router.put(
 router.put(
   '/processing-substate/:code',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.updateProcessingSubstate
 );
 
@@ -224,7 +224,7 @@ router.put(
 router.delete(
   '/processing-state/:code',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.deactivateProcessingState
 );
 
@@ -236,7 +236,7 @@ router.delete(
 router.delete(
   '/processing-substate/:code',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.deactivateProcessingSubstate
 );
 
@@ -263,7 +263,7 @@ router.get(
 router.post(
   '/lending-violation-status',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.addLendingViolationStatus
 );
 
@@ -275,7 +275,7 @@ router.post(
 router.put(
   '/lending-violation-status/:code',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.updateLendingViolationStatus
 );
 
@@ -287,7 +287,7 @@ router.put(
 router.delete(
   '/lending-violation-status/:code',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.deactivateLendingViolationStatus
 );
 
@@ -314,7 +314,7 @@ router.get(
 router.post(
   '/recovery-ability-status',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.addRecoveryAbilityStatus
 );
 
@@ -326,7 +326,7 @@ router.post(
 router.put(
   '/recovery-ability-status/:code',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.updateRecoveryAbilityStatus
 );
 
@@ -338,7 +338,7 @@ router.put(
 router.delete(
   '/recovery-ability-status/:code',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.deactivateRecoveryAbilityStatus
 );
 
@@ -365,7 +365,7 @@ router.get(
 router.get(
   '/usage-stats',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   statusDictController.getStatusUsageStats
 );
 

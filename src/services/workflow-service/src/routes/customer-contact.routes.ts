@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { CustomerContactController } from '../controllers/customer-contact.controller';
-import { requireAuth, requireRoles } from '../middleware/auth.middleware';
+import { requireAuth, requirePermissions } from '../middleware/auth.middleware';
 
 const router = Router();
 const customerContactController = new CustomerContactController();
@@ -65,7 +65,7 @@ router.put(
 router.delete(
   '/:cif/phones/:phoneId',
   requireAuth,
-  requireRoles(['ADMIN', 'SUPERVISOR']),
+  requirePermissions(['system_admin:all']),
   customerContactController.deletePhone
 );
 
@@ -114,7 +114,7 @@ router.put(
 router.delete(
   '/:cif/addresses/:addressId',
   requireAuth,
-  requireRoles(['ADMIN', 'SUPERVISOR']),
+  requirePermissions(['system_admin:all']),
   customerContactController.deleteAddress
 );
 
@@ -163,7 +163,7 @@ router.put(
 router.delete(
   '/:cif/emails/:emailId',
   requireAuth,
-  requireRoles(['ADMIN', 'SUPERVISOR']),
+  requirePermissions(['system_admin:all']),
   customerContactController.deleteEmail
 );
 

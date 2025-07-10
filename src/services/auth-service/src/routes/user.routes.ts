@@ -2,7 +2,7 @@ import express from 'express';
 import { body, param, query, validationResult } from 'express-validator';
 import { userService } from '../services/user.service';
 import { authService } from '../services/auth.service';
-import { authenticate, authorize, authorizeRoles } from '../middleware/auth.middleware';
+import { authenticate, authorize } from '../middleware/auth.middleware';
 
 const router = express.Router();
 
@@ -13,7 +13,7 @@ const router = express.Router();
 router.get(
   '/',
   authenticate,
-  authorizeRoles(['ADMIN', 'SUPERVISOR']),
+  authorize(['user_management:user']),
   async (req: express.Request, res: express.Response) => {
     try {
       // Get query parameters
@@ -69,7 +69,7 @@ router.get(
 router.post(
   '/',
   authenticate,
-  authorizeRoles(['ADMIN']),
+  authorize(['user_management:user']),
   [
     body('username').notEmpty().withMessage('Username is required'),
     body('email').isEmail().withMessage('Valid email is required'),
@@ -152,7 +152,7 @@ router.post(
 router.get(
   '/:id',
   authenticate,
-  authorizeRoles(['ADMIN', 'SUPERVISOR']),
+  authorize(['user_management:user']),
   async (req: express.Request, res: express.Response) => {
     try {
       const userId = req.params.id;
@@ -195,7 +195,7 @@ router.get(
 router.put(
   '/:id',
   authenticate,
-  authorizeRoles(['ADMIN']),
+  authorize(['user_management:user']),
   [
     body('email').optional().isEmail().withMessage('Valid email is required'),
     body('first_name').optional(),
@@ -284,7 +284,7 @@ router.put(
 router.put(
   '/:id/activate',
   authenticate,
-  authorizeRoles(['ADMIN']),
+  authorize(['user_management:user']),
   async (req: express.Request, res: express.Response) => {
     try {
       const userId = req.params.id;
@@ -332,7 +332,7 @@ router.put(
 router.put(
   '/:id/deactivate',
   authenticate,
-  authorizeRoles(['ADMIN']),
+  authorize(['user_management:user']),
   async (req: express.Request, res: express.Response) => {
     try {
       const userId = req.params.id;
@@ -380,7 +380,7 @@ router.put(
 router.get(
   '/:id/sessions',
   authenticate,
-  authorizeRoles(['ADMIN']),
+  authorize(['user_management:user']),
   async (req: express.Request, res: express.Response) => {
     try {
       const userId = req.params.id;
@@ -416,7 +416,7 @@ router.get(
 router.delete(
   '/:id/sessions',
   authenticate,
-  authorizeRoles(['ADMIN']),
+  authorize(['user_management:user']),
   async (req: express.Request, res: express.Response) => {
     try {
       const userId = req.params.id;

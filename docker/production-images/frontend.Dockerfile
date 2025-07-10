@@ -25,11 +25,7 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy source code
 COPY src/frontend ./
 
-# Create .env with PLACEHOLDER for runtime substitution
-# Only include the environment variable that's actually used
-RUN echo 'VITE_API_BASE_URL=__API_BASE_URL__' > .env
-
-# Build the application with placeholder value
+# Build the application
 RUN npm run build
 
 # Stage 3: Production - Nginx server
@@ -53,15 +49,8 @@ COPY --chown=nginx:nginx docker/config/nginx/frontend.conf /etc/nginx/conf.d/def
 RUN find /usr/share/nginx/html -type d -print0 | xargs -0 chmod 755 && \
     find /usr/share/nginx/html -type f -print0 | xargs -0 chmod 644
 
-# Create entrypoint script for runtime environment variable substitution
+# Create simple entrypoint script
 RUN echo '#!/bin/sh' > /docker-entrypoint.sh && \
-    echo 'echo "Substituting environment variables in frontend..."' >> /docker-entrypoint.sh && \
-    echo '# Set default values if not provided' >> /docker-entrypoint.sh && \
-    echo 'API_BASE_URL=${VITE_API_BASE_URL:-/api}' >> /docker-entrypoint.sh && \
-    echo 'echo "Using API_BASE_URL: $API_BASE_URL"' >> /docker-entrypoint.sh && \
-    echo '# Replace placeholder in JavaScript files' >> /docker-entrypoint.sh && \
-    echo 'find /usr/share/nginx/html -name "*.js" -type f -exec sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" {} +' >> /docker-entrypoint.sh && \
-    echo 'echo "Environment substitution completed"' >> /docker-entrypoint.sh && \
     echo '# Start nginx' >> /docker-entrypoint.sh && \
     echo 'exec nginx -g "daemon off;"' >> /docker-entrypoint.sh && \
     chmod +x /docker-entrypoint.sh

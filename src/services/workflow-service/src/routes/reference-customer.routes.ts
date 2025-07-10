@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { ReferenceCustomerController } from '../controllers/reference-customer.controller';
-import { requireAuth, requireRoles } from '../middleware/auth.middleware';
+import { requireAuth, requirePermissions } from '../middleware/auth.middleware';
 import { validatePagination } from '../middleware/validation.middleware';
 
 const router = Router();
@@ -92,7 +92,7 @@ router.put(
 router.delete(
   '/:id',
   requireAuth,
-  requireRoles(['ADMIN', 'SUPERVISOR']),
+  requirePermissions(['system_admin:all']),
   referenceCustomerController.deleteReferenceCustomer
 );
 

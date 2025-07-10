@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { ActionController } from '../controllers/action.controller';
 import { ActionConfigController } from '../controllers/action-config.controller';
-import { requireAuth, agentContextMiddleware, requireRoles } from '../middleware/auth.middleware';
+import { requireAuth, agentContextMiddleware, requirePermissions } from '../middleware/auth.middleware';
 import { validatePagination } from '../middleware/validation.middleware';
 
 const router = Router();
@@ -92,7 +92,7 @@ router.put(
 router.post(
   '/action-config/action-types',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   actionConfigController.addActionType
 );
 
@@ -104,7 +104,7 @@ router.post(
 router.post(
   '/action-config/action-subtypes',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   actionConfigController.addActionSubtype
 );
 
@@ -116,7 +116,7 @@ router.post(
 router.post(
   '/action-config/action-results',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   actionConfigController.addActionResult
 );
 
@@ -128,7 +128,7 @@ router.post(
 router.put(
   '/action-config/action-types/:typeCode',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   actionConfigController.updateActionType
 );
 
@@ -140,7 +140,7 @@ router.put(
 router.put(
   '/action-config/action-subtypes/:subtypeCode',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   actionConfigController.updateActionSubtype
 );
 
@@ -152,7 +152,7 @@ router.put(
 router.put(
   '/action-config/action-results/:resultCode',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   actionConfigController.updateActionResult
 );
 
@@ -164,7 +164,7 @@ router.put(
 router.post(
   '/action-config/mappings/type-subtype',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   actionConfigController.mapTypeToSubtype
 );
 
@@ -176,7 +176,7 @@ router.post(
 router.post(
   '/action-config/mappings/subtype-result',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   actionConfigController.mapSubtypeToResult
 );
 
@@ -276,7 +276,7 @@ router.get(
 router.post(
   '/action-config/validate',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   actionConfigController.validateActionConfiguration
 );
 
@@ -288,7 +288,7 @@ router.post(
 router.delete(
   '/action-config/action-types/:typeCode',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   actionConfigController.deactivateActionType
 );
 
@@ -300,7 +300,7 @@ router.delete(
 router.delete(
   '/action-config/action-subtypes/:subtypeCode',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   actionConfigController.deactivateActionSubtype
 );
 
@@ -312,7 +312,7 @@ router.delete(
 router.delete(
   '/action-config/action-results/:resultCode',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   actionConfigController.deactivateActionResult
 );
 
@@ -324,7 +324,7 @@ router.delete(
 router.delete(
   '/action-config/mappings/type-subtype',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   actionConfigController.removeTypeSubtypeMapping
 );
 
@@ -336,7 +336,7 @@ router.delete(
 router.delete(
   '/action-config/mappings/subtype-result',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   actionConfigController.removeSubtypeResultMapping
 );
 
@@ -348,7 +348,7 @@ router.delete(
 router.get(
   '/action-config/usage-stats',
   requireAuth,
-  requireRoles(['ADMIN']),
+  requirePermissions(['action_config:all']),
   actionConfigController.getConfigurationUsageStats
 );
 

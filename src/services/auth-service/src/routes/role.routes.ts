@@ -1,7 +1,7 @@
 import express from 'express';
 import { body, param, query, validationResult } from 'express-validator';
 import { roleService } from '../services/role.service';
-import { authenticate, authorizeRoles } from '../middleware/auth.middleware';
+import { authenticate, authorize } from '../middleware/auth.middleware';
 
 const router = express.Router();
 
@@ -12,7 +12,7 @@ const router = express.Router();
 router.get(
   '/',
   authenticate,
-  authorizeRoles(['ADMIN']),
+  authorize(['user_management:role']),
   async (req: express.Request, res: express.Response) => {
     try {
       // Get all roles
@@ -46,7 +46,7 @@ router.get(
 router.post(
   '/',
   authenticate,
-  authorizeRoles(['ADMIN']),
+  authorize(['user_management:role']),
   [
     body('name').notEmpty().withMessage('Role name is required'),
     body('description').optional(),
@@ -112,7 +112,7 @@ router.post(
 router.get(
   '/:id',
   authenticate,
-  authorizeRoles(['ADMIN']),
+  authorize(['user_management:role']),
   async (req: express.Request, res: express.Response) => {
     try {
       const roleId = req.params.id;
@@ -155,7 +155,7 @@ router.get(
 router.put(
   '/:id',
   authenticate,
-  authorizeRoles(['ADMIN']),
+  authorize(['user_management:role']),
   [
     body('description').optional(),
     body('permissions').optional().isArray().withMessage('Permissions must be an array'),
@@ -231,7 +231,7 @@ router.put(
 router.delete(
   '/:id',
   authenticate,
-  authorizeRoles(['ADMIN']),
+  authorize(['user_management:role']),
   async (req: express.Request, res: express.Response) => {
     try {
       const roleId = req.params.id;
@@ -277,7 +277,7 @@ router.delete(
 router.get(
   '/:id/users',
   authenticate,
-  authorizeRoles(['ADMIN']),
+  authorize(['user_management:role']),
   async (req: express.Request, res: express.Response) => {
     try {
       const roleId = req.params.id;
@@ -328,7 +328,7 @@ router.get(
 router.post(
   '/:id/users',
   authenticate,
-  authorizeRoles(['ADMIN']),
+  authorize(['user_management:role']),
   [
     body('userIds').isArray().withMessage('User IDs must be an array'),
   ],
@@ -393,7 +393,7 @@ router.post(
 router.delete(
   '/:id/users',
   authenticate,
-  authorizeRoles(['ADMIN']),
+  authorize(['user_management:role']),
   [
     body('userIds').isArray().withMessage('User IDs must be an array'),
   ],

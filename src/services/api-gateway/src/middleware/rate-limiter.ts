@@ -11,8 +11,8 @@ const RATE_LIMIT_MAX = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10
 const RATE_LIMIT_WINDOW_MS = parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10);
 const RATE_LIMIT_WINDOW_SECONDS = Math.floor(RATE_LIMIT_WINDOW_MS / 1000);
 
-// Create a Redis-based rate limiter instance
-let rateLimiterInstance: ReturnType<typeof createRateLimiter>;
+// Cache for rate limiter instances by configuration
+const rateLimiterInstances = new Map<string, ReturnType<typeof createRateLimiter>>();
 
 /**
  * Create a rate limiter middleware using Redis
@@ -29,10 +29,15 @@ export function redisRateLimiter(options?: Partial<RateLimitOptions>) {
     includeRoute: options?.includeRoute !== undefined ? options.includeRoute : true
   };
   
-  // Create the rate limiter instance if it doesn't exist
-  if (!rateLimiterInstance) {
-    rateLimiterInstance = createRateLimiter(rateLimiterOptions);
+  // Create a unique key for this configuration
+  const configKey = `${rateLimiterOptions.max}-${rateLimiterOptions.windowSizeInSeconds}-${rateLimiterOptions.prefix}`;
+  
+  // Create the rate limiter instance if it doesn't exist for this configuration
+  if (!rateLimiterInstances.has(configKey)) {
+    rateLimiterInstances.set(configKey, createRateLimiter(rateLimiterOptions));
   }
+  
+  const rateLimiterInstance = rateLimiterInstances.get(configKey)!;
   
   // Return Express middleware function
   return async (req: Request, res: Response, next: NextFunction) => {

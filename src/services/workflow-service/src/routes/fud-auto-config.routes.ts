@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { FudAutoConfigController } from '../controllers/fud-auto-config.controller';
-import { requireAuth, requireRoles } from '../middleware/auth.middleware';
+import { requireAuth, requirePermissions } from '../middleware/auth.middleware';
 
 const router = Router();
 const controller = new FudAutoConfigController();
@@ -37,7 +37,7 @@ router.get(
 // POST /fud-auto-config - Create new FUD configuration
 router.post(
   '/',
-  requireRoles(['ADMIN']),
+  requirePermissions(['FUD_config:edit']),
   controller.createConfig.bind(controller)
 );
 
@@ -56,14 +56,14 @@ router.post(
 // PUT /fud-auto-config/:id - Update FUD configuration
 router.put(
   '/:id',
-  requireRoles(['ADMIN']),
+  requirePermissions(['FUD_config:edit']),
   controller.updateConfig.bind(controller)
 );
 
 // DELETE /fud-auto-config/:id - Delete FUD configuration
 router.delete(
   '/:id',
-  requireRoles(['ADMIN']),
+  requirePermissions(['FUD_config:edit']),
   controller.deleteConfig.bind(controller)
 );
 

@@ -48,7 +48,47 @@ app.use(jwtAuth);
 // License warning middleware (adds headers if license is expiring)
 app.use(licenseWarningMiddleware);
 
-// Redis-based rate limiting
+// Apply specific route rate limiters BEFORE global rate limiter
+Object.entries(serviceRoutes).forEach(([name, config]) => {
+  // Add specific rate limiting for auth endpoints
+  if (name === 'auth' && config.routes) {
+    const basePath = config.path;
+    app.use(`${basePath}/login`, routeRateLimiter(rateLimitConfigs.auth.login));
+    app.use(`${basePath}/token/refresh`, routeRateLimiter(rateLimitConfigs.auth.tokenRefresh));
+    app.use(`${basePath}/password/reset`, routeRateLimiter(rateLimitConfigs.auth.passwordReset));
+  }
+  
+  // Add specific rate limiting for bank-sync endpoints
+  if (name === 'bank' && config.routes) {
+    app.use(`${config.path}/customers`, routeRateLimiter(rateLimitConfigs.bank.customerSearch));
+    app.use(`${config.path}/sync/run`, routeRateLimiter(rateLimitConfigs.bank.syncRun));
+  }
+  
+  // Add specific rate limiting for workflow endpoints
+  if (name === 'workflow' && config.routes) {
+    app.use(`${config.path}/cases`, routeRateLimiter(rateLimitConfigs.workflow.caseCreate));
+    app.use(`${config.path}/actions`, routeRateLimiter(rateLimitConfigs.workflow.actionRecord));
+    app.use(`${config.path}/documents/upload`, routeRateLimiter(rateLimitConfigs.workflow.documentUpload));
+    app.use(`${config.path}/documents/:id/download`, routeRateLimiter(rateLimitConfigs.workflow.documentDownload));
+  }
+  
+  // Add specific rate limiting for campaign endpoints
+  if (name === 'campaign' && config.routes) {
+    app.use(`${config.path}`, routeRateLimiter(rateLimitConfigs.campaign.campaignCreate));
+    app.use(`${config.path}/:id`, routeRateLimiter(rateLimitConfigs.campaign.campaignUpdate));
+    app.use(`${config.path}/config/custom-fields`, routeRateLimiter(rateLimitConfigs.campaign.customFieldCreate));
+  }
+  
+  // Add specific rate limiting for payment endpoints
+  if (name === 'payment' && config.routes) {
+    app.use(`${config.path}/webhook`, routeRateLimiter(rateLimitConfigs.payment.webhookProcess));
+    app.use(`${config.path}/monitoring/jobs`, routeRateLimiter(rateLimitConfigs.payment.jobExecution));
+    app.use(`${config.path}/monitoring/cache`, routeRateLimiter(rateLimitConfigs.payment.cacheOperation));
+    app.use(`${config.path}/payments`, routeRateLimiter(rateLimitConfigs.payment.paymentQueries));
+  }
+});
+
+// Redis-based rate limiting (global fallback)
 app.use(redisRateLimiter({
   max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10),
   windowSizeInSeconds: Math.floor(parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10) / 1000),
@@ -120,49 +160,6 @@ app.get('/health/redis', async (req, res) => {
 // Service proxies using the enhanced proxy utility
 Object.entries(serviceRoutes).forEach(([name, config]) => {
   logger.info(`Setting up proxy for ${config.serviceName} at ${config.path}`);
-  
-  // Add specific rate limiting for auth endpoints
-  if (name === 'auth' && config.routes) {
-    // Login rate limiting
-    app.use(`${config.path}/login`, routeRateLimiter(rateLimitConfigs.auth.login));
-    
-    // Token refresh rate limiting
-    app.use(`${config.path}/token/refresh`, routeRateLimiter(rateLimitConfigs.auth.tokenRefresh));
-    
-    // Password reset rate limiting
-    app.use(`${config.path}/password/reset`, routeRateLimiter(rateLimitConfigs.auth.passwordReset));
-  }
-  
-  // Add specific rate limiting for bank-sync endpoints
-  if (name === 'bank' && config.routes) {
-    // Customer search rate limiting
-    app.use(`${config.path}/customers`, routeRateLimiter(rateLimitConfigs.bank.customerSearch));
-    
-    // Sync run rate limiting
-    app.use(`${config.path}/sync/run`, routeRateLimiter(rateLimitConfigs.bank.syncRun));
-  }
-  
-  // Add specific rate limiting for workflow endpoints
-  if (name === 'workflow' && config.routes) {
-    // Case creation rate limiting
-    app.use(`${config.path}/cases`, routeRateLimiter(rateLimitConfigs.workflow.caseCreate));
-    
-    // Action recording rate limiting
-    app.use(`${config.path}/actions`, routeRateLimiter(rateLimitConfigs.workflow.actionRecord));
-    
-  }
-  
-  // Add specific rate limiting for campaign endpoints
-  if (name === 'campaign' && config.routes) {
-    // Campaign creation rate limiting
-    app.use(`${config.path}`, routeRateLimiter(rateLimitConfigs.campaign.campaignCreate));
-    
-    // Campaign update rate limiting
-    app.use(`${config.path}/:id`, routeRateLimiter(rateLimitConfigs.campaign.campaignUpdate));
-    
-    // Custom field creation rate limiting
-    app.use(`${config.path}/config/custom-fields`, routeRateLimiter(rateLimitConfigs.campaign.customFieldCreate));
-  }
   
   // Set up the proxy
   app.use(config.path, createServiceProxy(config));

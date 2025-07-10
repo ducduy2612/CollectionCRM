@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { AssignmentController } from '../controllers/assignment.controller';
-import { requireAuth, requireRoles, agentContextMiddleware } from '../middleware/auth.middleware';
+import { requireAuth, requirePermissions, agentContextMiddleware } from '../middleware/auth.middleware';
 import { validatePagination } from '../middleware/validation.middleware';
 import { uploadCSV } from '../middleware/upload.middleware';
 
@@ -27,7 +27,7 @@ router.get(
 router.post(
   '/',
   requireAuth,
-  requireRoles(['ADMIN', 'SUPERVISOR']),
+  requirePermissions(['customer_assignment:all']),
   agentContextMiddleware,
   assignmentController.createAssignment
 );
@@ -40,7 +40,7 @@ router.post(
 router.post(
   '/bulk',
   requireAuth,
-  requireRoles(['ADMIN', 'SUPERVISOR']),
+  requirePermissions(['customer_assignment:all']),
   agentContextMiddleware,
   uploadCSV.single('csvFile'),
   assignmentController.bulkAssignment
@@ -54,7 +54,7 @@ router.post(
 router.put(
   '/:id',
   requireAuth,
-  requireRoles(['ADMIN', 'SUPERVISOR']),
+  requirePermissions(['customer_assignment:all']),
   agentContextMiddleware,
   assignmentController.updateAssignment
 );
