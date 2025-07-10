@@ -1,197 +1,197 @@
 {
-  "quick_actions": "Hành động nhanh",
+  "quick_actions": "Hành Động Nhanh",
   "titles": {
-    "settings": "Cài đặt",
-    "general_settings": "Cài đặt chung",
-    "user_management": "Quản lý người dùng",
-    "system_settings": "Cài đặt hệ thống",
-    "security_settings": "Cài đặt bảo mật",
-    "notification_settings": "Cài đặt thông báo",
-    "integration_settings": "Cài đặt tích hợp",
-    "account_settings": "Cài đặt tài khoản",
-    "profile_settings": "Cài đặt hồ sơ",
-    "privacy_settings": "Cài đặt riêng tư",
-    "appearance_settings": "Cài đặt giao diện",
-    "language_settings": "Cài đặt ngôn ngữ",
-    "backup_settings": "Cài đặt sao lưu",
-    "audit_settings": "Cài đặt kiểm toán"
+    "settings": "Cài Đặt",
+    "general_settings": "Cài Đặt Chung",
+    "user_management": "Quản Lý Người Dùng",
+    "system_settings": "Cài Đặt Hệ Thống",
+    "security_settings": "Cài Đặt Bảo Mật",
+    "notification_settings": "Cài Đặt Thông Báo",
+    "integration_settings": "Cài Đặt Tích Hợp",
+    "account_settings": "Cài Đặt Tài Khoản",
+    "profile_settings": "Cài Đặt Hồ Sơ",
+    "privacy_settings": "Cài Đặt Riêng Tư",
+    "appearance_settings": "Cài Đặt Giao Diện",
+    "language_settings": "Cài Đặt Ngôn Ngữ",
+    "backup_settings": "Cài Đặt Sao Lưu",
+    "audit_settings": "Cài Đặt Kiểm Toán"
   },
   "user_management": {
-    "users": "Người dùng",
-    "roles": "Vai trò",
-    "permissions": "Quyền",
+    "users": "Người Dùng",
+    "roles": "Vai Trò",
+    "permissions": "Quyền Hạn",
     "groups": "Nhóm",
     "sessions": "Phiên",
-    "add_user": "Thêm người dùng",
-    "add_role": "Thêm vai trò",
-    "edit_user": "Chỉnh sửa người dùng",
-    "delete_user": "Xóa người dùng",
-    "delete_role": "Xóa vai trò",
-    "activate_user": "Kích hoạt người dùng",
-    "deactivate_user": "Vô hiệu hóa người dùng",
-    "reset_password": "Đặt lại mật khẩu",
-    "assign_role": "Gán vai trò",
-    "remove_role": "Xóa vai trò",
-    "view_permissions": "Xem quyền",
-    "view_users": "Xem người dùng",
-    "manage_sessions": "Quản lý phiên",
-    "manage_users": "Quản lý người dùng",
-    "user_details": "Chi tiết người dùng",
-    "user_activity": "Hoạt động người dùng",
-    "login_history": "Lịch sử đăng nhập",
-    "search_placeholder": "Tìm bằng username hoặc email...",
-    "search_users": "Search users",
-    "all_roles": "All Roles",
-    "all_status": "All Status",
-    "filter_by_role": "Filter by role",
-    "filter_by_status": "Filter by status",
-    "showing_results": "Showing {{start}} to {{end}} of {{total}} users",
-    "loading_users": "Loading users...",
-    "no_users_found": "No users found",
-    "no_users_found_filtered": "No users found matching your criteria",
-    "edit_user_aria": "Edit {{name}}",
+    "add_user": "Thêm Người Dùng",
+    "add_role": "Thêm Vai Trò",
+    "edit_user": "Sửa Người Dùng",
+    "delete_user": "Xóa Người Dùng",
+    "delete_role": "Xóa Vai Trò",
+    "activate_user": "Kích Hoạt Người Dùng",
+    "deactivate_user": "Vô Hiệu Hóa Người Dùng",
+    "reset_password": "Đặt Lại Mật Khẩu",
+    "assign_role": "Gán Vai Trò",
+    "remove_role": "Xóa Vai Trò",
+    "view_permissions": "Xem Quyền Hạn",
+    "view_users": "Xem Người Dùng",
+    "manage_sessions": "Quản Lý Phiên",
+    "manage_users": "Quản Lý Người Dùng",
+    "user_details": "Chi Tiết Người Dùng",
+    "user_activity": "Hoạt Động Người Dùng",
+    "login_history": "Lịch Sử Đăng Nhập",
+    "search_placeholder": "Tìm theo tên đăng nhập hoặc email...",
+    "search_users": "Tìm người dùng",
+    "all_roles": "Tất Cả Vai Trò",
+    "all_status": "Tất Cả Trạng Thái",
+    "filter_by_role": "Lọc theo vai trò",
+    "filter_by_status": "Lọc theo trạng thái",
+    "showing_results": "Hiển thị {{start}} đến {{end}} trong số {{total}} người dùng",
+    "loading_users": "Đang tải người dùng...",
+    "no_users_found": "Không tìm thấy người dùng",
+    "no_users_found_filtered": "Không tìm thấy người dùng phù hợp với tiêu chí",
+    "edit_user_aria": "Sửa {{name}}",
     "toggle_user_aria": "{{action}} {{name}}",
-    "view_sessions_aria": "View sessions for {{name}}",
-    "delete_user_aria": "Delete {{name}}",
-    "rows_per_page": "Rows per page",
-    "previous_page": "Previous page",
-    "next_page": "Next page",
-    "go_to_page": "Go to page {{page}}"
+    "view_sessions_aria": "Xem phiên của {{name}}",
+    "delete_user_aria": "Xóa {{name}}",
+    "rows_per_page": "Dòng mỗi trang",
+    "previous_page": "Trang trước",
+    "next_page": "Trang sau",
+    "go_to_page": "Đi đến trang {{page}}"
   },
   "user_fields": {
-    "username": "Tên đăng nhập",
+    "username": "Tên Đăng Nhập",
     "email": "Email",
     "first_name": "Tên",
     "last_name": "Họ",
-    "full_name": "Họ và tên",
-    "phone": "Điện thoại",
-    "department": "Phòng ban",
-    "position": "Chức vụ",
-    "manager": "Quản lý",
-    "employee_id": "Mã nhân viên",
-    "hire_date": "Ngày tuyển dụng",
-    "last_login": "Đăng nhập cuối",
-    "status": "Trạng thái",
-    "role": "Vai trò",
-    "permissions": "Quyền",
-    "created_date": "Ngày tạo",
-    "modified_date": "Ngày sửa đổi",
-    "created_by": "Tạo bởi",
-    "modified_by": "Sửa đổi bởi"
+    "full_name": "Họ và Tên",
+    "phone": "Điện Thoại",
+    "department": "Phòng Ban",
+    "position": "Chức Vụ",
+    "manager": "Quản Lý",
+    "employee_id": "Mã Nhân Viên",
+    "hire_date": "Ngày Tuyển Dụng",
+    "last_login": "Đăng Nhập Gần Nhất",
+    "status": "Trạng Thái",
+    "role": "Vai Trò",
+    "permissions": "Quyền Hạn",
+    "created_date": "Ngày Tạo",
+    "modified_date": "Ngày Sửa",
+    "created_by": "Tạo Bởi",
+    "modified_by": "Sửa Bởi"
   },
   "roles": {
-    "administrator": "Quản trị viên",
-    "manager": "Quản lý",
-    "supervisor": "Giám sát",
-    "agent": "Nhân viên",
-    "analyst": "Phân tích viên",
-    "viewer": "Người xem",
+    "administrator": "Quản Trị Viên",
+    "manager": "Quản Lý",
+    "supervisor": "Giám Sát",
+    "agent": "Nhân Viên",
+    "analyst": "Phân Tích Viên",
+    "viewer": "Người Xem",
     "guest": "Khách",
-    "system": "Hệ thống",
-    "custom": "Tùy chỉnh"
+    "system": "Hệ Thống",
+    "custom": "Tùy Chỉnh"
   },
   "permissions": {
     "read": "Đọc",
     "write": "Ghi",
     "delete": "Xóa",
     "create": "Tạo",
-    "update": "Cập nhật",
-    "manage": "Quản lý",
+    "update": "Cập Nhật",
+    "manage": "Quản Lý",
     "view": "Xem",
-    "edit": "Chỉnh sửa",
-    "admin": "Quản trị",
-    "full_access": "Toàn quyền",
-    "limited_access": "Quyền hạn chế",
-    "no_access": "Không có quyền"
+    "edit": "Sửa",
+    "admin": "Quản Trị",
+    "full_access": "Toàn Quyền",
+    "limited_access": "Quyền Hạn Chế",
+    "no_access": "Không Có Quyền"
   },
   "system": {
-    "system_info": "Thông tin hệ thống",
-    "database_settings": "Cài đặt cơ sở dữ liệu",
-    "email_settings": "Cài đặt email",
-    "sms_settings": "Cài đặt SMS",
-    "api_settings": "Cài đặt API",
-    "cache_settings": "Cài đặt cache",
-    "logging_settings": "Cài đặt ghi log",
-    "backup_settings": "Cài đặt sao lưu",
-    "maintenance_mode": "Chế độ bảo trì",
-    "system_health": "Sức khỏe hệ thống",
-    "performance_monitoring": "Giám sát hiệu suất",
-    "error_tracking": "Theo dõi lỗi"
+    "system_info": "Thông Tin Hệ Thống",
+    "database_settings": "Cài Đặt Cơ Sở Dữ Liệu",
+    "email_settings": "Cài Đặt Email",
+    "sms_settings": "Cài Đặt SMS",
+    "api_settings": "Cài Đặt API",
+    "cache_settings": "Cài Đặt Cache",
+    "logging_settings": "Cài Đặt Ghi Log",
+    "backup_settings": "Cài Đặt Sao Lưu",
+    "maintenance_mode": "Chế Độ Bảo Trì",
+    "system_health": "Tình Trạng Hệ Thống",
+    "performance_monitoring": "Giám Sát Hiệu Suất",
+    "error_tracking": "Theo Dõi Lỗi"
   },
   "security": {
-    "password_policy": "Chính sách mật khẩu",
-    "session_timeout": "Thời gian chờ phiên",
-    "two_factor_auth": "Xác thực hai yếu tố",
-    "ip_restrictions": "Hạn chế IP",
-    "login_attempts": "Lần thử đăng nhập",
-    "security_logs": "Nhật ký bảo mật",
-    "encryption_settings": "Cài đặt mã hóa",
-    "ssl_settings": "Cài đặt SSL",
-    "firewall_settings": "Cài đặt tường lửa",
-    "access_control": "Kiểm soát truy cập",
-    "audit_trail": "Dấu vết kiểm toán",
-    "compliance_settings": "Cài đặt tuân thủ"
+    "password_policy": "Chính Sách Mật Khẩu",
+    "session_timeout": "Thời Gian Chờ Phiên",
+    "two_factor_auth": "Xác Thực Hai Yếu Tố",
+    "ip_restrictions": "Giới Hạn IP",
+    "login_attempts": "Lần Đăng Nhập",
+    "security_logs": "Nhật Ký Bảo Mật",
+    "encryption_settings": "Cài Đặt Mã Hóa",
+    "ssl_settings": "Cài Đặt SSL",
+    "firewall_settings": "Cài Đặt Tường Lửa",
+    "access_control": "Kiểm Soát Truy Cập",
+    "audit_trail": "Đường Dẫn Kiểm Toán",
+    "compliance_settings": "Cài Đặt Tuân Thủ"
   },
   "notifications": {
-    "email_notifications": "Thông báo email",
-    "sms_notifications": "Thông báo SMS",
-    "push_notifications": "Thông báo đẩy",
-    "in_app_notifications": "Thông báo trong ứng dụng",
-    "notification_preferences": "Tùy chọn thông báo",
-    "alert_settings": "Cài đặt cảnh báo",
-    "reminder_settings": "Cài đặt nhắc nhở",
-    "escalation_settings": "Cài đặt leo thang",
-    "notification_templates": "Mẫu thông báo",
-    "delivery_settings": "Cài đặt gửi"
+    "email_notifications": "Thông Báo Email",
+    "sms_notifications": "Thông Báo SMS",
+    "push_notifications": "Thông Báo Đẩy",
+    "in_app_notifications": "Thông Báo Trong Ứng Dụng",
+    "notification_preferences": "Tùy Chọn Thông Báo",
+    "alert_settings": "Cài Đặt Cảnh Báo",
+    "reminder_settings": "Cài Đặt Nhắc Nhở",
+    "escalation_settings": "Cài Đặt Báo Cáo Cấp Trên",
+    "notification_templates": "Mẫu Thông Báo",
+    "delivery_settings": "Cài Đặt Gửi"
   },
   "integrations": {
-    "api_integrations": "Tích hợp API",
-    "third_party_services": "Dịch vụ bên thứ ba",
+    "api_integrations": "Tích Hợp API",
+    "third_party_services": "Dịch Vụ Bên Thứ Ba",
     "webhooks": "Webhooks",
-    "data_sync": "Đồng bộ dữ liệu",
+    "data_sync": "Đồng Bộ Dữ Liệu",
     "import_export": "Nhập/Xuất",
-    "external_databases": "Cơ sở dữ liệu ngoài",
-    "payment_gateways": "Cổng thanh toán",
-    "communication_channels": "Kênh giao tiếp",
-    "reporting_tools": "Công cụ báo cáo",
-    "analytics_platforms": "Nền tảng phân tích"
+    "external_databases": "Cơ Sở Dữ Liệu Bên Ngoài",
+    "payment_gateways": "Cổng Thanh Toán",
+    "communication_channels": "Kênh Liên Lạc",
+    "reporting_tools": "Công Cụ Báo Cáo",
+    "analytics_platforms": "Nền Tảng Phân Tích"
   },
   "appearance": {
-    "theme": "Chủ đề",
-    "color_scheme": "Bảng màu",
-    "font_size": "Kích thước phông chữ",
-    "layout": "Bố cục",
-    "sidebar": "Thanh bên",
-    "header": "Đầu trang",
-    "footer": "Chân trang",
-    "branding": "Thương hiệu",
+    "theme": "Chủ Đề",
+    "color_scheme": "Bảng Màu",
+    "font_size": "Cỡ Chữ",
+    "layout": "Bố Cục",
+    "sidebar": "Thanh Bên",
+    "header": "Đầu Trang",
+    "footer": "Chân Trang",
+    "branding": "Thương Hiệu",
     "logo": "Logo",
     "favicon": "Favicon",
-    "custom_css": "CSS tùy chỉnh",
-    "responsive_design": "Thiết kế đáp ứng"
+    "custom_css": "CSS Tùy Chỉnh",
+    "responsive_design": "Thiết Kế Responsive"
   },
   "language": {
-    "default_language": "Ngôn ngữ mặc định",
-    "available_languages": "Ngôn ngữ có sẵn",
-    "date_format": "Định dạng ngày",
-    "time_format": "Định dạng thời gian",
-    "number_format": "Định dạng số",
-    "currency_format": "Định dạng tiền tệ",
-    "timezone": "Múi giờ",
-    "locale_settings": "Cài đặt địa phương"
+    "default_language": "Ngôn Ngữ Mặc Định",
+    "available_languages": "Ngôn Ngữ Khả Dụng",
+    "date_format": "Định Dạng Ngày",
+    "time_format": "Định Dạng Thời Gian",
+    "number_format": "Định Dạng Số",
+    "currency_format": "Định Dạng Tiền Tệ",
+    "timezone": "Múi Giờ",
+    "locale_settings": "Cài Đặt Địa Phương"
   },
   "actions": {
-    "save_settings": "Lưu cài đặt",
-    "reset_settings": "Đặt lại cài đặt",
-    "export_settings": "Xuất cài đặt",
-    "import_settings": "Nhập cài đặt",
-    "test_connection": "Kiểm tra kết nối",
-    "validate_settings": "Xác thực cài đặt",
-    "apply_changes": "Áp dụng thay đổi",
-    "discard_changes": "Hủy thay đổi",
-    "restore_defaults": "Khôi phục mặc định",
-    "backup_settings": "Sao lưu cài đặt",
-    "restore_settings": "Khôi phục cài đặt"
+    "save_settings": "Lưu Cài Đặt",
+    "reset_settings": "Đặt Lại Cài Đặt",
+    "export_settings": "Xuất Cài Đặt",
+    "import_settings": "Nhập Cài Đặt",
+    "test_connection": "Kiểm Tra Kết Nối",
+    "validate_settings": "Xác Thực Cài Đặt",
+    "apply_changes": "Áp Dụng Thay Đổi",
+    "discard_changes": "Hủy Thay Đổi",
+    "restore_defaults": "Khôi Phục Mặc Định",
+    "backup_settings": "Sao Lưu Cài Đặt",
+    "restore_settings": "Khôi Phục Cài Đặt"
   },
   "messages": {
     "settings_saved": "Cài đặt đã lưu thành công",
@@ -200,20 +200,20 @@
     "connection_failed": "Kiểm tra kết nối thất bại",
     "validation_passed": "Xác thực cài đặt thành công",
     "validation_failed": "Xác thực cài đặt thất bại",
-    "changes_applied": "Thay đổi đã áp dụng thành công",
+    "changes_applied": "Thay đổi áp dụng thành công",
     "backup_created": "Sao lưu cài đặt đã tạo",
-    "settings_restored": "Cài đặt đã khôi phục thành công",
+    "settings_restored": "Cài đặt khôi phục thành công",
     "unsaved_changes": "Bạn có thay đổi chưa lưu",
     "confirm_reset": "Bạn có chắc chắn muốn đặt lại tất cả cài đặt?",
     "confirm_restore": "Bạn có chắc chắn muốn khôi phục cài đặt?",
-    "back_to_settings": "Quay lại Cài đặt",
+    "back_to_settings": "Quay Lại Cài Đặt",
     "user_management_description": "Quản lý tài khoản người dùng, vai trò và quyền hạn trong hệ thống",
-    "cannot_delete_role_with_users": "Không thể xóa vai trò \"{{roleName}}\" vì hiện tại nó được gán cho {{userCount}} người dùng.",
+    "cannot_delete_role_with_users": "Không thể xóa vai trò \"{{roleName}}\" vì hiện tại đang được gán cho {{userCount}} người dùng.",
     "delete_role_requirements": "Trước khi xóa vai trò này, bạn phải:",
     "remove_users_from_role": "Xóa tất cả người dùng khỏi vai trò này, hoặc",
-    "reassign_users_to_role": "Gán lại người dùng cho vai trò khác (ví dụ: vai trò nhân viên mặc định)",
+    "reassign_users_to_role": "Gán lại người dùng sang vai trò khác (ví dụ: vai trò nhân viên mặc định)",
     "confirm_delete_role": "Bạn có chắc chắn muốn xóa vai trò \"{{roleName}}\"? Hành động này không thể hoàn tác.",
-    "add_user_description": "Thêm người dùng mới vào hệ thống với vai trò và quyền hạn của họ",
+    "add_user_description": "Thêm người dùng mới vào hệ thống với vai trò và quyền hạn",
     "edit_user_description": "Cập nhật thông tin người dùng và gán vai trò",
     "username_cannot_change": "Tên đăng nhập không thể thay đổi sau khi tạo",
     "hide_password": "Ẩn mật khẩu",
@@ -222,21 +222,21 @@
     "select_role": "Chọn vai trò...",
     "loading_roles": "Đang tải vai trò...",
     "manage_user_accounts": "Quản lý tài khoản người dùng và quyền hạn",
-    "configure_roles": "Cấu hình vai trò và mức độ truy cập",
-    "customer_management": "Quản lý khách hàng",
-    "workflow_management": "Quản lý quy trình",
-    "system_access": "Truy cập hệ thống",
+    "configure_roles": "Cấu hình vai trò và cấp độ truy cập",
+    "customer_management": "Quản Lý Khách Hàng",
+    "workflow_management": "Quản Lý Quy Trình",
+    "system_access": "Truy Cập Hệ Thống",
     "create_role_description": "Tạo vai trò mới với quyền hạn cụ thể cho truy cập hệ thống",
     "edit_role_description": "Cập nhật quyền hạn và cài đặt vai trò",
     "enter_role_name": "Nhập tên vai trò",
     "role_name_cannot_change": "Tên vai trò không thể thay đổi sau khi tạo",
-    "selected_permissions": "Đã chọn {{selected}} trong {{total}} quyền hạn",
-    "user_management": "Quản lý người dùng",
-    "action_config": "Cấu hình hành động",
-    "FUD_config": "Cấu hình FUD",
-    "campaign_management": "Cấu hình chiến dịch",
-    "customer_assignment": "Phân chia khách hàng",
-    "system_admin": "Quản lý hệ thống"
+    "selected_permissions": "Đã chọn {{selected}} trong số {{total}} quyền hạn",
+    "user_management": "Quản Lý Người Dùng",
+    "action_config": "Cấu Hình Hành Động",
+    "FUD_config": "Cấu Hình FUD",
+    "campaign_management": "Quản Lý Chiến Dịch",
+    "customer_assignment": "Phân Công Khách Hàng",
+    "system_admin": "Quản Trị Hệ Thống"
   },
   "validation": {
     "required_field": "Trường này là bắt buộc",
@@ -254,8 +254,8 @@
   },
   "customerAssignmentUpload": {
     "title": "Tải Lên Phân Công Khách Hàng",
-    "description": "Tải lên tệp CSV để phân công hàng loạt khách hàng cho nhân viên gọi điện và nhân viên thực địa. Hệ thống sẽ xác thực tên nhân viên và tạo phân công tương ứng.",
-    "downloadTemplate": "Tải Xuống Mẫu CSV",
+    "description": "Tải lên tệp CSV để phân công hàng loạt khách hàng cho nhân viên gọi điện và thực địa. Hệ thống sẽ xác thực tên nhân viên và tạo phân công tương ứng.",
+    "downloadTemplate": "Tải Mẫu CSV",
     "dropZone": {
       "title": "Thả tệp CSV của bạn vào đây",
       "subtitle": "hoặc nhấp để duyệt tệp"
@@ -264,8 +264,8 @@
       "title": "Yêu Cầu Tệp:",
       "format": "Chỉ định dạng CSV (.csv)",
       "size": "Kích thước tệp tối đa: 10MB",
-      "columns": "Các cột bắt buộc: CIF, AssignedCallAgentName, AssignedFieldAgentName",
-      "agents": "Ít nhất một tên nhân viên phải được cung cấp cho mỗi hàng",
+      "columns": "Cột bắt buộc: CIF, AssignedCallAgentName, AssignedFieldAgentName",
+      "agents": "Ít nhất một tên nhân viên phải được cung cấp mỗi dòng",
       "validation": "Tên nhân viên sẽ được xác thực với các nhân viên hiện có"
     },
     "success": {
@@ -277,115 +277,167 @@
     },
     "guide": {
       "title": "Hướng Dẫn Định Dạng CSV",
-      "columns": "Các Cột Bắt Buộc:",
+      "columns": "Cột Bắt Buộc:",
       "columnName": "Tên Cột",
       "description": "Mô Tả",
       "required": "Bắt Buộc",
-      "example": "Nội Dung CSV Mẫu:",
+      "example": "Ví Dụ Nội Dung CSV:",
       "notes": "Ghi Chú Quan Trọng:",
       "note1": "Tên nhân viên phải khớp chính xác với tên nhân viên hiện có trong hệ thống",
-      "note2": "Các ô trống được phép cho phân công nhân viên tùy chọn",
-      "note3": "Các mục CIF trùng lặp sẽ được xử lý như các cập nhật phân công riêng biệt",
+      "note2": "Ô trống được phép cho phân công nhân viên tùy chọn",
+      "note3": "Các mục CIF trùng lặp sẽ được xử lý như cập nhật phân công riêng biệt",
       "note4": "Hệ thống sẽ xác thực tất cả dữ liệu trước khi tạo phân công"
+    }
+  },
+  "fud_auto_config": {
+    "title": "Cấu Hình Tự Động FUD",
+    "description": "Cấu hình các quy tắc tính toán Ngày Theo Dõi tự động dựa trên kết quả hành động. Thiết lập lịch trình thông minh cho các hoạt động thu hồi.",
+    "add_rule": "Thêm Quy Tắc",
+    "no_configurations": "Chưa có quy tắc FUD nào được cấu hình. Nhấp 'Thêm Quy Tắc' để tạo cấu hình đầu tiên.",
+    "delete_confirmation": "Bạn có chắc chắn muốn xóa quy tắc cấu hình FUD này? Hành động này không thể hoàn tác.",
+    "same_day": "Cùng ngày",
+    "next_day": "Ngày hôm sau",
+    "previous_day": "Ngày hôm trước",
+    "days_after": "{{days}} ngày sau",
+    "days_before": "{{days}} ngày trước",
+    "table": {
+      "action_result": "Kết Quả Hành Động",
+      "calculation_type": "Cơ Sở Tính Toán",
+      "days_offset": "Lệch Ngày",
+      "priority": "Ưu Tiên",
+      "status": "Trạng Thái",
+      "action": "Hành Động"
+    },
+    "calculation_types": {
+      "promise_date": "Ngày Hứa",
+      "action_date": "Ngày Hành Động"
+    },
+    "modal": {
+      "create_title": "Tạo Quy Tắc FUD",
+      "edit_title": "Sửa Quy Tắc FUD"
+    },
+    "form": {
+      "action_result": "Kết Quả Hành Động",
+      "select_action_result": "Chọn kết quả hành động...",
+      "calculation_type": "Cơ Sở Tính Toán",
+      "calculation_type_promise_help": "FUD sẽ được tính từ ngày hứa (nếu có), nếu không thì từ ngày hành động",
+      "calculation_type_action_help": "FUD sẽ được tính từ ngày hành động",
+      "days_offset": "Lệch Ngày",
+      "days_offset_help": "Số ngày cộng thêm vào ngày cơ sở. Sử dụng số âm cho ngày trước đó.",
+      "priority": "Ưu Tiên",
+      "priority_help": "Quy tắc ưu tiên cao hơn sẽ được ưu tiên (0-1000)",
+      "is_active": "Kích hoạt quy tắc này"
+    },
+    "validation": {
+      "action_result_required": "Vui lòng chọn kết quả hành động",
+      "calculation_type_required": "Vui lòng chọn loại tính toán",
+      "days_offset_range": "Lệch ngày phải từ -365 đến 365",
+      "priority_range": "Ưu tiên phải từ 0 đến 1000"
     }
   },
   "actions_config": {
     "title": "Cấu Hình Hành Động",
-    "description": "Cấu hình loại hành động, loại phụ, kết quả và ánh xạ của chúng cho quy trình thu hồi nợ",
-    "back_to_settings": "Quay lại Cài đặt",
-    "refresh": "Làm mới",
+    "description": "Cấu hình loại hành động, loại phụ, kết quả và ánh xạ cho quy trình thu hồi",
+    "back_to_settings": "Quay Lại Cài Đặt",
+    "refresh": "Làm Mới",
+    "tab_actions": "Hành Động",
+    "tab_customer_status": "Trạng Thái Khách Hàng",
+    "tab_collateral_status": "Trạng Thái Tài Sản Đảm Bảo",
+    "tab_lending_violation": "Vi Phạm Cho Vay",
+    "tab_recovery_ability": "Khả Năng Thu Hồi",
+    "tab_processing_state": "Trạng Thái Xử Lý",
     "tabs": {
       "types": "Loại",
-      "subtypes": "Loại phụ",
-      "results": "Kết quả",
-      "mappings": "Ánh xạ",
-      "statistics": "Thống kê"
+      "subtypes": "Loại Phụ",
+      "results": "Kết Quả",
+      "mappings": "Ánh Xạ",
+      "statistics": "Thống Kê"
     },
     "types": {
       "title": "Loại Hành Động",
-      "description": "Quản lý các danh mục hành động chính cho hoạt động thu hồi nợ",
+      "description": "Quản lý danh mục hành động chính cho hoạt động thu hồi",
       "add_type": "Thêm Loại",
-      "no_types": "Chưa có loại hành động nào được cấu hình",
+      "no_types": "Chưa cấu hình loại hành động nào",
       "table": {
         "code": "Mã",
         "name": "Tên",
-        "description": "Mô tả",
-        "status": "Trạng thái",
-        "subtypes": "Loại phụ",
-        "actions": "Hành động"
+        "description": "Mô Tả",
+        "status": "Trạng Thái",
+        "subtypes": "Loại Phụ",
+        "actions": "Hành Động"
       }
     },
     "subtypes": {
       "title": "Loại Phụ Hành Động",
-      "description": "Xác định các hành động cụ thể trong mỗi loại hành động",
+      "description": "Định nghĩa hành động cụ thể trong mỗi loại hành động",
       "add_subtype": "Thêm Loại Phụ",
-      "no_subtypes": "Chưa có loại phụ hành động nào được cấu hình",
+      "no_subtypes": "Chưa cấu hình loại phụ hành động nào",
       "table": {
         "code": "Mã",
         "name": "Tên",
         "type": "Loại",
-        "description": "Mô tả",
-        "status": "Trạng thái",
-        "results": "Kết quả",
-        "actions": "Hành động"
+        "description": "Mô Tả",
+        "status": "Trạng Thái",
+        "results": "Kết Quả",
+        "actions": "Hành Động"
       }
     },
     "results": {
       "title": "Kết Quả Hành Động",
-      "description": "Xác định các kết quả có thể cho các hành động thu hồi nợ",
+      "description": "Định nghĩa các kết quả có thể có cho hành động thu hồi",
       "add_result": "Thêm Kết Quả",
-      "no_results": "Chưa có kết quả hành động nào được cấu hình",
+      "no_results": "Chưa cấu hình kết quả hành động nào",
       "table": {
         "code": "Mã",
         "name": "Tên",
-        "description": "Mô tả",
-        "status": "Trạng thái",
-        "subtypes": "Được dùng bởi Loại phụ",
-        "actions": "Hành động"
+        "description": "Mô Tả",
+        "status": "Trạng Thái",
+        "subtypes": "Được Sử Dụng Bởi Loại Phụ",
+        "actions": "Hành Động"
       }
     },
     "mappings": {
       "title": "Ánh Xạ Loại Phụ-Kết Quả",
-      "description": "Cấu hình kết quả nào có sẵn cho mỗi loại phụ hành động",
+      "description": "Cấu hình kết quả nào khả dụng cho mỗi loại phụ hành động",
       "add_mapping": "Thêm Ánh Xạ",
-      "no_mappings": "Chưa có ánh xạ nào được cấu hình",
+      "no_mappings": "Chưa cấu hình ánh xạ nào",
       "filter": {
-        "all_types": "Tất cả Loại",
-        "all_subtypes": "Tất cả Loại phụ"
+        "all_types": "Tất Cả Loại",
+        "all_subtypes": "Tất Cả Loại Phụ"
       },
       "table": {
-        "subtype": "Loại phụ",
-        "available_results": "Kết quả có sẵn",
-        "actions": "Hành động"
+        "subtype": "Loại Phụ",
+        "available_results": "Kết Quả Khả Dụng",
+        "actions": "Hành Động"
       },
       "type_subtype_title": "Ánh Xạ Loại-Loại Phụ",
       "subtype_result_title": "Ánh Xạ Loại Phụ-Kết Quả"
     },
     "statistics": {
       "title": "Thống Kê Cấu Hình",
-      "description": "Tổng quan về việc sử dụng cấu hình hành động và các mối quan hệ",
-      "total_types": "Tổng số Loại",
-      "total_subtypes": "Tổng số Loại phụ",
-      "total_results": "Tổng số Kết quả",
-      "total_mappings": "Tổng số Ánh xạ",
-      "active_types": "Loại Đang hoạt động",
-      "active_subtypes": "Loại phụ Đang hoạt động",
-      "active_results": "Kết quả Đang hoạt động",
-      "usage_summary": "Tóm tắt Sử dụng",
-      "most_used_types": "Loại Được dùng nhiều nhất",
-      "most_used_subtypes": "Loại phụ Được dùng nhiều nhất",
-      "most_used_results": "Kết quả Được dùng nhiều nhất",
-      "recent_changes": "Thay đổi Gần đây",
-      "no_stats": "Chưa có thống kê",
+      "description": "Tổng quan về sử dụng cấu hình hành động và mối quan hệ",
+      "total_types": "Tổng Loại",
+      "total_subtypes": "Tổng Loại Phụ",
+      "total_results": "Tổng Kết Quả",
+      "total_mappings": "Tổng Ánh Xạ",
+      "active_types": "Loại Đang Hoạt Động",
+      "active_subtypes": "Loại Phụ Đang Hoạt Động",
+      "active_results": "Kết Quả Đang Hoạt Động",
+      "usage_summary": "Tóm Tắt Sử Dụng",
+      "most_used_types": "Loại Được Sử Dụng Nhiều Nhất",
+      "most_used_subtypes": "Loại Phụ Được Sử Dụng Nhiều Nhất",
+      "most_used_results": "Kết Quả Được Sử Dụng Nhiều Nhất",
+      "recent_changes": "Thay Đổi Gần Đây",
+      "no_stats": "Không có thống kê",
       "action_types": "Loại Hành Động",
       "action_subtypes": "Loại Phụ Hành Động",
       "action_results": "Kết Quả Hành Động",
       "in_use": "Đang Sử Dụng",
       "can_deactivate": "Có Thể Vô Hiệu Hóa",
       "configuration_overview": "Tổng Quan Cấu Hình",
-      "total_configurations": "Tổng Số Cấu Hình",
-      "total_active": "Tổng Số Đang Hoạt Động",
-      "total_in_use": "Tổng Số Đang Sử Dụng",
+      "total_configurations": "Tổng Cấu Hình",
+      "total_active": "Tổng Đang Hoạt Động",
+      "total_in_use": "Tổng Đang Sử Dụng",
       "deactivation_status": "Trạng Thái Vô Hiệu Hóa",
       "can_be_deactivated": "Có Thể Vô Hiệu Hóa",
       "cannot_deactivate": "Không Thể Vô Hiệu Hóa",
@@ -393,11 +445,11 @@
     },
     "modal": {
       "create_type": "Tạo Loại Hành Động",
-      "edit_type": "Chỉnh Sửa Loại Hành Động",
+      "edit_type": "Sửa Loại Hành Động",
       "create_subtype": "Tạo Loại Phụ Hành Động",
-      "edit_subtype": "Chỉnh Sửa Loại Phụ Hành Động",
+      "edit_subtype": "Sửa Loại Phụ Hành Động",
       "create_result": "Tạo Kết Quả Hành Động",
-      "edit_result": "Chỉnh Sửa Kết Quả Hành Động",
+      "edit_result": "Sửa Kết Quả Hành Động",
       "manage_mapping": "Quản Lý Kết Quả Loại Phụ"
     },
     "form": {
@@ -406,27 +458,27 @@
       "code_help": "Định danh duy nhất cho mục này",
       "name": "Tên",
       "name_placeholder": "Nhập tên hiển thị",
-      "description": "Mô tả",
+      "description": "Mô Tả",
       "description_placeholder": "Nhập mô tả (tùy chọn)",
       "select_type": "Chọn loại hành động",
-      "is_active": "Hoạt động",
-      "available_results": "Kết quả có sẵn",
+      "is_active": "Hoạt Động",
+      "available_results": "Kết Quả Khả Dụng",
       "select_results": "Chọn kết quả cho loại phụ này",
       "display_order": "Thứ Tự Hiển Thị",
       "is_promise": "Là Lời Hứa",
-      "is_promise_help": "Đánh dấu kết quả này là lời hứa cho việc theo dõi tiếp theo"
+      "is_promise_help": "Đánh dấu kết quả này là lời hứa để theo dõi trong tương lai"
     },
     "messages": {
-      "type_created": "Tạo loại hành động thành công",
-      "type_updated": "Cập nhật loại hành động thành công",
-      "type_deleted": "Xóa loại hành động thành công",
-      "subtype_created": "Tạo loại phụ hành động thành công",
-      "subtype_updated": "Cập nhật loại phụ hành động thành công",
-      "subtype_deleted": "Xóa loại phụ hành động thành công",
-      "result_created": "Tạo kết quả hành động thành công",
-      "result_updated": "Cập nhật kết quả hành động thành công",
-      "result_deleted": "Xóa kết quả hành động thành công",
-      "mapping_updated": "Cập nhật ánh xạ thành công",
+      "type_created": "Loại hành động đã tạo thành công",
+      "type_updated": "Loại hành động đã cập nhật thành công",
+      "type_deleted": "Loại hành động đã xóa thành công",
+      "subtype_created": "Loại phụ hành động đã tạo thành công",
+      "subtype_updated": "Loại phụ hành động đã cập nhật thành công",
+      "subtype_deleted": "Loại phụ hành động đã xóa thành công",
+      "result_created": "Kết quả hành động đã tạo thành công",
+      "result_updated": "Kết quả hành động đã cập nhật thành công",
+      "result_deleted": "Kết quả hành động đã xóa thành công",
+      "mapping_updated": "Ánh xạ đã cập nhật thành công",
       "confirm_delete": "Bạn có chắc chắn muốn xóa mục này?",
       "cannot_delete_in_use": "Không thể xóa mục đang được sử dụng"
     },
@@ -438,163 +490,642 @@
       "select_at_least_one": "Chọn ít nhất một kết quả"
     }
   },
-  "fud_auto_config": {
-    "title": "Cấu Hình FUD Tự Động",
-    "description": "Cấu hình quy tắc tính toán Ngày Theo Dõi Tiếp Theo (FUD) tự động dựa trên kết quả hành động. Thiết lập lịch trình thông minh cho các hoạt động thu hồi nợ.",
-    "add_rule": "Thêm Quy Tắc",
-    "no_configurations": "Chưa có quy tắc FUD nào được cấu hình. Nhấp 'Thêm Quy Tắc' để tạo cấu hình đầu tiên.",
-    "delete_confirmation": "Bạn có chắc chắn muốn xóa quy tắc cấu hình FUD này? Hành động này không thể hoàn tác.",
-    "same_day": "Cùng ngày",
-    "next_day": "Ngày tiếp theo",
-    "previous_day": "Ngày trước đó",
-    "days_after": "{{days}} ngày sau",
-    "days_before": "{{days}} ngày trước",
-    "table": {
-      "action_result": "Kết Quả Hành Động",
-      "calculation_type": "Cơ Sở Tính Toán",
-      "days_offset": "Số Ngày Điều Chỉnh",
-      "priority": "Ưu Tiên",
-      "status": "Trạng Thái",
-      "action": "Hành Động"
+  "customer_status": {
+    "title": "Cấu Hình Trạng Thái Khách Hàng",
+    "description": "Cấu hình mã trạng thái khách hàng và thuộc tính cho quy trình thu hồi",
+    "actions": {
+      "add": "Thêm Trạng Thái Khách Hàng"
     },
-    "calculation_types": {
-      "promise_date": "Ngày Hứa Trả",
-      "action_date": "Ngày Hành Động"
+    "table": {
+      "code": "Mã",
+      "name": "Tên",
+      "description": "Mô Tả",
+      "color": "Màu",
+      "display_order": "Thứ Tự Hiển Thị",
+      "status": "Trạng Thái",
+      "actions": "Hành Động"
+    },
+    "filter": {
+      "show_inactive": "Hiển thị trạng thái không hoạt động"
+    },
+    "summary": "Hiển thị {{total}} trạng thái khách hàng ({{active}} hoạt động, {{inactive}} không hoạt động)",
+    "empty": {
+      "no_statuses": "Không tìm thấy trạng thái khách hàng",
+      "no_active_statuses": "Không tìm thấy trạng thái khách hàng hoạt động"
     },
     "modal": {
-      "create_title": "Tạo Quy Tắc FUD",
-      "edit_title": "Chỉnh Sửa Quy Tắc FUD"
+      "add_title": "Thêm Trạng Thái Khách Hàng",
+      "edit_title": "Sửa Trạng Thái Khách Hàng"
     },
     "form": {
-      "action_result": "Kết Quả Hành Động",
-      "select_action_result": "Chọn kết quả hành động...",
-      "calculation_type": "Cơ Sở Tính Toán",
-      "calculation_type_promise_help": "FUD sẽ được tính từ ngày hứa trả (nếu có), nếu không sẽ tính từ ngày hành động",
-      "calculation_type_action_help": "FUD sẽ được tính từ ngày hành động",
-      "days_offset": "Số Ngày Điều Chỉnh",
-      "days_offset_help": "Số ngày cộng thêm vào ngày cơ sở. Sử dụng số âm cho các ngày trước đó.",
-      "priority": "Ưu Tiên",
-      "priority_help": "Các quy tắc có ưu tiên cao hơn sẽ được ưu tiên (0-1000)",
-      "is_active": "Kích hoạt quy tắc này"
+      "code": "Mã Trạng Thái",
+      "code_placeholder": "Nhập mã trạng thái duy nhất",
+      "name": "Tên Trạng Thái",
+      "name_placeholder": "Nhập tên trạng thái",
+      "description": "Mô Tả",
+      "description_placeholder": "Nhập mô tả (tùy chọn)",
+      "color": "Màu",
+      "display_order": "Thứ Tự Hiển Thị"
     },
     "validation": {
-      "action_result_required": "Vui lòng chọn kết quả hành động",
-      "calculation_type_required": "Vui lòng chọn loại tính toán",
-      "days_offset_range": "Số ngày điều chỉnh phải nằm trong khoảng -365 đến 365",
-      "priority_range": "Ưu tiên phải nằm trong khoảng 0 đến 1000"
+      "required_fields": "Mã và tên là trường bắt buộc"
+    },
+    "messages": {
+      "add_success": "Trạng thái khách hàng đã thêm thành công",
+      "update_success": "Trạng thái khách hàng đã cập nhật thành công",
+      "deactivate_success": "Trạng thái khách hàng đã vô hiệu hóa thành công"
+    },
+    "confirm": {
+      "deactivate": "Bạn có chắc chắn muốn vô hiệu hóa trạng thái '{{name}}'? Hành động này sẽ đặt nó thành không hoạt động."
+    }
+  },
+  "collateral_status": {
+    "title": "Cấu Hình Trạng Thái Tài Sản Đảm Bảo",
+    "description": "Cấu hình mã trạng thái tài sản đảm bảo và thuộc tính cho quy trình thu hồi",
+    "actions": {
+      "add": "Thêm Trạng Thái Tài Sản Đảm Bảo"
+    },
+    "table": {
+      "code": "Mã",
+      "name": "Tên",
+      "description": "Mô Tả",
+      "color": "Màu",
+      "display_order": "Thứ Tự Hiển Thị",
+      "status": "Trạng Thái",
+      "actions": "Hành Động"
+    },
+    "filter": {
+      "show_inactive": "Hiển thị trạng thái không hoạt động"
+    },
+    "summary": "Hiển thị {{total}} trạng thái tài sản đảm bảo ({{active}} hoạt động, {{inactive}} không hoạt động)",
+    "empty": {
+      "no_statuses": "Không tìm thấy trạng thái tài sản đảm bảo",
+      "no_active_statuses": "Không tìm thấy trạng thái tài sản đảm bảo hoạt động"
+    },
+    "modal": {
+      "add_title": "Thêm Trạng Thái Tài Sản Đảm Bảo",
+      "edit_title": "Sửa Trạng Thái Tài Sản Đảm Bảo"
+    },
+    "form": {
+      "code": "Mã Trạng Thái",
+      "code_placeholder": "Nhập mã trạng thái duy nhất",
+      "name": "Tên Trạng Thái",
+      "name_placeholder": "Nhập tên trạng thái",
+      "description": "Mô Tả",
+      "description_placeholder": "Nhập mô tả (tùy chọn)",
+      "color": "Màu",
+      "display_order": "Thứ Tự Hiển Thị"
+    },
+    "validation": {
+      "required_fields": "Mã và tên là trường bắt buộc"
+    },
+    "messages": {
+      "add_success": "Trạng thái tài sản đảm bảo đã thêm thành công",
+      "update_success": "Trạng thái tài sản đảm bảo đã cập nhật thành công",
+      "deactivate_success": "Trạng thái tài sản đảm bảo đã vô hiệu hóa thành công"
+    },
+    "confirm": {
+      "deactivate": "Bạn có chắc chắn muốn vô hiệu hóa trạng thái '{{name}}'? Hành động này sẽ đặt nó thành không hoạt động."
+    }
+  },
+  "lending_violation_status": {
+    "title": "Cấu Hình Trạng Thái Vi Phạm Cho Vay",
+    "description": "Cấu hình mã trạng thái vi phạm cho vay và thuộc tính cho quy trình thu hồi",
+    "actions": {
+      "add": "Thêm Trạng Thái Vi Phạm Cho Vay"
+    },
+    "table": {
+      "code": "Mã",
+      "name": "Tên",
+      "description": "Mô Tả",
+      "color": "Màu",
+      "display_order": "Thứ Tự Hiển Thị",
+      "status": "Trạng Thái",
+      "actions": "Hành Động"
+    },
+    "filter": {
+      "show_inactive": "Hiển thị trạng thái không hoạt động"
+    },
+    "summary": "Hiển thị {{total}} trạng thái vi phạm cho vay ({{active}} hoạt động, {{inactive}} không hoạt động)",
+    "empty": {
+      "no_statuses": "Không tìm thấy trạng thái vi phạm cho vay",
+      "no_active_statuses": "Không tìm thấy trạng thái vi phạm cho vay hoạt động"
+    },
+    "modal": {
+      "add_title": "Thêm Trạng Thái Vi Phạm Cho Vay",
+      "edit_title": "Sửa Trạng Thái Vi Phạm Cho Vay"
+    },
+    "form": {
+      "code": "Mã Trạng Thái",
+      "code_placeholder": "Nhập mã trạng thái duy nhất",
+      "name": "Tên Trạng Thái",
+      "name_placeholder": "Nhập tên trạng thái",
+      "description": "Mô Tả",
+      "description_placeholder": "Nhập mô tả (tùy chọn)",
+      "color": "Màu",
+      "display_order": "Thứ Tự Hiển Thị"
+    },
+    "validation": {
+      "required_fields": "Mã và tên là trường bắt buộc"
+    },
+    "messages": {
+      "add_success": "Trạng thái vi phạm cho vay đã thêm thành công",
+      "update_success": "Trạng thái vi phạm cho vay đã cập nhật thành công",
+      "deactivate_success": "Trạng thái vi phạm cho vay đã vô hiệu hóa thành công"
+    },
+    "confirm": {
+      "deactivate": "Bạn có chắc chắn muốn vô hiệu hóa trạng thái '{{name}}'? Hành động này sẽ đặt nó thành không hoạt động."
+    }
+  },
+  "recovery_ability_status": {
+    "title": "Cấu Hình Trạng Thái Khả Năng Thu Hồi",
+    "description": "Cấu hình mã trạng thái khả năng thu hồi và thuộc tính cho quy trình thu hồi",
+    "actions": {
+      "add": "Thêm Trạng Thái Khả Năng Thu Hồi"
+    },
+    "table": {
+      "code": "Mã",
+      "name": "Tên",
+      "description": "Mô Tả",
+      "color": "Màu",
+      "display_order": "Thứ Tự Hiển Thị",
+      "status": "Trạng Thái",
+      "actions": "Hành Động"
+    },
+    "filter": {
+      "show_inactive": "Hiển thị trạng thái không hoạt động"
+    },
+    "summary": "Hiển thị {{total}} trạng thái khả năng thu hồi ({{active}} hoạt động, {{inactive}} không hoạt động)",
+    "empty": {
+      "no_statuses": "Không tìm thấy trạng thái khả năng thu hồi",
+      "no_active_statuses": "Không tìm thấy trạng thái khả năng thu hồi hoạt động"
+    },
+    "modal": {
+      "add_title": "Thêm Trạng Thái Khả Năng Thu Hồi",
+      "edit_title": "Sửa Trạng Thái Khả Năng Thu Hồi"
+    },
+    "form": {
+      "code": "Mã Trạng Thái",
+      "code_placeholder": "Nhập mã trạng thái duy nhất",
+      "name": "Tên Trạng Thái",
+      "name_placeholder": "Nhập tên trạng thái",
+      "description": "Mô Tả",
+      "description_placeholder": "Nhập mô tả (tùy chọn)",
+      "color": "Màu",
+      "display_order": "Thứ Tự Hiển Thị"
+    },
+    "validation": {
+      "required_fields": "Mã và tên là trường bắt buộc"
+    },
+    "messages": {
+      "add_success": "Trạng thái khả năng thu hồi đã thêm thành công",
+      "update_success": "Trạng thái khả năng thu hồi đã cập nhật thành công",
+      "deactivate_success": "Trạng thái khả năng thu hồi đã vô hiệu hóa thành công"
+    },
+    "confirm": {
+      "deactivate": "Bạn có chắc chắn muốn vô hiệu hóa trạng thái '{{name}}'? Hành động này sẽ đặt nó thành không hoạt động."
     }
   },
   "processing_state": {
-    "title": "Cấu hình trạng thái xử lý",
-    "description": "Cấu hình các trạng thái xử lý và trạng thái con cho quản lý quy trình",
+    "title": "Cấu Hình Trạng Thái Xử Lý",
+    "description": "Cấu hình trạng thái xử lý và trạng thái phụ cho quản lý quy trình",
     "actions": {
-      "add_state": "Thêm trạng thái xử lý",
-      "add_substate": "Thêm trạng thái con xử lý"
+      "add_state": "Thêm Trạng Thái Xử Lý",
+      "add_substate": "Thêm Trạng Thái Phụ Xử Lý"
     },
     "tabs": {
-      "states": "Trạng thái",
-      "substates": "Trạng thái con",
-      "mappings": "Ánh xạ trạng thái-trạng thái con",
-      "statistics": "Thống kê"
+      "states": "Trạng Thái",
+      "substates": "Trạng Thái Phụ",
+      "mappings": "Ánh Xạ Trạng Thái-Trạng Thái Phụ",
+      "statistics": "Thống Kê"
     },
     "states": {
-      "title": "Trạng thái xử lý",
-      "description": "Quản lý các trạng thái xử lý chính cho quản lý quy trình",
+      "title": "Trạng Thái Xử Lý",
+      "description": "Quản lý trạng thái xử lý chính cho quản lý quy trình",
       "table": {
         "code": "Mã",
         "name": "Tên",
-        "description": "Mô tả",
-        "display_order": "Thứ tự hiển thị",
-        "status": "Trạng thái",
-        "substates": "Trạng thái con",
-        "actions": "Thao tác"
+        "description": "Mô Tả",
+        "display_order": "Thứ Tự Hiển Thị",
+        "status": "Trạng Thái",
+        "substates": "Trạng Thái Phụ",
+        "actions": "Hành Động"
       },
       "empty": {
-        "no_states": "Không tìm thấy trạng thái xử lý nào",
-        "no_active_states": "Không tìm thấy trạng thái xử lý hoạt động nào"
+        "no_states": "Không tìm thấy trạng thái xử lý",
+        "no_active_states": "Không tìm thấy trạng thái xử lý hoạt động"
       }
     },
     "substates": {
-      "title": "Trạng thái con xử lý",
-      "description": "Định nghĩa các trạng thái con cụ thể trong mỗi trạng thái xử lý",
+      "title": "Trạng Thái Phụ Xử Lý",
+      "description": "Định nghĩa trạng thái phụ cụ thể trong mỗi trạng thái xử lý",
       "table": {
         "code": "Mã",
         "name": "Tên",
-        "state": "Trạng thái",
-        "description": "Mô tả",
-        "display_order": "Thứ tự hiển thị",
-        "status": "Trạng thái",
-        "actions": "Thao tác"
+        "state": "Trạng Thái",
+        "description": "Mô Tả",
+        "display_order": "Thứ Tự Hiển Thị",
+        "status": "Trạng Thái",
+        "actions": "Hành Động"
       },
       "empty": {
-        "no_substates": "Không tìm thấy trạng thái con xử lý nào",
-        "no_active_substates": "Không tìm thấy trạng thái con xử lý hoạt động nào"
+        "no_substates": "Không tìm thấy trạng thái phụ xử lý",
+        "no_active_substates": "Không tìm thấy trạng thái phụ xử lý hoạt động"
       }
     },
     "mappings": {
-      "title": "Ánh xạ trạng thái-trạng thái con",
-      "description": "Cấu hình các trạng thái con nào có sẵn cho mỗi trạng thái xử lý",
-      "state_substate_title": "Ánh xạ trạng thái-trạng thái con",
+      "title": "Ánh Xạ Trạng Thái-Trạng Thái Phụ",
+      "description": "Cấu hình trạng thái phụ nào khả dụng cho mỗi trạng thái xử lý",
       "filter": {
-        "all_states": "Tất cả trạng thái",
+        "all_states": "Tất Cả Trạng Thái",
         "select_state": "Chọn trạng thái..."
       },
       "table": {
-        "state": "Trạng thái xử lý",
-        "available_substates": "Trạng thái con có sẵn",
-        "actions": "Thao tác"
+        "state": "Trạng Thái Xử Lý",
+        "available_substates": "Trạng Thái Phụ Khả Dụng",
+        "actions": "Hành Động"
       },
       "empty": {
-        "no_mappings": "Chưa có ánh xạ nào được cấu hình"
+        "no_mappings": "Chưa cấu hình ánh xạ nào"
       }
     },
     "statistics": {
-      "title": "Thống kê trạng thái xử lý",
-      "description": "Tổng quan việc sử dụng cấu hình trạng thái xử lý",
-      "total_states": "Tổng số trạng thái",
-      "total_substates": "Tổng số trạng thái con",
-      "active_states": "Trạng thái hoạt động",
-      "active_substates": "Trạng thái con hoạt động",
-      "usage_summary": "Tóm tắt sử dụng",
-      "most_used_states": "Trạng thái được sử dụng nhiều nhất",
-      "most_used_substates": "Trạng thái con được sử dụng nhiều nhất",
-      "no_stats": "Không có thống kê nào"
+      "title": "Thống Kê Trạng Thái Xử Lý",
+      "description": "Tổng quan về sử dụng cấu hình trạng thái xử lý",
+      "total_states": "Tổng Trạng Thái",
+      "total_substates": "Tổng Trạng Thái Phụ",
+      "active_states": "Trạng Thái Đang Hoạt Động",
+      "active_substates": "Trạng Thái Phụ Đang Hoạt Động",
+      "usage_summary": "Tóm Tắt Sử Dụng",
+      "most_used_states": "Trạng Thái Được Sử Dụng Nhiều Nhất",
+      "most_used_substates": "Trạng Thái Phụ Được Sử Dụng Nhiều Nhất",
+      "no_stats": "Không có thống kê"
     },
     "modal": {
-      "create_state": "Tạo trạng thái xử lý",
-      "edit_state": "Chỉnh sửa trạng thái xử lý",
-      "create_substate": "Tạo trạng thái con xử lý",
-      "edit_substate": "Chỉnh sửa trạng thái con xử lý"
+      "create_state": "Tạo Trạng Thái Xử Lý",
+      "edit_state": "Sửa Trạng Thái Xử Lý",
+      "create_substate": "Tạo Trạng Thái Phụ Xử Lý",
+      "edit_substate": "Sửa Trạng Thái Phụ Xử Lý"
     },
     "form": {
       "code": "Mã",
       "code_placeholder": "Nhập mã duy nhất",
       "name": "Tên",
       "name_placeholder": "Nhập tên hiển thị",
-      "description": "Mô tả",
+      "description": "Mô Tả",
       "description_placeholder": "Nhập mô tả (tùy chọn)",
-      "display_order": "Thứ tự hiển thị",
+      "display_order": "Thứ Tự Hiển Thị",
       "select_state": "Chọn trạng thái xử lý",
-      "state": "Trạng thái xử lý",
-      "is_active": "Hoạt động"
+      "state": "Trạng Thái Xử Lý",
+      "is_active": "Hoạt Động"
     },
     "filter": {
-      "show_inactive": "Hiển thị các mục không hoạt động"
+      "show_inactive": "Hiển thị mục không hoạt động"
     },
     "summary": "Hiển thị {{total}} mục ({{active}} hoạt động, {{inactive}} không hoạt động)",
     "validation": {
       "code_required": "Mã là bắt buộc",
       "name_required": "Tên là bắt buộc",
-      "display_order_invalid": "Thứ tự hiển thị phải là số"
+      "state_required": "Trạng thái xử lý là bắt buộc",
+      "code_exists": "Mã này đã tồn tại"
     },
     "messages": {
-      "state_created": "Trạng thái xử lý đã được tạo thành công",
-      "state_updated": "Trạng thái xử lý đã được cập nhật thành công",
-      "state_deactivated": "Trạng thái xử lý đã được vô hiệu hóa thành công",
-      "substate_created": "Trạng thái con xử lý đã được tạo thành công",
-      "substate_updated": "Trạng thái con xử lý đã được cập nhật thành công",
-      "substate_deactivated": "Trạng thái con xử lý đã được vô hiệu hóa thành công",
-      "confirm_deactivate": "Bạn có chắc chắn muốn vô hiệu hóa {{name}}?"
+      "state_created": "Trạng thái xử lý đã tạo thành công",
+      "state_updated": "Trạng thái xử lý đã cập nhật thành công",
+      "state_deactivated": "Trạng thái xử lý đã vô hiệu hóa thành công",
+      "substate_created": "Trạng thái phụ xử lý đã tạo thành công",
+      "substate_updated": "Trạng thái phụ xử lý đã cập nhật thành công",
+      "substate_deactivated": "Trạng thái phụ xử lý đã vô hiệu hóa thành công",
+      "confirm_deactivate": "Bạn có chắc chắn muốn vô hiệu hóa '{{name}}'?",
+      "cannot_deactivate_in_use": "Không thể vô hiệu hóa mục đang được sử dụng"
+    }
+  },
+  "campaign_config": {
+    "title": "Cấu Hình Chiến Dịch",
+    "description": "Cấu hình nhóm chiến dịch thu hồi, chiến dịch và quy tắc nhắm mục tiêu để tiếp cận khách hàng tự động",
+    "tabs": {
+      "campaign_groups": "Nhóm Chiến Dịch",
+      "campaigns": "Chiến Dịch",
+      "custom_fields": "Trường Tùy Chỉnh",
+      "processing": "Xử Lý"
+    },
+    "campaign_groups": {
+      "title": "Nhóm Chiến Dịch",
+      "description": "Tổ chức chiến dịch thành các nhóm logic với thứ tự ưu tiên",
+      "add_group": "Thêm Nhóm Chiến Dịch",
+      "table": {
+        "name": "Tên Nhóm",
+        "campaigns": "Chiến Dịch",
+        "created_at": "Ngày Tạo",
+        "actions": "Hành Động"
+      },
+      "empty": {
+        "no_groups": "Không tìm thấy nhóm chiến dịch",
+        "create_first": "Tạo nhóm chiến dịch đầu tiên để bắt đầu"
+      },
+      "modal": {
+        "create_title": "Tạo Nhóm Chiến Dịch",
+        "edit_title": "Sửa Nhóm Chiến Dịch"
+      },
+      "form": {
+        "name": "Tên Nhóm",
+        "name_placeholder": "Nhập tên nhóm chiến dịch",
+        "name_help": "Tên mô tả để tổ chức các chiến dịch liên quan"
+      },
+      "validation": {
+        "name_required": "Tên nhóm là bắt buộc",
+        "name_unique": "Tên nhóm phải duy nhất"
+      },
+      "messages": {
+        "created": "Nhóm chiến dịch đã tạo thành công",
+        "updated": "Nhóm chiến dịch đã cập nhật thành công",
+        "deleted": "Nhóm chiến dịch đã xóa thành công",
+        "confirm_delete": "Bạn có chắc chắn muốn xóa nhóm chiến dịch '{{name}}'? Điều này cũng sẽ xóa tất cả chiến dịch trong nhóm này."
+      }
+    },
+    "campaigns": {
+      "title": "Chiến Dịch",
+      "description": "Định nghĩa chiến dịch thu hồi với điều kiện nhắm mục tiêu và quy tắc chọn liên hệ",
+      "add_campaign": "Thêm Chiến Dịch",
+      "select_group": "Chọn nhóm chiến dịch",
+      "table": {
+        "name": "Tên Chiến Dịch",
+        "group": "Nhóm",
+        "priority": "Ưu Tiên",
+        "conditions": "Điều Kiện",
+        "contact_rules": "Quy Tắc Liên Hệ",
+        "created_at": "Ngày Tạo",
+        "actions": "Hành Động"
+      },
+      "empty": {
+        "no_campaigns": "Không tìm thấy chiến dịch",
+        "no_campaigns_for_group": "Không tìm thấy chiến dịch cho nhóm này",
+        "create_first": "Tạo chiến dịch đầu tiên để định nghĩa quy tắc nhắm mục tiêu"
+      },
+      "filter": {
+        "all_groups": "Tất Cả Nhóm",
+        "group_placeholder": "Lọc theo nhóm..."
+      },
+      "priority_help": "Số thấp hơn có ưu tiên cao hơn (1 = ưu tiên cao nhất)",
+      "modal": {
+        "create_title": "Tạo Chiến Dịch",
+        "edit_title": "Sửa Chiến Dịch",
+        "steps": {
+          "basic": "Thông Tin Cơ Bản",
+          "conditions": "Điều Kiện Cơ Bản",
+          "contact_rules": "Quy Tắc Chọn Liên Hệ",
+          "review": "Xem Lại & Lưu"
+        }
+      },
+      "form": {
+        "basic": {
+          "name": "Tên Chiến Dịch",
+          "name_placeholder": "Nhập tên chiến dịch",
+          "name_help": "Tên mô tả cho chiến dịch này",
+          "group": "Nhóm Chiến Dịch",
+          "group_placeholder": "Chọn nhóm chiến dịch",
+          "priority": "Ưu Tiên",
+          "priority_placeholder": "Nhập ưu tiên (1-1000)",
+          "priority_help": "Ưu tiên trong nhóm (1 = ưu tiên cao nhất)"
+        },
+        "conditions": {
+          "title": "Điều Kiện Cơ Bản",
+          "description": "Định nghĩa điều kiện mà khách hàng phải đáp ứng để đủ điều kiện cho chiến dịch này",
+          "add_condition": "Thêm Điều Kiện",
+          "no_conditions": "Chưa định nghĩa điều kiện",
+          "condition_help": "Tất cả điều kiện phải được đáp ứng để khách hàng đủ điều kiện",
+          "field_name": "Tên Trường",
+          "field_name_placeholder": "Chọn tên trường",
+          "select_data_source_first": "Chọn nguồn dữ liệu trước",
+          "operator": "Toán Tử",
+          "operator_placeholder": "Chọn toán tử",
+          "field_value": "Giá Trị",
+          "field_value_placeholder": "Nhập giá trị so sánh",
+          "data_source": "Nguồn Dữ Liệu",
+          "data_source_placeholder": "Chọn nguồn dữ liệu"
+        },
+        "contact_rules": {
+          "title": "Quy Tắc Loại Trừ Liên Hệ",
+          "description": "Định nghĩa quy tắc để loại trừ thông tin liên hệ khách hàng khi điều kiện chiến dịch được đáp ứng. Mặc định, tất cả liên hệ khả dụng được chọn trừ khi bị loại trừ bởi các quy tắc này.",
+          "add_rule": "Thêm Quy Tắc Loại Trừ",
+          "no_rules": "Chưa định nghĩa quy tắc loại trừ - tất cả liên hệ sẽ được bao gồm",
+          "rule_help": "Quy tắc được đánh giá theo thứ tự ưu tiên để loại trừ liên hệ cụ thể",
+          "rule_priority": "Ưu Tiên Quy Tắc",
+          "rule_priority_placeholder": "Nhập ưu tiên quy tắc",
+          "rule_conditions": "Điều Kiện Quy Tắc",
+          "rule_outputs": "Liên Hệ Cần Loại Trừ",
+          "add_condition": "Thêm Điều Kiện",
+          "add_output": "Thêm Loại Trừ",
+          "related_party_type": "Bên Liên Quan",
+          "related_party_placeholder": "Chọn loại bên liên quan",
+          "contact_type": "Loại Liên Hệ",
+          "contact_type_placeholder": "Chọn loại liên hệ",
+          "relationship_patterns": "Mẫu Quan Hệ Cần Loại Trừ",
+          "relationship_patterns_placeholder": "ví dụ: cha mẹ, vợ chồng, đồng nghiệp, bạn bè",
+          "relationship_patterns_help": "Nhập các loại quan hệ cách nhau bằng dấu phẩy để loại trừ. Để trống để bao gồm tất cả loại tham chiếu.",
+          "no_conditions_rule": "Chưa định nghĩa điều kiện cho quy tắc loại trừ này",
+          "no_outputs_rule": "Chưa định nghĩa loại trừ liên hệ cho quy tắc này",
+          "exclusion_rule_title": "Quy Tắc Loại Trừ Liên Hệ {{priority}}",
+          "exclusion_rule_description": "Khi điều kiện được đáp ứng, loại trừ các liên hệ được chỉ định khỏi việc chọn"
+        }
+      },
+      "validation": {
+        "name_required": "Tên chiến dịch là bắt buộc",
+        "group_required": "Nhóm chiến dịch là bắt buộc",
+        "priority_required": "Ưu tiên là bắt buộc",
+        "priority_number": "Ưu tiên phải là số",
+        "priority_positive": "Ưu tiên phải dương",
+        "priority_unique": "Ưu tiên phải duy nhất trong nhóm",
+        "condition_field_required": "Tên trường là bắt buộc",
+        "condition_operator_required": "Toán tử là bắt buộc",
+        "condition_value_required": "Giá trị trường là bắt buộc",
+        "condition_source_required": "Nguồn dữ liệu là bắt buộc",
+        "rule_priority_required": "Ưu tiên quy tắc là bắt buộc",
+        "rule_priority_unique": "Ưu tiên quy tắc phải duy nhất trong chiến dịch",
+        "rule_conditions_required": "Ít nhất một điều kiện là bắt buộc cho mỗi quy tắc loại trừ",
+        "rule_outputs_required": "Ít nhất một loại trừ liên hệ là bắt buộc cho mỗi quy tắc"
+      },
+      "messages": {
+        "created": "Chiến dịch đã tạo thành công",
+        "updated": "Chiến dịch đã cập nhật thành công",
+        "deleted": "Chiến dịch đã xóa thành công",
+        "confirm_delete": "Bạn có chắc chắn muốn xóa chiến dịch '{{name}}'? Hành động này không thể hoàn tác."
+      }
+    },
+    "custom_fields": {
+      "title": "Trường Tùy Chỉnh",
+      "description": "Định nghĩa trường tùy chỉnh có thể được sử dụng trong điều kiện chiến dịch",
+      "add_field": "Thêm Trường Tùy Chỉnh",
+      "table": {
+        "field_name": "Tên Trường",
+        "data_type": "Loại Dữ Liệu",
+        "description": "Mô Tả",
+        "created_at": "Ngày Tạo",
+        "actions": "Hành Động"
+      },
+      "empty": {
+        "no_fields": "Chưa định nghĩa trường tùy chỉnh",
+        "create_first": "Tạo trường tùy chỉnh để sử dụng trong điều kiện chiến dịch"
+      },
+      "modal": {
+        "create_title": "Tạo Trường Tùy Chỉnh",
+        "edit_title": "Sửa Trường Tùy Chỉnh"
+      },
+      "form": {
+        "field_name": "Tên Trường",
+        "field_name_placeholder": "Nhập tên trường",
+        "field_name_help": "Định danh duy nhất cho trường này",
+        "data_type": "Loại Dữ Liệu",
+        "data_type_placeholder": "Chọn loại dữ liệu",
+        "description": "Mô Tả",
+        "description_placeholder": "Mô tả trường này đại diện cho gì",
+        "description_help": "Mô tả tùy chọn về mục đích của trường"
+      },
+      "data_types": {
+        "string": "Văn Bản",
+        "number": "Số",
+        "date": "Ngày",
+        "boolean": "Đúng/Sai"
+      },
+      "validation": {
+        "field_name_required": "Tên trường là bắt buộc",
+        "field_name_unique": "Tên trường phải duy nhất",
+        "data_type_required": "Loại dữ liệu là bắt buộc"
+      },
+      "messages": {
+        "created": "Trường tùy chỉnh đã tạo thành công",
+        "updated": "Trường tùy chỉnh đã cập nhật thành công",
+        "deleted": "Trường tùy chỉnh đã xóa thành công",
+        "confirm_delete": "Bạn có chắc chắn muốn xóa trường tùy chỉnh '{{name}}'?"
+      }
+    },
+    "common": {
+      "actions": {
+        "create": "Tạo",
+        "edit": "Sửa",
+        "delete": "Xóa",
+        "save": "Lưu",
+        "cancel": "Hủy",
+        "add": "Thêm",
+        "remove": "Xóa",
+        "next": "Tiếp Theo",
+        "previous": "Trước",
+        "finish": "Hoàn Thành"
+      },
+      "status": {
+        "active": "Hoạt Động",
+        "inactive": "Không Hoạt Động"
+      },
+      "loading": "Đang tải...",
+      "no_data": "Không có dữ liệu",
+      "error": "Đã xảy ra lỗi",
+      "success": "Thao tác hoàn thành thành công",
+      "refresh": "Làm Mới"
+    },
+    "operators": {
+      "equals": "Bằng",
+      "not_equals": "Không Bằng",
+      "greater_than": "Lớn Hơn",
+      "greater_than_equal": "Lớn Hơn Hoặc Bằng",
+      "less_than": "Nhỏ Hơn",
+      "less_than_equal": "Nhỏ Hơn Hoặc Bằng",
+      "like": "Chứa",
+      "not_like": "Không Chứa",
+      "in": "Trong Danh Sách",
+      "not_in": "Không Trong Danh Sách",
+      "is_null": "Trống",
+      "is_not_null": "Không Trống"
+    },
+    "data_sources": {
+      "loans": "Dữ Liệu Khoản Vay",
+      "customers": "Dữ Liệu Khách Hàng",
+      "custom_fields": "Trường Tùy Chỉnh"
+    },
+    "contact_types": {
+      "mobile": "Điện Thoại Di Động",
+      "home": "Điện Thoại Nhà",
+      "work": "Điện Thoại Cơ Quan",
+      "all": "Tất Cả Loại Điện Thoại"
+    },
+    "related_party_types": {
+      "customer": "Khách Hàng",
+      "reference_customer_parent": "Tham Chiếu (Cha Mẹ)",
+      "reference_customer_all": "Tham Chiếu (Tất Cả)"
+    },
+    "processing": {
+      "title": "Xử Lý Chiến Dịch",
+      "description": "Chạy chiến dịch và xem kết quả xử lý",
+      "campaign_groups_label": "Nhóm Chiến Dịch (Tùy Chọn)",
+      "campaign_groups_help": "Chọn nhóm chiến dịch cụ thể để xử lý, hoặc để trống để xử lý tất cả nhóm",
+      "max_contacts_label": "Số Liên Hệ Tối Đa Mỗi Khách Hàng",
+      "include_uncontactable_label": "Bao Gồm Khách Hàng Không Thể Liên Hệ",
+      "trigger_button": "Bắt Đầu Xử Lý",
+      "triggering": "Đang bắt đầu...",
+      "history_title": "Lịch Sử Xử Lý",
+      "no_runs": "Không tìm thấy lần chạy xử lý",
+      "view_results": "Xem Kết Quả",
+      "status": {
+        "running": "Đang Chạy",
+        "completed": "Hoàn Thành", 
+        "failed": "Thất Bại"
+      },
+      "table": {
+        "status": "Trạng Thái",
+        "started_at": "Bắt Đầu Lúc",
+        "duration": "Thời Gian",
+        "results": "Kết Quả",
+        "actions": "Hành Động",
+        "processed": "Đã Xử Lý",
+        "success": "Thành Công",
+        "errors": "Lỗi"
+      },
+      "error": {
+        "load_failed": "Không thể tải dữ liệu xử lý",
+        "trigger_failed": "Không thể bắt đầu xử lý"
+      },
+      "modal": {
+        "title": "Chi Tiết Lần Chạy Xử Lý",
+        "tabs": {
+          "overview": "Tổng Quan",
+          "results": "Kết Quả",
+          "errors": "Lỗi",
+          "assignments": "Phân Công"
+        },
+        "run_info": "Thông Tin Lần Chạy",
+        "request_id": "ID Yêu Cầu",
+        "requested_by": "Yêu Cầu Bởi",
+        "started_at": "Bắt Đầu Lúc",
+        "completed_at": "Hoàn Thành Lúc",
+        "statistics": "Thống Kê",
+        "customers_processed": "Khách Hàng Đã Xử Lý",
+        "assignments_created": "Phân Công Đã Tạo",
+        "total_errors": "Tổng Lỗi",
+        "campaigns_processed": "Chiến Dịch Đã Xử Lý",
+        "duration": "Thời Gian",
+        "campaign_breakdown": "Phân Tích Chiến Dịch",
+        "campaign_name": "Chiến Dịch",
+        "customers": "Khách Hàng",
+        "assignments": "Phân Công",
+        "errors": "Lỗi",
+        "no_results": "Không có kết quả",
+        "no_errors": "Không tìm thấy lỗi",
+        "no_assignments": "Không tìm thấy phân công",
+        "view_assignments": "Xem Phân Công",
+        "search_cif_placeholder": "Nhập CIF khách hàng",
+        "search": "Tìm Kiếm",
+        "performance_metrics": "Chỉ Số Hiệu Suất",
+        "customers_per_second": "Khách Hàng/Giây",
+        "database_queries": "Truy Vấn DB",
+        "avg_query_duration": "Thời Gian Truy Vấn TB",
+        "contacts_selected": "Liên Hệ Đã Chọn",
+        "most_assigned_campaign": "Chiến Dịch Được Phân Công Nhiều Nhất",
+        "customers_assigned": "Khách Hàng Được Phân Công",
+        "customers_with_contacts": "Có Liên Hệ",
+        "selected_contacts": "Liên Hệ Đã Chọn",
+        "no_contacts_selected": "Không có liên hệ nào được chọn cho phân công này",
+        "all_statistics": "Tất cả thống kê",
+        "total_duration": "Thời Gian"
+      }
     }
   }
 }
