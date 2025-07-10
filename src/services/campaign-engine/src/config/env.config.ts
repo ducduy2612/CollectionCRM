@@ -32,17 +32,10 @@ export const env = {
   // External Services
   BANK_SYNC_SERVICE_URL: process.env.BANK_SYNC_SERVICE_URL || 'http://bank-sync-service:3002',
   BANK_SYNC_API_PREFIX: process.env.BANK_SYNC_API_PREFIX || '/api/v1/bank-sync',
-  API_GATEWAY_URL: process.env.API_GATEWAY_URL || 'http://api-gateway:3000',
   
   // Cache Configuration
   CACHE_TTL: parseInt(process.env.CACHE_TTL || '3600', 10),
   CACHE_CHECK_PERIOD: parseInt(process.env.CACHE_CHECK_PERIOD || '600', 10),
-  
-  // Processing Configuration
-  BATCH_SIZE: parseInt(process.env.BATCH_SIZE || '1000', 10),
-  WORKER_THREADS: parseInt(process.env.WORKER_THREADS || '4', 10),
-  MAX_RETRIES: parseInt(process.env.MAX_RETRIES || '3', 10),
-  RETRY_DELAY: parseInt(process.env.RETRY_DELAY || '5000', 10),
   
   // Monitoring
   LOG_LEVEL: process.env.LOG_LEVEL || 'info',
