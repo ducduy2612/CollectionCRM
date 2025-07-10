@@ -152,6 +152,8 @@ async function startServer(): Promise<void> {
 
   } catch (error) {
     logger.error('Failed to start server:', error);
+    // Also log to console for debugging
+    console.error('Failed to start server - Full error:', error);
     process.exit(1);
   }
 }

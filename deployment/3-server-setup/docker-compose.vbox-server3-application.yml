@@ -1,0 +1,306 @@
+version: '3.8'
+
+# VirtualBox Server 3: Application/Load Balancer Server (All microservices + Nginx + Frontend)
+# VM IP: 192.168.100.30
+# This version connects to other VMs using their IP addresses
+
+x-common-config: &common-config
+  restart: unless-stopped
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: collectioncrm-nginx
+    <<: *common-config
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx-no-ssl.conf:/etc/nginx/nginx.conf:ro  # Use no-SSL version for VirtualBox
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx-cache:/var/cache/nginx
+    depends_on:
+      - frontend
+      - api-gateway
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Frontend Application
+  frontend:
+    image: collectioncrm/frontend:${VERSION:-latest}
+    container_name: collectioncrm-frontend
+    <<: *common-config
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-/api}
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # API Gateway
+  api-gateway:
+    image: collectioncrm/api-gateway:${VERSION:-latest}
+    container_name: collectioncrm-api-gateway
+    <<: *common-config
+    env_file:
+      - ./env/api-gateway.env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      # Connect to VirtualBox VM IPs instead of Docker network IPs
+      - DB_HOST=192.168.100.10  # Server 1 VM IP
+      - DB_PORT=6432            # PgBouncer port
+      - REDIS_HOST=192.168.100.20  # Server 2 VM IP
+      - REDIS_PORT=6379
+      - KAFKA_BROKERS=192.168.100.20:19092  # External Kafka port
+      - KAFKAJS_NO_PARTITIONER_WARNING=1
+      - TZ=${TZ:-Asia/Ho_Chi_Minh}
+    expose:
+      - "3000"
+    depends_on:
+      - auth-service
+      - bank-sync-service
+      - workflow-service
+      - campaign-engine
+      - payment-service
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 768M
+        reservations:
+          cpus: '0.75'
+          memory: 384M
+
+  # Authentication Service
+  auth-service:
+    image: collectioncrm/auth-service:${VERSION:-latest}
+    container_name: collectioncrm-auth-service
+    <<: *common-config
+    env_file:
+      - ./env/auth-service.env
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DB_HOST=192.168.100.10
+      - DB_PORT=6432
+      - REDIS_HOST=192.168.100.20
+      - REDIS_PORT=6379
+      - KAFKA_BROKERS=192.168.100.20:19092
+      - KAFKAJS_NO_PARTITIONER_WARNING=1
+      - TZ=${TZ:-Asia/Ho_Chi_Minh}
+    expose:
+      - "3001"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Bank Synchronization Service
+  bank-sync-service:
+    image: collectioncrm/bank-sync-service:${VERSION:-latest}
+    container_name: collectioncrm-bank-sync-service
+    <<: *common-config
+    env_file:
+      - ./env/bank-sync-service.env
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - DB_HOST=192.168.100.10
+      - DB_PORT=6432
+      - REDIS_HOST=192.168.100.20
+      - REDIS_PORT=6379
+      - KAFKA_BROKERS=192.168.100.20:19092
+      - KAFKAJS_NO_PARTITIONER_WARNING=1
+      - TZ=${TZ:-Asia/Ho_Chi_Minh}
+    expose:
+      - "3002"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Workflow Service
+  workflow-service:
+    image: collectioncrm/workflow-service:${VERSION:-latest}
+    container_name: collectioncrm-workflow-service
+    <<: *common-config
+    env_file:
+      - ./env/workflow-service.env
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - DB_HOST=192.168.100.10
+      - DB_PORT=6432
+      - REDIS_HOST=192.168.100.20
+      - REDIS_PORT=6379
+      - KAFKA_BROKERS=192.168.100.20:19092
+      - KAFKAJS_NO_PARTITIONER_WARNING=1
+      - TZ=${TZ:-Asia/Ho_Chi_Minh}
+    expose:
+      - "3003"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 768M
+        reservations:
+          cpus: '0.75'
+          memory: 384M
+
+  # Campaign Engine Service
+  campaign-engine:
+    image: collectioncrm/campaign-engine:${VERSION:-latest}
+    container_name: collectioncrm-campaign-engine
+    <<: *common-config
+    env_file:
+      - ./env/campaign-engine.env
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+      - DB_HOST=192.168.100.10
+      - DB_PORT=6432
+      - REDIS_HOST=192.168.100.20
+      - REDIS_PORT=6379
+      - KAFKA_BROKERS=192.168.100.20:19092
+      - KAFKAJS_NO_PARTITIONER_WARNING=1
+      - TZ=${TZ:-Asia/Ho_Chi_Minh}
+    expose:
+      - "3004"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Payment Service
+  payment-service:
+    image: collectioncrm/payment-service:${VERSION:-latest}
+    container_name: collectioncrm-payment-service
+    <<: *common-config
+    env_file:
+      - ./env/payment-service.env
+    environment:
+      - NODE_ENV=production
+      - PORT=3005
+      - DB_HOST=192.168.100.10
+      - DB_PORT=6432
+      - REDIS_HOST=192.168.100.20
+      - REDIS_PORT=6379
+      - KAFKA_BROKERS=192.168.100.20:19092
+      - KAFKAJS_NO_PARTITIONER_WARNING=1
+      - TZ=${TZ:-Asia/Ho_Chi_Minh}
+    expose:
+      - "3005"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # MinIO Object Storage (Optional for workflow attachments)
+  minio:
+    image: minio/minio:latest
+    container_name: collectioncrm-minio
+    <<: *common-config
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"      # MinIO API
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"  # MinIO Console
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - MINIO_BROWSER_REDIRECT_URL=http://192.168.100.30:9001
+    volumes:
+      - minio-data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+volumes:
+  nginx-cache:
+    driver: local
+  minio-data:
+    driver: local

@@ -9,7 +9,7 @@ const dbConfig = {
     database: env.DB_DATABASE,
     user: env.DB_USERNAME,
     password: env.DB_PASSWORD,
-    ssl: env.isProduction() ? { rejectUnauthorized: false } : false,
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
   },
   pool: { 
     min: parseInt(process.env.DB_POOL_MIN || '10', 10), 

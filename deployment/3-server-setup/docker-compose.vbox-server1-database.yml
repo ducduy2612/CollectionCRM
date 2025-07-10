@@ -1,0 +1,149 @@
+version: '3.8'
+
+# VirtualBox Server 1: Database Server (PostgreSQL + PgBouncer + Backup)
+# VM IP: 192.168.100.10
+# This version uses standard Docker bridge networking within the VM
+
+x-common-config: &common-config
+  restart: unless-stopped
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: collectioncrm-postgres
+    <<: *common-config
+    command: postgres -c password_encryption=md5
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-collectioncrm}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-collectioncrm}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8 --auth-local=md5 --auth-host=md5" 
+      # Performance tuning for VirtualBox (reduced from production)
+      POSTGRES_SHARED_BUFFERS: 1GB
+      POSTGRES_EFFECTIVE_CACHE_SIZE: 3GB
+      POSTGRES_MAINTENANCE_WORK_MEM: 256MB
+      POSTGRES_CHECKPOINT_COMPLETION_TARGET: 0.9
+      POSTGRES_WAL_BUFFERS: 8MB
+      POSTGRES_DEFAULT_STATISTICS_TARGET: 100
+      POSTGRES_RANDOM_PAGE_COST: 1.1
+      POSTGRES_EFFECTIVE_IO_CONCURRENCY: 100
+      POSTGRES_WORK_MEM: 16MB
+      POSTGRES_MIN_WAL_SIZE: 512MB
+      POSTGRES_MAX_WAL_SIZE: 2GB
+      POSTGRES_MAX_WORKER_PROCESSES: 2
+      POSTGRES_MAX_PARALLEL_WORKERS_PER_GATHER: 1
+      POSTGRES_MAX_PARALLEL_WORKERS: 2
+      POSTGRES_MAX_PARALLEL_MAINTENANCE_WORKERS: 1
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
+      - ./backups:/backups
+    ports:
+      - "0.0.0.0:5432:5432"  # Expose to other VMs
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-collectioncrm} -d ${POSTGRES_DB:-collectioncrm}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 3G
+        reservations:
+          cpus: '1'
+          memory: 2G
+
+  # PgBouncer Connection Pooler
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: collectioncrm-pgbouncer
+    <<: *common-config
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER:-collectioncrm}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POSTGRES_DB:-collectioncrm}
+      ADMIN_USERS: ${POSTGRES_USER:-collectioncrm}
+      LISTEN_PORT: 6432
+      # Pool settings for VirtualBox testing
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 1000
+      DEFAULT_POOL_SIZE: 25
+      MIN_POOL_SIZE: 5
+      RESERVE_POOL_SIZE: 5
+      RESERVE_POOL_TIMEOUT: 5
+      SERVER_IDLE_TIMEOUT: 60
+      SERVER_LIFETIME: 3600
+      SERVER_RESET_QUERY_ALWAYS: 0
+      SERVER_CHECK_DELAY: 30
+      SERVER_LOGIN_RETRY: 15
+      QUERY_TIMEOUT: 0
+      QUERY_WAIT_TIMEOUT: 120
+      CLIENT_IDLE_TIMEOUT: 0
+      CLIENT_LOGIN_TIMEOUT: 60
+      STATS_PERIOD: 60
+    ports:
+      - "0.0.0.0:6432:6432"  # Expose to other VMs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -p 6432 -U ${POSTGRES_USER:-collectioncrm} -d pgbouncer -c 'SHOW POOLS;'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  # PostgreSQL Backup Service
+  postgres-backup:
+    image: prodrigestivill/postgres-backup-local:15-alpine
+    container_name: collectioncrm-postgres-backup
+    <<: *common-config
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-collectioncrm}
+      POSTGRES_USER: ${POSTGRES_USER:-collectioncrm}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_EXTRA_OPTS: "-Z6 --verbose --no-synchronized-snapshots"
+      SCHEDULE: "@daily"
+      BACKUP_KEEP_DAYS: 7
+      BACKUP_KEEP_WEEKS: 4
+      BACKUP_KEEP_MONTHS: 6
+      HEALTHCHECK_PORT: 8080
+    volumes:
+      - ./backups:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+volumes:
+  postgres-data:
+    driver: local
