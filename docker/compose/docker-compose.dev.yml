@@ -42,6 +42,7 @@ services:
       - workflow-service
       - campaign-engine
       - payment-service
+      - audit-service
       - redis
     networks:
       - collectioncrm-network
@@ -159,6 +160,28 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - collectioncrm-network
+    restart: unless-stopped
+
+  # Audit Service
+  audit-service:
+    build:
+      context: ../../
+      dockerfile: docker/base-images/audit-service.Dockerfile
+    ports:
+      - "3010:3010"
+    env_file:
+      - ../../src/services/audit-service/.env
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # For Docker file watching
+    volumes:
+      - ../../src/services/audit-service/src:/app/services/audit-service/src
+    depends_on:
+      postgres:
         condition: service_healthy
       kafka:
         condition: service_healthy

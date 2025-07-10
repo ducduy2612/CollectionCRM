@@ -12,7 +12,7 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Available services
-SERVICES=("frontend-dev" "api-gateway" "auth-service" "bank-sync-service" "workflow-service" "campaign-engine" "payment-service" "postgres" "redis" "kafka" "kafka-ui" "minio")
+SERVICES=("frontend-dev" "api-gateway" "auth-service" "bank-sync-service" "workflow-service" "audit-service" "campaign-engine" "payment-service" "postgres" "redis" "kafka" "kafka-ui" "minio")
 
 # Function to display usage
 usage() {
