@@ -59,10 +59,10 @@ const Layout: React.FC<LayoutProps> = ({ user, onLogout }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-neutral-100">
+    <div className="min-h-screen bg-neutral-100 flex flex-col">
       <Header user={user} onLogout={onLogout} />
       
-      <div className="flex h-[calc(100vh-8rem)]">
+      <div className="flex flex-1 overflow-hidden">
         <Sidebar
           items={sidebarItems}
           collapsed={sidebarCollapsed}

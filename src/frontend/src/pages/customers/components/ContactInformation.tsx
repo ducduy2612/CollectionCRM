@@ -272,22 +272,23 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ cif, phones, em
         </CardHeader>
         
         <CardContent>
-          {/* Phone Numbers */}
-          <div className="contact-section mb-4">
-            <div className="text-sm font-semibold text-neutral-600 mb-2 flex items-center justify-between">
-              <div className="flex items-center">
-                <i className="bi bi-telephone text-primary-500 mr-2"></i>
-                {t('customers:fields.phone')}
+          <div className="max-h-96 overflow-y-auto pr-2">
+            {/* Phone Numbers */}
+            <div className="contact-section mb-4">
+              <div className="text-sm font-semibold text-neutral-600 mb-2 flex items-center justify-between">
+                <div className="flex items-center">
+                  <i className="bi bi-telephone text-primary-500 mr-2"></i>
+                  {t('customers:fields.phone')}
+                </div>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => handleAddContact('phone')}
+                >
+                  <i className="bi bi-plus mr-1"></i>
+                  {t('common:buttons.add')}
+                </Button>
               </div>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => handleAddContact('phone')}
-              >
-                <i className="bi bi-plus mr-1"></i>
-                {t('common:buttons.add')}
-              </Button>
-            </div>
             
             {combinedPhones.map((phone, index) => (
               <div key={phone.id || index} className="flex items-center p-2 rounded-md mb-2 bg-neutral-50 border border-neutral-200">
@@ -458,6 +459,7 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ cif, phones, em
                 </div>
               </div>
             ))}
+            </div>
           </div>
         </CardContent>
       </Card>
