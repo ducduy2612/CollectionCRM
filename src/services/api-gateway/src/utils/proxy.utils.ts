@@ -331,6 +331,8 @@ class AxiosProxyService {
         axiosConfig.data = req;
         axiosConfig.maxBodyLength = Infinity;
         axiosConfig.maxContentLength = Infinity;
+        // Increase timeout for file uploads
+        axiosConfig.timeout = Math.max(axiosConfig.timeout || 0, 300000); // 5 minutes minimum
       } else {
         // For regular requests, use req.body
         axiosConfig.data = req.body;

@@ -71,11 +71,11 @@ const DashboardPage: React.FC = () => {
         throw new Error('Agent ID not available');
       }
       
-      // Get the agent's assignments
+      // Get the agent's assignments (remove pageSize limit to get all)
       const assignmentData = await workflowApi.getAgentAssignments(agentIdToUse, {
         cif: search || undefined,
         isCurrent: true,
-        pageSize: 10
+        pageSize: 100 // Increased to capture all assignments
       });
       
       if (assignmentData.assignments.length === 0) {
@@ -85,17 +85,16 @@ const DashboardPage: React.FC = () => {
       
       // Extract all CIFs from assignments
       const cifs = assignmentData.assignments.map(assignment => assignment.cif);
+      console.log(`Found ${assignmentData.assignments.length} assignments with CIFs:`, cifs);
       
-      // Use searchCustomers to get all customer data in one call
-      // We'll search by CIF using the first CIF and then filter the results
-      const customerSearchResults = await bankApi.searchCustomers({
-        pageSize: 100 // Get more results to ensure we capture all customers
-      });
+      // Get customer data for all CIFs in one efficient API call
+      const customers = await bankApi.getCustomersByCifs(cifs);
+      console.log(`Successfully fetched ${customers.length} customer records out of ${cifs.length} CIFs`);
       
       // Create a map of CIF to customer data for quick lookup
       const customerMap = new Map();
-      customerSearchResults.customers.forEach(customer => {
-        if (customer.cif && cifs.includes(customer.cif)) {
+      customers.forEach(customer => {
+        if (customer.cif) {
           customerMap.set(customer.cif, customer);
         }
       });

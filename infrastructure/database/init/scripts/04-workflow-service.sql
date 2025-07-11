@@ -60,6 +60,7 @@ DROP TABLE IF EXISTS workflow_service.customer_status_dict CASCADE;
 DROP TABLE IF EXISTS workflow_service.customer_cases CASCADE;
 DROP TABLE IF EXISTS workflow_service.action_records CASCADE; -- This will drop all partitions automatically
 DROP TABLE IF EXISTS workflow_service.customer_agents CASCADE; -- This will drop all partitions automatically
+DROP TABLE IF EXISTS workflow_service.customer_agent_staging CASCADE;
 DROP TABLE IF EXISTS workflow_service.action_subtype_result_mappings CASCADE;
 DROP TABLE IF EXISTS workflow_service.action_type_subtype_mappings CASCADE;
 DROP TABLE IF EXISTS workflow_service.action_results CASCADE;
@@ -391,6 +392,35 @@ CREATE TABLE workflow_service.customer_agents_historical PARTITION OF workflow_s
 -- Default partition for future data (after 2026)
 CREATE TABLE workflow_service.customer_agents_future PARTITION OF workflow_service.customer_agents
     FOR VALUES FROM ('2027-01-01') TO (MAXVALUE);
+
+-- Customer Agent Staging table for bulk operations
+CREATE TABLE workflow_service.customer_agent_staging (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    batch_id UUID NOT NULL,
+    line_number INTEGER NOT NULL,
+    cif VARCHAR(20) NOT NULL,
+    assigned_call_agent_name VARCHAR(100),
+    assigned_field_agent_name VARCHAR(100),
+    assigned_call_agent_id UUID,
+    assigned_field_agent_id UUID,
+    validation_status VARCHAR(20) DEFAULT 'pending',
+    validation_errors TEXT,
+    processing_status VARCHAR(20) DEFAULT 'pending',
+    processing_errors TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_by VARCHAR(50) NOT NULL,
+    updated_by VARCHAR(50) NOT NULL
+);
+
+COMMENT ON TABLE workflow_service.customer_agent_staging IS 'Staging table for bulk customer agent assignment operations';
+
+-- Create indexes for staging table
+CREATE INDEX idx_customer_agent_staging_batch_id ON workflow_service.customer_agent_staging(batch_id);
+CREATE INDEX idx_customer_agent_staging_validation_status ON workflow_service.customer_agent_staging(validation_status);
+CREATE INDEX idx_customer_agent_staging_processing_status ON workflow_service.customer_agent_staging(processing_status);
+CREATE INDEX idx_customer_agent_staging_cif ON workflow_service.customer_agent_staging(cif);
+CREATE INDEX idx_customer_agent_staging_line_number ON workflow_service.customer_agent_staging(line_number);
 
 -- Customer Cases table
 CREATE TABLE workflow_service.customer_cases (
@@ -1142,3 +1172,233 @@ END;
 $$ LANGUAGE plpgsql;
 
 COMMENT ON FUNCTION workflow_service.sync_customer_cases() IS 'Simple wrapper to sync customer cases from bank sync service. Logs results to console.';
+
+-- =============================================
+-- BULK OPERATIONS STORED PROCEDURES
+-- =============================================
+
+-- Function to bulk validate staging batch
+CREATE OR REPLACE FUNCTION workflow_service.bulk_validate_staging_batch(p_batch_id UUID)
+RETURNS TABLE(
+    valid_count INTEGER,
+    invalid_count INTEGER
+) AS $$
+BEGIN
+    -- Step 1: Validate and resolve call agent names
+    UPDATE workflow_service.customer_agent_staging 
+    SET assigned_call_agent_id = agents.id,
+        validation_status = 'valid'
+    FROM workflow_service.agents
+    WHERE customer_agent_staging.batch_id = p_batch_id
+      AND customer_agent_staging.assigned_call_agent_name = agents.name
+      AND agents.is_active = true
+      AND customer_agent_staging.assigned_call_agent_name IS NOT NULL;
+
+    -- Step 2: Validate and resolve field agent names
+    UPDATE workflow_service.customer_agent_staging 
+    SET assigned_field_agent_id = agents.id,
+        validation_status = 'valid'
+    FROM workflow_service.agents
+    WHERE customer_agent_staging.batch_id = p_batch_id
+      AND customer_agent_staging.assigned_field_agent_name = agents.name
+      AND agents.is_active = true
+      AND customer_agent_staging.assigned_field_agent_name IS NOT NULL;
+
+    -- Step 3: Mark records with invalid call agent names
+    UPDATE workflow_service.customer_agent_staging 
+    SET validation_status = 'invalid',
+        validation_errors = 'Call agent not found: ' || assigned_call_agent_name
+    WHERE batch_id = p_batch_id
+      AND assigned_call_agent_name IS NOT NULL
+      AND assigned_call_agent_id IS NULL;
+
+    -- Step 4: Mark records with invalid field agent names
+    UPDATE workflow_service.customer_agent_staging 
+    SET validation_status = 'invalid',
+        validation_errors = COALESCE(validation_errors || '; ', '') || 'Field agent not found: ' || assigned_field_agent_name
+    WHERE batch_id = p_batch_id
+      AND assigned_field_agent_name IS NOT NULL
+      AND assigned_field_agent_id IS NULL;
+
+    -- Step 5: Mark records with no agents assigned
+    UPDATE workflow_service.customer_agent_staging 
+    SET validation_status = 'invalid',
+        validation_errors = 'At least one agent must be assigned'
+    WHERE batch_id = p_batch_id
+      AND assigned_call_agent_name IS NULL
+      AND assigned_field_agent_name IS NULL;
+
+    -- Step 6: Validate CIF format
+    UPDATE workflow_service.customer_agent_staging 
+    SET validation_status = 'invalid',
+        validation_errors = COALESCE(validation_errors || '; ', '') || 'Invalid CIF format'
+    WHERE batch_id = p_batch_id
+      AND (cif IS NULL OR LENGTH(TRIM(cif)) < 3);
+
+    -- Step 7: Set remaining records as valid
+    UPDATE workflow_service.customer_agent_staging 
+    SET validation_status = 'valid'
+    WHERE batch_id = p_batch_id
+      AND validation_status = 'pending';
+
+    -- Return validation counts
+    RETURN QUERY
+    SELECT 
+        (SELECT COUNT(*)::INTEGER FROM workflow_service.customer_agent_staging 
+         WHERE batch_id = p_batch_id AND validation_status = 'valid') as valid_count,
+        (SELECT COUNT(*)::INTEGER FROM workflow_service.customer_agent_staging 
+         WHERE batch_id = p_batch_id AND validation_status = 'invalid') as invalid_count;
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION workflow_service.bulk_validate_staging_batch(UUID) IS 'Validates staging batch by resolving agent names and validating CIFs';
+
+-- Function to bulk process staging batch
+CREATE OR REPLACE FUNCTION workflow_service.bulk_process_staging_batch(p_batch_id UUID, p_processed_by VARCHAR(50))
+RETURNS TABLE(
+    total_rows INTEGER,
+    valid_rows INTEGER,
+    invalid_rows INTEGER,
+    processed_rows INTEGER,
+    failed_rows INTEGER,
+    skipped_rows INTEGER
+) AS $$
+DECLARE
+    v_counts RECORD;
+    v_first_occurrence_cte TEXT;
+BEGIN
+    -- Pre-calculate all counts in one query
+    SELECT 
+        COUNT(*)::INTEGER as total,
+        COUNT(CASE WHEN validation_status = 'valid' THEN 1 END)::INTEGER as valid,
+        COUNT(CASE WHEN validation_status = 'invalid' THEN 1 END)::INTEGER as invalid
+    INTO v_counts
+    FROM workflow_service.customer_agent_staging 
+    WHERE batch_id = p_batch_id;
+
+    -- Create temporary table with first occurrence CIFs for better performance
+    CREATE TEMP TABLE temp_first_occurrence AS 
+    SELECT DISTINCT ON (cif) id, cif, assigned_call_agent_id, assigned_field_agent_id, line_number
+    FROM workflow_service.customer_agent_staging
+    WHERE batch_id = p_batch_id AND validation_status = 'valid'
+    ORDER BY cif, line_number ASC;
+
+    -- Step 1: End current assignments for CIFs that will be reassigned
+    -- Use EXISTS instead of IN for better performance
+    UPDATE workflow_service.customer_agents 
+    SET is_current = false, 
+        end_date = CURRENT_DATE,
+        updated_by = p_processed_by
+    WHERE is_current = true
+      AND EXISTS (
+        SELECT 1 FROM temp_first_occurrence tfo 
+        WHERE tfo.cif = customer_agents.cif
+      );
+
+    -- Step 2: Create new assignments from staging (using temp table)
+    INSERT INTO workflow_service.customer_agents 
+    (cif, assigned_call_agent_id, assigned_field_agent_id, start_date, is_current, created_by, updated_by)
+    SELECT 
+        tfo.cif,
+        tfo.assigned_call_agent_id,
+        tfo.assigned_field_agent_id,
+        CURRENT_DATE,
+        true,
+        p_processed_by,
+        p_processed_by
+    FROM temp_first_occurrence tfo;
+
+    -- Step 3a: Mark the first occurrence of each CIF as processed
+    UPDATE workflow_service.customer_agent_staging 
+    SET processing_status = 'processed'
+    WHERE batch_id = p_batch_id 
+      AND validation_status = 'valid'
+      AND id IN (SELECT id FROM temp_first_occurrence);
+
+    -- Step 3b: Mark duplicate CIFs as skipped
+    UPDATE workflow_service.customer_agent_staging 
+    SET processing_status = 'skipped',
+        processing_errors = 'Duplicate CIF - only first occurrence processed'
+    WHERE batch_id = p_batch_id 
+      AND validation_status = 'valid'
+      AND processing_status = 'pending';
+
+    -- Step 4: Mark invalid records as failed
+    UPDATE workflow_service.customer_agent_staging 
+    SET processing_status = 'failed',
+        processing_errors = validation_errors
+    WHERE batch_id = p_batch_id AND validation_status = 'invalid';
+
+    -- Clean up temp table
+    DROP TABLE temp_first_occurrence;
+
+    -- Return processing counts using pre-calculated values and final counts
+    RETURN QUERY
+    SELECT 
+        v_counts.total as total_rows,
+        v_counts.valid as valid_rows,
+        v_counts.invalid as invalid_rows,
+        (SELECT COUNT(*)::INTEGER FROM workflow_service.customer_agent_staging 
+         WHERE batch_id = p_batch_id AND processing_status = 'processed') as processed_rows,
+        (SELECT COUNT(*)::INTEGER FROM workflow_service.customer_agent_staging 
+         WHERE batch_id = p_batch_id AND processing_status = 'failed') as failed_rows,
+        (SELECT COUNT(*)::INTEGER FROM workflow_service.customer_agent_staging 
+         WHERE batch_id = p_batch_id AND processing_status = 'skipped') as skipped_rows;
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION workflow_service.bulk_process_staging_batch(UUID, VARCHAR) IS 'Processes staging batch by creating customer agent assignments';
+
+-- Function to get batch status
+CREATE OR REPLACE FUNCTION workflow_service.get_batch_status(p_batch_id UUID)
+RETURNS TABLE(
+    batch_id UUID,
+    total_rows INTEGER,
+    valid_rows INTEGER,
+    invalid_rows INTEGER,
+    processed_rows INTEGER,
+    failed_rows INTEGER,
+    skipped_rows INTEGER,
+    error_details TEXT[]
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        p_batch_id,
+        (SELECT COUNT(*)::INTEGER FROM workflow_service.customer_agent_staging cas1
+         WHERE cas1.batch_id = p_batch_id) as total_rows,
+        (SELECT COUNT(*)::INTEGER FROM workflow_service.customer_agent_staging cas2
+         WHERE cas2.batch_id = p_batch_id AND cas2.validation_status = 'valid') as valid_rows,
+        (SELECT COUNT(*)::INTEGER FROM workflow_service.customer_agent_staging cas3
+         WHERE cas3.batch_id = p_batch_id AND cas3.validation_status = 'invalid') as invalid_rows,
+        (SELECT COUNT(*)::INTEGER FROM workflow_service.customer_agent_staging cas4
+         WHERE cas4.batch_id = p_batch_id AND cas4.processing_status = 'processed') as processed_rows,
+        (SELECT COUNT(*)::INTEGER FROM workflow_service.customer_agent_staging cas5
+         WHERE cas5.batch_id = p_batch_id AND cas5.processing_status = 'failed') as failed_rows,
+        (SELECT COUNT(*)::INTEGER FROM workflow_service.customer_agent_staging cas6
+         WHERE cas6.batch_id = p_batch_id AND cas6.processing_status = 'skipped') as skipped_rows,
+        (SELECT ARRAY_AGG('Line ' || cas7.line_number || ': ' || COALESCE(cas7.validation_errors, cas7.processing_errors) ORDER BY cas7.line_number) 
+         FROM workflow_service.customer_agent_staging cas7
+         WHERE cas7.batch_id = p_batch_id AND (cas7.validation_status = 'invalid' OR cas7.processing_status = 'failed' OR cas7.processing_status = 'skipped')) as error_details;
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION workflow_service.get_batch_status(UUID) IS 'Gets comprehensive status of a staging batch';
+
+-- Function to clear staging table
+CREATE OR REPLACE FUNCTION workflow_service.clear_staging_table()
+RETURNS INTEGER AS $$
+DECLARE
+    v_deleted_count INTEGER := 0;
+BEGIN
+    -- Get count before truncate
+    SELECT COUNT(*) INTO v_deleted_count FROM workflow_service.customer_agent_staging;
+    
+    -- Truncate the table (faster than DELETE)
+    TRUNCATE TABLE workflow_service.customer_agent_staging;
+    
+    RETURN v_deleted_count;
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION workflow_service.clear_staging_table() IS 'Clear all staging table data using TRUNCATE for better performance';

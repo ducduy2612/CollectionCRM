@@ -184,6 +184,42 @@ export const CustomerRepository = AppDataSource.getRepository(Customer).extend({
     }
   },
 
+  /**
+   * Get multiple customers by CIF list (basic info only)
+   * @param cifs Array of customer CIF numbers
+   * @returns Array of customers with basic info
+   */
+  async getCustomersByCifs(cifs: string[]): Promise<Customer[]> {
+    try {
+      if (cifs.length === 0) {
+        return [];
+      }
+
+      const customers = await this.createQueryBuilder('customer')
+        .select([
+          'customer.cif',
+          'customer.name',
+          'customer.companyName',
+          'customer.segment',
+          'customer.status',
+          'customer.createdAt',
+          'customer.updatedAt'
+        ])
+        .where('customer.cif IN (:...cifs)', { cifs })
+        .getMany();
+
+      return customers;
+    } catch (error) {
+      console.error(`Error getting customers by CIFs:`, error);
+      throw Errors.wrap(
+        error as Error,
+        OperationType.DATABASE,
+        SourceSystemType.OTHER,
+        { cifs, operation: 'getCustomersByCifs' }
+      );
+    }
+  },
+
   // Add base repository methods
   findBySourceSystem: baseSyncRepository.findBySourceSystem,
   findStaleRecords: baseSyncRepository.findStaleRecords

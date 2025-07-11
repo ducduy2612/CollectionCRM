@@ -254,7 +254,25 @@ export interface AssignmentHistoryItem {
 }
 
 export interface BulkAssignmentResponse {
-  assignments: any[];
-  count: number;
-  processed: number;
+  batchId: string;
+  totalRows: number;
+  validRows: number;
+  invalidRows: number;
+  processedRows: number;
+  failedRows: number;
+  skippedRows: number;
+  errors: string[];
+  hasMoreErrors: boolean;
+}
+
+export interface BatchStatusResponse {
+  batchId: string;
+  totalRows: number;
+  validRows: number;
+  invalidRows: number;
+  processedRows: number;
+  failedRows: number;
+  skippedRows: number;
+  errors: string[];
+  hasMoreErrors: boolean;
 }

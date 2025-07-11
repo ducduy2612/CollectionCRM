@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { CustomerAgentRepository } from '../repositories/customer-agent.repository';
+import { CustomerAgentStagingRepository, StagingData } from '../repositories/customer-agent-staging.repository';
 import { AgentRepository } from '../repositories/agent.repository';
 import { Errors, OperationType, SourceSystemType } from '../utils/errors';
 import { ResponseUtil } from '../utils/response';
@@ -211,7 +212,7 @@ export class AssignmentController {
   }
 
   /**
-   * Bulk assignment from CSV file
+   * Bulk assignment from CSV file using staging table approach
    * @route POST /assignments/bulk
    */
   async bulkAssignment(req: Request, res: Response, next: NextFunction) {
@@ -225,7 +226,7 @@ export class AssignmentController {
         );
       }
 
-      const csvData: any[] = [];
+      const stagingData: StagingData[] = [];
       const errors: string[] = [];
       let lineNumber = 1; // Start from 1 to account for header
 
@@ -240,7 +241,7 @@ export class AssignmentController {
           .on('data', (row) => {
             lineNumber++;
             
-            // Validate required columns
+            // Basic validation - required columns
             const cif = row.cif?.trim();
             const assignedCallAgentName = row.assignedcallagentname?.trim();
             const assignedFieldAgentName = row.assignedfieldagentname?.trim();
@@ -255,7 +256,7 @@ export class AssignmentController {
               return;
             }
 
-            csvData.push({
+            stagingData.push({
               cif,
               assignedCallAgentName,
               assignedFieldAgentName,
@@ -275,7 +276,7 @@ export class AssignmentController {
         );
       }
 
-      if (csvData.length === 0) {
+      if (stagingData.length === 0) {
         throw Errors.create(
           Errors.Validation.INVALID_FORMAT,
           'No valid data found in CSV file',
@@ -284,76 +285,109 @@ export class AssignmentController {
         );
       }
 
-      // Process assignments
-      const assignments = [];
-      const processingErrors: string[] = [];
+      const createdBy = req.user?.username || 'system';
 
-      for (const row of csvData) {
-        try {
-          let assignedCallAgentId = null;
-          let assignedFieldAgentId = null;
+      // Step 1: Create staging batch
+      logger.info({
+        count: stagingData.length,
+        userId: req.user?.id
+      }, 'Creating staging batch for bulk assignment');
 
-          // Look up call agent by name if provided
-          if (row.assignedCallAgentName) {
-            const callAgent = await AgentRepository.findByName(row.assignedCallAgentName);
-            if (!callAgent) {
-              processingErrors.push(`Line ${row.lineNumber}: Call agent '${row.assignedCallAgentName}' not found`);
-              continue;
-            }
-            assignedCallAgentId = callAgent.id;
-          }
+      const batchId = await CustomerAgentStagingRepository.createStagingBatch(stagingData, createdBy);
 
-          // Look up field agent by name if provided
-          if (row.assignedFieldAgentName) {
-            const fieldAgent = await AgentRepository.findByName(row.assignedFieldAgentName);
-            if (!fieldAgent) {
-              processingErrors.push(`Line ${row.lineNumber}: Field agent '${row.assignedFieldAgentName}' not found`);
-              continue;
-            }
-            assignedFieldAgentId = fieldAgent.id;
-          }
+      // Step 2: Validate staging batch
+      logger.info({ batchId }, 'Validating staging batch');
+      const validationResult = await CustomerAgentStagingRepository.validateStagingBatch(batchId);
 
-          assignments.push({
-            cif: row.cif,
-            assignedCallAgentId,
-            assignedFieldAgentId,
-            createdBy: req.user?.username || 'system',
-            updatedBy: req.user?.username || 'system'
-          });
-        } catch (error) {
-          processingErrors.push(`Line ${row.lineNumber}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-      }
-
-      if (processingErrors.length > 0) {
-        throw Errors.create(
-          Errors.Validation.INVALID_FORMAT,
-          `Processing errors: ${processingErrors.join(', ')}`,
-          OperationType.VALIDATION,
-          SourceSystemType.WORKFLOW_SERVICE
-        );
-      }
-
-      // Create bulk assignments
-      const createdAssignments = await CustomerAgentRepository.createBulkAssignments(assignments);
+      // Step 3: Process staging batch
+      logger.info({ batchId, validationResult }, 'Processing staging batch');
+      const processingResult = await CustomerAgentStagingRepository.processStagingBatch(batchId, createdBy);
 
       logger.info({
-        count: createdAssignments.length,
+        batchId,
+        result: processingResult,
         userId: req.user?.id
-      }, 'Bulk assignments created successfully');
+      }, 'Bulk assignment processing completed');
 
       return ResponseUtil.success(
         res,
         {
-          assignments: createdAssignments,
-          count: createdAssignments.length,
-          processed: csvData.length
+          batchId,
+          totalRows: processingResult.totalRows,
+          validRows: processingResult.validRows,
+          invalidRows: processingResult.invalidRows,
+          processedRows: processingResult.processedRows,
+          failedRows: processingResult.failedRows,
+          skippedRows: processingResult.skippedRows,
+          errors: processingResult.errors.slice(0, 100), // Limit errors to prevent large response
+          hasMoreErrors: processingResult.errors.length > 100
         },
-        'Bulk assignments created successfully',
+        'Bulk assignment processing completed',
         201
       );
     } catch (error) {
-      logger.error({ error, path: req.path }, 'Error creating bulk assignments');
+      logger.error({ error, path: req.path }, 'Error processing bulk assignments');
+      next(error);
+    }
+  }
+
+  /**
+   * Get bulk assignment batch status
+   * @route GET /assignments/bulk/:batchId/status
+   */
+  async getBatchStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { batchId } = req.params;
+
+      const batchStatus = await CustomerAgentStagingRepository.getBatchStatus(batchId);
+
+      if (!batchStatus) {
+        throw Errors.create(
+          Errors.Database.RECORD_NOT_FOUND,
+          `Batch ${batchId} not found`,
+          OperationType.DATABASE,
+          SourceSystemType.WORKFLOW_SERVICE
+        );
+      }
+
+      return ResponseUtil.success(
+        res,
+        {
+          ...batchStatus,
+          errors: batchStatus.errors.slice(0, 100), // Limit errors to prevent large response
+          hasMoreErrors: batchStatus.errors.length > 100
+        },
+        'Batch status retrieved successfully'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error retrieving batch status');
+      next(error);
+    }
+  }
+
+  /**
+   * Clear staging table
+   * @route DELETE /assignments/bulk/staging
+   */
+  async clearStagingTable(req: Request, res: Response, next: NextFunction) {
+    try {
+      const deletedCount = await CustomerAgentStagingRepository.clearStagingTable();
+
+      logger.info({ 
+        deletedCount, 
+        userId: req.user?.id 
+      }, 'Staging table cleared successfully');
+
+      return ResponseUtil.success(
+        res,
+        {
+          deletedCount,
+          message: `Cleared ${deletedCount} records from staging table`
+        },
+        'Staging table cleared successfully'
+      );
+    } catch (error) {
+      logger.error({ error, path: req.path }, 'Error clearing staging table');
       next(error);
     }
   }

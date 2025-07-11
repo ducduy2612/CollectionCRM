@@ -185,7 +185,7 @@ export const serviceRoutes: Record<string, ProxyConfig> = {
     path: '/api/workflow',
     target: process.env.WORKFLOW_SERVICE_URL || 'http://workflow-service:3003',
     pathRewrite: { '^/api/workflow': '/api/v1/workflow' },
-    timeout: parseInt(process.env.WORKFLOW_SERVICE_TIMEOUT || '30000', 10),
+    timeout: parseInt(process.env.WORKFLOW_SERVICE_TIMEOUT || '300000', 10),
     serviceName: 'Workflow Service',
     routes: {
       agents: '/agents',
@@ -197,6 +197,8 @@ export const serviceRoutes: Record<string, ProxyConfig> = {
       actionById: '/actions/:id',
       assignments: '/assignments',
       assignmentById: '/assignments/:id',
+      bulkAssignments: '/assignments/bulk',
+      batchStatus: '/assignments/bulk/:batchId/status',
       documents: '/documents',
       documentUpload: '/documents/upload',
       documentsByCustomer: '/documents/customer/:cif',

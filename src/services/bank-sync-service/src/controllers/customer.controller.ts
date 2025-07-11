@@ -97,6 +97,54 @@ export class CustomerController {
       next(error);
     }
   }
+
+  /**
+   * Get multiple customers by CIF list
+   * @route POST /customers/by-cifs
+   */
+  async getCustomersByCifs(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { cifs } = req.body;
+      
+      if (!Array.isArray(cifs)) {
+        throw Errors.create(
+          ValidationErrorCodes.REQUIRED_FIELD_MISSING,
+          'CIFs array is required',
+          OperationType.VALIDATION,
+          SourceSystemType.OTHER
+        );
+      }
+
+      if (cifs.length === 0) {
+        return res.status(200).json({
+          success: true,
+          data: [],
+          message: 'No CIFs provided',
+          errors: []
+        });
+      }
+
+      if (cifs.length > 500) {
+        throw Errors.create(
+          ValidationErrorCodes.VALUE_OUT_OF_RANGE,
+          'Maximum 500 CIFs allowed per request',
+          OperationType.VALIDATION,
+          SourceSystemType.OTHER
+        );
+      }
+      
+      const customers = await CustomerRepository.getCustomersByCifs(cifs);
+      
+      return res.status(200).json({
+        success: true,
+        data: customers,
+        message: 'Customers retrieved successfully',
+        errors: []
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
   
   /**
    * Get customer loans

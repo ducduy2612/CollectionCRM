@@ -1,5 +1,6 @@
 import multer from 'multer';
 import { Request } from 'express';
+import { storageConfig } from '../config/storage.config';
 
 /**
  * Configure multer for CSV file uploads
@@ -19,7 +20,8 @@ export const uploadCSV = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: storageConfig.upload.maxFileSize, // Use configurable limit (default 50MB)
     files: 1 // Only one file at a time
   }
 });
+

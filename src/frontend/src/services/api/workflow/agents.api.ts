@@ -4,7 +4,8 @@ import {
   AgentInfo,
   AssignmentsResponse,
   AssignmentHistoryResponse,
-  BulkAssignmentResponse
+  BulkAssignmentResponse,
+  BatchStatusResponse
 } from './types';
 
 export const agentsApi = {
@@ -70,6 +71,32 @@ export const agentsApi = {
     
     if (!response.data.success) {
       throw new Error(response.data.message || 'Failed to create bulk assignments');
+    }
+    
+    return response.data.data;
+  },
+
+  // Get batch status
+  getBatchStatus: async (batchId: string): Promise<BatchStatusResponse> => {
+    const response = await apiClient.get<WorkflowApiResponse<BatchStatusResponse>>(
+      `/workflow/assignments/bulk/${batchId}/status`
+    );
+    
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch batch status');
+    }
+    
+    return response.data.data;
+  },
+
+  // Clear staging table
+  clearStagingTable: async (): Promise<{ deletedCount: number; message: string }> => {
+    const response = await apiClient.delete<WorkflowApiResponse<{ deletedCount: number; message: string }>>(
+      '/workflow/assignments/bulk/staging'
+    );
+    
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to clear staging table');
     }
     
     return response.data.data;

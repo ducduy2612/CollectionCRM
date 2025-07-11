@@ -36,6 +36,16 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Set server timeout for long-running operations
+app.use((req, res, next) => {
+  // Set request timeout to 10 minutes for bulk operations
+  if (req.path.includes('/bulk')) {
+    req.setTimeout(600000); // 10 minutes
+    res.setTimeout(600000);
+  }
+  next();
+});
+
 // Request logging
 app.use(requestLogger());
 
@@ -172,10 +182,15 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 // Start the server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   logger.info(`API Gateway running on port ${PORT}`);
   logger.info(`API Documentation available at http://localhost:${PORT}/api-docs`);
 });
+
+// Set server timeout for long-running operations
+server.timeout = 600000; // 10 minutes
+server.keepAliveTimeout = 65000; // 65 seconds (should be higher than load balancer timeout)
+server.headersTimeout = 66000; // 66 seconds (should be higher than keep-alive timeout)
 
 // Export app for testing
 export default app;

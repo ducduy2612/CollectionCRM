@@ -47,6 +47,30 @@ router.post(
 );
 
 /**
+ * @route GET /assignments/bulk/:batchId/status
+ * @desc Get bulk assignment batch status
+ * @access Private - Requires authentication and supervisor role
+ */
+router.get(
+  '/bulk/:batchId/status',
+  requireAuth,
+  requirePermissions(['customer_assignment:all']),
+  assignmentController.getBatchStatus
+);
+
+/**
+ * @route DELETE /assignments/bulk/staging
+ * @desc Clear staging table
+ * @access Private - Requires authentication and supervisor role
+ */
+router.delete(
+  '/bulk/staging',
+  requireAuth,
+  requirePermissions(['customer_assignment:all']),
+  assignmentController.clearStagingTable
+);
+
+/**
  * @route PUT /assignments/:id
  * @desc Update assignment
  * @access Private - Requires authentication and supervisor role

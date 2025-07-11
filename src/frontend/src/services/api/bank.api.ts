@@ -104,6 +104,18 @@ export const bankApi = {
     return response.data.data;
   },
 
+  // Get multiple customers by CIF list
+  getCustomersByCifs: async (cifs: string[]): Promise<Customer[]> => {
+    console.log('calling getCustomersByCifs');
+    const response = await apiClient.post<BankApiResponse<Customer[]>>('/bank/customers/by-cifs', { cifs });
+    
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch customers by CIFs');
+    }
+    
+    return response.data.data;
+  },
+
   // Get customer loans
   getCustomerLoans: async (cif: string, params?: {
     status?: 'OPEN' | 'CLOSED';

@@ -30,6 +30,17 @@ router.get(
 );
 
 /**
+ * @route POST /customers/by-cifs
+ * @desc Get multiple customers by CIF list
+ * @access Private - Requires authentication
+ */
+router.post(
+  '/by-cifs',
+  requireAuth,
+  customerController.getCustomersByCifs
+);
+
+/**
  * @route GET /customers/:cif/loans
  * @desc Get customer loans
  * @access Private - Requires authentication and appropriate roles
