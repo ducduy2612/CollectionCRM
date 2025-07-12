@@ -354,7 +354,12 @@ router.post(
 
       // Assign role to users
       try {
-        const assignedUsers = await roleService.assignRoleToUsers(roleId, userIds);
+        const currentUser = {
+          userId: (req as any).user.id,
+          username: (req as any).user.username
+        };
+        
+        const assignedUsers = await roleService.assignRoleToUsers(roleId, userIds, currentUser);
 
         // Return successful response
         return res.status(200).json({
@@ -420,7 +425,12 @@ router.delete(
       
       // Remove users from role
       try {
-        const removedUsers = await roleService.removeUsersFromRole(roleId, userIds);
+        const currentUser = {
+          userId: (req as any).user.id,
+          username: (req as any).user.username
+        };
+        
+        const removedUsers = await roleService.removeUsersFromRole(roleId, userIds, currentUser);
 
         // Return successful response
         return res.status(200).json({

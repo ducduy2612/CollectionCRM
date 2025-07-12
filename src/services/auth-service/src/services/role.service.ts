@@ -183,8 +183,9 @@ export class RoleService {
    * Assign role to users
    * @param id - Role ID
    * @param userIds - Array of user IDs
+   * @param updatedBy - User performing the action
    */
-  public async assignRoleToUsers(id: string, userIds: string[]): Promise<number> {
+  public async assignRoleToUsers(id: string, userIds: string[], updatedBy: { userId: string; username: string }): Promise<number> {
     // Get role information for the event
     const role = await roleRepository.findById(id);
     if (!role) {
@@ -198,7 +199,7 @@ export class RoleService {
       try {
         await publishUserUpdatedEvent(userId, {
           role: role.name
-        });
+        }, updatedBy);
       } catch (error) {
         console.error(`Failed to publish user updated event for user ${userId}`, error);
         // Don't throw error here, as the role assignment was successful
@@ -212,8 +213,9 @@ export class RoleService {
    * Remove users from role
    * @param id - Role ID
    * @param userIds - Array of user IDs
+   * @param updatedBy - User performing the action
    */
-  public async removeUsersFromRole(id: string, userIds: string[]): Promise<any[]> {
+  public async removeUsersFromRole(id: string, userIds: string[], updatedBy: { userId: string; username: string }): Promise<any[]> {
     // Get the users before removing them
     const usersToRemove = await roleRepository.getUsersBeforeRoleRemoval(id, userIds);
     
@@ -226,7 +228,7 @@ export class RoleService {
         await publishUserUpdatedEvent(userId, {
           // Note: We're not setting a specific role here since the user's role was removed
           // The consuming services should handle this appropriately
-        });
+        }, updatedBy);
       } catch (error) {
         console.error(`Failed to publish user updated event for user ${userId}`, error);
         // Don't throw error here, as the role removal was successful

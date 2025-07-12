@@ -41,18 +41,19 @@ const extractUserFromHeaders = (req: Request): void => {
  * Assumes the API gateway has already validated the JWT token
  * and attached the user object to the request or headers
  */
-export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
+export const requireAuth = (req: Request, res: Response, next: NextFunction): void => {
   // Try to extract user from headers if not already set
   extractUserFromHeaders(req);
   
   // If no user, return authentication error
   if (!req.user) {
-    return res.status(401).json({
+    res.status(401).json({
       success: false,
       data: null,
       message: 'Authentication required',
       errors: [{ code: 'AUTH_REQUIRED', message: 'User not authenticated' }]
     });
+    return;
   }
   
   next();
@@ -63,18 +64,19 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
  * @param permissions Array of required permissions
  */
 export const requirePermissions = (permissions: string[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     // Try to extract user from headers if not already set
     extractUserFromHeaders(req);
     
     // If no user, return authentication error
     if (!req.user) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         data: null,
         message: 'Authentication required',
         errors: [{ code: 'AUTH_REQUIRED', message: 'User not authenticated' }]
       });
+      return;
     }
 
     const userPermissions = req.user.permissions || [];
@@ -83,7 +85,7 @@ export const requirePermissions = (permissions: string[]) => {
     );
     
     if (!hasRequiredPermissions) {
-      return res.status(403).json({
+      res.status(403).json({
         success: false,
         data: null,
         message: 'Access denied',
@@ -96,6 +98,7 @@ export const requirePermissions = (permissions: string[]) => {
           }
         }]
       });
+      return;
     }
     
     next();
@@ -107,7 +110,7 @@ export const requirePermissions = (permissions: string[]) => {
  * For campaign engine, we'll use the user ID as agent ID for simplicity
  * This can be enhanced later to fetch actual agent information from database
  */
-export const agentContextMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const agentContextMiddleware = (req: Request, res: Response, next: NextFunction): void => {
   try {
     if (req.user && req.user.id) {
       // For now, use user ID as agent ID and username as agent name
@@ -117,11 +120,12 @@ export const agentContextMiddleware = (req: Request, res: Response, next: NextFu
     }
     next();
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       data: null,
       message: 'Internal server error in agent context middleware',
       errors: [{ code: 'INTERNAL_ERROR', message: 'Failed to process agent context' }]
     });
+    return;
   }
 };
