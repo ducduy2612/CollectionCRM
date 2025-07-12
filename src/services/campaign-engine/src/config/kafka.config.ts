@@ -15,15 +15,10 @@ export const kafkaConfig: KafkaConfig = {
 };
 
 export const KAFKA_TOPICS = {
-  CAMPAIGN_PROCESS_REQUEST: env.KAFKA_INPUT_TOPIC,
-  CAMPAIGN_PROCESS_RESULT: env.KAFKA_OUTPUT_TOPIC,
-  CAMPAIGN_PROCESS_DLQ: env.KAFKA_DLQ_TOPIC,
+  CAMPAIGN_PROCESS_RESULT: 'campaign-engine.process.result',
   CAMPAIGN_CREATED: 'campaign-engine.campaign.created',
   CAMPAIGN_UPDATED: 'campaign-engine.campaign.updated',
-  CAMPAIGN_DELETED: 'campaign-engine.campaign.deleted',
-  CAMPAIGN_GROUP_CREATED: 'campaign-engine.campaign-group.created',
-  CAMPAIGN_GROUP_UPDATED: 'campaign-engine.campaign-group.updated',
-  CAMPAIGN_GROUP_DELETED: 'campaign-engine.campaign-group.deleted',
+  CAMPAIGN_DELETED: 'campaign-engine.campaign.deleted'
 };
 
 export const CONSUMER_GROUP_IDS = {

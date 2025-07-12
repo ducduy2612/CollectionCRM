@@ -99,6 +99,11 @@ router.post(
 
       // Create user
       try {
+        const currentUser = {
+          userId: (req as any).user.id,
+          username: (req as any).user.username
+        };
+        
         const user = await userService.createUser({
           username,
           email,
@@ -106,7 +111,7 @@ router.post(
           first_name,
           last_name,
           role,
-        });
+        }, currentUser);
 
         // Return successful response
         return res.status(201).json({
@@ -224,12 +229,17 @@ router.put(
 
       // Update user
       try {
+        const currentUser = {
+          userId: (req as any).user.id,
+          username: (req as any).user.username
+        };
+        
         const user = await userService.updateUser(userId, {
           email,
           first_name,
           last_name,
           role,
-        });
+        }, currentUser);
 
         if (!user) {
           return res.status(404).json({
@@ -290,7 +300,12 @@ router.put(
       const userId = req.params.id;
 
       // Activate user
-      const user = await userService.activateUser(userId);
+      const currentUser = {
+        userId: (req as any).user.id,
+        username: (req as any).user.username
+      };
+      
+      const user = await userService.activateUser(userId, currentUser);
 
       if (!user) {
         return res.status(404).json({
@@ -338,7 +353,12 @@ router.put(
       const userId = req.params.id;
 
       // Deactivate user
-      const user = await userService.deactivateUser(userId);
+      const currentUser = {
+        userId: (req as any).user.id,
+        username: (req as any).user.username
+      };
+      
+      const user = await userService.deactivateUser(userId, currentUser);
 
       if (!user) {
         return res.status(404).json({

@@ -1,13 +1,9 @@
 import { EachMessagePayload } from 'kafkajs';
-import { v4 as uuidv4 } from 'uuid';
 import { AuditLogRepository } from '../../repositories/audit-log.repository';
 import { logger } from '../../utils/logger';
 import { AUDIT_TOPICS } from '../config';
 import { 
-  AgentCreatedEvent, 
-  AgentUpdatedEvent, 
-  ActionRecordedEvent, 
-  ActionRecordCreatedEvent, 
+  ActionConfigUpdatedEvent, 
   CustomerAssignedEvent 
 } from '../types/events';
 
@@ -37,17 +33,8 @@ export class WorkflowEventHandler {
       const messageValue = JSON.parse(message.value.toString());
       
       switch (topic) {
-        case AUDIT_TOPICS.AGENT_CREATED:
-          await this.handleAgentCreated(messageValue as AgentCreatedEvent);
-          break;
-        case AUDIT_TOPICS.AGENT_UPDATED:
-          await this.handleAgentUpdated(messageValue as AgentUpdatedEvent);
-          break;
-        case AUDIT_TOPICS.ACTION_RECORDED:
-          await this.handleActionRecorded(messageValue as ActionRecordedEvent);
-          break;
-        case AUDIT_TOPICS.ACTION_RECORD_CREATED:
-          await this.handleActionRecordCreated(messageValue as ActionRecordCreatedEvent);
+        case AUDIT_TOPICS.ACTION_CONFIG_UPDATED:
+          await this.handleActionConfigUpdated(messageValue as ActionConfigUpdatedEvent);
           break;
         case AUDIT_TOPICS.CUSTOMER_ASSIGNED:
           await this.handleCustomerAssigned(messageValue as CustomerAssignedEvent);
@@ -62,162 +49,39 @@ export class WorkflowEventHandler {
   }
 
   /**
-   * Handle agent created event
+   * Handle action config updated event
    */
-  private async handleAgentCreated(event: AgentCreatedEvent): Promise<void> {
-    logger.info({ message: 'Processing agent created event for audit', agentId: event.agentId });
-
-    try {
-      await this.auditLogRepository.create({
-        eventId: event.id,
-        eventType: 'agent.created',
-        serviceName: 'workflow-service',
-        userId: event.userId,
-        agentId: event.agentId,
-        entityType: 'agent',
-        entityId: event.agentId,
-        action: 'create',
-        timestamp: new Date(event.timestamp),
-        metadata: {
-          name: event.name,
-          email: event.email,
-          department: event.department,
-          originalEvent: event
-        }
-      });
-
-      logger.info({ 
-        message: 'Agent created event audited successfully', 
-        agentId: event.agentId,
-        eventId: event.id
-      });
-    } catch (error) {
-      logger.error({ message: 'Error auditing agent created event', agentId: event.agentId, error });
-      throw error;
-    }
-  }
-
-  /**
-   * Handle agent updated event
-   */
-  private async handleAgentUpdated(event: AgentUpdatedEvent): Promise<void> {
-    logger.info({ message: 'Processing agent updated event for audit', agentId: event.agentId });
-
-    try {
-      await this.auditLogRepository.create({
-        eventId: event.id,
-        eventType: 'agent.updated',
-        serviceName: 'workflow-service',
-        userId: event.userId,
-        agentId: event.agentId,
-        entityType: 'agent',
-        entityId: event.agentId,
-        action: 'update',
-        timestamp: new Date(event.timestamp),
-        metadata: {
-          name: event.name,
-          email: event.email,
-          department: event.department,
-          isActive: event.isActive,
-          originalEvent: event
-        }
-      });
-
-      logger.info({ 
-        message: 'Agent updated event audited successfully', 
-        agentId: event.agentId,
-        eventId: event.id
-      });
-    } catch (error) {
-      logger.error({ message: 'Error auditing agent updated event', agentId: event.agentId, error });
-      throw error;
-    }
-  }
-
-  /**
-   * Handle action recorded event
-   */
-  private async handleActionRecorded(event: ActionRecordedEvent): Promise<void> {
+  private async handleActionConfigUpdated(event: ActionConfigUpdatedEvent): Promise<void> {
     logger.info({ 
-      message: 'Processing action recorded event for audit', 
-      actionId: event.actionId,
-      agentId: event.agentId,
-      customerId: event.customerId
+      message: 'Processing action config updated event for audit', 
+      operation: event.operation,
+      entityType: event.entityType,
+      entityCode: event.entityCode,
+      updatedBy: event.updatedBy
     });
 
     try {
       await this.auditLogRepository.create({
         eventId: event.id,
-        eventType: 'action.recorded',
+        eventType: `action-config.${event.operation}`,
         serviceName: 'workflow-service',
-        agentId: event.agentId,
-        entityType: 'action',
-        entityId: event.actionId,
-        action: 'create',
+        agentId: event.updatedBy,
+        entityType: event.entityType,
+        entityId: event.entityId || event.entityCode || '',
+        action: event.operation,
+        userAgent: event.updatedBy,
         timestamp: new Date(event.timestamp),
-        metadata: {
-          actionId: event.actionId,
-          customerId: event.customerId,
-          actionType: event.actionType,
-          actionSubtype: event.actionSubtype,
-          notes: event.notes,
-          result: event.result,
-          originalEvent: event
-        }
+        metadata: event
       });
 
       logger.info({ 
-        message: 'Action recorded event audited successfully', 
-        actionId: event.actionId,
-        agentId: event.agentId,
+        message: 'Action config updated event audited successfully', 
+        operation: event.operation,
+        entityType: event.entityType,
         eventId: event.id
       });
     } catch (error) {
-      logger.error({ message: 'Error auditing action recorded event', actionId: event.actionId, error });
-      throw error;
-    }
-  }
-
-  /**
-   * Handle action record created event
-   */
-  private async handleActionRecordCreated(event: ActionRecordCreatedEvent): Promise<void> {
-    logger.info({ 
-      message: 'Processing action record created event for audit', 
-      agentId: event.agentId,
-      cif: event.cif,
-      actionCount: event.actionIds.length
-    });
-
-    try {
-      await this.auditLogRepository.create({
-        eventId: event.id,
-        eventType: 'action-record.created',
-        serviceName: 'workflow-service',
-        agentId: event.agentId,
-        entityType: 'customer',
-        entityId: event.cif,
-        action: 'update',
-        timestamp: new Date(event.timestamp),
-        metadata: {
-          actionIds: event.actionIds,
-          cif: event.cif,
-          loanAccountNumbers: event.loanAccountNumbers,
-          agentName: event.agentName,
-          fUpdate: event.fUpdate,
-          actionDate: event.actionDate,
-          originalEvent: event
-        }
-      });
-
-      logger.info({ 
-        message: 'Action record created event audited successfully', 
-        agentId: event.agentId,
-        cif: event.cif,
-        eventId: event.id
-      });
-    } catch (error) {
-      logger.error({ message: 'Error auditing action record created event', agentId: event.agentId, error });
+      logger.error({ message: 'Error auditing action config updated event', entityType: event.entityType, error });
       throw error;
     }
   }
@@ -228,8 +92,6 @@ export class WorkflowEventHandler {
   private async handleCustomerAssigned(event: CustomerAssignedEvent): Promise<void> {
     logger.info({ 
       message: 'Processing customer assigned event for audit', 
-      assignmentId: event.assignmentId,
-      customerId: event.customerId,
       agentId: event.agentId
     });
 
@@ -240,28 +102,19 @@ export class WorkflowEventHandler {
         serviceName: 'workflow-service',
         agentId: event.agentId,
         entityType: 'assignment',
-        entityId: event.assignmentId,
+        entityId: event.batchId,
+        userAgent: event.uploadedBy,
         action: 'create',
         timestamp: new Date(event.timestamp),
-        metadata: {
-          assignmentId: event.assignmentId,
-          customerId: event.customerId,
-          startDate: event.startDate,
-          endDate: event.endDate,
-          reason: event.reason,
-          originalEvent: event
-        }
+        metadata: event
       });
 
       logger.info({ 
         message: 'Customer assigned event audited successfully', 
-        assignmentId: event.assignmentId,
-        customerId: event.customerId,
-        agentId: event.agentId,
         eventId: event.id
       });
     } catch (error) {
-      logger.error({ message: 'Error auditing customer assigned event', assignmentId: event.assignmentId, error });
+      logger.error({ message: 'Error auditing customer assigned event', batchId: event.batchId, error });
       throw error;
     }
   }

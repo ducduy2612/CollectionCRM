@@ -34,16 +34,6 @@ export const rateLimitConfigs = {
     }
   },
   workflow: {
-    caseCreate: {
-      max: 20,
-      windowSizeInSeconds: 60, // 1 minute
-      prefix: 'workflow:case:create:'
-    },
-    actionRecord: {
-      max: 60,
-      windowSizeInSeconds: 60, // 1 minute
-      prefix: 'workflow:action:record:'
-    },
     documentUpload: {
       max: 20,
       windowSizeInSeconds: 60, // 1 minute
@@ -53,45 +43,6 @@ export const rateLimitConfigs = {
       max: 50,
       windowSizeInSeconds: 60, // 1 minute
       prefix: 'workflow:document:download:'
-    }
-  },
-  campaign: {
-    campaignCreate: {
-      max: 10,
-      windowSizeInSeconds: 60, // 1 minute
-      prefix: 'campaign:create:'
-    },
-    campaignUpdate: {
-      max: 20,
-      windowSizeInSeconds: 60, // 1 minute
-      prefix: 'campaign:update:'
-    },
-    customFieldCreate: {
-      max: 5,
-      windowSizeInSeconds: 60, // 1 minute
-      prefix: 'campaign:customfield:'
-    }
-  },
-  payment: {
-    webhookProcess: {
-      max: 100,
-      windowSizeInSeconds: 60, // 1 minute
-      prefix: 'payment:webhook:'
-    },
-    jobExecution: {
-      max: 5,
-      windowSizeInSeconds: 300, // 5 minutes
-      prefix: 'payment:job:'
-    },
-    cacheOperation: {
-      max: 30,
-      windowSizeInSeconds: 60, // 1 minute
-      prefix: 'payment:cache:'
-    },
-    paymentQueries: {
-      max: 50,
-      windowSizeInSeconds: 60, // 1 minute
-      prefix: 'payment:queries:'
     }
   }
 };

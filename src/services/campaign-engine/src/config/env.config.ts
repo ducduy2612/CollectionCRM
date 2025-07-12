@@ -25,9 +25,7 @@ export const env = {
   KAFKA_BROKERS: (process.env.KAFKA_BROKERS || 'localhost:9092').split(','),
   KAFKA_CLIENT_ID: process.env.KAFKA_CLIENT_ID || 'campaign-engine',
   KAFKA_GROUP_ID: process.env.KAFKA_GROUP_ID || 'campaign-engine-group',
-  KAFKA_INPUT_TOPIC: process.env.KAFKA_INPUT_TOPIC || 'campaign.process.request',
-  KAFKA_OUTPUT_TOPIC: process.env.KAFKA_OUTPUT_TOPIC || 'campaign.process.result',
-  KAFKA_DLQ_TOPIC: process.env.KAFKA_DLQ_TOPIC || 'campaign.process.dlq',
+
   
   // External Services
   BANK_SYNC_SERVICE_URL: process.env.BANK_SYNC_SERVICE_URL || 'http://bank-sync-service:3002',

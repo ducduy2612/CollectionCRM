@@ -15,6 +15,10 @@ export interface UserCreatedEvent extends BaseEvent {
   username: string;
   email: string;
   role: string;
+  createdBy: {
+    userId: string;
+    username: string;
+  };
 }
 
 export interface UserUpdatedEvent extends BaseEvent {
@@ -23,183 +27,115 @@ export interface UserUpdatedEvent extends BaseEvent {
   email?: string;
   role?: string;
   isActive?: boolean;
+  updatedBy: {
+    userId: string;
+    username: string;
+  };
 }
 
 export interface UserDeactivatedEvent extends BaseEvent {
   userId: string;
+  reason?: string;
+  deactivatedBy: {
+    userId: string;
+    username: string;
+  };
+}
+
+/**
+ * User login event
+ */
+export interface UserLoginEvent extends BaseEvent {
+  userId: string;
+  username: string;
+  deviceInfo?: {
+    userAgent?: string;
+    ipAddress?: string;
+    deviceType?: string;
+    browser?: string;
+    operatingSystem?: string;
+  };
+  sessionId: string;
+}
+
+/**
+ * User logout event
+ */
+export interface UserLogoutEvent extends BaseEvent {
+  userId: string;
+  username: string;
+  sessionId: string;
   reason?: string;
 }
 
 /**
  * Workflow events from workflow service
  */
-export interface AgentCreatedEvent extends BaseEvent {
-  agentId: string;
-  userId?: string;
-  name: string;
-  email: string;
-  department: string;
-}
 
-export interface AgentUpdatedEvent extends BaseEvent {
-  agentId: string;
-  userId?: string;
-  name?: string;
-  email?: string;
-  department?: string;
-  isActive?: boolean;
-}
-
-export interface ActionRecordedEvent extends BaseEvent {
-  actionId: string;
-  agentId: string;
-  customerId: string;
-  actionType: string;
-  actionSubtype?: string;
-  notes?: string;
-  result?: string;
-}
-
-export interface ActionRecordCreatedEvent extends BaseEvent {
-  actionIds: string[];
-  cif: string;
-  loanAccountNumbers: string[];
-  agentId: string;
-  agentName: string;
-  fUpdate: string;
-  actionDate: string;
+export interface ActionConfigUpdatedEvent extends BaseEvent {
+  operation: 'add' | 'update' | 'deactivate' | 'map' | 'unmap';
+  entityType: 'action_type' | 'action_subtype' | 'action_result' | 'type_subtype_mapping' | 'subtype_result_mapping';
+  entityCode?: string;
+  entityId?: string;
+  changes?: Record<string, any>;
+  updatedBy: string;
+  userId: string;
 }
 
 export interface CustomerAssignedEvent extends BaseEvent {
-  assignmentId: string;
-  customerId: string;
+  batchId: string;
+  uploadedBy: string;
+  userId: string;
   agentId: string;
-  startDate: string;
-  endDate?: string;
-  reason?: string;
+  totalRows: number;
+  processedRows: number;
+  failedRows: number;
+  status: 'processing' | 'completed' | 'failed';
 }
-
-/**
- * Payment events from payment service
- */
-export interface PaymentRecordedEvent {
-  event_id: string;
-  event_type: 'payment.recorded';
-  timestamp: string;
-  version: string;
-  source: string;
-  payment: {
-    id: string;
-    reference_number: string;
-    loan_account_number: string;
-    cif: string;
-    amount: number;
-    payment_date: string;
-    payment_channel: string;
-    source: 'staging' | 'webhook';
-    metadata: Record<string, any>;
-  };
-  context?: {
-    correlation_id?: string;
-    causation_id?: string;
-    user_id?: string;
-    trace_id?: string;
-  };
-}
-
-export interface PaymentBatchProcessedEvent {
-  event_id: string;
-  event_type: 'payment.batch.processed';
-  timestamp: string;
-  version: string;
-  source: string;
-  batch: {
-    batch_id: string;
-    total_records: number;
-    successful_inserts: number;
-    duplicate_records: number;
-    error_records: number;
-    processing_time_ms: number;
-    batch_start_id: string;
-    batch_end_id: string;
-  };
-  context?: {
-    correlation_id?: string;
-    causation_id?: string;
-    trace_id?: string;
-  };
-}
-
-export interface PaymentDuplicateDetectedEvent {
-  event_id: string;
-  event_type: 'payment.duplicate.detected';
-  timestamp: string;
-  version: string;
-  source: string;
-  duplicate: {
-    reference_number: string;
-    loan_account_number: string;
-    cif: string;
-    amount: number;
-    payment_date: string;
-    source: 'staging' | 'webhook';
-    original_payment_id: string;
-    detection_method: 'memory_cache' | 'redis_cache' | 'database';
-  };
-  context?: {
-    correlation_id?: string;
-    causation_id?: string;
-    trace_id?: string;
-  };
-}
-
-export type PaymentEvent = 
-  | PaymentRecordedEvent 
-  | PaymentBatchProcessedEvent 
-  | PaymentDuplicateDetectedEvent;
 
 /**
  * Campaign events from campaign engine
  */
-export interface CampaignCreatedEvent extends BaseEvent {
-  campaignId: string;
-  name: string;
-  description?: string;
-  createdBy: string;
+export interface CampaignEvent extends BaseEvent {
+  type: string; // 'campaign.created', 'campaign.updated', 'campaign.deleted'
+  data: {
+    type: 'campaign' | 'campaign_group';
+    id: string;
+    name?: string;
+    campaign_group_id?: string;
+    campaign_details?: any;
+  };
 }
 
-export interface CampaignUpdatedEvent extends BaseEvent {
-  campaignId: string;
-  name?: string;
-  description?: string;
-  updatedBy: string;
+// Legacy interfaces for backward compatibility
+export interface CampaignCreatedEvent extends CampaignEvent {
+  type: 'campaign.created';
 }
 
-export interface CampaignDeletedEvent extends BaseEvent {
-  campaignId: string;
-  deletedBy: string;
-  reason?: string;
+export interface CampaignUpdatedEvent extends CampaignEvent {
+  type: 'campaign.updated';
 }
 
-export interface CampaignGroupCreatedEvent extends BaseEvent {
-  campaignGroupId: string;
-  campaignId: string;
-  name: string;
-  createdBy: string;
+export interface CampaignDeletedEvent extends CampaignEvent {
+  type: 'campaign.deleted';
 }
 
-export interface CampaignGroupUpdatedEvent extends BaseEvent {
-  campaignGroupId: string;
-  campaignId: string;
-  name?: string;
-  updatedBy: string;
-}
-
-export interface CampaignGroupDeletedEvent extends BaseEvent {
-  campaignGroupId: string;
-  campaignId: string;
-  deletedBy: string;
-  reason?: string;
+/**
+ * Campaign processing events from campaign engine
+ */
+export interface CampaignProcessingEvent extends BaseEvent {
+  type: 'campaign.process.result';
+  data: {
+    request_id: string;
+    processed_count: number;
+    success_count: number;
+    error_count: number;
+    started_at: string;
+    completed_at: string;
+    total_duration_ms: number;
+    requested_by?: string;
+    requested_by_id?: string;
+  };
 }
 
 /**
@@ -209,15 +145,12 @@ export type AuditableEvent =
   | UserCreatedEvent
   | UserUpdatedEvent
   | UserDeactivatedEvent
-  | AgentCreatedEvent
-  | AgentUpdatedEvent
-  | ActionRecordedEvent
-  | ActionRecordCreatedEvent
+  | UserLoginEvent
+  | UserLogoutEvent
+  | ActionConfigUpdatedEvent
   | CustomerAssignedEvent
-  | PaymentEvent
+  | CampaignEvent
   | CampaignCreatedEvent
   | CampaignUpdatedEvent
   | CampaignDeletedEvent
-  | CampaignGroupCreatedEvent
-  | CampaignGroupUpdatedEvent
-  | CampaignGroupDeletedEvent;
+  | CampaignProcessingEvent;

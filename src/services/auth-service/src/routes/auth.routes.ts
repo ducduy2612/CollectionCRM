@@ -97,8 +97,11 @@ router.post(
       const decodedToken = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
       const sessionId = decodedToken.sessionId;
 
+      // Get user info from authenticated request
+      const user = (req as any).user;
+
       // Revoke session
-      const success = await authService.logout(sessionId);
+      const success = await authService.logout(sessionId, user?.id, user?.username, 'user_logout');
 
       if (!success) {
         return res.status(500).json({

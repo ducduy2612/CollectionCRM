@@ -3,6 +3,7 @@ import { userRepository } from '../repositories/user.repository';
 import { userService } from './user.service';
 import { sessionService } from './session-service';
 import { User } from '../models/user.model';
+import { publishUserLoginEvent, publishUserLogoutEvent } from '../kafka';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -89,6 +90,25 @@ export class AuthService {
       // Create session
       const session = await this.createUserSession(user, userWithPermissions.permissions, deviceInfo);
       
+      // Publish login event
+      try {
+        await publishUserLoginEvent(
+          user.id,
+          user.username,
+          session.id,
+          {
+            userAgent: deviceInfo?.userAgent,
+            ipAddress: deviceInfo?.ipAddress,
+            deviceType: deviceInfo?.deviceType,
+            browser: deviceInfo?.browser,
+            operatingSystem: deviceInfo?.operatingSystem
+          }
+        );
+      } catch (error) {
+        console.error('Failed to publish user login event', error);
+        // Don't throw error here, as the login was successful
+      }
+      
       return {
         success: true,
         user: {
@@ -153,11 +173,26 @@ export class AuthService {
   /**
    * Logout a user by revoking their session
    * @param sessionId - Session ID
+   * @param userId - User ID (optional, for audit)
+   * @param username - Username (optional, for audit)
+   * @param reason - Logout reason (optional)
    */
-  public async logout(sessionId: string): Promise<boolean> {
+  public async logout(sessionId: string, userId?: string, username?: string, reason?: string): Promise<boolean> {
     try {
       // Revoke session
-      return await sessionService.revokeSession(sessionId);
+      const success = await sessionService.revokeSession(sessionId);
+      
+      if (success && userId && username) {
+        // Publish logout event
+        try {
+          await publishUserLogoutEvent(userId, username, sessionId, reason);
+        } catch (error) {
+          console.error('Failed to publish user logout event', error);
+          // Don't throw error here, as the logout was successful
+        }
+      }
+      
+      return success;
     } catch (error) {
       console.error('Logout error:', error);
       return false;

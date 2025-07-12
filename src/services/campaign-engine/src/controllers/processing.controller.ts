@@ -26,7 +26,8 @@ export class ProcessingController {
       const processingRequest: BatchProcessingRequest = {
         request_id: requestId,
         campaign_group_ids: campaign_group_ids || null,
-        requested_by: 'system', // TODO: Extract from auth context
+        requested_by: req.user?.username || 'system',
+        requested_by_id: req.user?.id || 'system',
         processing_options: processing_options || {
           parallel_processing: false,
           max_contacts_per_customer: 3

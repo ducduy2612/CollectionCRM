@@ -12,6 +12,8 @@ export const KAFKA_TOPICS = {
   USER_CREATED: 'auth-service.user.created',
   USER_UPDATED: 'auth-service.user.updated',
   USER_DEACTIVATED: 'auth-service.user.deactivated',
+  USER_LOGIN: 'auth-service.user.login',
+  USER_LOGOUT: 'auth-service.user.logout',
 };
 
 /**

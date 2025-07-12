@@ -89,8 +89,8 @@ export class ProcessingService {
         total_duration_ms: totalDuration
       };
 
-      // Publish result to Kafka
-      await this.publishResultToKafka(result);
+      // Publish result to Kafka with user context
+      await this.publishResultToKafka(result, request.requested_by, request.requested_by_id);
 
       return result;
 
@@ -196,11 +196,13 @@ export class ProcessingService {
 
   // Removed - all result storage now handled in SQL stored procedures
 
-  private async publishResultToKafka(result: BatchProcessingResult): Promise<void> {
+  private async publishResultToKafka(result: BatchProcessingResult, requestedBy: string, requestedById: string): Promise<void> {
     try {
-      // Publish all available result data to Kafka
+      // Publish all available result data to Kafka with user context
       await this.kafkaService.publishCampaignProcessResult({
         ...result,
+        requested_by: requestedBy,
+        requested_by_id: requestedById,
         timestamp: new Date().toISOString()
       });
     } catch (error) {

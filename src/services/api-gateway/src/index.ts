@@ -76,26 +76,10 @@ Object.entries(serviceRoutes).forEach(([name, config]) => {
   
   // Add specific rate limiting for workflow endpoints
   if (name === 'workflow' && config.routes) {
-    app.use(`${config.path}/cases`, routeRateLimiter(rateLimitConfigs.workflow.caseCreate));
-    app.use(`${config.path}/actions`, routeRateLimiter(rateLimitConfigs.workflow.actionRecord));
     app.use(`${config.path}/documents/upload`, routeRateLimiter(rateLimitConfigs.workflow.documentUpload));
     app.use(`${config.path}/documents/:id/download`, routeRateLimiter(rateLimitConfigs.workflow.documentDownload));
   }
   
-  // Add specific rate limiting for campaign endpoints
-  if (name === 'campaign' && config.routes) {
-    app.use(`${config.path}`, routeRateLimiter(rateLimitConfigs.campaign.campaignCreate));
-    app.use(`${config.path}/:id`, routeRateLimiter(rateLimitConfigs.campaign.campaignUpdate));
-    app.use(`${config.path}/config/custom-fields`, routeRateLimiter(rateLimitConfigs.campaign.customFieldCreate));
-  }
-  
-  // Add specific rate limiting for payment endpoints
-  if (name === 'payment' && config.routes) {
-    app.use(`${config.path}/webhook`, routeRateLimiter(rateLimitConfigs.payment.webhookProcess));
-    app.use(`${config.path}/monitoring/jobs`, routeRateLimiter(rateLimitConfigs.payment.jobExecution));
-    app.use(`${config.path}/monitoring/cache`, routeRateLimiter(rateLimitConfigs.payment.cacheOperation));
-    app.use(`${config.path}/payments`, routeRateLimiter(rateLimitConfigs.payment.paymentQueries));
-  }
 });
 
 // Redis-based rate limiting (global fallback)

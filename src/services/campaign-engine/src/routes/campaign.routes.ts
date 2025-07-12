@@ -1,6 +1,7 @@
 import express from 'express';
 import { body, param, query, validationResult } from 'express-validator';
 import { CampaignController } from '../controllers/campaign.controller';
+import { requireAuth, requirePermissions } from '../middleware/auth.middleware';
 
 const router = express.Router();
 const campaignController = new CampaignController();
@@ -34,6 +35,8 @@ router.get('/groups/:id',
 );
 
 router.post('/groups',
+  requireAuth,
+  requirePermissions(['campaign_management:all']),
   [
     body('name').trim().notEmpty().withMessage('Name is required'),
     body('name').isLength({ max: 255 }).withMessage('Name must be less than 255 characters')
@@ -43,6 +46,8 @@ router.post('/groups',
 );
 
 router.put('/groups/:id',
+  requireAuth,
+  requirePermissions(['campaign_management:all']),
   [
     param('id').isUUID().withMessage('Invalid campaign group ID'),
     body('name').optional().trim().notEmpty().withMessage('Name cannot be empty'),
@@ -53,6 +58,8 @@ router.put('/groups/:id',
 );
 
 router.delete('/groups/:id',
+  requireAuth,
+  requirePermissions(['campaign_management:all']),
   param('id').isUUID().withMessage('Invalid campaign group ID'),
   validateRequest,
   campaignController.deleteCampaignGroup.bind(campaignController)
@@ -72,6 +79,8 @@ router.get('/:id',
 );
 
 router.post('/',
+  requireAuth,
+  requirePermissions(['campaign_management:all']),
   [
     body('campaign_group_id').isUUID().withMessage('Invalid campaign group ID'),
     body('name').trim().notEmpty().withMessage('Name is required'),
@@ -96,6 +105,8 @@ router.post('/',
 );
 
 router.put('/:id',
+  requireAuth,
+  requirePermissions(['campaign_management:all']),
   [
     param('id').isUUID().withMessage('Invalid campaign ID'),
     body('name').optional().trim().notEmpty().withMessage('Name cannot be empty'),
@@ -121,6 +132,8 @@ router.put('/:id',
 );
 
 router.delete('/:id',
+  requireAuth,
+  requirePermissions(['campaign_management:all']),
   param('id').isUUID().withMessage('Invalid campaign ID'),
   validateRequest,
   campaignController.deleteCampaign.bind(campaignController)
@@ -143,6 +156,8 @@ router.get('/:id/contact-rules',
 router.get('/config/custom-fields', campaignController.getCustomFields.bind(campaignController));
 
 router.post('/config/custom-fields',
+  requireAuth,
+  requirePermissions(['campaign_management:all']),
   [
     body('field_name').trim().notEmpty().withMessage('Field name is required'),
     body('field_name').isLength({ max: 255 }).withMessage('Field name must be less than 255 characters'),

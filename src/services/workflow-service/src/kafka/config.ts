@@ -12,11 +12,9 @@ export const KAFKA_TOPICS = {
   USER_DEACTIVATED: 'auth-service.user.deactivated',
   
   // Workflow service events
-  AGENT_CREATED: 'workflow-service.agent.created',
-  AGENT_UPDATED: 'workflow-service.agent.updated',
-  ACTION_RECORDED: 'workflow-service.action.recorded',
   ACTION_RECORD_CREATED: 'workflow-service.action-record.created', // For customer case f_update
-  CUSTOMER_ASSIGNED: 'workflow-service.assignment.created'
+  CUSTOMER_ASSIGNED: 'workflow-service.assignment.created',
+  ACTION_CONFIG_UPDATED: 'workflow-service.action-config.updated'
 };
 
 /**

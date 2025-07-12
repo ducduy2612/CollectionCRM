@@ -4,6 +4,7 @@ import { ActionTypeRepository, ActionSubtypeRepository, ActionResultRepository }
 import { Errors, OperationType, SourceSystemType } from '../utils/errors';
 import { ResponseUtil } from '../utils/response';
 import { logger } from '../utils/logger';
+import { actionConfigPublisher } from '../kafka/publishers/action-config.publisher';
 
 /**
  * Action configuration controller for workflow service admin functions
@@ -39,6 +40,21 @@ export class ActionConfigController {
       );
       
       logger.info({ id, code, name }, 'Action type added successfully');
+      
+      // Publish Kafka event
+      try {
+        await actionConfigPublisher.publishActionConfigUpdated({
+          operation: 'add',
+          entityType: 'action_type',
+          entityCode: code,
+          entityId: id,
+          changes: config,
+          updatedBy: req.user?.username || 'ADMIN',
+          userId: req.user?.id || 'system'
+        });
+      } catch (kafkaError) {
+        logger.warn({ kafkaError, id, code }, 'Failed to publish action config event, but action type was added successfully');
+      }
       
       return ResponseUtil.success(
         res,
@@ -83,6 +99,21 @@ export class ActionConfigController {
       
       logger.info({ id, code, name }, 'Action subtype added successfully');
       
+      // Publish Kafka event
+      try {
+        await actionConfigPublisher.publishActionConfigUpdated({
+          operation: 'add',
+          entityType: 'action_subtype',
+          entityCode: code,
+          entityId: id,
+          changes: config,
+          updatedBy: req.user?.username || 'ADMIN',
+          userId: req.user?.id || 'system'
+        });
+      } catch (kafkaError) {
+        logger.warn({ kafkaError, id, code }, 'Failed to publish action config event, but action subtype was added successfully');
+      }
+      
       return ResponseUtil.success(
         res,
         { id, ...config },
@@ -125,6 +156,21 @@ export class ActionConfigController {
       );
       
       logger.info({ id, code, name }, 'Action result added successfully');
+      
+      // Publish Kafka event
+      try {
+        await actionConfigPublisher.publishActionConfigUpdated({
+          operation: 'add',
+          entityType: 'action_result',
+          entityCode: code,
+          entityId: id,
+          changes: config,
+          updatedBy: req.user?.username || 'ADMIN',
+          userId: req.user?.id || 'system'
+        });
+      } catch (kafkaError) {
+        logger.warn({ kafkaError, id, code }, 'Failed to publish action config event, but action result was added successfully');
+      }
       
       return ResponseUtil.success(
         res,
@@ -169,6 +215,23 @@ export class ActionConfigController {
       
       logger.info({ typeCode, config, success }, 'Action type update attempted');
       
+      if (success) {
+        // Publish Kafka event
+        try {
+          await actionConfigPublisher.publishActionConfigUpdated({
+            operation: 'update',
+            entityType: 'action_type',
+            entityCode: typeCode,
+            entityId: typeCode,
+            changes: config,
+            updatedBy: req.user?.username || 'ADMIN',
+            userId: req.user?.id || 'system'
+          });
+        } catch (kafkaError) {
+          logger.warn({ kafkaError, typeCode }, 'Failed to publish action config event, but action type was updated successfully');
+        }
+      }
+      
       return ResponseUtil.success(
         res,
         { success },
@@ -210,6 +273,23 @@ export class ActionConfigController {
       );
       
       logger.info({ subtypeCode, config, success }, 'Action subtype update attempted');
+      
+      if (success) {
+        // Publish Kafka event
+        try {
+          await actionConfigPublisher.publishActionConfigUpdated({
+            operation: 'update',
+            entityType: 'action_subtype',
+            entityCode: subtypeCode,
+            entityId: subtypeCode,
+            changes: config,
+            updatedBy: req.user?.username || 'ADMIN',
+            userId: req.user?.id || 'system'
+          });
+        } catch (kafkaError) {
+          logger.warn({ kafkaError, subtypeCode }, 'Failed to publish action config event, but action subtype was updated successfully');
+        }
+      }
       
       return ResponseUtil.success(
         res,
@@ -254,6 +334,23 @@ export class ActionConfigController {
       
       logger.info({ resultCode, config, success }, 'Action result update attempted');
       
+      if (success) {
+        // Publish Kafka event
+        try {
+          await actionConfigPublisher.publishActionConfigUpdated({
+            operation: 'update',
+            entityType: 'action_result',
+            entityCode: resultCode,
+            entityId: resultCode,
+            changes: config,
+            updatedBy: req.user?.username || 'ADMIN',
+            userId: req.user?.id || 'system'
+          });
+        } catch (kafkaError) {
+          logger.warn({ kafkaError, resultCode }, 'Failed to publish action config event, but action result was updated successfully');
+        }
+      }
+      
       return ResponseUtil.success(
         res,
         { success },
@@ -289,6 +386,21 @@ export class ActionConfigController {
       );
       
       logger.info({ id, type_code, subtype_code }, 'Type-subtype mapping created successfully');
+      
+      // Publish Kafka event
+      try {
+        await actionConfigPublisher.publishActionConfigUpdated({
+          operation: 'map',
+          entityType: 'type_subtype_mapping',
+          entityCode: `${type_code}-${subtype_code}`,
+          entityId: id,
+          changes: { type_code, subtype_code },
+          updatedBy: req.user?.username || 'ADMIN',
+          userId: req.user?.id || 'system'
+        });
+      } catch (kafkaError) {
+        logger.warn({ kafkaError, id, type_code, subtype_code }, 'Failed to publish action config event, but mapping was created successfully');
+      }
       
       return ResponseUtil.success(
         res,
@@ -326,6 +438,21 @@ export class ActionConfigController {
       );
       
       logger.info({ id, subtype_code, result_code }, 'Subtype-result mapping created successfully');
+      
+      // Publish Kafka event
+      try {
+        await actionConfigPublisher.publishActionConfigUpdated({
+          operation: 'map',
+          entityType: 'subtype_result_mapping',
+          entityCode: `${subtype_code}-${result_code}`,
+          entityId: id,
+          changes: { subtype_code, result_code },
+          updatedBy: req.user?.username || 'ADMIN',
+          userId: req.user?.id || 'system'
+        });
+      } catch (kafkaError) {
+        logger.warn({ kafkaError, id, subtype_code, result_code }, 'Failed to publish action config event, but mapping was created successfully');
+      }
       
       return ResponseUtil.success(
         res,
@@ -430,6 +557,23 @@ export class ActionConfigController {
       
       logger.info({ typeCode, success }, 'Action type deactivation attempted');
       
+      if (success) {
+        // Publish Kafka event
+        try {
+          await actionConfigPublisher.publishActionConfigUpdated({
+            operation: 'deactivate',
+            entityType: 'action_type',
+            entityCode: typeCode,
+            entityId: typeCode,
+            changes: { is_active: false },
+            updatedBy: req.user?.username || 'ADMIN',
+            userId: req.user?.id || 'system'
+          });
+        } catch (kafkaError) {
+          logger.warn({ kafkaError, typeCode }, 'Failed to publish action config event, but action type was deactivated successfully');
+        }
+      }
+      
       return ResponseUtil.success(
         res,
         { success },
@@ -456,6 +600,23 @@ export class ActionConfigController {
       
       logger.info({ subtypeCode, success }, 'Action subtype deactivation attempted');
       
+      if (success) {
+        // Publish Kafka event
+        try {
+          await actionConfigPublisher.publishActionConfigUpdated({
+            operation: 'deactivate',
+            entityType: 'action_subtype',
+            entityCode: subtypeCode,
+            entityId: subtypeCode,
+            changes: { is_active: false },
+            updatedBy: req.user?.username || 'ADMIN',
+            userId: req.user?.id || 'system'
+          });
+        } catch (kafkaError) {
+          logger.warn({ kafkaError, subtypeCode }, 'Failed to publish action config event, but action subtype was deactivated successfully');
+        }
+      }
+      
       return ResponseUtil.success(
         res,
         { success },
@@ -481,6 +642,23 @@ export class ActionConfigController {
       );
       
       logger.info({ resultCode, success }, 'Action result deactivation attempted');
+      
+      if (success) {
+        // Publish Kafka event
+        try {
+          await actionConfigPublisher.publishActionConfigUpdated({
+            operation: 'deactivate',
+            entityType: 'action_result',
+            entityCode: resultCode,
+            entityId: resultCode,
+            changes: { is_active: false },
+            updatedBy: req.user?.username || 'ADMIN',
+            userId: req.user?.id || 'system'
+          });
+        } catch (kafkaError) {
+          logger.warn({ kafkaError, resultCode }, 'Failed to publish action config event, but action result was deactivated successfully');
+        }
+      }
       
       return ResponseUtil.success(
         res,
@@ -518,6 +696,23 @@ export class ActionConfigController {
       
       logger.info({ type_code, subtype_code, success }, 'Type-subtype mapping removal attempted');
       
+      if (success) {
+        // Publish Kafka event
+        try {
+          await actionConfigPublisher.publishActionConfigUpdated({
+            operation: 'unmap',
+            entityType: 'type_subtype_mapping',
+            entityCode: `${type_code}-${subtype_code}`,
+            entityId: `${type_code}-${subtype_code}`,
+            changes: { type_code, subtype_code },
+            updatedBy: req.user?.username || 'ADMIN',
+            userId: req.user?.id || 'system'
+          });
+        } catch (kafkaError) {
+          logger.warn({ kafkaError, type_code, subtype_code }, 'Failed to publish action config event, but mapping was removed successfully');
+        }
+      }
+      
       return ResponseUtil.success(
         res,
         { success },
@@ -553,6 +748,23 @@ export class ActionConfigController {
       );
       
       logger.info({ subtype_code, result_code, success }, 'Subtype-result mapping removal attempted');
+      
+      if (success) {
+        // Publish Kafka event
+        try {
+          await actionConfigPublisher.publishActionConfigUpdated({
+            operation: 'unmap',
+            entityType: 'subtype_result_mapping',
+            entityCode: `${subtype_code}-${result_code}`,
+            entityId: `${subtype_code}-${result_code}`,
+            changes: { subtype_code, result_code },
+            updatedBy: req.user?.username || 'ADMIN',
+            userId: req.user?.id || 'system'
+          });
+        } catch (kafkaError) {
+          logger.warn({ kafkaError, subtype_code, result_code }, 'Failed to publish action config event, but mapping was removed successfully');
+        }
+      }
       
       return ResponseUtil.success(
         res,

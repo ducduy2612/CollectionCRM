@@ -5,6 +5,7 @@ export interface BatchProcessingRequest {
   request_id: string;
   campaign_group_ids?: string[]; // Optional: process specific groups only
   requested_by: string;
+  requested_by_id: string;
   processing_options: ProcessingOptions;
 }
 

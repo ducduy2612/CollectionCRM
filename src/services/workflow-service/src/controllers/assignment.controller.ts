@@ -7,6 +7,7 @@ import { ResponseUtil } from '../utils/response';
 import { logger } from '../utils/logger';
 import csv from 'csv-parser';
 import { Readable } from 'stream';
+import { assignmentPublisher } from '../kafka/publishers/assignment.publisher';
 
 /**
  * Assignment controller
@@ -308,6 +309,31 @@ export class AssignmentController {
         result: processingResult,
         userId: req.user?.id
       }, 'Bulk assignment processing completed');
+
+      // Publish Kafka event for bulk assignment upload
+      try {
+        await assignmentPublisher.publishBulkAssignmentUploaded({
+          batchId,
+          uploadedBy: req.user?.username || 'system',
+          userId: req.user?.id || 'system',
+          agentId: req.user?.agentId || 'system',
+          totalRows: processingResult.totalRows,
+          processedRows: processingResult.processedRows,
+          failedRows: processingResult.failedRows,
+          status: processingResult.failedRows > 0 ? 'completed' : 'completed'
+        });
+        
+        logger.debug({
+          batchId,
+          totalRows: processingResult.totalRows
+        }, 'Published bulk assignment uploaded event');
+      } catch (kafkaError) {
+        logger.warn({ 
+          kafkaError, 
+          batchId 
+        }, 'Failed to publish bulk assignment uploaded event, but bulk assignment was processed successfully');
+        // Don't fail the request if Kafka publishing fails
+      }
 
       return ResponseUtil.success(
         res,

@@ -12,6 +12,8 @@ export interface CampaignProcessResult {
   started_at: string;
   completed_at: string;
   total_duration_ms: number;
+  requested_by?: string;
+  requested_by_id?: string;
   timestamp: string;
 }
 
@@ -89,7 +91,7 @@ export class KafkaService {
   }
 
 
-  public async publishCampaignEvent(eventType: string, campaignData: any): Promise<void> {
+  public async publishCampaignEvent(eventType: string, campaignData: any, userContext?: { userId: string; username: string }): Promise<void> {
     if (!this.isConnected) {
       logger.warn('Kafka producer not connected - skipping event publishing');
       return;
@@ -107,6 +109,24 @@ export class KafkaService {
     }
 
     try {
+      // Enhance campaign data with user context
+      const enhancedCampaignData = {
+        ...campaignData,
+        // Add user context based on operation type
+        ...(eventType === 'created' && userContext && {
+          created_by: userContext.username,
+          created_by_id: userContext.userId
+        }),
+        ...(eventType === 'updated' && userContext && {
+          updated_by: userContext.username,
+          updated_by_id: userContext.userId
+        }),
+        ...(eventType === 'deleted' && userContext && {
+          deleted_by: userContext.username,
+          deleted_by_id: userContext.userId
+        })
+      };
+
       await this.producer.send({
         topic,
         messages: [{
@@ -116,11 +136,15 @@ export class KafkaService {
             type: `campaign.${eventType}`,
             version: '1.0',
             timestamp: new Date().toISOString(),
-            data: campaignData,
+            data: enhancedCampaignData,
           }),
           headers: {
             'content-type': 'application/json',
             'service': env.SERVICE_NAME,
+            ...(userContext && {
+              'user-id': userContext.userId,
+              'username': userContext.username
+            })
           },
         }],
       });

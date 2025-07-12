@@ -37,42 +37,6 @@ export interface UserDeactivatedEvent extends BaseEvent {
 }
 
 /**
- * Agent created event
- */
-export interface AgentCreatedEvent extends BaseEvent {
-  agentId: string;
-  userId?: string;
-  name: string;
-  email: string;
-  department: string;
-}
-
-/**
- * Agent updated event
- */
-export interface AgentUpdatedEvent extends BaseEvent {
-  agentId: string;
-  userId?: string;
-  name?: string;
-  email?: string;
-  department?: string;
-  isActive?: boolean;
-}
-
-/**
- * Action recorded event
- */
-export interface ActionRecordedEvent extends BaseEvent {
-  actionId: string;
-  agentId: string;
-  customerId: string;
-  actionType: string;
-  actionSubtype?: string;
-  notes?: string;
-  result?: string;
-}
-
-/**
  * Action record created event - for customer case f_update
  */
 export interface ActionRecordCreatedEvent extends BaseEvent {
@@ -86,13 +50,28 @@ export interface ActionRecordCreatedEvent extends BaseEvent {
 }
 
 /**
- * Customer assigned event
+ * Bulk assignment uploaded event
  */
-export interface CustomerAssignedEvent extends BaseEvent {
-  assignmentId: string;
-  customerId: string;
+export interface BulkAssignmentUploadedEvent extends BaseEvent {
+  batchId: string;
+  uploadedBy: string;
+  userId: string;
   agentId: string;
-  startDate: string;
-  endDate?: string;
-  reason?: string;
+  totalRows: number;
+  processedRows: number;
+  failedRows: number;
+  status: 'processing' | 'completed' | 'failed';
+}
+
+/**
+ * Action config updated event
+ */
+export interface ActionConfigUpdatedEvent extends BaseEvent {
+  operation: 'add' | 'update' | 'deactivate' | 'map' | 'unmap';
+  entityType: 'action_type' | 'action_subtype' | 'action_result' | 'type_subtype_mapping' | 'subtype_result_mapping';
+  entityCode?: string;
+  entityId?: string;
+  changes?: Record<string, any>;
+  updatedBy: string;
+  userId: string;
 }

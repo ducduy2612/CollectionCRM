@@ -41,9 +41,6 @@ export class AuditLog {
   @Column({ type: 'timestamp with time zone' })
   timestamp: Date;
 
-  @Column({ type: 'varchar', length: 45, name: 'ip_address', nullable: true })
-  ipAddress?: string;
-
   @Column({ type: 'text', name: 'user_agent', nullable: true })
   userAgent?: string;
 

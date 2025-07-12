@@ -30,9 +30,11 @@ export class UserService {
    * Create a new user
    * @param userData - User data
    * @param password - Plain text password
+   * @param currentUser - User performing the action
    */
   public async createUser(
-    userData: Omit<UserCreateData, 'password_hash'> & { password: string }
+    userData: Omit<UserCreateData, 'password_hash'> & { password: string },
+    currentUser: { userId: string; username: string }
   ): Promise<User> {
     // Check if username already exists
     const existingUsername = await userRepository.findByUsername(userData.username);
@@ -71,7 +73,8 @@ export class UserService {
         user.id,
         user.username,
         user.email,
-        user.role
+        user.role,
+        currentUser
       );
     } catch (error) {
       console.error('Failed to publish user created event', error);
@@ -85,11 +88,13 @@ export class UserService {
    * Update a user
    * @param id - User ID
    * @param userData - User data to update
+   * @param currentUser - User performing the action
    * @param password - New password (optional)
    */
   public async updateUser(
     id: string,
     userData: Omit<UserUpdateData, 'password_hash'>,
+    currentUser: { userId: string; username: string },
     password?: string
   ): Promise<User | null> {
     // Check if user exists
@@ -132,7 +137,7 @@ export class UserService {
           username: existingUser.username,
           email: updateData.email,
           role: updateData.role
-        });
+        }, currentUser);
       } catch (error) {
         console.error('Failed to publish user updated event', error);
         // Don't throw error here, as the user was updated successfully
@@ -202,8 +207,9 @@ export class UserService {
   /**
    * Activate a user
    * @param id - User ID
+   * @param currentUser - User performing the action
    */
-  public async activateUser(id: string): Promise<UserResponse | null> {
+  public async activateUser(id: string, currentUser: { userId: string; username: string }): Promise<UserResponse | null> {
     const user = await userRepository.activate(id);
     
     if (!user) {
@@ -214,7 +220,7 @@ export class UserService {
     try {
       await publishUserUpdatedEvent(id, {
         isActive: true
-      });
+      }, currentUser);
     } catch (error) {
       console.error('Failed to publish user updated event', error);
       // Don't throw error here, as the user was activated successfully
@@ -236,8 +242,9 @@ export class UserService {
   /**
    * Deactivate a user
    * @param id - User ID
+   * @param currentUser - User performing the action
    */
-  public async deactivateUser(id: string): Promise<UserResponse | null> {
+  public async deactivateUser(id: string, currentUser: { userId: string; username: string }): Promise<UserResponse | null> {
     const user = await userRepository.deactivate(id);
     
     if (!user) {
@@ -246,7 +253,7 @@ export class UserService {
     
     // Publish user deactivated event
     try {
-      await publishUserDeactivatedEvent(id);
+      await publishUserDeactivatedEvent(id, undefined, currentUser);
     } catch (error) {
       console.error('Failed to publish user deactivated event', error);
       // Don't throw error here, as the user was deactivated successfully

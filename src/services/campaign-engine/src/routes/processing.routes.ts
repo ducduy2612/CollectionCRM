@@ -1,6 +1,7 @@
 import express from 'express';
 import { body, param, query, validationResult } from 'express-validator';
 import { ProcessingController } from '../controllers/processing.controller';
+import { requireAuth, requirePermissions } from '../middleware/auth.middleware';
 
 const router = express.Router();
 const processingController = new ProcessingController();
@@ -26,6 +27,8 @@ const validateRequest = (req: express.Request, res: express.Response, next: expr
 
 // Trigger campaign processing
 router.post('/trigger',
+  requireAuth,
+  requirePermissions(['campaign_management:all']),
   [
     body('campaign_group_ids').optional().isArray().withMessage('Campaign group IDs must be an array'),
     body('campaign_group_ids.*').optional().isUUID().withMessage('Invalid campaign group ID'),

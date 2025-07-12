@@ -76,6 +76,9 @@ export class CampaignController {
         type: 'campaign_group',
         id: group.id,
         name: group.name
+      }, {
+        userId: req.user?.id || 'system',
+        username: req.user?.username || 'system'
       });
 
       res.status(201).json({
@@ -114,6 +117,9 @@ export class CampaignController {
         type: 'campaign_group',
         id: group.id,
         name: group.name
+      }, {
+        userId: req.user?.id || 'system',
+        username: req.user?.username || 'system'
       });
 
       res.json({
@@ -151,6 +157,9 @@ export class CampaignController {
       await this.kafkaService.publishCampaignEvent('deleted', {
         type: 'campaign_group',
         id
+      }, {
+        userId: req.user?.id || 'system',
+        username: req.user?.username || 'system'
       });
 
       res.json({
@@ -225,14 +234,18 @@ export class CampaignController {
   async createCampaign(req: Request, res: Response): Promise<void> {
     try {
       const campaign = await this.campaignRepository.createCampaign(req.body);
-      
+
       // Publish event
       await this.kafkaService.publishCampaignEvent('created', {
         type: 'campaign',
         id: campaign.id,
         name: campaign.name,
         campaign_group_id: campaign.campaign_group_id,
+        campaign_details: req.body,
         priority: campaign.priority
+      }, {
+        userId: req.user?.id || 'system',
+        username: req.user?.username || 'system'
       });
 
       res.status(201).json({
@@ -272,7 +285,11 @@ export class CampaignController {
         id: campaign.id,
         name: campaign.name,
         campaign_group_id: campaign.campaign_group_id,
+        campaign_details: req.body,
         priority: campaign.priority
+      }, {
+        userId: req.user?.id || 'system',
+        username: req.user?.username || 'system'
       });
 
       res.json({
@@ -316,6 +333,9 @@ export class CampaignController {
       await this.kafkaService.publishCampaignEvent('deleted', {
         type: 'campaign',
         id
+      }, {
+        userId: req.user?.id || 'system',
+        username: req.user?.username || 'system'
       });
 
       res.json({

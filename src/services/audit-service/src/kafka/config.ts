@@ -10,24 +10,18 @@ export const AUDIT_TOPICS = {
   USER_CREATED: 'auth-service.user.created',
   USER_UPDATED: 'auth-service.user.updated',
   USER_DEACTIVATED: 'auth-service.user.deactivated',
+  USER_LOGIN: 'auth-service.user.login',
+  USER_LOGOUT: 'auth-service.user.logout',
   
   // Workflow service events
-  AGENT_CREATED: 'workflow-service.agent.created',
-  AGENT_UPDATED: 'workflow-service.agent.updated',
-  ACTION_RECORDED: 'workflow-service.action.recorded',
-  ACTION_RECORD_CREATED: 'workflow-service.action-record.created',
+  ACTION_CONFIG_UPDATED: 'workflow-service.action-config.updated',
   CUSTOMER_ASSIGNED: 'workflow-service.assignment.created',
-  
-  // Payment service events
-  PAYMENT_EVENTS: 'payment.events',
   
   // Campaign engine events
   CAMPAIGN_CREATED: 'campaign-engine.campaign.created',
   CAMPAIGN_UPDATED: 'campaign-engine.campaign.updated',
   CAMPAIGN_DELETED: 'campaign-engine.campaign.deleted',
-  CAMPAIGN_GROUP_CREATED: 'campaign-engine.campaign-group.created',
-  CAMPAIGN_GROUP_UPDATED: 'campaign-engine.campaign-group.updated',
-  CAMPAIGN_GROUP_DELETED: 'campaign-engine.campaign-group.deleted',
+  CAMPAIGN_PROCESS_RESULT: 'campaign-engine.process.result'
 };
 
 /**
@@ -36,7 +30,6 @@ export const AUDIT_TOPICS = {
 export const CONSUMER_GROUPS = {
   USER_EVENTS: 'audit-service-user-events',
   WORKFLOW_EVENTS: 'audit-service-workflow-events',
-  PAYMENT_EVENTS: 'audit-service-payment-events',
   CAMPAIGN_EVENTS: 'audit-service-campaign-events',
 };
 
@@ -89,22 +82,6 @@ export const userEventsConsumerConfig: ConsumerConfig = {
  */
 export const workflowEventsConsumerConfig: ConsumerConfig = {
   groupId: CONSUMER_GROUPS.WORKFLOW_EVENTS,
-  allowAutoTopicCreation: false,
-  sessionTimeout: 30000,
-  heartbeatInterval: 3000,
-  maxBytesPerPartition: 1048576, // 1MB
-  maxBytes: 5242880, // 5MB
-  retry: {
-    initialRetryTime: 100,
-    retries: 8
-  }
-};
-
-/**
- * Default consumer configuration for payment events
- */
-export const paymentEventsConsumerConfig: ConsumerConfig = {
-  groupId: CONSUMER_GROUPS.PAYMENT_EVENTS,
   allowAutoTopicCreation: false,
   sessionTimeout: 30000,
   heartbeatInterval: 3000,

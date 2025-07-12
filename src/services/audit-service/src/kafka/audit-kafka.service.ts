@@ -4,10 +4,12 @@ import {
   kafka, 
   AUDIT_TOPICS, 
   userEventsConsumerConfig,
-  workflowEventsConsumerConfig 
+  workflowEventsConsumerConfig,
+  campaignEventsConsumerConfig 
 } from './config';
 import { userEventHandler } from './handlers/user-event.handler';
 import { workflowEventHandler } from './handlers/workflow-event.handler';
+import { campaignEventHandler } from './handlers/campaign-event.handler';
 
 /**
  * Main Kafka service for audit logging
@@ -15,11 +17,13 @@ import { workflowEventHandler } from './handlers/workflow-event.handler';
 export class AuditKafkaService {
   private userEventsConsumer: Consumer;
   private workflowEventsConsumer: Consumer;
+  private campaignEventsConsumer: Consumer;
   private isRunning = false;
 
   constructor() {
     this.userEventsConsumer = kafka.consumer(userEventsConsumerConfig);
     this.workflowEventsConsumer = kafka.consumer(workflowEventsConsumerConfig);
+    this.campaignEventsConsumer = kafka.consumer(campaignEventsConsumerConfig);
   }
 
   /**
@@ -28,7 +32,8 @@ export class AuditKafkaService {
   async initialize(): Promise<void> {
     try {
       await this.setupUserEventsConsumer();
-      //await this.setupWorkflowEventsConsumer();
+      await this.setupWorkflowEventsConsumer();
+      await this.setupCampaignEventsConsumer();
       
       await this.startConsumers();
       this.isRunning = true;
@@ -50,7 +55,9 @@ export class AuditKafkaService {
         topics: [
           AUDIT_TOPICS.USER_CREATED,
           AUDIT_TOPICS.USER_UPDATED,
-          AUDIT_TOPICS.USER_DEACTIVATED
+          AUDIT_TOPICS.USER_DEACTIVATED,
+          AUDIT_TOPICS.USER_LOGIN,
+          AUDIT_TOPICS.USER_LOGOUT
         ],
         fromBeginning: false
       });
@@ -129,16 +136,13 @@ export class AuditKafkaService {
 
   /**
    * Setup workflow events consumer
-   */ /*
+   */ 
   private async setupWorkflowEventsConsumer(): Promise<void> {
     try {
       // Subscribe to workflow events topics
       await this.workflowEventsConsumer.subscribe({
         topics: [
-          AUDIT_TOPICS.AGENT_CREATED,
-          AUDIT_TOPICS.AGENT_UPDATED,
-          AUDIT_TOPICS.ACTION_RECORDED,
-          AUDIT_TOPICS.ACTION_RECORD_CREATED,
+          AUDIT_TOPICS.ACTION_CONFIG_UPDATED,
           AUDIT_TOPICS.CUSTOMER_ASSIGNED
         ],
         fromBeginning: false
@@ -214,7 +218,59 @@ export class AuditKafkaService {
       throw error;
     }
   }
-  */
+
+  /**
+   * Setup campaign events consumer
+   */
+  private async setupCampaignEventsConsumer(): Promise<void> {
+    try {
+      // Subscribe to campaign events topics
+      await this.campaignEventsConsumer.subscribe({
+        topics: [
+          AUDIT_TOPICS.CAMPAIGN_CREATED,
+          AUDIT_TOPICS.CAMPAIGN_UPDATED,
+          AUDIT_TOPICS.CAMPAIGN_DELETED,
+          AUDIT_TOPICS.CAMPAIGN_PROCESS_RESULT
+        ],
+        fromBeginning: false
+      });
+
+      // Set up message handler
+      await this.campaignEventsConsumer.run({
+        eachMessage: async (payload) => {
+          const { topic, partition, message } = payload;
+          
+          logger.info({
+            message: 'Received campaign event',
+            topic,
+            partition,
+            offset: message.offset,
+            timestamp: message.timestamp
+          });
+
+          // Process the message
+          try {
+            await campaignEventHandler.processMessage(payload);
+          } catch (error) {
+            logger.error({
+              message: 'Error processing campaign event',
+              topic,
+              partition,
+              offset: message.offset,
+              error
+            });
+            throw error;
+          }
+        }
+      });
+
+      logger.info('Campaign events consumer setup completed');
+    } catch (error) {
+      logger.error({ message: 'Failed to setup campaign events consumer', error });
+      throw error;
+    }
+  }
+
   /**
    * Start all consumers
    */
@@ -240,9 +296,11 @@ export class AuditKafkaService {
     try {
       await this.userEventsConsumer.stop();
       await this.workflowEventsConsumer.stop();
+      await this.campaignEventsConsumer.stop();
       
       await this.userEventsConsumer.disconnect();
       await this.workflowEventsConsumer.disconnect();
+      await this.campaignEventsConsumer.disconnect();
       
       this.isRunning = false;
       logger.info('Audit Kafka service disconnected');
