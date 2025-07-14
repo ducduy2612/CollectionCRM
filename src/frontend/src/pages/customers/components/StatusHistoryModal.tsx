@@ -59,7 +59,7 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
   // Get status name from dictionary
   const getStatusName = (item: StatusHistoryItem): string => {
     if ('statusId' in item) {
-      return statusDict[item.statusId]?.name || t('customers:status.unknown1');
+      return statusDict[item.statusId]?.name || t('customers:status.unknown');
     }
     if ('stateId' in item) {
       const stateName = statusDict[item.stateId]?.name || t('customers:status.unknown');
@@ -230,6 +230,9 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
                       </div>
                     </TableHead>
                   )}
+                  {statusType === 'collateral' && (
+                    <TableHead>{t('customers:status_history.collateral_number')}</TableHead>
+                  )}
                   <TableHead>{t('customers:status_history.agent')}</TableHead>
                   <TableHead>{t('customers:status_history.notes')}</TableHead>
                 </TableRow>
@@ -266,6 +269,13 @@ const StatusHistoryModal: React.FC<StatusHistoryModalProps> = ({
                         >
                           {getStatusName(item)}
                         </Badge>
+                      </TableCell>
+                    )}
+                    {statusType === 'collateral' && (
+                      <TableCell>
+                        <div className="text-sm font-medium">
+                          {'collateralNumber' in item ? item.collateralNumber : '-'}
+                        </div>
                       </TableCell>
                     )}
                     <TableCell>

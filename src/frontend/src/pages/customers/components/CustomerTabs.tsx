@@ -16,7 +16,8 @@ const CustomerTabs: React.FC<CustomerTabsProps> = ({ activeTab, onTabChange }) =
     { id: 'actions', label: t('customers:tabs.actions') },
     { id: 'payments', label: t('customers:tabs.payments') },
     { id: 'documents', label: t('customers:tabs.documents') },
-    { id: 'references', label: t('customers:tabs.references') }
+    { id: 'references', label: t('customers:tabs.references') },
+    { id: 'collaterals', label: t('customers:tabs.collaterals') }
   ];
 
   return (

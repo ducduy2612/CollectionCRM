@@ -3,7 +3,7 @@ import { Modal, ModalFooter } from '../../../components/ui/Modal';
 import { Button } from '../../../components/ui/Button';
 import { Select, SelectOption } from '../../../components/ui/Select';
 import { Input } from '../../../components/ui/Input';
-import { StatusDictItem, StatusUpdateRequest } from '../types';
+import { StatusDictItem, StatusUpdateRequest, Collateral } from '../types';
 import { useTranslation } from '../../../i18n/hooks/useTranslation';
 import { statusDictApi } from '../../../services/api/workflow/status-dict.api';
 
@@ -15,6 +15,7 @@ interface StatusUpdateModalProps {
   substateOptions?: StatusDictItem[]; // Only for processing_state
   cif: string;
   collateralId?: string; // Only for collateral status
+  collateralOptions?: Collateral[]; // For collateral selection
   onSubmit: (data: StatusUpdateRequest) => Promise<void>;
 }
 
@@ -22,6 +23,7 @@ interface FormData {
   statusId: string;
   stateId?: string;
   substateId?: string;
+  collateralNumber?: string;
   notes: string;
   actionDate: string;
 }
@@ -30,6 +32,7 @@ interface FormErrors {
   statusId?: string;
   stateId?: string;
   substateId?: string;
+  collateralNumber?: string;
   notes?: string;
   actionDate?: string;
 }
@@ -42,6 +45,7 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
   substateOptions,
   cif,
   collateralId,
+  collateralOptions,
   onSubmit
 }) => {
   const { t } = useTranslation();
@@ -49,6 +53,7 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
     statusId: '',
     stateId: '',
     substateId: '',
+    collateralNumber: '',
     notes: '',
     actionDate: new Date().toISOString().slice(0, 16) // Format for datetime-local input
   });
@@ -65,6 +70,7 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
         statusId: '',
         stateId: '',
         substateId: '',
+        collateralNumber: '',
         notes: '',
         actionDate: new Date().toISOString().slice(0, 16)
       });
@@ -149,6 +155,10 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
       newErrors.substateId = t('customers:status_update.validation.substate_required');
     }
 
+    if (statusType === 'collateral' && !formData.collateralNumber?.trim()) {
+      newErrors.collateralNumber = t('customers:status_update.validation.collateral_required');
+    }
+
     if (!formData.actionDate.trim()) {
       newErrors.actionDate = t('customers:status_update.validation.action_date_required');
     } else {
@@ -192,9 +202,14 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
         submitData.substateId = formData.substateId;
       }
 
-      // Add collateral ID for collateral status
-      if (statusType === 'collateral' && collateralId) {
-        submitData.collateralId = collateralId;
+      // Add collateral data for collateral status
+      if (statusType === 'collateral') {
+        if (collateralId) {
+          submitData.collateralId = collateralId;
+        }
+        if (formData.collateralNumber) {
+          submitData.collateralNumber = formData.collateralNumber;
+        }
       }
       await onSubmit(submitData);
       onClose();
@@ -256,6 +271,23 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
           required
           disabled={isSubmitting}
         />
+
+        {/* Collateral Selection (only for collateral status) */}
+        {statusType === 'collateral' && collateralOptions && collateralOptions.length > 0 && (
+          <Select
+            label={t('customers:status_update.collateral_number')}
+            options={collateralOptions.map(col => ({
+              value: col.collateralNumber,
+              label: `${col.collateralNumber} - ${col.description} (${col.type})`
+            }))}
+            value={formData.collateralNumber || ''}
+            onChange={(e) => handleInputChange('collateralNumber', e.target.value)}
+            placeholder={t('customers:status_update.placeholders.select_collateral')}
+            error={errors.collateralNumber}
+            required
+            disabled={isSubmitting}
+          />
+        )}
 
         {/* Substate Selection (only for processing_state) */}
         {statusType === 'processingState' && formData.statusId && (
@@ -321,8 +353,15 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
         <div className="bg-neutral-50 rounded-md p-3 border border-neutral-200">
           <div className="text-xs text-neutral-600 mb-1">{t('customers:status_update.customer')}</div>
           <div className="text-sm font-medium text-neutral-800">CIF: {cif}</div>
-          {statusType === 'collateral' && collateralId && (
-            <div className="text-xs text-neutral-600 mt-1">{t('customers:status_update.collateral_id')}: {collateralId}</div>
+          {statusType === 'collateral' && (
+            <>
+              {collateralId && (
+                <div className="text-xs text-neutral-600 mt-1">{t('customers:status_update.collateral_id')}: {collateralId}</div>
+              )}
+              {formData.collateralNumber && (
+                <div className="text-xs text-neutral-600 mt-1">{t('customers:status_update.collateral_number')}: {formData.collateralNumber}</div>
+              )}
+            </>
           )}
         </div>
       </form>
@@ -339,7 +378,7 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
         <Button
           type="submit"
           onClick={handleSubmit}
-          disabled={isSubmitting || !formData.statusId}
+          disabled={isSubmitting || !formData.statusId || (statusType === 'collateral' && !formData.collateralNumber)}
           className="min-w-[100px]"
         >
           {isSubmitting ? (

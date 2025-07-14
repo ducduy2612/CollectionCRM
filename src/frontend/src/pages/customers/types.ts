@@ -114,6 +114,30 @@ export interface ContactInfo {
   addresses: Address[];
 }
 
+export interface Collateral {
+  collateralNumber: string;
+  type: string;
+  description: string;
+  value: number;
+  valuationDate: string;
+  // Vehicle specific fields
+  make?: string;
+  model?: string;
+  year?: number;
+  vin?: string;
+  licensePlate?: string;
+  // Real estate specific fields
+  propertyType?: string;
+  address?: string;
+  size?: number;
+  titleNumber?: string;
+  // Associated loans
+  associatedLoans?: Array<{
+    accountNumber: string;
+    productType: string;
+  }>;
+}
+
 export interface Customer {
   id?: string;
   createdAt?: string;
@@ -138,7 +162,7 @@ export interface Customer {
   addresses: Address[];
   emails: Email[];
   loans: Loan[];
-  collaterals: any[];
+  collaterals: Collateral[];
   referenceCustomers?: ReferenceCustomer[];
 }
 
@@ -454,6 +478,7 @@ export interface CustomerStatusHistoryItem extends BaseStatusHistoryItem {
  */
 export interface CollateralStatusHistoryItem extends BaseStatusHistoryItem {
   collateralId: string;
+  collateralNumber: string;
   statusId: string;
   status?: CollateralStatusDictItem;
 }
@@ -562,6 +587,7 @@ export interface StatusUpdateRequest {
   stateId?: string; // For processing state only
   substateId?: string; // For processing state only
   collateralId?: string; // For collateral status only
+  collateralNumber?: string; // For collateral status only
   notes?: string;
   actionDate?: string; // Defaults to current timestamp if not provided
 }

@@ -333,10 +333,10 @@ export class CaseController {
       const { cif, collateralNumber, statusId, actionDate, notes } = req.body;
 
       // Validate required fields
-      if (!cif || !statusId) {
+      if (!cif || !statusId || !collateralNumber) {
         throw Errors.create(
           Errors.Validation.REQUIRED_FIELD_MISSING,
-          'Missing required fields: cif, statusId',
+          'Missing required fields: cif, statusId, collateralNumber',
           OperationType.VALIDATION,
           SourceSystemType.WORKFLOW_SERVICE
         );

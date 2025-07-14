@@ -6,13 +6,14 @@ import { Alert } from '../../../components/ui/Alert';
 import { Textarea } from '../../../components/ui/Textarea';
 import { workflowApi, StatusHistoryItem } from '../../../services/api/workflow.api';
 import { statusDictApi } from '../../../services/api/workflow/status-dict.api';
-import { StatusDictItem, StatusUpdateRequest } from '../types';
+import { StatusDictItem, StatusUpdateRequest, Collateral } from '../types';
 import StatusHistoryModal from './StatusHistoryModal';
 import StatusUpdateModal from './StatusUpdateModal';
 import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 interface CustomerStatusProps {
   cif: string;
+  collaterals?: Collateral[];
 }
 
 interface StatusDictionaries {
@@ -40,7 +41,7 @@ interface ModalState {
   statusType: StatusType | null;
 }
 
-const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
+const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif, collaterals }) => {
   const { t } = useTranslation(['customers', 'common']);
   // State management
   const [statusDictionaries, setStatusDictionaries] = useState<StatusDictionaries | null>(null);
@@ -255,6 +256,7 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
           await workflowApi.recordCollateralStatus({
             cif: data.cif,
             statusId: data.statusId,
+            collateralNumber: data.collateralNumber,
             actionDate: data.actionDate,
             notes: data.notes
           });
@@ -583,6 +585,7 @@ const CustomerStatus: React.FC<CustomerStatusProps> = ({ cif }) => {
           statusOptions={getStatusOptionsForUpdate()}
           substateOptions={modalState.statusType === 'processingState' ? processingSubstates : undefined}
           cif={cif}
+          collateralOptions={modalState.statusType === 'collateral' ? collaterals : undefined}
           onSubmit={handleStatusUpdate}
         />
       )}

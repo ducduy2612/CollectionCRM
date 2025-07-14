@@ -190,6 +190,7 @@
     "legal": "Pháp Lý",
     "actions": "Hành Động",
     "references": "Người Tham Chiếu",
+    "collaterals": "Tài Sản Đảm Bảo",
     "assignment_history": "Lịch Sử Phân Công"
   },
   "filters": {
@@ -364,7 +365,8 @@
     "previous": "Trước",
     "next": "Tiếp theo",
     "close": "Đóng",
-    "update_status": "Cập Nhật Trạng Thái"
+    "update_status": "Cập Nhật Trạng Thái",
+    "collateral_number": "Số Tài Sản Đảm Bảo"
   },
   "status_update": {
     "title": "Cập Nhật {{statusType}}",
@@ -382,16 +384,19 @@
     "notes_counter": "{{count}}/500 ký tự",
     "customer": "Khách Hàng",
     "collateral_id": "Mã Tài Sản Đảm Bảo",
+    "collateral_number": "Số Tài Sản Đảm Bảo",
     "updating": "Đang cập nhật...",
     "update_status": "Cập Nhật Trạng Thái",
     "no_substates_mapped": "Không có trạng thái phụ được ánh xạ cho trạng thái này",
     "placeholders": {
       "select_status": "Chọn {{statusType}}...",
-      "select_substate": "Chọn trạng thái phụ xử lý..."
+      "select_substate": "Chọn trạng thái phụ xử lý...",
+      "select_collateral": "Chọn tài sản đảm bảo..."
     },
     "validation": {
       "status_required": "Trạng thái là bắt buộc",
       "substate_required": "Trạng thái phụ là bắt buộc",
+      "collateral_required": "Việc chọn tài sản đảm bảo là bắt buộc",
       "action_date_required": "Ngày hành động là bắt buộc",
       "action_date_future": "Ngày hành động không thể trong tương lai",
       "notes_max_length": "Ghi chú không được vượt quá 500 ký tự"

@@ -190,6 +190,7 @@
     "legal": "Legal",
     "actions": "Actions",
     "references": "References",
+    "collaterals": "Collaterals",
     "assignment_history": "Assignment History"
   },
   "filters": {
@@ -364,7 +365,8 @@
     "previous": "Previous",
     "next": "Next",
     "close": "Close",
-    "update_status": "Update Status"
+    "update_status": "Update Status",
+    "collateral_number": "Collateral Number"
   },
   "status_update": {
     "title": "Update {{statusType}}",
@@ -382,16 +384,19 @@
     "notes_counter": "{{count}}/500 characters",
     "customer": "Customer",
     "collateral_id": "Collateral ID",
+    "collateral_number": "Collateral Number",
     "updating": "Updating...",
     "update_status": "Update Status",
     "no_substates_mapped": "No substates mapped to this state",
     "placeholders": {
       "select_status": "Select {{statusType}}...",
-      "select_substate": "Select processing substate..."
+      "select_substate": "Select processing substate...",
+      "select_collateral": "Select collateral..."
     },
     "validation": {
       "status_required": "Status is required",
       "substate_required": "Substate is required",
+      "collateral_required": "Collateral selection is required",
       "action_date_required": "Action date is required",
       "action_date_future": "Action date cannot be in the future",
       "notes_max_length": "Notes cannot exceed 500 characters"

@@ -97,6 +97,7 @@ export interface RecordStatusRequest {
   statusId: string;
   stateId?: string;
   substateId?: string;
+  collateralNumber?: string;
   actionDate?: string;
   notes?: string;
 }

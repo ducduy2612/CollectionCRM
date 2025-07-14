@@ -13,6 +13,7 @@ import ActionPanel from './components/ActionPanel';
 import CustomerList from './components/CustomerList';
 import DocumentHistory from './components/DocumentHistory';
 import ReferenceCustomers from './components/ReferenceCustomers';
+import CustomerCollaterals from './components/CustomerCollaterals';
 import { bankApi } from '../../services/api/bank.api';
 import { paymentApi } from '../../services/api/payment.api';
 import { Spinner } from '../../components/ui/Spinner';
@@ -192,7 +193,7 @@ const CustomersPage: React.FC = () => {
           onReferenceClick={() => setActiveTab('references')}
         />
         {customer && <ContactInformation cif={cif} phones={customer.phones} emails={customer.emails} addresses={customer.addresses} />}
-        <CustomerStatusComponent cif={cif || ''} />
+        <CustomerStatusComponent cif={cif || ''} collaterals={customer?.collaterals || []} />
       </div>
       
       {/* Tabs */}
@@ -255,6 +256,12 @@ const CustomersPage: React.FC = () => {
           primaryCif={customer.cif}
           referenceCustomers={customer.referenceCustomers || []}
           onRefresh={fetchCustomerData}
+        />
+      )}
+
+      {activeTab === 'collaterals' && customer && (
+        <CustomerCollaterals 
+          collaterals={customer.collaterals || []}
         />
       )}
 
