@@ -18,10 +18,16 @@ services:
       # Mount vite config for live updates
       - ../../src/frontend/vite.config.ts:/app/vite.config.ts
     depends_on:
-      - api-gateway
+      api-gateway:
+        condition: service_healthy
     networks:
       - collectioncrm-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # API Gateway (from existing docker-compose)
   api-gateway:
@@ -37,15 +43,27 @@ services:
     volumes:
       - ../../src/services/api-gateway/src:/app/services/api-gateway/src
     depends_on:
-      - auth-service
-      - bank-sync-service
-      - workflow-service
-      - campaign-engine
-      - payment-service
-      - audit-service
-      - redis
+      auth-service:
+        condition: service_healthy
+      bank-sync-service:
+        condition: service_healthy
+      workflow-service:
+        condition: service_healthy
+      campaign-engine:
+        condition: service_healthy
+      payment-service:
+        condition: service_healthy
+      audit-service:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - collectioncrm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # Authentication Service
   auth-service:
@@ -70,6 +88,11 @@ services:
     networks:
       - collectioncrm-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # Bank Synchronization Service
   bank-sync-service:
@@ -92,6 +115,11 @@ services:
     networks:
       - collectioncrm-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # Workflow Service
   workflow-service:
@@ -116,6 +144,11 @@ services:
     networks:
       - collectioncrm-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # Campaign Engine Service
   campaign-engine:
@@ -142,6 +175,11 @@ services:
     networks:
       - collectioncrm-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # Payment Service
   payment-service:
@@ -166,6 +204,11 @@ services:
     networks:
       - collectioncrm-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # Audit Service
   audit-service:
@@ -188,6 +231,11 @@ services:
     networks:
       - collectioncrm-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # PostgreSQL
   postgres:
@@ -244,6 +292,11 @@ services:
     networks:
       - collectioncrm-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'srvr' | nc localhost 2181 | grep -q 'Mode: standalone'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   kafka:
     image: confluentinc/cp-kafka:7.0.1
@@ -287,9 +340,15 @@ services:
     ports:
       - "8090:8080"
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     networks:
       - collectioncrm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # MinIO Object Storage
   minio:

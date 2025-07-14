@@ -81,6 +81,8 @@ services:
         condition: service_healthy
       payment-service:
         condition: service_healthy
+      audit-service:
+        condition: service_healthy
       redis:
         condition: service_healthy
     networks:
@@ -287,6 +289,42 @@ services:
           cpus: '0.5'
           memory: 256M
 
+  # Audit Service
+  audit-service:
+    build:
+      context: ../../
+      dockerfile: docker/production-images/audit-service.Dockerfile
+    image: ghcr.io/$GITHUB_REPOSITORY_OWNER/collectioncrm-audit-service:${IMAGE_TAG:-latest}
+    <<: *common-config
+    env_file:
+      - ../../src/services/audit-service/.env.staging
+    environment:
+      - NODE_ENV=staging
+      - PORT=3010
+      - KAFKAJS_NO_PARTITIONER_WARNING=1
+    expose:
+      - "3010"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - collectioncrm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
   # PostgreSQL
   postgres:
     image: postgres:15-alpine
@@ -369,6 +407,11 @@ services:
       - zookeeper-staging-logs:/var/lib/zookeeper/log
     networks:
       - collectioncrm-network
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'srvr' | nc localhost 2181 | grep -q 'Mode: standalone'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     deploy:
       resources:
         limits:
@@ -398,7 +441,7 @@ services:
       - kafka-staging-data:/var/lib/kafka/data
     depends_on:
       zookeeper:
-        condition: service_started
+        condition: service_healthy
     ports:
       - "9092:9092"  
     networks:

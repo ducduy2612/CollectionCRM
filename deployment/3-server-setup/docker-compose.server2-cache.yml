@@ -79,7 +79,7 @@ services:
       collectioncrm-network:
         ipv4_address: 172.20.2.11
     healthcheck:
-      test: ["CMD", "bash", "-c", "echo ruok | timeout 10 telnet localhost 2181 | grep imok"]
+      test: ["CMD-SHELL", "echo 'srvr' | nc localhost 2181 | grep -q 'Mode: standalone'"]
       interval: 30s
       timeout: 10s
       retries: 3
