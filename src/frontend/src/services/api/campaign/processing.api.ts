@@ -13,6 +13,7 @@ import type {
 export const processingApi = {
   // Trigger campaign processing
   triggerProcessing: async (request: ProcessingRequest) => {
+    console.log('Triggering campaign processing with request:', request);
     const response = await apiClient.post('/campaigns/processing/trigger', request);
     return response.data;
   },

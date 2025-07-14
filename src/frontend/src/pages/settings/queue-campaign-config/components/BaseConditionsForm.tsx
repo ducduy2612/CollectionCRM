@@ -5,6 +5,7 @@ import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import type { 
   CreateBaseConditionRequest,
   DataSource,
+  CustomFieldInfo,
   Operator
 } from '../../../../services/api/campaign';
 
@@ -130,11 +131,23 @@ const BaseConditionsForm: React.FC<BaseConditionsFormProps> = ({
                     </option>
                     {condition.data_source && (() => {
                       const selectedSource = dataSources.find(ds => ds.value === condition.data_source);
-                      return selectedSource?.fields?.map((field: string) => (
-                        <option key={field} value={field}>
-                          {field}
-                        </option>
-                      )) || [];
+                      return selectedSource?.fields?.map((field: string | CustomFieldInfo) => {
+                        // Handle both string fields (for regular sources) and object fields (for custom fields)
+                        if (typeof field === 'string') {
+                          return (
+                            <option key={field} value={field}>
+                              {field}
+                            </option>
+                          );
+                        } else {
+                          // Custom field object with name, column, data_type, description
+                          return (
+                            <option key={field.name} value={field.name}>
+                              {field.name} ({field.data_type})
+                            </option>
+                          );
+                        }
+                      }) || [];
                     })()}
                   </select>
                 </div>

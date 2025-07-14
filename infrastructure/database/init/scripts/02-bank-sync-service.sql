@@ -238,7 +238,26 @@ COMMENT ON TABLE bank_sync_service.loan_collaterals IS 'Junction table for the m
 -- Loan Custom Fields table
 CREATE TABLE bank_sync_service.loan_custom_fields (
     account_number VARCHAR(20) PRIMARY KEY,
-    fields JSONB NOT NULL,
+    field_1 VARCHAR(255),
+    field_2 VARCHAR(255),
+    field_3 VARCHAR(255),
+    field_4 VARCHAR(255),
+    field_5 VARCHAR(255),
+    field_6 VARCHAR(255),
+    field_7 VARCHAR(255),
+    field_8 VARCHAR(255),
+    field_9 VARCHAR(255),
+    field_10 VARCHAR(255),
+    field_11 VARCHAR(255),
+    field_12 VARCHAR(255),
+    field_13 VARCHAR(255),
+    field_14 VARCHAR(255),
+    field_15 VARCHAR(255),
+    field_16 VARCHAR(255),
+    field_17 VARCHAR(255),
+    field_18 VARCHAR(255),
+    field_19 VARCHAR(255),
+    field_20 VARCHAR(255),
     source_system VARCHAR(50) DEFAULT 'EXTERNAL',
     uploaded_at TIMESTAMP NOT NULL DEFAULT NOW(),
     uploaded_by VARCHAR(100),
@@ -303,10 +322,12 @@ CREATE INDEX idx_loan_collaterals_loan_account_number ON bank_sync_service.loan_
 CREATE INDEX idx_loan_collaterals_collateral_number ON bank_sync_service.loan_collaterals(collateral_number);
 
 -- Loan Custom Fields indexes
--- Example JSONB indexes for commonly queried fields (add more as needed)
---CREATE INDEX idx_loan_custom_fields_risk_score ON bank_sync_service.loan_custom_fields ((fields->>'risk_score'));
---CREATE INDEX idx_loan_custom_fields_collection_priority ON bank_sync_service.loan_custom_fields ((fields->>'collection_priority'));
---CREATE INDEX idx_loan_custom_fields_payment_likelihood ON bank_sync_service.loan_custom_fields ((fields->>'payment_likelihood'));
+-- Create indexes on frequently queried fields (add more as needed based on usage patterns)
+CREATE INDEX idx_loan_custom_fields_field_1 ON bank_sync_service.loan_custom_fields(field_1);
+CREATE INDEX idx_loan_custom_fields_field_2 ON bank_sync_service.loan_custom_fields(field_2);
+CREATE INDEX idx_loan_custom_fields_field_3 ON bank_sync_service.loan_custom_fields(field_3);
+CREATE INDEX idx_loan_custom_fields_field_4 ON bank_sync_service.loan_custom_fields(field_4);
+CREATE INDEX idx_loan_custom_fields_field_5 ON bank_sync_service.loan_custom_fields(field_5);
 
 -- Loan-Level Aggregates Materialized View for Campaign Engine
 -- This view provides one row per loan with customer-level aggregates included
@@ -371,7 +392,26 @@ SELECT
     ca.utilization_ratio,
     
     -- Custom fields for this loan
-    COALESCE(lcf.fields, '{}'::jsonb) as custom_fields,
+    lcf.field_1,
+    lcf.field_2,
+    lcf.field_3,
+    lcf.field_4,
+    lcf.field_5,
+    lcf.field_6,
+    lcf.field_7,
+    lcf.field_8,
+    lcf.field_9,
+    lcf.field_10,
+    lcf.field_11,
+    lcf.field_12,
+    lcf.field_13,
+    lcf.field_14,
+    lcf.field_15,
+    lcf.field_16,
+    lcf.field_17,
+    lcf.field_18,
+    lcf.field_19,
+    lcf.field_20,
     
     -- Timestamps
     l.updated_at as loan_updated_at,

@@ -91,7 +91,7 @@ CREATE TABLE campaign_engine.contact_rule_outputs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     contact_selection_rule_id UUID NOT NULL,
     related_party_type VARCHAR(50) NOT NULL, -- e.g., 'customer', 'reference'
-    contact_type VARCHAR(50) NOT NULL, -- e.g., 'mobile', 'home', 'work', 'all'
+    contact_type VARCHAR(50), -- e.g., 'mobile', 'home', 'work', 'all', NULL for all types
     relationship_patterns JSONB, -- Optional: JSON array of relationship types to exclude (e.g., ['parent', 'spouse', 'colleague'])
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -107,6 +107,7 @@ COMMENT ON TABLE campaign_engine.contact_rule_outputs IS 'Specifies which contac
 CREATE TABLE campaign_engine.custom_fields (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     field_name VARCHAR(100) NOT NULL UNIQUE,
+    field_column VARCHAR(20) NOT NULL UNIQUE, -- Maps to field_1, field_2, etc.
     data_type VARCHAR(50) NOT NULL, -- e.g., 'string', 'number', 'date', 'boolean'
     description TEXT NOT NULL, -- Defines how to retrieve or calculate the value
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -543,12 +544,25 @@ BEGIN
         
         -- Determine field reference
         IF v_data_source = 'custom_fields' THEN
-            -- For custom fields, we need to cast for numeric comparisons
-            IF v_operator IN ('>', '>=', '<', '<=') THEN
-                v_field_ref := format('(lcd.custom_fields->>%L)::numeric', v_field_name);
-            ELSE
-                v_field_ref := format('lcd.custom_fields->>%L', v_field_name);
-            END IF;
+            -- For custom fields, look up the column mapping
+            DECLARE
+                v_field_column TEXT;
+            BEGIN
+                SELECT field_column INTO v_field_column
+                FROM campaign_engine.custom_fields
+                WHERE field_name = v_field_name;
+                
+                IF v_field_column IS NULL THEN
+                    RAISE EXCEPTION 'Custom field % not found in mapping', v_field_name;
+                END IF;
+                
+                -- Use the mapped column directly
+                IF v_operator IN ('>', '>=', '<', '<=') THEN
+                    v_field_ref := format('lcd.%I::numeric', v_field_column);
+                ELSE
+                    v_field_ref := format('lcd.%I', v_field_column);
+                END IF;
+            END;
         ELSE
             v_field_ref := format('lcd.%I', v_field_name);
         END IF;
@@ -635,6 +649,7 @@ BEGIN
             ''bank_sync''::varchar as source
         FROM %I tc
         JOIN bank_sync_service.phones p ON tc.cif = p.cif
+        WHERE p.ref_cif IS NULL
         
         UNION
         
@@ -653,6 +668,7 @@ BEGIN
             ''user_input''::varchar as source
         FROM %I tc
         JOIN workflow_service.phones wp ON tc.cif = wp.cif
+        WHERE wp.ref_cif IS NULL
         
         UNION
         
@@ -671,7 +687,7 @@ BEGIN
             ''bank_sync''::varchar as source
         FROM %I tc
         JOIN bank_sync_service.reference_customers rc ON tc.cif = rc.primary_cif
-        JOIN bank_sync_service.phones rp ON rc.ref_cif = rp.cif
+        JOIN bank_sync_service.phones rp ON rc.ref_cif = rp.ref_cif
         
         UNION
         
@@ -690,8 +706,28 @@ BEGIN
             ''user_input''::varchar as source
         FROM %I tc
         JOIN workflow_service.reference_customers wrc ON tc.cif = wrc.primary_cif
-        JOIN workflow_service.phones wrp ON wrc.ref_cif = wrp.cif',
+        JOIN workflow_service.phones wrp ON wrc.ref_cif = wrp.ref_cif
+        
+        UNION
+        
+        SELECT DISTINCT ON (cif, contact_id)
+            tc.cif,
+            wp.id as contact_id,
+            wp.type as contact_type,
+            wp.number as contact_value,
+            ''reference''::varchar as related_party_type,
+            rc.ref_cif as related_party_cif,
+            rc.name as related_party_name,
+            rc.relationship_type,
+            0 as rule_priority,
+            wp.is_primary,
+            wp.is_verified,
+            ''mixed''::varchar as source
+        FROM %I tc
+        JOIN bank_sync_service.reference_customers rc ON tc.cif = rc.primary_cif
+        JOIN workflow_service.phones wp ON rc.ref_cif = wp.ref_cif',
         CASE WHEN v_has_rules THEN v_all_contacts_table ELSE v_table_name END,
+        p_customers_table,
         p_customers_table,
         p_customers_table,
         p_customers_table,
@@ -946,13 +982,26 @@ BEGIN
         
         -- Determine field reference
         IF v_data_source = 'custom_fields' THEN
-            -- For custom fields, we need to cast for numeric comparisons
-            IF v_operator IN ('>', '>=', '<', '<=') THEN
-                v_field_ref := format('(lcd.custom_fields->>%L)::numeric', v_field_name);
-            ELSE
-                v_field_ref := format('lcd.custom_fields->>%L', v_field_name);
-            END IF;
-            v_needs_lcd_join := TRUE;
+            -- For custom fields, look up the column mapping
+            DECLARE
+                v_field_column TEXT;
+            BEGIN
+                SELECT field_column INTO v_field_column
+                FROM campaign_engine.custom_fields
+                WHERE field_name = v_field_name;
+                
+                IF v_field_column IS NULL THEN
+                    RAISE EXCEPTION 'Custom field % not found in mapping', v_field_name;
+                END IF;
+                
+                -- Use the mapped column directly
+                IF v_operator IN ('>', '>=', '<', '<=') THEN
+                    v_field_ref := format('lcd.%I::numeric', v_field_column);
+                ELSE
+                    v_field_ref := format('lcd.%I', v_field_column);
+                END IF;
+                v_needs_lcd_join := TRUE;
+            END;
         ELSIF v_field_name IN ('segment', 'status', 'total_loans', 'active_loans', 
                                'overdue_loans', 'client_outstanding', 'total_due_amount',
                                'overdue_outstanding', 'max_dpd', 'avg_dpd', 'utilization_ratio') THEN

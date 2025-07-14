@@ -142,7 +142,7 @@ export interface ContactRuleOutput {
 
 export interface CreateContactRuleOutputRequest {
   related_party_type: string;
-  contact_type: string;
+  contact_type: string | null;
   relationship_patterns?: string[]; // Optional: relationship types to exclude
 }
 
@@ -157,6 +157,7 @@ export interface ContactRulesResponse {
 export interface CustomField {
   id: string;
   field_name: string;
+  field_column: string; // Maps to field_1, field_2, etc.
   data_type: 'string' | 'number' | 'date' | 'boolean';
   description?: string;
   created_at: string;
@@ -180,7 +181,14 @@ export interface CustomFieldsResponse {
 export interface DataSource {
   value: string;
   label: string;
-  fields?: string[];
+  fields?: (string | CustomFieldInfo)[];
+  description?: string;
+}
+
+export interface CustomFieldInfo {
+  name: string;
+  column: string;
+  data_type: 'string' | 'number' | 'date' | 'boolean';
   description?: string;
 }
 

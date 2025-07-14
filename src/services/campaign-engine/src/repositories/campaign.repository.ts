@@ -273,7 +273,7 @@ export class CampaignRepository {
           relationship_patterns: output.relationship_patterns || undefined
         }));
       }
-
+      console.log('Retrieved contact selection rules:', rules);
       return rules;
     } catch (error) {
       console.error('Error in getContactSelectionRules:', error);
@@ -289,12 +289,30 @@ export class CampaignRepository {
   }
 
   async createCustomField(data: { field_name: string; data_type: string; description?: string }): Promise<CustomField> {
-    const [field] = await db('campaign_engine.custom_fields')
-      .insert(data)
-      .returning('*');
-    
-    await this.clearProcessingCache();
-    return field;
+    return db.transaction(async (trx: any) => {
+      // Find the next available field column
+      const usedColumns = await trx('campaign_engine.custom_fields')
+        .select('field_column')
+        .orderBy('field_column');
+      
+      const allColumns = Array.from({ length: 20 }, (_, i) => `field_${i + 1}`);
+      const usedColumnSet = new Set(usedColumns.map((row: any) => row.field_column));
+      const nextColumn = allColumns.find(col => !usedColumnSet.has(col));
+      
+      if (!nextColumn) {
+        throw new Error('All 20 custom field columns are already in use');
+      }
+      
+      const [field] = await trx('campaign_engine.custom_fields')
+        .insert({
+          ...data,
+          field_column: nextColumn
+        })
+        .returning('*');
+      
+      await this.clearProcessingCache();
+      return field;
+    });
   }
 
   // Cache management - only clear processing cache when campaigns change

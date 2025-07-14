@@ -178,7 +178,7 @@ export class ProcessingService {
     
     // Convert single group to JSONB for stored procedure
     const groupJsonb = JSON.stringify(group);
-    
+    console.log('Processing group JSON:', groupJsonb);
     // Execute batch processing stored procedure for single group
     const result = await db.raw(
       `SELECT * FROM campaign_engine.process_campaigns_batch(?::uuid, ?::jsonb)`,

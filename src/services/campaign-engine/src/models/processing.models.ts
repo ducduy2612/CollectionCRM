@@ -63,12 +63,13 @@ export interface ProcessingContactRule {
 export interface ProcessingContactOutput {
   id: string;
   related_party_type: string;
-  contact_type: string;
+  contact_type: string | null;
   relationship_patterns?: string[]; // Optional: relationship types to exclude (e.g., ['parent', 'spouse', 'father'])
 }
 
 export interface CustomFieldMetadata {
   field_name: string;
+  field_column: string; // Maps to field_1, field_2, etc.
   data_type: 'string' | 'number' | 'date' | 'boolean';
   description?: string;
 }
@@ -118,6 +119,13 @@ export const isNumericField = (fieldName: string): boolean => {
 
 // Data source field mappings - using unified loan_campaign_data view
 export const DATA_SOURCE_FIELDS = {
-  'bank_sync_service.loan_campaign_data': Object.keys(LOAN_CAMPAIGN_FIELDS),
-  'custom_fields': [] // Dynamic based on custom_fields JSONB column
+  'bank_sync_service.loan_campaign_data': [
+    ...Object.keys(LOAN_CAMPAIGN_FIELDS),
+    // Add the 20 custom field columns
+    'field_1', 'field_2', 'field_3', 'field_4', 'field_5',
+    'field_6', 'field_7', 'field_8', 'field_9', 'field_10',
+    'field_11', 'field_12', 'field_13', 'field_14', 'field_15',
+    'field_16', 'field_17', 'field_18', 'field_19', 'field_20'
+  ],
+  'custom_fields': [] // Dynamic based on registered custom fields
 } as const;

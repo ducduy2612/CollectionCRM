@@ -60,6 +60,7 @@ export interface ContactRuleOutput {
 export interface CustomField {
   id: string;
   field_name: string;
+  field_column: string; // Maps to field_1, field_2, etc.
   data_type: CustomFieldDataType;
   description?: string;
   created_at: Date;
@@ -95,7 +96,8 @@ export type ContactType =
   | 'home'
   | 'work'
   | 'email'
-  | 'all';
+  | 'all'
+  | null;
 
 export type CustomFieldDataType = 
   | 'string'
@@ -228,6 +230,7 @@ export interface ContactRuleOutputResponse {
 export interface CustomFieldResponse {
   id: string;
   field_name: string;
+  field_column: string;
   data_type: CustomFieldDataType;
   description?: string;
   created_at: string;

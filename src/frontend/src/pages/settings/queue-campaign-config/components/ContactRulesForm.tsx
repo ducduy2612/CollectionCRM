@@ -7,6 +7,7 @@ import type {
   CreateContactRuleConditionRequest,
   CreateContactRuleOutputRequest,
   DataSource,
+  CustomFieldInfo,
   Operator,
   ContactType,
   RelatedPartyType
@@ -106,7 +107,7 @@ const ContactRulesForm: React.FC<ContactRulesFormProps> = ({
   const addOutput = (ruleIndex: number) => {
     const newOutput: CreateContactRuleOutputRequest = {
       related_party_type: '',
-      contact_type: '',
+      contact_type: null,
       relationship_patterns: []
     };
     const newRules = rules.map((rule, i) => 
@@ -126,7 +127,7 @@ const ContactRulesForm: React.FC<ContactRulesFormProps> = ({
     onChange(newRules);
   };
 
-  const updateOutput = (ruleIndex: number, outputIndex: number, field: keyof CreateContactRuleOutputRequest, value: string | string[]) => {
+  const updateOutput = (ruleIndex: number, outputIndex: number, field: keyof CreateContactRuleOutputRequest, value: string | string[] | null) => {
     const newRules = rules.map((rule, i) => 
       i === ruleIndex 
         ? {
@@ -306,11 +307,23 @@ const ContactRulesForm: React.FC<ContactRulesFormProps> = ({
                               </option>
                               {condition.data_source && (() => {
                                 const selectedSource = dataSources.find(ds => ds.value === condition.data_source);
-                                return selectedSource?.fields?.map((field: string) => (
-                                  <option key={field} value={field}>
-                                    {field}
-                                  </option>
-                                )) || [];
+                                return selectedSource?.fields?.map((field: string | CustomFieldInfo) => {
+                                  // Handle both string fields (for regular sources) and object fields (for custom fields)
+                                  if (typeof field === 'string') {
+                                    return (
+                                      <option key={field} value={field}>
+                                        {field}
+                                      </option>
+                                    );
+                                  } else {
+                                    // Custom field object with name, column, data_type, description
+                                    return (
+                                      <option key={field.name} value={field.name}>
+                                        {field.name} ({field.data_type})
+                                      </option>
+                                    );
+                                  }
+                                }) || [];
                               })()}
                             </select>
                           </div>
@@ -410,8 +423,8 @@ const ContactRulesForm: React.FC<ContactRulesFormProps> = ({
                                 {t('campaign_config.campaigns.form.contact_rules.contact_type')}
                               </label>
                               <select
-                                value={output.contact_type}
-                                onChange={(e) => updateOutput(ruleIndex, outputIndex, 'contact_type', e.target.value)}
+                                value={output.contact_type || ''}
+                                onChange={(e) => updateOutput(ruleIndex, outputIndex, 'contact_type', e.target.value || null)}
                                 className="w-full px-2 py-1 text-sm border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-primary-500"
                               >
                                 <option value="">

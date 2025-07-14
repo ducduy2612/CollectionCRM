@@ -125,7 +125,7 @@ const CustomFieldModal: React.FC<CustomFieldModalProps> = ({ isOpen, onClose, fi
           />
           {errors.field_name && <p className="mt-1 text-sm text-red-600">{errors.field_name}</p>}
           <p className="mt-1 text-sm text-neutral-500">
-            {t('campaign_config.custom_fields.form.field_name_help')}
+            {t('campaign_config.custom_fields.form.field_name_help')} This name will be mapped to an available database column (field_1 through field_20).
           </p>
         </div>
 
@@ -228,15 +228,32 @@ const CustomFieldsSection: React.FC = () => {
           <p className="mt-1 text-sm text-neutral-500">
             {t('campaign_config.custom_fields.description')}
           </p>
+          <p className="mt-1 text-sm text-neutral-400">
+            Maximum 20 custom fields can be defined. Each field is mapped to a dedicated database column for optimal performance.
+          </p>
         </div>
         <Button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center"
+          disabled={fields && fields.length >= 20}
+          title={fields && fields.length >= 20 ? "All 20 custom field slots are in use" : undefined}
         >
           <PlusIcon className="w-4 h-4 mr-2" />
           {t('campaign_config.custom_fields.add_field')}
+          {fields && fields.length > 0 && (
+            <span className="ml-2 text-xs bg-neutral-200 px-2 py-1 rounded">
+              {fields.length}/20
+            </span>
+          )}
         </Button>
       </div>
+
+      {/* Limit warning */}
+      {fields && fields.length >= 20 && (
+        <Alert variant="warning">
+          All 20 custom field slots are in use. You cannot create more custom fields until you delete existing ones.
+        </Alert>
+      )}
 
       {/* Content */}
       {isLoading ? (
@@ -267,6 +284,9 @@ const CustomFieldsSection: React.FC = () => {
                         <div className="mt-1 flex items-center space-x-4 text-sm text-neutral-500">
                           <span>
                             {t('campaign_config.custom_fields.table.data_type')}: {t(`campaign_config.custom_fields.data_types.${field.data_type}`)}
+                          </span>
+                          <span>
+                            Column: {field.field_column}
                           </span>
                           <span>
                             {t('campaign_config.custom_fields.table.created_at')}: {new Date(field.created_at).toLocaleDateString()}

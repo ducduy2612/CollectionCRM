@@ -298,7 +298,6 @@ export class CampaignController {
         message: 'Campaign updated successfully'
       });
     } catch (error) {
-      console.error('FULL ERROR DETAILS:', error);
       logger.error('Error updating campaign:', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
@@ -451,11 +450,16 @@ export class CampaignController {
       // Add static data sources
       for (const [sourceName, staticFields] of Object.entries(DATA_SOURCE_FIELDS)) {
         if (sourceName === 'custom_fields') {
-          // For custom_fields, get dynamic fields from database
+          // For custom_fields, get dynamic fields from database with their mappings
           const customFields = await this.campaignRepository.getCustomFields();
           dataSources.push({
             name: sourceName,
-            fields: customFields.map(field => field.field_name)
+            fields: customFields.map(field => ({
+              name: field.field_name,
+              column: field.field_column,
+              data_type: field.data_type,
+              description: field.description
+            }))
           });
         } else {
           // For other sources, use static fields
