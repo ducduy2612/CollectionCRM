@@ -101,5 +101,24 @@ export const campaignsApi = {
     }
     
     return response.data.data;
+  },
+
+  // Get queue statistics
+  getQueueStatistics: async (): Promise<{
+    activeQueues: number;
+    totalCampaigns: number;
+    campaignGroups: number;
+  }> => {
+    const response = await apiClient.get<CampaignApiResponse<{
+      activeQueues: number;
+      totalCampaigns: number;
+      campaignGroups: number;
+    }>>('/campaigns/stats/queue');
+    
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch queue statistics');
+    }
+    
+    return response.data.data;
   }
 };

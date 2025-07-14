@@ -66,7 +66,7 @@ export const kafka = new Kafka(kafkaConfig);
  */
 export const userEventsConsumerConfig: ConsumerConfig = {
   groupId: CONSUMER_GROUPS.USER_EVENTS,
-  allowAutoTopicCreation: false,
+  allowAutoTopicCreation: true,
   sessionTimeout: 30000,
   heartbeatInterval: 3000,
   maxBytesPerPartition: 1048576, // 1MB
@@ -82,7 +82,7 @@ export const userEventsConsumerConfig: ConsumerConfig = {
  */
 export const workflowEventsConsumerConfig: ConsumerConfig = {
   groupId: CONSUMER_GROUPS.WORKFLOW_EVENTS,
-  allowAutoTopicCreation: false,
+  allowAutoTopicCreation: true,
   sessionTimeout: 30000,
   heartbeatInterval: 3000,
   maxBytesPerPartition: 1048576, // 1MB
@@ -98,7 +98,7 @@ export const workflowEventsConsumerConfig: ConsumerConfig = {
  */
 export const campaignEventsConsumerConfig: ConsumerConfig = {
   groupId: CONSUMER_GROUPS.CAMPAIGN_EVENTS,
-  allowAutoTopicCreation: false,
+  allowAutoTopicCreation: true,
   sessionTimeout: 30000,
   heartbeatInterval: 3000,
   maxBytesPerPartition: 1048576, // 1MB

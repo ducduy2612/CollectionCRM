@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from '../../components/ui/Button';
 import { CogIcon, ArrowPathIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { QuickActions, SettingsCard } from './shared';
 import { useAuth } from '../../hooks/useAuth';
+import { useSettingsStats } from './hooks/useSettingsStats';
+import { Spinner } from '../../components/ui/Spinner';
 
 interface SettingsStat {
   value: string;
@@ -25,21 +27,8 @@ interface SettingsCardData {
 }
 
 const SettingsPage: React.FC = () => {
-  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
-
-  const handleRefresh = () => {
-    setLoading(true);
-    // Simulate refresh action
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  };
-
-  const handleSaveAll = () => {
-    // Handle save all changes
-    console.log('Saving all changes...');
-  };
+  const { stats, isLoading } = useSettingsStats();
 
   // Helper function to check if user has permission
   const hasPermission = (requiredPermission: string): boolean => {
@@ -49,16 +38,16 @@ const SettingsPage: React.FC = () => {
     );
   };
 
-  const settingsCards: SettingsCardData[] = [
+  const settingsCards: SettingsCardData[] = useMemo(() => [
     {
       id: 'user-management',
       title: 'User Management',
       description: 'Manage user accounts, roles, and permissions. Control access levels and monitor user activity across the system.',
       icon: 'bi-people',
       stats: [
-        { value: '24', label: 'Active Users' },
-        { value: '4', label: 'Roles' },
-        { value: '2', label: 'Pending' }
+        { value: stats.userManagement.activeUsers.toString(), label: 'Active Users' },
+        { value: stats.userManagement.totalRoles.toString(), label: 'Roles' },
+        { value: stats.userManagement.pendingUsers.toString(), label: 'Pending' }
       ],
       actionText: 'Manage Users',
       actionLink: '/settings/user-management',
@@ -71,9 +60,9 @@ const SettingsPage: React.FC = () => {
       description: 'Configure automated actions and workflows for collection processes. Set up triggers, conditions, and responses.',
       icon: 'bi-lightning',
       stats: [
-        { value: '12', label: 'Active Rules' },
-        { value: '3', label: 'Categories' },
-        { value: '98%', label: 'Success Rate' }
+        { value: stats.actionsConfig.types.toString(), label: 'Types' },
+        { value: stats.actionsConfig.subtypes.toString(), label: 'Subtypes' },
+        { value: stats.actionsConfig.results.toString(), label: 'Results' }
       ],
       actionText: 'Configure Actions',
       actionLink: '/settings/actions-config',
@@ -86,9 +75,8 @@ const SettingsPage: React.FC = () => {
       description: 'Configure automated Follow-Up and Dunning processes. Set up intelligent scheduling and escalation rules.',
       icon: 'bi-robot',
       stats: [
-        { value: '8', label: 'Auto Rules' },
-        { value: '156', label: 'Daily Actions' },
-        { value: '85%', label: 'Efficiency' }
+        { value: stats.fudAutoConfig.totalRules.toString(), label: 'Total Rules' },
+        { value: stats.fudAutoConfig.activeRules.toString(), label: 'Active Rules' }
       ],
       actionText: 'Configure FUD',
       actionLink: '/settings/fud-auto-config',
@@ -98,16 +86,15 @@ const SettingsPage: React.FC = () => {
     {
       id: 'queue-campaign-config',
       title: 'Queue Campaign Config',
-      description: 'Manage collection queues and campaign configurations. Set up prioritization rules and agent assignments.',
+      description: 'Manage collection queues and campaign configurations. Set up prioritization rules and contact exclusions.',
       icon: 'bi-list-task',
       stats: [
-        { value: '6', label: 'Active Queues' },
-        { value: '1,247', label: 'Total Cases' },
-        { value: '92%', label: 'Processing' }
+        { value: stats.queueCampaign.activeQueues.toString(), label: 'Campaign Groups' },
+        { value: stats.queueCampaign.totalCases.toLocaleString(), label: 'Campaigns' },
       ],
       actionText: 'Manage Queues',
       actionLink: '/settings/queue-campaign',
-      status: { type: 'active', label: 'Processing' },
+      status: { type: 'active', label: 'Active' },
       requiredPermission: 'campaign_management'
     },
     {
@@ -116,9 +103,8 @@ const SettingsPage: React.FC = () => {
       description: 'Upload and manage customer assignment files. Configure bulk import settings and validation rules.',
       icon: 'bi-upload',
       stats: [
-        { value: '3', label: 'Recent Uploads' },
-        { value: '2,456', label: 'Records' },
-        { value: '99.2%', label: 'Success Rate' }
+        { value: '50mb', label: 'Maximum file size' },
+        { value: 'CSV', label: 'File format' },
       ],
       actionText: 'Upload Data',
       actionLink: '/settings/customer-assignment',
@@ -126,21 +112,37 @@ const SettingsPage: React.FC = () => {
       requiredPermission: 'customer_assignment'
     },
     {
-      id: 'system-configuration',
-      title: 'System Configuration',
-      description: 'Configure system-wide settings including database connections, API endpoints, and security policies.',
-      icon: 'bi-gear-wide-connected',
+      id: 'audit-log',
+      title: 'Audit Log',
+      description: 'View and analyze system audit logs with date-based filtering for security monitoring and compliance.',
+      icon: 'bi-clipboard-data',
       stats: [
-        { value: '15', label: 'Config Items' },
-        { value: '99.9%', label: 'Uptime' },
-        { value: '5', label: 'Services' }
+        { value: '2.1K', label: 'Today\'s Logs' },
+        { value: '45K', label: 'This Month' },
+        { value: '8', label: 'Services' }
       ],
-      actionText: 'System Config',
-      actionLink: '/settings/system-config',
-      status: { type: 'active', label: 'Healthy' },
-      requiredPermission: 'system_admin'
+      actionText: 'View Logs',
+      actionLink: '/settings/audit-log',
+      status: { type: 'active', label: 'Monitoring' },
+      requiredPermission: 'audit_view'
     }
-  ];
+  ], [stats]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-neutral-900 flex items-center">
+            <CogIcon className="w-8 h-8 mr-2 text-primary-600" />
+            System Settings
+          </h1>
+        </div>
+        <div className="flex justify-center items-center h-64">
+          <Spinner size="lg" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -150,23 +152,6 @@ const SettingsPage: React.FC = () => {
           <CogIcon className="w-8 h-8 mr-2 text-primary-600" />
           System Settings
         </h1>
-        <div className="flex gap-3">
-          <Button
-            variant="secondary"
-            onClick={handleRefresh}
-            loading={loading}
-            leftIcon={<ArrowPathIcon className="w-4 h-4" />}
-          >
-            Refresh
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleSaveAll}
-            leftIcon={<CheckIcon className="w-4 h-4" />}
-          >
-            Save All Changes
-          </Button>
-        </div>
       </div>
 
       {/* Quick Actions */}

@@ -177,4 +177,7 @@ router.get('/config/related-party-types', campaignController.getRelatedPartyType
 // Campaign Configuration for Processing
 router.get('/config/processing', campaignController.getCampaignConfiguration.bind(campaignController));
 
+// Queue Statistics
+router.get('/stats/queue', campaignController.getQueueStatistics.bind(campaignController));
+
 export { router as campaignRoutes };

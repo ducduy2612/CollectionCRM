@@ -22,8 +22,8 @@ const AVAILABLE_PERMISSIONS = [
   // Customer assignment
   'customer_assignment:all',
 
-  // System admin
-  'system_admin:all'
+  // Audit log access
+  'audit_view:all'
 ];
 
 // Helper function to format permission labels for display
@@ -273,7 +273,7 @@ const RoleModal: React.FC<RoleModalProps> = ({
     [t('settings:messages.FUD_config')]: ['FUD_config:enable','FUD_config:edit'],
     [t('settings:messages.campaign_management')]: ['campaign_management:all'],
     [t('settings:messages.customer_assignment')]: ['customer_assignment:all'],
-    [t('settings:messages.system_admin')]: ['system_admin:all']
+    [t('settings:messages.audit_log')]: ['audit_view:all']
   };
 
   return (

@@ -52,14 +52,12 @@ export class AuditController {
 
       res.json({
         success: true,
-        data: result.logs,
-        pagination: {
-          page: pagination.page,
-          limit: pagination.limit,
+        data: {
+          data: result.logs,
           total: result.total,
-          totalPages: Math.ceil(result.total / pagination.limit!),
-          hasNext: pagination.page! * pagination.limit! < result.total,
-          hasPrev: pagination.page! > 1
+          page: pagination.page!,
+          limit: pagination.limit!,
+          totalPages: Math.ceil(result.total / pagination.limit!)
         }
       });
     } catch (error) {

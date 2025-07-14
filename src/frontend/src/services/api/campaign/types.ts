@@ -47,6 +47,8 @@ export interface Campaign {
   campaign_group?: CampaignGroup;
   base_conditions?: BaseCondition[];
   contact_selection_rules?: ContactSelectionRule[];
+  base_conditions_count?: number;
+  contact_rules_count?: number;
 }
 
 export interface CreateCampaignRequest {

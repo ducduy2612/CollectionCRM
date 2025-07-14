@@ -13,6 +13,8 @@ export interface Campaign {
   created_at: Date;
   updated_at: Date;
   campaign_group?: CampaignGroup;
+  base_conditions_count?: number;
+  contact_rules_count?: number;
 }
 
 export interface BaseCondition {

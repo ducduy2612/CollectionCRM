@@ -241,10 +241,10 @@ const CampaignsSection: React.FC = () => {
                             </div>
                             <div className="mt-1 flex items-center space-x-4 text-sm text-neutral-400">
                               <span>
-                                {t('campaign_config.campaigns.table.conditions')}: {campaign.base_conditions?.length || 0}
+                                {t('campaign_config.campaigns.table.conditions')}: {campaign.base_conditions_count || 0}
                               </span>
                               <span>
-                                {t('campaign_config.campaigns.table.contact_rules')}: {campaign.contact_selection_rules?.length || 0}
+                                {t('campaign_config.campaigns.table.contact_rules')}: {campaign.contact_rules_count || 0}
                               </span>
                             </div>
                           </div>

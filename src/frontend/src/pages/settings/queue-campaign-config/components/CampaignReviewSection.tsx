@@ -53,7 +53,7 @@ const CampaignReviewSection: React.FC<CampaignReviewSectionProps> = ({
       'all': 'all contact types'
     };
 
-    const contactTypeLabel = contactTypeMap[output.contact_type] || output.contact_type;
+    const contactTypeLabel = (output.contact_type && contactTypeMap[output.contact_type]) || output.contact_type || 'all';
 
     if (output.related_party_type === 'customer') {
       return `Customer ${contactTypeLabel} contacts`;

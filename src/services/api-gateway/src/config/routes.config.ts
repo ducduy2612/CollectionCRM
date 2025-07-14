@@ -44,6 +44,18 @@ export const rateLimitConfigs = {
       windowSizeInSeconds: 60, // 1 minute
       prefix: 'workflow:document:download:'
     }
+  },
+  audit: {
+    logs: {
+      max: 100,
+      windowSizeInSeconds: 60, // 1 minute
+      prefix: 'audit:logs:'
+    },
+    statistics: {
+      max: 30,
+      windowSizeInSeconds: 60, // 1 minute
+      prefix: 'audit:statistics:'
+    }
   }
 };
 
@@ -191,6 +203,25 @@ export const serviceRoutes: Record<string, ProxyConfig> = {
       processingRunErrors: '/processing/runs/:id/errors',
       processingAssignments: '/results/:campaignResultId/assignments',
       processingAssignmentSearch: '/processing/assignments/search',
+      health: '/health'
+    },
+    requiresAuth: {
+      all: true,
+      except: ['/health']
+    }
+  },
+  audit: {
+    path: '/api/audit',
+    target: process.env.AUDIT_SERVICE_URL || 'http://audit-service:3010',
+    pathRewrite: { '^/api/audit': '/api/v1/audit' },
+    timeout: parseInt(process.env.AUDIT_SERVICE_TIMEOUT || '30000', 10),
+    serviceName: 'Audit Service',
+    routes: {
+      logs: '/logs',
+      logById: '/logs/:id',
+      userLogs: '/user/:userId',
+      entityLogs: '/entity/:entityType/:entityId',
+      statistics: '/statistics',
       health: '/health'
     },
     requiresAuth: {

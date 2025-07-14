@@ -395,7 +395,7 @@ BEGIN
             source_system, created_by, updated_by, last_synced_at
         ) VALUES (
             customer_cif,
-            'MOBILE',
+            'mobile1',
             '0' || (900000000 + floor(random() * 99999999))::text,
             true,
             random() > 0.3,
@@ -415,7 +415,7 @@ BEGIN
             source_system, created_by, updated_by, last_synced_at
         ) VALUES (
             customer_cif,
-            'HOME',
+            'home1',
             address_rec.address_line1,
             address_rec.address_line2,
             address_rec.city,
@@ -625,7 +625,7 @@ BEGIN
         ) VALUES (
             primary_cif,
             ref_cif,
-            'MOBILE',
+            'mobile1',
             '0' || (800000000 + floor(random() * 99999999))::text,
             true,
             random() > 0.3,
@@ -646,7 +646,7 @@ BEGIN
         ) VALUES (
             primary_cif,
             ref_cif,
-            'HOME',
+            'home1',
             address_rec.address_line1,
             address_rec.address_line2,
             address_rec.city,

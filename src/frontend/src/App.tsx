@@ -18,7 +18,7 @@ import UserManagementPage from './pages/settings/user-management/UserManagementP
 import ActionsConfigPage from './pages/settings/actions-config/ActionsConfigPage';
 import FudAutoConfigPage from './pages/settings/fud-auto-config/FudAutoConfigPage';
 import QueueCampaignConfigPage from './pages/settings/queue-campaign-config/QueueCampaignConfigPage';
-import SystemConfigurationPage from './pages/settings/system-configuration/SystemConfigurationPage';
+import AuditLogPage from './pages/settings/audit-log/AuditLogPage';
 import CustomerAssignmentUploadPage from './pages/settings/customer-assignment-upload/CustomerAssignmentUploadPage';
 import NotFoundPage from './pages/NotFoundPage';
 
@@ -102,12 +102,12 @@ function App() {
                   }
                 />
                 
-                {/* System Configuration - requires system_admin permission */}
+                {/* Audit Log - requires audit_view permission */}
                 <Route
-                  path="/settings/system-config"
+                  path="/settings/audit-log"
                   element={
-                    <ProtectedRoute requiredPermissions={["system_admin"]}>
-                      <SystemConfigurationPage />
+                    <ProtectedRoute requiredPermissions={["audit_view"]}>
+                      <AuditLogPage />
                     </ProtectedRoute>
                   }
                 />

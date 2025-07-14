@@ -125,9 +125,29 @@ export class CampaignRepository {
   async getCampaigns(campaignGroupId?: string): Promise<Campaign[]> {
     let query = db('campaign_engine.campaigns as c')
       .leftJoin('campaign_engine.campaign_groups as cg', 'c.campaign_group_id', 'cg.id')
+      .leftJoin(
+        db('campaign_engine.base_conditions')
+          .select('campaign_id')
+          .count('* as base_conditions_count')
+          .groupBy('campaign_id')
+          .as('bc'),
+        'c.id',
+        'bc.campaign_id'
+      )
+      .leftJoin(
+        db('campaign_engine.contact_selection_rules')
+          .select('campaign_id')
+          .count('* as contact_rules_count')
+          .groupBy('campaign_id')
+          .as('csr'),
+        'c.id',
+        'csr.campaign_id'
+      )
       .select(
         'c.*',
-        'cg.name as campaign_group_name'
+        'cg.name as campaign_group_name',
+        db.raw('COALESCE(bc.base_conditions_count, 0) as base_conditions_count'),
+        db.raw('COALESCE(csr.contact_rules_count, 0) as contact_rules_count')
       );
 
     if (campaignGroupId) {
@@ -376,5 +396,27 @@ export class CampaignRepository {
       },
       CampaignRepository.CACHE_TTL
     );
+  }
+
+  async getQueueStatistics(): Promise<{
+    activeQueues: number;
+    totalCampaigns: number;
+    campaignGroups: number;
+  }> {
+    // Get campaign groups count
+    const groupsCount = await db('campaign_engine.campaign_groups')
+      .count('* as count')
+      .first();
+
+    // Get total campaigns count
+    const campaignsCount = await db('campaign_engine.campaigns')
+      .count('* as count')
+      .first();
+
+    return {
+      activeQueues: parseInt(groupsCount?.count as string) || 0,
+      totalCampaigns: parseInt(campaignsCount?.count as string) || 0,
+      campaignGroups: parseInt(groupsCount?.count as string) || 0
+    };
   }
 }
