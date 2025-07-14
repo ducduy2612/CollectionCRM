@@ -1,5 +1,8 @@
 {
   "quick_actions": "Quick Actions",
+  "page": {
+    "title": "System Settings"
+  },
   "titles": {
     "settings": "Settings",
     "general_settings": "General Settings",
@@ -180,10 +183,59 @@
     "timezone": "Timezone",
     "locale_settings": "Locale Settings"
   },
+  "cards": {
+    "user_management": {
+      "title": "User Management",
+      "description": "Manage user accounts, roles, and permissions. Control access levels and monitor user activity across the system."
+    },
+    "actions_config": {
+      "title": "Actions Config",
+      "description": "Configure automated actions and workflows for collection processes. Set up triggers, conditions, and responses."
+    },
+    "fud_auto_config": {
+      "title": "FUD Auto Config",
+      "description": "Configure automated Follow-Up and Dunning processes. Set up intelligent scheduling and escalation rules."
+    },
+    "queue_campaign_config": {
+      "title": "Queue Campaign Config",
+      "description": "Manage collection queues and campaign configurations. Set up prioritization rules and contact exclusions."
+    },
+    "customer_assignment_upload": {
+      "title": "Customer Assignment Upload",
+      "description": "Upload and manage customer assignment files. Configure bulk import settings and validation rules."
+    },
+    "audit_log": {
+      "title": "Audit Log",
+      "description": "View and analyze system audit logs with date-based filtering for security monitoring and compliance."
+    }
+  },
+  "stats": {
+    "active_users": "Active Users",
+    "roles": "Roles",
+    "pending": "Pending",
+    "types": "Types",
+    "subtypes": "Subtypes",
+    "results": "Results",
+    "total_rules": "Total Rules",
+    "active_rules": "Active Rules",
+    "campaign_groups": "Campaign Groups",
+    "campaigns": "Campaigns",
+    "maximum_file_size": "Maximum file size",
+    "file_format": "File format",
+    "todays_logs": "Today's Logs",
+    "this_month": "This Month",
+    "services": "Services"
+  },
+  "status": {
+    "running": "Running",
+    "automated": "Automated",
+    "ready": "Ready",
+    "monitoring": "Monitoring"
+  },
   "actions": {
     "save_settings": "Save Settings",
     "reset_settings": "Reset Settings",
-    "export_settings": "Export Settings",
+    "export_settings": "Campaign Config",
     "import_settings": "Import Settings",
     "test_connection": "Test Connection",
     "validate_settings": "Validate Settings",
@@ -191,7 +243,13 @@
     "discard_changes": "Discard Changes",
     "restore_defaults": "Restore Defaults",
     "backup_settings": "Backup Settings",
-    "restore_settings": "Restore Settings"
+    "restore_settings": "Restore Settings",
+    "manage_users": "Manage Users",
+    "configure_actions": "Configure Actions",
+    "configure_fud": "Configure FUD",
+    "manage_queues": "Manage Queues",
+    "upload_data": "Upload Data",
+    "view_logs": "View Logs"
   },
   "messages": {
     "settings_saved": "Settings saved successfully",

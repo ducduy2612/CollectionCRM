@@ -153,6 +153,21 @@
     "no_recent_activity": "No recent activity to display",
     "no_recent_activities": "No recent activities found",
     "recent_activities": "Recent Activities",
-    "no_alerts": "No alerts at this time"
+    "no_alerts": "No alerts at this time",
+    "todays_performance": "Today's Performance",
+    "assigned_customers": "Assigned Customers",
+    "no_customers_found": "No customers found matching your search.",
+    "no_assigned_customers": "No assigned customers found."
+  },
+  "metrics": {
+    "total_actions_made": "Total Actions Made",
+    "successful_contacts": "Successful Contacts",
+    "promises_to_pay": "Promises to Pay",
+    "amount_promised": "Amount Promised",
+    "contact_rate": "Contact Rate",
+    "promise_rate": "Promise Rate"
+  },
+  "search": {
+    "customers_placeholder": "Search customers..."
   }
 }

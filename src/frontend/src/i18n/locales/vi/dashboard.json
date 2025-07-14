@@ -153,6 +153,21 @@
     "no_recent_activity": "Không có hoạt động gần đây để hiển thị",
     "no_recent_activities": "Không tìm thấy hoạt động gần đây",
     "recent_activities": "Hoạt Động Gần Đây",
-    "no_alerts": "Không có cảnh báo nào lúc này"
+    "no_alerts": "Không có cảnh báo nào lúc này",
+    "todays_performance": "Hiệu Suất Hôm Nay",
+    "assigned_customers": "Khách Hàng Được Phân Công",
+    "no_customers_found": "Không tìm thấy khách hàng phù hợp với tìm kiếm của bạn.",
+    "no_assigned_customers": "Không tìm thấy khách hàng được phân công."
+  },
+  "metrics": {
+    "total_actions_made": "Tổng Số Hành Động Thực Hiện",
+    "successful_contacts": "Liên Lạc Thành Công",
+    "promises_to_pay": "Cam Kết Thanh Toán",
+    "amount_promised": "Số Tiền Cam Kết",
+    "contact_rate": "Tỷ Lệ Liên Lạc",
+    "promise_rate": "Tỷ Lệ Cam Kết"
+  },
+  "search": {
+    "customers_placeholder": "Tìm kiếm khách hàng..."
   }
 }

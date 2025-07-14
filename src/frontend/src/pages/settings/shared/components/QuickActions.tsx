@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '../../../../components/ui/Card';
 import {
   PlusCircleIcon,
@@ -29,37 +30,37 @@ const getIconComponent = (iconName: string) => {
 
 const QuickActions: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   
   const quickActions: QuickAction[] = [
     {
       id: 'add-user',
       title: t('settings:user_management.add_user'),
       icon: 'bi-plus-circle',
-      href: '/settings/users/new'
+      href: '/settings/user-management'
     },
     {
       id: 'import-data',
       title: t('settings:integrations.import_export'),
       icon: 'bi-upload',
-      href: '/settings/import'
+      href: '/settings/customer-assignment'
     },
     {
       id: 'export-settings',
       title: t('settings:actions.export_settings'),
       icon: 'bi-download',
-      href: '/settings/export'
+      href: '/settings/queue-campaign'
     },
     {
       id: 'security-audit',
       title: t('settings:security.audit_trail'),
       icon: 'bi-shield-check',
-      href: '/settings/security/audit'
+      href: '/settings/audit-log'
     }
   ];
 
   const handleActionClick = (action: QuickAction) => {
-    // In a real app, you would use React Router navigation
-    console.log(`Navigate to: ${action.href}`);
+    navigate(action.href);
   };
 
   return (

@@ -57,7 +57,8 @@
     "total": "Total",
     "action_type": "Action Type",
     "result": "Result",
-    "actions": "Actions"
+    "actions": "Actions",
+    "cif": "CIF"
   },
   "actions": {
     "view": "View",

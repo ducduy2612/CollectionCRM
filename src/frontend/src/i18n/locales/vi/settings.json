@@ -1,5 +1,8 @@
 {
   "quick_actions": "Hành Động Nhanh",
+  "page": {
+    "title": "Cài Đặt Hệ Thống"
+  },
   "titles": {
     "settings": "Cài Đặt",
     "general_settings": "Cài Đặt Chung",
@@ -180,10 +183,59 @@
     "timezone": "Múi Giờ",
     "locale_settings": "Cài Đặt Địa Phương"
   },
+  "cards": {
+    "user_management": {
+      "title": "Quản Lý Người Dùng",
+      "description": "Quản lý tài khoản người dùng, vai trò và quyền hạn. Kiểm soát mức độ truy cập và theo dõi hoạt động người dùng trên hệ thống."
+    },
+    "actions_config": {
+      "title": "Cấu Hình Hành Động",
+      "description": "Cấu hình các hành động tự động và quy trình làm việc cho quá trình thu hồi nợ. Thiết lập các trigger, điều kiện và phản hồi."
+    },
+    "fud_auto_config": {
+      "title": "Cấu Hình FUD Tự Động",
+      "description": "Cấu hình các quy trình Follow-Up và Dunning tự động. Thiết lập lịch trình thông minh và quy tắc leo thang."
+    },
+    "queue_campaign_config": {
+      "title": "Cấu Hình Chiến Dịch Hàng Đợi",
+      "description": "Quản lý hàng đợi thu hồi nợ và cấu hình chiến dịch. Thiết lập quy tắc ưu tiên và loại trừ liên hệ."
+    },
+    "customer_assignment_upload": {
+      "title": "Tải Lên Phân Công Khách Hàng",
+      "description": "Tải lên và quản lý tệp phân công khách hàng. Cấu hình thiết lập nhập khẩu hàng loạt và quy tắc xác thực."
+    },
+    "audit_log": {
+      "title": "Nhật Ký Kiểm Tra",
+      "description": "Xem và phân tích nhật ký kiểm tra hệ thống với bộ lọc theo ngày để giám sát bảo mật và tuân thủ."
+    }
+  },
+  "stats": {
+    "active_users": "Người Dùng Hoạt Động",
+    "roles": "Vai Trò",
+    "pending": "Đang Chờ",
+    "types": "Loại",
+    "subtypes": "Loại Phụ",
+    "results": "Kết Quả",
+    "total_rules": "Tổng Quy Tắc",
+    "active_rules": "Quy Tắc Hoạt Động",
+    "campaign_groups": "Nhóm Chiến Dịch",
+    "campaigns": "Chiến Dịch",
+    "maximum_file_size": "Kích thước tệp tối đa",
+    "file_format": "Định dạng tệp",
+    "todays_logs": "Nhật Ký Hôm Nay",
+    "this_month": "Tháng Này",
+    "services": "Dịch Vụ"
+  },
+  "status": {
+    "running": "Đang Chạy",
+    "automated": "Tự Động",
+    "ready": "Sẵn Sàng",
+    "monitoring": "Giám Sát"
+  },
   "actions": {
     "save_settings": "Lưu Cài Đặt",
     "reset_settings": "Đặt Lại Cài Đặt",
-    "export_settings": "Xuất Cài Đặt",
+    "export_settings": "Cấu Hình Chiến Dịch",
     "import_settings": "Nhập Cài Đặt",
     "test_connection": "Kiểm Tra Kết Nối",
     "validate_settings": "Xác Thực Cài Đặt",
@@ -191,7 +243,13 @@
     "discard_changes": "Hủy Thay Đổi",
     "restore_defaults": "Khôi Phục Mặc Định",
     "backup_settings": "Sao Lưu Cài Đặt",
-    "restore_settings": "Khôi Phục Cài Đặt"
+    "restore_settings": "Khôi Phục Cài Đặt",
+    "manage_users": "Quản Lý Người Dùng",
+    "configure_actions": "Cấu Hình Hành Động",
+    "configure_fud": "Cấu Hình FUD",
+    "manage_queues": "Quản Lý Hàng Đợi",
+    "upload_data": "Tải Lên Dữ Liệu",
+    "view_logs": "Xem Nhật Ký"
   },
   "messages": {
     "settings_saved": "Cài đặt đã lưu thành công",

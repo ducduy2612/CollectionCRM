@@ -57,7 +57,8 @@
     "total": "Tổng",
     "action_type": "Loại Hành Động",
     "result": "Kết Quả",
-    "actions": "Hành Động"
+    "actions": "Hành Động",
+    "cif": "CIF"
   },
   "actions": {
     "view": "Xem",

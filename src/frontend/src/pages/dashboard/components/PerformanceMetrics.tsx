@@ -8,6 +8,7 @@ import { actionsApi } from '../../../services/api/workflow/actions.api';
 import { agentsApi } from '../../../services/api/workflow/agents.api';
 import { useAuth } from '../../../hooks/useAuth';
 import { CustomerAction } from '../../customers/types';
+import { useTranslation } from '../../../i18n/hooks/useTranslation';
 
 // Workflow-based performance metrics interface
 interface WorkflowPerformanceMetrics {
@@ -25,6 +26,7 @@ interface PerformanceMetricsProps {
 
 const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({ onRefresh }) => {
   const { user } = useAuth();
+  const { t } = useTranslation(['dashboard', 'common']);
   const [performance, setPerformance] = useState<WorkflowPerformanceMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -125,12 +127,12 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({ onRefresh }) =>
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Today's Performance</CardTitle>
+        <CardTitle>{t('dashboard:messages.todays_performance')}</CardTitle>
         <Button variant="secondary" size="sm" onClick={handleRefresh}>
           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          Refresh
+          {t('common:buttons.refresh')}
         </Button>
       </CardHeader>
       <CardContent>
@@ -146,27 +148,27 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({ onRefresh }) =>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <div className="text-center p-4 bg-neutral-50 rounded-lg">
               <div className="text-2xl font-bold text-primary-600 mb-1">{performance.total_actions_today}</div>
-              <div className="text-sm text-neutral-600">Total Actions Made</div>
+              <div className="text-sm text-neutral-600">{t('dashboard:metrics.total_actions_made')}</div>
             </div>
             <div className="text-center p-4 bg-neutral-50 rounded-lg">
               <div className="text-2xl font-bold text-primary-600 mb-1">{performance.successful_contacts}</div>
-              <div className="text-sm text-neutral-600">Successful Contacts</div>
+              <div className="text-sm text-neutral-600">{t('dashboard:metrics.successful_contacts')}</div>
             </div>
             <div className="text-center p-4 bg-neutral-50 rounded-lg">
               <div className="text-2xl font-bold text-primary-600 mb-1">{performance.promises_to_pay}</div>
-              <div className="text-sm text-neutral-600">Promises to Pay</div>
+              <div className="text-sm text-neutral-600">{t('dashboard:metrics.promises_to_pay')}</div>
             </div>
             <div className="text-center p-4 bg-neutral-50 rounded-lg">
               <div className="text-2xl font-bold text-primary-600 mb-1">{formatCurrency(performance.amount_promised)}</div>
-              <div className="text-sm text-neutral-600">Amount Promised</div>
+              <div className="text-sm text-neutral-600">{t('dashboard:metrics.amount_promised')}</div>
             </div>
             <div className="text-center p-4 bg-neutral-50 rounded-lg">
               <div className="text-2xl font-bold text-primary-600 mb-1">{Math.round(performance.contact_rate * 100)}%</div>
-              <div className="text-sm text-neutral-600">Contact Rate</div>
+              <div className="text-sm text-neutral-600">{t('dashboard:metrics.contact_rate')}</div>
             </div>
             <div className="text-center p-4 bg-neutral-50 rounded-lg">
               <div className="text-2xl font-bold text-primary-600 mb-1">{Math.round(performance.promise_rate * 100)}%</div>
-              <div className="text-sm text-neutral-600">Promise Rate</div>
+              <div className="text-sm text-neutral-600">{t('dashboard:metrics.promise_rate')}</div>
             </div>
           </div>
         ) : null}
