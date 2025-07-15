@@ -359,7 +359,10 @@ WITH customer_aggregates AS (
     
     FROM bank_sync_service.customers c
     LEFT JOIN bank_sync_service.loans l ON c.cif = l.cif
+    -- Join with workflow_service.customer_cases to filter by f_update
+    INNER JOIN workflow_service.customer_cases cc ON c.cif = cc.cif
     WHERE c.cif IS NOT NULL
+      AND (cc.f_update IS NULL OR cc.f_update < NOW())
     GROUP BY c.id, c.cif, c.segment, c.status
 )
 SELECT 

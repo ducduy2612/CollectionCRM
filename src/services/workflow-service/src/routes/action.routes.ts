@@ -348,7 +348,6 @@ router.delete(
 router.get(
   '/action-config/usage-stats',
   requireAuth,
-  requirePermissions(['action_config:all']),
   actionConfigController.getConfigurationUsageStats
 );
 

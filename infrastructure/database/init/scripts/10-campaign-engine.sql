@@ -407,18 +407,7 @@ BEGIN
     v_query := format('
         CREATE TEMP TABLE temp_campaign_customers_%s AS
         SELECT DISTINCT 
-            lcd.cif,
-            lcd.segment,
-            lcd.customer_status as status,
-            lcd.total_loans,
-            lcd.active_loans,
-            lcd.overdue_loans,
-            lcd.client_outstanding,
-            lcd.total_due_amount,
-            lcd.overdue_outstanding,
-            lcd.max_dpd,
-            lcd.avg_dpd,
-            lcd.utilization_ratio
+            lcd.*
         FROM bank_sync_service.loan_campaign_data lcd
         WHERE %s %s',
         replace(p_campaign_id::text, '-', '_'),
@@ -463,7 +452,7 @@ BEGIN
         SELECT 
             tc.cif,
             tc.segment,
-            tc.status,
+            tc.customer_status,
             tc.total_loans,
             tc.active_loans,
             tc.overdue_loans,
@@ -967,7 +956,6 @@ DECLARE
     v_data_source TEXT;
     v_field_ref TEXT;
     v_condition_sql TEXT;
-    v_needs_lcd_join BOOLEAN := FALSE;
 BEGIN
     IF p_conditions IS NULL OR jsonb_typeof(p_conditions) != 'array' OR jsonb_array_length(p_conditions) = 0 THEN
         RETURN '1=1';
@@ -996,21 +984,13 @@ BEGIN
                 
                 -- Use the mapped column directly
                 IF v_operator IN ('>', '>=', '<', '<=') THEN
-                    v_field_ref := format('lcd.%I::numeric', v_field_column);
+                    v_field_ref := format('tc.%I::numeric', v_field_column);
                 ELSE
-                    v_field_ref := format('lcd.%I', v_field_column);
+                    v_field_ref := format('tc.%I', v_field_column);
                 END IF;
-                v_needs_lcd_join := TRUE;
             END;
-        ELSIF v_field_name IN ('segment', 'status', 'total_loans', 'active_loans', 
-                               'overdue_loans', 'client_outstanding', 'total_due_amount',
-                               'overdue_outstanding', 'max_dpd', 'avg_dpd', 'utilization_ratio') THEN
-            -- These fields are available in the temp customer table
-            v_field_ref := format('tc.%I', CASE WHEN v_field_name = 'customer_status' THEN 'status' ELSE v_field_name END);
         ELSE
-            -- Other fields need to be joined from loan_campaign_data
-            v_field_ref := format('lcd.%I', v_field_name);
-            v_needs_lcd_join := TRUE;
+            v_field_ref := format('tc.%I', v_field_name);
         END IF;
         
         -- Build condition based on operator (similar to build_conditions_where_clause)
@@ -1051,14 +1031,9 @@ BEGIN
         
         v_conditions := array_append(v_conditions, v_condition_sql);
     END LOOP;
-    
-    -- If we need loan_campaign_data join, wrap conditions in EXISTS
-    IF v_needs_lcd_join THEN
-        RETURN format('EXISTS (SELECT 1 FROM bank_sync_service.loan_campaign_data lcd WHERE lcd.cif = tc.cif AND %s)',
-            array_to_string(v_conditions, ' AND '));
-    ELSE
-        RETURN array_to_string(v_conditions, ' AND ');
-    END IF;
+
+    RETURN array_to_string(v_conditions, ' AND ');
+
 END;
 $$ LANGUAGE plpgsql;
 

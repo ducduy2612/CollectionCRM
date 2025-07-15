@@ -293,10 +293,8 @@ export class CampaignRepository {
           relationship_patterns: output.relationship_patterns || undefined
         }));
       }
-      console.log('Retrieved contact selection rules:', rules);
       return rules;
     } catch (error) {
-      console.error('Error in getContactSelectionRules:', error);
       throw error;
     }
   }
