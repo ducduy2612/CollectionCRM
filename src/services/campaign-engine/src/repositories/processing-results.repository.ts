@@ -212,6 +212,16 @@ export class ProcessingResultsRepository {
     };
   }
 
+  // Get selected contacts for a processing run
+  async getSelectedContactsByRun(processingRunId: string): Promise<any[]> {
+    const result = await db.raw(
+      `SELECT * FROM campaign_engine.list_selected_contacts_by_run(?::uuid)`,
+      [processingRunId]
+    );
+    
+    return result.rows || [];
+  }
+
 
 
 

@@ -20,11 +20,7 @@ export const env = {
   DB_DATABASE: process.env.DB_DATABASE || 'collectioncrm',
   
   // API configuration
-  API_PREFIX: process.env.API_PREFIX || '/api/v1/collection',
-  
-  // Auth configuration
-  JWT_SECRET: process.env.JWT_SECRET || 'your-secret-key',
-  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '1d',
+  API_PREFIX: process.env.API_PREFIX || '/api/v1/workflow',
   
   // Kafka configuration
   KAFKA_BROKERS: process.env.KAFKA_BROKERS || 'kafka:9092',

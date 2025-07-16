@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export type ModalTab = 'overview' | 'results' | 'errors' | 'assignments';
+export type ModalTab = 'overview' | 'results' | 'errors' | 'assignments' | 'export';
 
 interface UseModalTabsState {
   activeTab: ModalTab;

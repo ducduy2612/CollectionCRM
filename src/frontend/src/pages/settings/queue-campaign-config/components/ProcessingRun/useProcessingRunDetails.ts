@@ -20,6 +20,7 @@ interface UseProcessingRunDetailsActions {
   loadRunDetails: () => Promise<void>;
   searchCustomerAssignments: (cif: string, runId: string) => Promise<void>;
   loadCampaignAssignments: (campaignResultId: string) => Promise<void>;
+  exportContacts: () => Promise<void>;
 }
 
 export const useProcessingRunDetails = (runId: string): UseProcessingRunDetailsState & UseProcessingRunDetailsActions => {
@@ -97,6 +98,25 @@ export const useProcessingRunDetails = (runId: string): UseProcessingRunDetailsS
     }
   };
 
+  const exportContacts = async () => {
+    try {
+      const blob = await processingApi.exportSelectedContacts(runId);
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `campaign_contacts_${runId}_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to export contacts:', err);
+      throw err;
+    }
+  };
+
   useEffect(() => {
     if (runId) {
       loadRunDetails();
@@ -112,6 +132,7 @@ export const useProcessingRunDetails = (runId: string): UseProcessingRunDetailsS
     isLoading,
     loadRunDetails,
     searchCustomerAssignments,
-    loadCampaignAssignments
+    loadCampaignAssignments,
+    exportContacts
   };
 };

@@ -1147,7 +1147,8 @@
           "overview": "Overview",
           "results": "Results",
           "errors": "Errors",
-          "assignments": "Assignments"
+          "assignments": "Assignments",
+          "export": "Export"
         },
         "run_info": "Run Information",
         "request_id": "Request ID",
@@ -1182,7 +1183,19 @@
         "selected_contacts": "Selected Contacts",
         "no_contacts_selected": "No contacts selected for this assignment",
         "all_statistics": "All statistics",
-        "total_duration": "Duration"
+        "total_duration": "Duration",
+        "export": {
+          "title": "Export Campaign Contacts",
+          "description": "Export all selected contacts from this processing run to a CSV file.",
+          "included_data": "The CSV file includes:",
+          "campaign_info": "Campaign group and campaign names",
+          "customer_cif": "Customer CIF",
+          "contact_details": "Contact type and value",
+          "related_party_info": "Related party information",
+          "contact_verification_status": "Contact verification status",
+          "export_csv": "Export to CSV",
+          "exporting": "Exporting..."
+        }
       }
     }
   }

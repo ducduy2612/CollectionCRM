@@ -63,6 +63,7 @@ cp src/services/api-gateway/.env.example src/services/api-gateway/.env
 cp src/services/bank-sync-service/.env.example src/services/bank-sync-service/.env
 cp src/services/workflow-service/.env.example src/services/workflow-service/.env
 cp src/services/campaign-engine/.env.example src/services/campaign-engine/.env
+cp src/services/payment-service/.env.example src/services/payment-service/.env
 cp src/services/audit-service/.env.example src/services/audit-service/.env
 ```
 

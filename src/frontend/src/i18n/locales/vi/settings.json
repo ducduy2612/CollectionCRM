@@ -1147,7 +1147,8 @@
           "overview": "Tổng Quan",
           "results": "Kết Quả",
           "errors": "Lỗi",
-          "assignments": "Phân Công"
+          "assignments": "Phân Công",
+          "export": "Xuất File"
         },
         "run_info": "Thông Tin Lần Chạy",
         "request_id": "ID Yêu Cầu",
@@ -1182,7 +1183,19 @@
         "selected_contacts": "Liên Hệ Đã Chọn",
         "no_contacts_selected": "Không có liên hệ nào được chọn cho phân công này",
         "all_statistics": "Tất cả thống kê",
-        "total_duration": "Thời Gian"
+        "total_duration": "Thời Gian",
+        "export": {
+          "title": "Xuất Danh Sách Liên Hệ Chiến Dịch",
+          "description": "Xuất tất cả liên hệ đã chọn từ lần xử lý này thành file CSV.",
+          "included_data": "File CSV bao gồm:",
+          "campaign_info": "Tên nhóm chiến dịch và chiến dịch",
+          "customer_cif": "CIF khách hàng",
+          "contact_details": "Loại và giá trị liên hệ",
+          "related_party_info": "Thông tin bên liên quan",
+          "contact_verification_status": "Trạng thái xác minh liên hệ",
+          "export_csv": "Xuất ra CSV",
+          "exporting": "Đang xuất..."
+        }
       }
     }
   }

@@ -65,7 +65,7 @@ export class WorkflowEventHandler {
         eventId: event.id,
         eventType: `action-config.${event.operation}`,
         serviceName: 'workflow-service',
-        agentId: event.updatedBy,
+        agentId: event.userId,
         entityType: event.entityType,
         entityId: event.entityId || event.entityCode || '',
         action: event.operation,
