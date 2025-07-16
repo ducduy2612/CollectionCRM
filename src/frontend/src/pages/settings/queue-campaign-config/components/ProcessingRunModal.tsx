@@ -6,6 +6,7 @@ import { OverviewTab } from './ProcessingRun/OverviewTab';
 import { ResultsTab } from './ProcessingRun/ResultsTab';
 import { ErrorsTab } from './ProcessingRun/ErrorsTab';
 import { AssignmentsTab } from './ProcessingRun/AssignmentsTab';
+import { ExportTab } from './ProcessingRun/ExportTab';
 import { TabNavigation, createTabs } from './ProcessingRun/TabNavigation';
 import { ModalHeader } from './ProcessingRun/ModalHeader';
 import { useProcessingRunDetails } from './ProcessingRun/useProcessingRunDetails';
@@ -29,7 +30,8 @@ const ProcessingRunModal: React.FC<ProcessingRunModalProps> = ({ run, isOpen, on
     isLoading,
     loadRunDetails,
     searchCustomerAssignments,
-    loadCampaignAssignments
+    loadCampaignAssignments,
+    exportContacts
   } = useProcessingRunDetails(run.id);
   
   const {
@@ -72,6 +74,14 @@ const ProcessingRunModal: React.FC<ProcessingRunModalProps> = ({ run, isOpen, on
             onSearchCifChange={setSearchCif}
             onSearchAssignments={handleSearchAssignments}
             isLoading={isLoading}
+          />
+        );
+      case 'export':
+        return (
+          <ExportTab
+            processingRunId={run.id}
+            isLoading={isLoading}
+            onExport={exportContacts}
           />
         );
       default:

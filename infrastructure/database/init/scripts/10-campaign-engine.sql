@@ -364,17 +364,6 @@ CREATE OR REPLACE FUNCTION campaign_engine.process_campaign(
     p_max_contacts_per_customer INTEGER DEFAULT 3
 ) RETURNS TABLE (
     cif VARCHAR,
-    segment VARCHAR,
-    status VARCHAR,
-    total_loans BIGINT,
-    active_loans BIGINT,
-    overdue_loans BIGINT,
-    client_outstanding NUMERIC,
-    total_due_amount NUMERIC,
-    overdue_outstanding NUMERIC,
-    max_dpd INTEGER,
-    avg_dpd NUMERIC,
-    utilization_ratio NUMERIC,
     contact_id UUID,
     contact_type VARCHAR,
     contact_value VARCHAR,
@@ -450,18 +439,7 @@ BEGIN
     -- Return final results
     v_query := format('
         SELECT 
-            tc.cif,
-            tc.segment,
-            tc.customer_status,
-            tc.total_loans,
-            tc.active_loans,
-            tc.overdue_loans,
-            tc.client_outstanding,
-            tc.total_due_amount,
-            tc.overdue_outstanding,
-            tc.max_dpd,
-            tc.avg_dpd,
-            tc.utilization_ratio,
+            tcon.cif,
             tcon.contact_id,
             tcon.contact_type,
             tcon.contact_value,
@@ -473,10 +451,7 @@ BEGIN
             tcon.is_primary,
             tcon.is_verified,
             tcon.source
-        FROM temp_campaign_customers_%s tc
-        LEFT JOIN temp_campaign_contacts_%s tcon ON tc.cif = tcon.cif
-        ORDER BY tc.cif, tcon.rule_priority NULLS LAST, tcon.is_primary DESC',
-        replace(p_campaign_id::text, '-', '_'),
+        FROM temp_campaign_contacts_%s tcon',
         replace(p_campaign_id::text, '-', '_')
     );
     
@@ -1534,3 +1509,56 @@ $$ LANGUAGE plpgsql;
 
 COMMENT ON FUNCTION campaign_engine.safe_file_write(TEXT, TEXT, BOOLEAN) IS 'Safely writes content to files with error handling for SQL debugging';
 COMMENT ON FUNCTION campaign_engine.ensure_debug_directory() IS 'Checks if debug directory is writable';
+
+----------------------------------------------
+-- Function to list selected contacts for each campaign by processing run ID
+
+CREATE OR REPLACE FUNCTION campaign_engine.list_selected_contacts_by_run(
+    p_processing_run_id UUID
+) RETURNS TABLE (
+    campaign_group_name VARCHAR(100),
+    campaign_name VARCHAR(100),
+    campaign_priority INTEGER,
+    cif VARCHAR(50),
+    contact_type VARCHAR(50),
+    contact_value VARCHAR(100),
+    related_party_type VARCHAR(50),
+    related_party_cif VARCHAR(50),
+    related_party_name VARCHAR(200),
+    relationship_type VARCHAR(100),
+    is_primary BOOLEAN,
+    is_verified BOOLEAN,
+    contact_source VARCHAR(20)
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        cr.campaign_group_name,
+        cr.campaign_name,
+        cr.priority AS campaign_priority,
+        ca.cif,
+        sc.contact_type,
+        sc.contact_value,
+        sc.related_party_type,
+        sc.related_party_cif,
+        sc.related_party_name,
+        sc.relationship_type,
+        sc.is_primary,
+        sc.is_verified,
+        sc.source AS contact_source
+    FROM campaign_engine.campaign_processing_runs cpr
+    INNER JOIN campaign_engine.campaign_results cr ON cpr.id = cr.processing_run_id
+    INNER JOIN campaign_engine.customer_assignments ca ON cr.id = ca.campaign_result_id
+    LEFT JOIN campaign_engine.selected_contacts sc ON ca.id = sc.customer_assignment_id
+    WHERE cpr.id = p_processing_run_id
+    ORDER BY 
+        cr.campaign_group_name,
+        cr.priority,
+        cr.campaign_name,
+        ca.cif,
+        sc.rule_priority,
+        sc.contact_type;
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION campaign_engine.list_selected_contacts_by_run(UUID) IS 'Lists all selected contacts for each campaign in a processing run';

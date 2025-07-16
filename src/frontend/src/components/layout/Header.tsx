@@ -34,7 +34,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
       {/* Header */}
       <header className="bg-primary-900 text-white">
         <div className="px-6 py-4 flex justify-between items-center">
-          <Link to="/" className="flex items-center text-xl font-bold">
+          <Link to="/" className="flex items-center text-xl font-bold text-white">
             <svg
               className="w-8 h-8 mr-3"
               fill="none"

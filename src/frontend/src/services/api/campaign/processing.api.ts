@@ -73,5 +73,16 @@ export const processingApi = {
   getProcessingSummary: async (id: string): Promise<{ success: boolean; data: any; message: string }> => {
     const response = await apiClient.get(`/campaigns/processing/runs/${id}/summary`);
     return response.data;
+  },
+
+  // Export selected contacts to CSV
+  exportSelectedContacts: async (id: string): Promise<Blob> => {
+    const response = await apiClient.get(`/campaigns/processing/runs/${id}/contacts`, {
+      responseType: 'blob',
+      headers: {
+        'Accept': 'text/csv'
+      }
+    });
+    return response.data;
   }
 };

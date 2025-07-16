@@ -295,4 +295,86 @@ export class ProcessingController {
       });
     }
   }
+
+  // Get selected contacts for a processing run
+  async getSelectedContacts(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const acceptHeader = req.headers.accept || '';
+      
+      const contacts = await this.resultsRepository.getSelectedContactsByRun(id);
+
+      // Check if CSV format is requested
+      if (acceptHeader.includes('text/csv')) {
+        // Generate CSV
+        const csvHeaders = [
+          'campaign_group_name',
+          'campaign_name',
+          'campaign_priority',
+          'cif',
+          'contact_type',
+          'contact_value',
+          'related_party_type',
+          'related_party_cif',
+          'related_party_name',
+          'relationship_type',
+          'is_primary',
+          'is_verified',
+          'contact_source'
+        ];
+
+        // Create CSV content
+        let csvContent = csvHeaders.join(',') + '\n';
+        
+        for (const contact of contacts) {
+          const row = [
+            contact.campaign_group_name || '',
+            contact.campaign_name || '',
+            contact.campaign_priority || '',
+            contact.cif || '',
+            contact.contact_type || '',
+            contact.contact_value || '',
+            contact.related_party_type || '',
+            contact.related_party_cif || '',
+            contact.related_party_name || '',
+            contact.relationship_type || '',
+            contact.is_primary ? 'Yes' : 'No',
+            contact.is_verified ? 'Yes' : 'No',
+            contact.contact_source || ''
+          ];
+          
+          // Escape values that contain commas or quotes
+          const escapedRow = row.map(value => {
+            const strValue = String(value);
+            if (strValue.includes(',') || strValue.includes('"') || strValue.includes('\n')) {
+              return `"${strValue.replace(/"/g, '""')}"`;
+            }
+            return strValue;
+          });
+          
+          csvContent += escapedRow.join(',') + '\n';
+        }
+
+        // Set CSV headers
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="campaign_contacts_${id}_${new Date().toISOString().split('T')[0]}.csv"`);
+        res.send(csvContent);
+      } else {
+        // Return JSON format
+        res.json({
+          success: true,
+          data: contacts,
+          message: 'Selected contacts retrieved successfully'
+        });
+      }
+    } catch (error) {
+      logger.error('Error getting selected contacts:', error);
+      res.status(500).json({
+        success: false,
+        data: null,
+        message: 'Failed to retrieve selected contacts',
+        errors: [{ code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' }]
+      });
+    }
+  }
 }

@@ -3,7 +3,8 @@ import {
   ChartBarIcon,
   ExclamationTriangleIcon,
   UserGroupIcon,
-  ClipboardDocumentListIcon
+  ClipboardDocumentListIcon,
+  ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
 import type { ModalTab } from './useModalTabs';
 
@@ -69,5 +70,10 @@ export const createTabs = (t: (key: string) => string): Tab[] => [
     id: 'assignments', 
     label: t('campaign_config.processing.modal.tabs.assignments'), 
     icon: UserGroupIcon 
+  },
+  { 
+    id: 'export', 
+    label: t('campaign_config.processing.modal.tabs.export'), 
+    icon: ArrowDownTrayIcon 
   },
 ];
