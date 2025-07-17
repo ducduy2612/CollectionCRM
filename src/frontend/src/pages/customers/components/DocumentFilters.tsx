@@ -92,46 +92,11 @@ const DocumentFilters: React.FC<DocumentFiltersProps> = ({
           />
         </div>
 
-        {/* Search */}
-        <div className="min-w-[250px]">
-          <label className="block text-sm font-medium text-neutral-700 mb-1">
-            {t('customers:documents.filters.search')}
-          </label>
-          <Input
-            type="text"
-            value={filters.searchTerm || ''}
-            onChange={(e) => updateFilter('searchTerm', e.target.value)}
-            placeholder={t('customers:documents.filters.search')}
-          />
-        </div>
       </div>
 
-      {/* Date Range Filters */}
-      <div className="flex items-center gap-4 flex-wrap">
-        <div className="min-w-[200px]">
-          <label className="block text-sm font-medium text-neutral-700 mb-1">
-            {t('common:start_date')}
-          </label>
-          <Input
-            type="date"
-            value={filters.dateFrom || ''}
-            onChange={(e) => updateFilter('dateFrom', e.target.value)}
-          />
-        </div>
-
-        <div className="min-w-[200px]">
-          <label className="block text-sm font-medium text-neutral-700 mb-1">
-            {t('common:end_date')}
-          </label>
-          <Input
-            type="date"
-            value={filters.dateTo || ''}
-            onChange={(e) => updateFilter('dateTo', e.target.value)}
-          />
-        </div>
-
-        {/* Clear Filters Button */}
-        {hasActiveFilters && (
+      {/* Clear Filters Button */}
+      {hasActiveFilters && (
+        <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-end">
             <Button
               variant="secondary"
@@ -144,8 +109,8 @@ const DocumentFilters: React.FC<DocumentFiltersProps> = ({
               {t('customers:documents.filters.clear_filters')}
             </Button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Active Filters Summary */}
       {hasActiveFilters && (
@@ -167,21 +132,6 @@ const DocumentFilters: React.FC<DocumentFiltersProps> = ({
             {filters.loanAccountNumber && (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                 {t('customers:documents.filters.loan_account')}: {filters.loanAccountNumber}
-              </span>
-            )}
-            {filters.searchTerm && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                {t('common:search')}: "{filters.searchTerm}"
-              </span>
-            )}
-            {filters.dateFrom && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                {t('common:from')}: {filters.dateFrom}
-              </span>
-            )}
-            {filters.dateTo && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                {t('common:to')}: {filters.dateTo}
               </span>
             )}
           </div>
