@@ -442,6 +442,37 @@ export class CampaignController {
     }
   }
 
+  async deleteCustomField(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const deleted = await this.campaignRepository.deleteCustomField(id);
+      
+      if (!deleted) {
+        res.status(404).json({
+          success: false,
+          data: null,
+          message: 'Custom field not found',
+          errors: [{ code: 'NOT_FOUND', message: 'Custom field not found' }]
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        data: null,
+        message: 'Custom field deleted successfully'
+      });
+    } catch (error) {
+      logger.error('Error deleting custom field:', error);
+      res.status(500).json({
+        success: false,
+        data: null,
+        message: 'Failed to delete custom field',
+        errors: [{ code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' }]
+      });
+    }
+  }
+
   // Configuration
   async getDataSources(_req: Request, res: Response): Promise<void> {
     try {

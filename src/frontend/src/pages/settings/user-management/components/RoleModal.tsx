@@ -13,14 +13,23 @@ const AVAILABLE_PERMISSIONS = [
   'action_config:all', // right to config action codes
   
   // FUD Auto Config
-  'FUD_config:enable',// enable FUD auto for user
-  'FUD_config:edit', // right to set up FUD rules
+  'FUD_config:all', // right to set up FUD rules
   
   // Queue campaign management
   'campaign_management:all',
   
   // Customer assignment
   'customer_assignment:all',
+
+  // Customer info
+  'customer_info:delete', // right to delete customer information
+  'customer_info:update', // right to update customer information
+  'customer_info:add', // right to add customer information
+
+  // Customer documents
+  'customer_doc:delete', // right to delete customer documents
+  'customer_doc:upload', // right to upload customer documents
+  'customer_doc:download', // right to download customer documents
 
   // Audit log access
   'audit_view:all'
@@ -270,10 +279,12 @@ const RoleModal: React.FC<RoleModalProps> = ({
   const permissionGroups = {
     [t('settings:messages.user_management')]: ['user_management:user','user_management:role'],
     [t('settings:messages.action_config')]: ['action_config:all'],
-    [t('settings:messages.FUD_config')]: ['FUD_config:enable','FUD_config:edit'],
+    [t('settings:messages.FUD_config')]: ['FUD_config:all'],
     [t('settings:messages.campaign_management')]: ['campaign_management:all'],
     [t('settings:messages.customer_assignment')]: ['customer_assignment:all'],
-    [t('settings:messages.audit_log')]: ['audit_view:all']
+    [t('settings:messages.customer_info')]: ['customer_info:delete', 'customer_info:update', 'customer_info:add'],
+    [t('settings:messages.customer_doc')]: ['customer_doc:delete', 'customer_doc:upload', 'customer_doc:download'],
+    [t('settings:cards.audit_log.title')]: ['audit_view:all']
   };
 
   return (

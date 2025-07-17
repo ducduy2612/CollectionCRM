@@ -63,8 +63,13 @@ const CampaignsSection: React.FC = () => {
       queryClient.invalidateQueries(['campaigns']);
       showToast(t('campaign_config.campaigns.messages.deleted'), 'success');
     },
-    onError: (error: Error) => {
-      showToast(error.message, 'error');
+    onError: (error: any) => {
+      // Check if error has response with status 500
+      if (error.response?.status === 500) {
+        showToast('Review campaign name and campaign priority', 'error');
+      } else {
+        showToast(error.message || 'An error occurred', 'error');
+      }
     }
   });
 

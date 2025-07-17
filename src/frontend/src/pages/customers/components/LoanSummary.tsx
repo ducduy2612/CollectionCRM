@@ -133,10 +133,6 @@ const LoanSummary: React.FC<LoanSummaryProps> = ({ loans }) => {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>{t('customers:loan_summary.title')} ({t('customers:loan_summary.loans_count', { count: loans.length })})</CardTitle>
-        <Button variant="secondary" size="sm">
-          <i className="bi bi-graph-up mr-2"></i>
-          {t('customers:loan_summary.analytics')}
-        </Button>
       </CardHeader>
       
       <CardContent>
@@ -189,7 +185,6 @@ const LoanSummary: React.FC<LoanSummaryProps> = ({ loans }) => {
                     {renderSortIcon('nextPaymentDate')}
                   </button>
                 </TableHead>
-                <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

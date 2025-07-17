@@ -37,7 +37,7 @@ router.get(
 // POST /fud-auto-config - Create new FUD configuration
 router.post(
   '/',
-  requirePermissions(['FUD_config:edit']),
+  requirePermissions(['FUD_config:all']),
   controller.createConfig.bind(controller)
 );
 
@@ -56,14 +56,14 @@ router.post(
 // PUT /fud-auto-config/:id - Update FUD configuration
 router.put(
   '/:id',
-  requirePermissions(['FUD_config:edit']),
+  requirePermissions(['FUD_config:all']),
   controller.updateConfig.bind(controller)
 );
 
 // DELETE /fud-auto-config/:id - Delete FUD configuration
 router.delete(
   '/:id',
-  requirePermissions(['FUD_config:edit']),
+  requirePermissions(['FUD_config:all']),
   controller.deleteConfig.bind(controller)
 );
 

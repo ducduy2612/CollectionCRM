@@ -27,6 +27,7 @@
     "sessions": "Sessions",
     "add_user": "Add User",
     "add_role": "Add Role",
+    "edit_role": "Edit Role",
     "edit_user": "Edit User",
     "delete_user": "Delete User",
     "delete_role": "Delete Role",
@@ -252,6 +253,8 @@
     "view_logs": "View Logs"
   },
   "messages": {
+    "customer_info": "Customer Info",
+    "customer_doc": "Customer Documents",
     "settings_saved": "Settings saved successfully",
     "settings_reset": "Settings reset to defaults",
     "connection_successful": "Connection test successful",
@@ -279,7 +282,8 @@
     "password_requirements": "Password must be at least 8 characters and contain both letters and numbers",
     "select_role": "Select a role...",
     "loading_roles": "Loading roles...",
-    "manage_user_accounts": "Manage user accounts and permissions",
+    "manage_user_accounts": "Manage user accounts and assign roles to user",
+    "manage_roles": "Manage roles and permissions",
     "configure_roles": "Configure roles and access levels",
     "customer_management": "Customer Management",
     "workflow_management": "Workflow Management",
@@ -1027,7 +1031,10 @@
       },
       "modal": {
         "create_title": "Create Custom Field",
-        "edit_title": "Edit Custom Field"
+        "edit_title": "Edit Custom Field",
+        "delete_title": "Delete Custom Field",
+        "delete_message": "Are you sure you want to delete the custom field '{{fieldName}}'?",
+        "delete_warning": "This action cannot be undone. Any campaigns using this field will need to be updated."
       },
       "form": {
         "field_name": "Field Name",

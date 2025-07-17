@@ -5,10 +5,13 @@ import { Table } from '../../../../components/ui/Table';
 import { Badge } from '../../../../components/ui/Badge';
 import { Modal } from '../../../../components/ui/Modal';
 import { Input } from '../../../../components/ui/Input';
+import { Toggle } from '../../../../components/ui/Toggle';
 import { 
   PlusIcon, 
   PencilIcon, 
-  TrashIcon
+  TrashIcon,
+  EyeIcon,
+  EyeSlashIcon
 } from '@heroicons/react/24/outline';
 import { ActionResult } from '../../../customers/types';
 import { actionConfigApi, ActionResultConfig } from '../../../../services/api/workflow/action-config.api';
@@ -36,6 +39,7 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
 }) => {
   const { t } = useTranslation(['settings', 'common']);
   const [showModal, setShowModal] = useState(false);
+  const [showInactive, setShowInactive] = useState(false);
   const [editingItem, setEditingItem] = useState<ActionResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
@@ -137,6 +141,10 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
     setEditingItem(null);
   };
 
+  const filteredActionResults = showInactive 
+    ? actionResults 
+    : actionResults.filter(result => result.isActive);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -144,10 +152,23 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
           <h3 className="text-lg font-semibold text-neutral-900">{t('settings:actions_config.results.title')}</h3>
           <p className="text-sm text-neutral-600">{t('settings:actions_config.results.description')}</p>
         </div>
-        <Button variant="primary" size="sm" onClick={handleAdd}>
-          <PlusIcon className="w-4 h-4 mr-2" />
-          {t('settings:actions_config.results.add_result')}
-        </Button>
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <Toggle
+              checked={showInactive}
+              onChange={setShowInactive}
+              size="sm"
+            />
+            <span className="text-sm text-neutral-600 flex items-center space-x-1">
+              {showInactive ? <EyeIcon className="w-4 h-4" /> : <EyeSlashIcon className="w-4 h-4" />}
+              <span>{t('settings:customer_status.filter.show_inactive')}</span>
+            </span>
+          </div>
+          <Button variant="primary" size="sm" onClick={handleAdd}>
+            <PlusIcon className="w-4 h-4 mr-2" />
+            {t('settings:actions_config.results.add_result')}
+          </Button>
+        </div>
       </div>
       
       <div className="bg-white rounded-lg border">
@@ -164,7 +185,7 @@ const ActionResultsTab: React.FC<ActionResultsTabProps> = ({
             </tr>
           </thead>
           <tbody>
-            {actionResults.map((result) => (
+            {filteredActionResults.map((result) => (
               <tr key={result.id}>
                 <td className="font-mono text-sm">{result.code}</td>
                 <td className="font-medium">{result.name}</td>

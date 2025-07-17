@@ -82,11 +82,11 @@ function App() {
                   }
                 />
                 
-                {/* FUD Auto Config - requires FUD_config:edit permission */}
+                {/* FUD Auto Config - requires FUD_config:all permission */}
                 <Route
                   path="/settings/fud-auto-config"
                   element={
-                    <ProtectedRoute requiredPermissions={["FUD_config:edit"]}>
+                    <ProtectedRoute requiredPermissions={["FUD_config:all"]}>
                       <FudAutoConfigPage />
                     </ProtectedRoute>
                   }

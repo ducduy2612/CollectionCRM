@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { documentController } from '../controllers/document.controller';
-import { requireAuth, agentContextMiddleware } from '../middleware/auth.middleware';
+import { requireAuth, requirePermissions, agentContextMiddleware } from '../middleware/auth.middleware';
 import { uploadMultiple } from '../middleware/document-upload.middleware';
 import { documentValidation, validateRequest } from '../validations/document.validation';
 
@@ -11,6 +11,7 @@ router.post(
   '/upload',
   requireAuth,
   agentContextMiddleware,
+  requirePermissions(['customer_doc:upload']),
   uploadMultiple,
   validateRequest(documentValidation.upload),
   documentController.uploadDocuments.bind(documentController)
@@ -48,6 +49,7 @@ router.get(
   '/:id/download',
   requireAuth,
   agentContextMiddleware,
+  requirePermissions(['customer_doc:download']),
   validateRequest(documentValidation.download),
   documentController.downloadDocument.bind(documentController)
 );
@@ -66,6 +68,7 @@ router.delete(
   '/:id',
   requireAuth,
   agentContextMiddleware,
+  requirePermissions(['customer_doc:delete']),
   validateRequest(documentValidation.delete),
   documentController.deleteDocument.bind(documentController)
 );

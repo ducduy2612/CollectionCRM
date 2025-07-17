@@ -43,6 +43,7 @@ router.get(
 router.post(
   '/:cif/phones',
   requireAuth,
+  requirePermissions(['customer_info:add']),
   customerContactController.createPhone
 );
 
@@ -54,6 +55,7 @@ router.post(
 router.put(
   '/:cif/phones/:phoneId',
   requireAuth,
+  requirePermissions(['customer_info:update']),
   customerContactController.updatePhone
 );
 
@@ -65,7 +67,7 @@ router.put(
 router.delete(
   '/:cif/phones/:phoneId',
   requireAuth,
-  requirePermissions(['system_admin:all']),
+  requirePermissions(['customer_info:delete']),
   customerContactController.deletePhone
 );
 
@@ -92,6 +94,7 @@ router.get(
 router.post(
   '/:cif/addresses',
   requireAuth,
+  requirePermissions(['customer_info:add']),
   customerContactController.createAddress
 );
 
@@ -103,6 +106,7 @@ router.post(
 router.put(
   '/:cif/addresses/:addressId',
   requireAuth,
+  requirePermissions(['customer_info:update']),
   customerContactController.updateAddress
 );
 
@@ -114,7 +118,7 @@ router.put(
 router.delete(
   '/:cif/addresses/:addressId',
   requireAuth,
-  requirePermissions(['system_admin:all']),
+  requirePermissions(['customer_info:delete']),
   customerContactController.deleteAddress
 );
 
@@ -141,6 +145,7 @@ router.get(
 router.post(
   '/:cif/emails',
   requireAuth,
+  requirePermissions(['customer_info:add']),
   customerContactController.createEmail
 );
 
@@ -152,6 +157,7 @@ router.post(
 router.put(
   '/:cif/emails/:emailId',
   requireAuth,
+  requirePermissions(['customer_info:update']),
   customerContactController.updateEmail
 );
 
@@ -163,7 +169,7 @@ router.put(
 router.delete(
   '/:cif/emails/:emailId',
   requireAuth,
-  requirePermissions(['system_admin:all']),
+  requirePermissions(['customer_info:delete']),
   customerContactController.deleteEmail
 );
 

@@ -12,6 +12,7 @@ import RoleModal from './RoleModal';
 import UserSessionsModal from './UserSessionsModal';
 import RoleUsersModal from './RoleUsersModal';
 import { UserResponse, RoleResponse } from '../../../../services/api/auth.api';
+import { useTranslation } from '../../../../i18n/hooks/useTranslation';
 
 export type UserManagementTab = 'users' | 'roles';
 
@@ -37,6 +38,7 @@ interface UserManagementState {
 }
 
 const UserManagement: React.FC<UserManagementProps> = ({ className }) => {
+  const { t } = useTranslation();
   const [state, setState] = useState<UserManagementState>({
     activeTab: 'users',
     loading: false,
@@ -199,7 +201,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ className }) => {
             <UserIcon className="w-6 h-6 text-primary-600" />
             <div>
               <h3 className="text-lg font-semibold text-neutral-900">User Accounts</h3>
-              <p className="text-sm text-neutral-600">Manage user accounts and their access permissions</p>
+              <p className="text-sm text-neutral-600">{t('settings:messages.manage_user_accounts')}</p>
             </div>
           </div>
           <Button variant="primary" size="sm" onClick={handleAddUser}>
@@ -225,7 +227,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ className }) => {
             <ShieldCheckIcon className="w-6 h-6 text-primary-600" />
             <div>
               <h3 className="text-lg font-semibold text-neutral-900">Role Management</h3>
-              <p className="text-sm text-neutral-600">Configure roles and their associated permissions</p>
+              <p className="text-sm text-neutral-600">{t('settings:messages.manage_roles')}</p>
             </div>
           </div>
         </div>
@@ -248,7 +250,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ className }) => {
           <div className="flex items-center justify-between w-full">
             <CardTitle className="flex items-center space-x-2">
               <UserIcon className="w-6 h-6 text-primary-600" />
-              <span>User Management</span>
+              <span>{t('settings:messages.user_management')}</span>
             </CardTitle>
             <Button
               variant="secondary"

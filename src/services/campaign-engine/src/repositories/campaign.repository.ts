@@ -333,6 +333,17 @@ export class CampaignRepository {
     });
   }
 
+  async deleteCustomField(id: string): Promise<boolean> {
+    const deleted = await db('campaign_engine.custom_fields')
+      .where('id', id)
+      .del();
+    
+    if (deleted) {
+      await this.clearProcessingCache();
+    }
+    return deleted > 0;
+  }
+
   // Cache management - only clear processing cache when campaigns change
   private async clearProcessingCache(): Promise<void> {
     await campaignCache.delete('campaign-configuration');
