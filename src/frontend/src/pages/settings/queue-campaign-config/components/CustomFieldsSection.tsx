@@ -195,13 +195,29 @@ const CustomFieldModal: React.FC<CustomFieldModalProps> = ({ isOpen, onClose, fi
 
 const CustomFieldsSection: React.FC = () => {
   const { t } = useTranslation('settings');
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedField, setSelectedField] = useState<CustomField | undefined>();
+  const [deleteConfirmField, setDeleteConfirmField] = useState<CustomField | null>(null);
 
   const { data: fields, isLoading, error } = useQuery(
     ['custom-fields'],
     () => customFieldsApi.getCustomFields()
   );
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => customFieldsApi.deleteCustomField(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['custom-fields']);
+      queryClient.invalidateQueries(['campaign-data-sources']);
+      showToast(t('campaign_config.custom_fields.messages.deleted'), 'success');
+      setDeleteConfirmField(null);
+    },
+    onError: (error: Error) => {
+      showToast(error.message, 'error');
+    }
+  });
 
   const handleEdit = (field: CustomField) => {
     setSelectedField(field);
@@ -211,6 +227,16 @@ const CustomFieldsSection: React.FC = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedField(undefined);
+  };
+
+  const handleDelete = (field: CustomField) => {
+    setDeleteConfirmField(field);
+  };
+
+  const confirmDelete = () => {
+    if (deleteConfirmField) {
+      deleteMutation.mutate(deleteConfirmField.id);
+    }
   };
 
   if (error) {
@@ -309,6 +335,14 @@ const CustomFieldsSection: React.FC = () => {
                       <PencilIcon className="w-4 h-4 mr-1" />
                       {t('campaign_config.common.actions.edit')}
                     </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => handleDelete(field)}
+                    >
+                      <TrashIcon className="w-4 h-4 mr-1" />
+                      {t('campaign_config.common.actions.delete')}
+                    </Button>
                   </div>
                 </div>
               </li>
@@ -323,6 +357,41 @@ const CustomFieldsSection: React.FC = () => {
         onClose={handleCloseModal}
         field={selectedField}
       />
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={!!deleteConfirmField}
+        onClose={() => setDeleteConfirmField(null)}
+        title={t('campaign_config.custom_fields.modal.delete_title')}
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-neutral-700">
+            {t('campaign_config.custom_fields.modal.delete_message', {
+              fieldName: deleteConfirmField?.field_name
+            })}
+          </p>
+          <Alert variant="warning">
+            {t('campaign_config.custom_fields.modal.delete_warning')}
+          </Alert>
+          <div className="flex justify-end space-x-3">
+            <Button
+              variant="secondary"
+              onClick={() => setDeleteConfirmField(null)}
+              disabled={deleteMutation.isLoading}
+            >
+              {t('campaign_config.common.actions.cancel')}
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmDelete}
+              disabled={deleteMutation.isLoading}
+            >
+              {deleteMutation.isLoading && <Spinner size="sm" className="mr-2" />}
+              {t('campaign_config.common.actions.delete')}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

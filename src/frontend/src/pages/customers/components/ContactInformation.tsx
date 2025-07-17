@@ -370,10 +370,6 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ cif, phones, em
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="primary">
-                    <i className="bi bi-envelope mr-1"></i>
-                    {t('customers:contact_methods.email')}
-                  </Button>
                   {email.source === 'workflow' && email.id && (
                     <>
                       <Button
@@ -434,10 +430,6 @@ const ContactInformation: React.FC<ContactInformationProps> = ({ cif, phones, em
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="secondary">
-                    <i className="bi bi-map mr-1"></i>
-                    {t('common:buttons.view')}
-                  </Button>
                   {address.source === 'workflow' && address.id && (
                     <>
                       <Button

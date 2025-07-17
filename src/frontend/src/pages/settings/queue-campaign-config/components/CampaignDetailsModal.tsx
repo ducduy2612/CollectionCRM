@@ -141,8 +141,13 @@ const CampaignDetailsModal: React.FC<CampaignDetailsModalProps> = ({
       showToast(t('campaign_config.campaigns.messages.created'), 'success');
       onClose();
     },
-    onError: (error: Error) => {
-      showToast(error.message, 'error');
+    onError: (error: any) => {
+      // Check if error has response with status 500
+      if (error.response?.status === 500) {
+        showToast('Review campaign name and campaign priority', 'error');
+      } else {
+        showToast(error.message || 'An error occurred', 'error');
+      }
     }
   });
 
@@ -156,8 +161,13 @@ const CampaignDetailsModal: React.FC<CampaignDetailsModalProps> = ({
       showToast(t('campaign_config.campaigns.messages.updated'), 'success');
       onClose();
     },
-    onError: (error: Error) => {
-      showToast(error.message, 'error');
+    onError: (error: any) => {
+      // Check if error has response with status 500
+      if (error.response?.status === 500) {
+        showToast('Review campaign name and campaign priority', 'error');
+      } else {
+        showToast(error.message || 'An error occurred', 'error');
+      }
     }
   });
 

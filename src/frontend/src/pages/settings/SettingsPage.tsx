@@ -83,7 +83,7 @@ const SettingsPage: React.FC = () => {
       actionText: t('settings:actions.configure_fud'),
       actionLink: '/settings/fud-auto-config',
       status: { type: 'active', label: t('settings:status.automated') },
-      requiredPermission: 'FUD_config:edit'
+      requiredPermission: 'FUD_config:all'
     },
     {
       id: 'queue-campaign-config',

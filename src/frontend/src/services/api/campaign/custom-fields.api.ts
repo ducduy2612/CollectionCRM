@@ -31,5 +31,16 @@ export const customFieldsApi = {
     }
     
     return response.data.data;
+  },
+
+  // Delete custom field
+  deleteCustomField: async (id: string): Promise<void> => {
+    const response = await apiClient.delete<CampaignApiResponse<null>>(
+      `/campaigns/config/custom-fields/${id}`
+    );
+    
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to delete custom field');
+    }
   }
 };

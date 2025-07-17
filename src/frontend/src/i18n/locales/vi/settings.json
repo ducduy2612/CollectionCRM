@@ -27,6 +27,7 @@
     "sessions": "Phiên",
     "add_user": "Thêm Người Dùng",
     "add_role": "Thêm Vai Trò",
+    "edit_role": "Sửa Vai Trò",
     "edit_user": "Sửa Người Dùng",
     "delete_user": "Xóa Người Dùng",
     "delete_role": "Xóa Vai Trò",
@@ -252,6 +253,8 @@
     "view_logs": "Xem Nhật Ký"
   },
   "messages": {
+    "customer_info": "Thông tin khách hàng",
+    "customer_doc": "Hồ sơ khách hàng",
     "settings_saved": "Cài đặt đã lưu thành công",
     "settings_reset": "Cài đặt đã đặt lại về mặc định",
     "connection_successful": "Kiểm tra kết nối thành công",
@@ -279,7 +282,8 @@
     "password_requirements": "Mật khẩu phải có ít nhất 8 ký tự và chứa cả chữ cái và số",
     "select_role": "Chọn vai trò...",
     "loading_roles": "Đang tải vai trò...",
-    "manage_user_accounts": "Quản lý tài khoản người dùng và quyền hạn",
+    "manage_user_accounts": "Quản lý tài khoản người dùng và vai trò",
+    "manage_roles": "Quản lý vai trò và phân quyền",
     "configure_roles": "Cấu hình vai trò và cấp độ truy cập",
     "customer_management": "Quản Lý Khách Hàng",
     "workflow_management": "Quản Lý Quy Trình",
@@ -1027,7 +1031,10 @@
       },
       "modal": {
         "create_title": "Tạo Trường Tùy Chỉnh",
-        "edit_title": "Sửa Trường Tùy Chỉnh"
+        "edit_title": "Sửa Trường Tùy Chỉnh",
+        "delete_title": "Xóa Trường Tùy Chỉnh",
+        "delete_message": "Bạn có chắc chắn muốn xóa trường tùy chỉnh '{{fieldName}}'?",
+        "delete_warning": "Hành động này không thể hoàn tác. Các chiến dịch sử dụng trường này cần được cập nhật."
       },
       "form": {
         "field_name": "Tên Trường",

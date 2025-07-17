@@ -123,23 +123,23 @@ const ContactEditModal: React.FC<ContactEditModalProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (contactType === 'phone') {
-      if (!formData.type) newErrors.type = t('forms:validation.required');
-      if (!formData.number) newErrors.number = t('forms:validation.required');
+      if (!formData.type) newErrors.type = t('errors:validation.required_field');
+      if (!formData.number) newErrors.number = t('errors:validation.required_field');
       else if (!/^[\d\s\-\+\(\)]+$/.test(formData.number)) {
-        newErrors.number = t('forms:validation.invalid_phone');
+        newErrors.number = t('errors:validation.invalid_phone');
       }
     } else if (contactType === 'email') {
-      if (!formData.address) newErrors.address = t('forms:validation.required');
+      if (!formData.address) newErrors.address = t('errors:validation.required_field');
       else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.address)) {
-        newErrors.address = t('forms:validation.invalid_email');
+        newErrors.address = t('errors:validation.invalid_email');
       }
     } else if (contactType === 'address') {
-      if (!formData.type) newErrors.type = t('forms:validation.required');
-      if (!formData.addressLine1) newErrors.addressLine1 = t('forms:validation.required');
-      if (!formData.city) newErrors.city = t('forms:validation.required');
-      if (!formData.state) newErrors.state = t('forms:validation.required');
-      if (!formData.district) newErrors.district = t('forms:validation.required');
-      if (!formData.country) newErrors.country = t('forms:validation.required');
+      if (!formData.type) newErrors.type = t('errors:validation.required_field');
+      if (!formData.addressLine1) newErrors.addressLine1 = t('errors:validation.required_field');
+      if (!formData.city) newErrors.city = t('errors:validation.required_field');
+      if (!formData.state) newErrors.state = t('errors:validation.required_field');
+      if (!formData.district) newErrors.district = t('errors:validation.required_field');
+      if (!formData.country) newErrors.country = t('errors:validation.required_field');
     }
 
     setErrors(newErrors);

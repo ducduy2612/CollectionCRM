@@ -70,6 +70,7 @@ router.get(
 router.post(
   '/',
   requireAuth,
+  requirePermissions(['customer_info:add']),
   referenceCustomerController.createReferenceCustomer
 );
 
@@ -81,6 +82,7 @@ router.post(
 router.put(
   '/:id',
   requireAuth,
+  requirePermissions(['customer_info:update']),
   referenceCustomerController.updateReferenceCustomer
 );
 
@@ -92,7 +94,7 @@ router.put(
 router.delete(
   '/:id',
   requireAuth,
-  requirePermissions(['system_admin:all']),
+  requirePermissions(['customer_info:delete']),
   referenceCustomerController.deleteReferenceCustomer
 );
 

@@ -168,6 +168,14 @@ router.post('/config/custom-fields',
   campaignController.createCustomField.bind(campaignController)
 );
 
+router.delete('/config/custom-fields/:id',
+  requireAuth,
+  requirePermissions(['campaign_management:all']),
+  param('id').isUUID().withMessage('Invalid custom field ID'),
+  validateRequest,
+  campaignController.deleteCustomField.bind(campaignController)
+);
+
 // Configuration Routes
 router.get('/config/data-sources', campaignController.getDataSources.bind(campaignController));
 router.get('/config/operators', campaignController.getOperators.bind(campaignController));

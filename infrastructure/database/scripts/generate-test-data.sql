@@ -277,7 +277,26 @@ CREATE TABLE staging_bank.loan_collaterals (
 
 CREATE TABLE staging_bank.loan_custom_fields (
     account_number VARCHAR(20) PRIMARY KEY,
-    fields JSONB NOT NULL,
+    field_1 VARCHAR(255),
+    field_2 VARCHAR(255),
+    field_3 VARCHAR(255),
+    field_4 VARCHAR(255),
+    field_5 VARCHAR(255),
+    field_6 VARCHAR(255),
+    field_7 VARCHAR(255),
+    field_8 VARCHAR(255),
+    field_9 VARCHAR(255),
+    field_10 VARCHAR(255),
+    field_11 VARCHAR(255),
+    field_12 VARCHAR(255),
+    field_13 VARCHAR(255),
+    field_14 VARCHAR(255),
+    field_15 VARCHAR(255),
+    field_16 VARCHAR(255),
+    field_17 VARCHAR(255),
+    field_18 VARCHAR(255),
+    field_19 VARCHAR(255),
+    field_20 VARCHAR(255),
     source_system VARCHAR(50) DEFAULT 'EXTERNAL',
     uploaded_at TIMESTAMP NOT NULL DEFAULT NOW(),
     uploaded_by VARCHAR(100),
@@ -544,20 +563,11 @@ BEGIN
         -- Add loan custom fields
         IF random() > 0.5 THEN
             INSERT INTO staging_bank.loan_custom_fields (
-                account_number, fields, source_system, uploaded_by
+                account_number, field_1, field_2, source_system, uploaded_by
             ) VALUES (
                 loan_account,
-                jsonb_build_object(
-                    'risk_score', (random() * 100)::integer,
-                    'collection_priority', CASE 
-                        WHEN dpd_val > 90 THEN 'HIGH'
-                        WHEN dpd_val > 30 THEN 'MEDIUM'
-                        ELSE 'LOW'
-                    END,
-                    'payment_likelihood', random(),
-                    'contact_quality', CASE WHEN random() > 0.5 THEN 'GOOD' ELSE 'POOR' END,
-                    'last_contact_date', (CURRENT_DATE - (random() * 30)::integer)::text
-                ),
+                CASE WHEN random() > 0.5 THEN '1' ELSE '0' END, -- field_1: randomized 1s and 0s
+                CASE WHEN random() > 0.5 THEN '1' ELSE '0' END, -- field_2: randomized 1s and 0s
                 'EXTERNAL',
                 'data_generator'
             );

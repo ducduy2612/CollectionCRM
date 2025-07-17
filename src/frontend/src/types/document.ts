@@ -52,9 +52,6 @@ export interface DocumentFilters {
   documentType?: DocumentType;
   documentCategory?: DocumentCategory;
   loanAccountNumber?: string;
-  dateFrom?: string;
-  dateTo?: string;
-  searchTerm?: string;
 }
 
 export interface UploadFormData {
