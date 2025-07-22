@@ -46,14 +46,6 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ customer, lastContactDate, on
         </div>
       </div>
       <div className="flex gap-3">
-        <Button variant="secondary">
-          <i className="bi bi-chat mr-2"></i>
-          {t('customers:actions.send_sms')}
-        </Button>
-        <Button variant="secondary">
-          <i className="bi bi-envelope mr-2"></i>
-          {t('customers:actions.send_email')}
-        </Button>
         <Button variant="primary">
           <i className="bi bi-telephone mr-2"></i>
           {t('customers:actions.make_call')}

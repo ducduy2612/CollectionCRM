@@ -14,7 +14,7 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: #333333;
             background-color: #f5f5f5;
         }
         
@@ -22,12 +22,13 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background-color: #ffffff;
+            color: #333333;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
         
         header {
-            background-color: #1e3a8a;
+            background-color: #00a651;
             color: white;
             padding: 30px 0;
             text-align: center;
@@ -40,28 +41,28 @@
         }
         
         h2 {
-            color: #1e3a8a;
+            color: #00a651;
             margin-top: 40px;
             margin-bottom: 20px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #1e3a8a;
+            border-bottom: 2px solid #00a651;
         }
         
         h3 {
-            color: #2563eb;
+            color: #007336;
             margin-top: 30px;
             margin-bottom: 15px;
         }
         
         h4 {
-            color: #3b82f6;
+            color: #006633;
             margin-top: 20px;
             margin-bottom: 10px;
         }
         
         .toc {
-            background-color: #f0f9ff;
-            border: 1px solid #ddd;
+            background-color: #f0faf4;
+            border: 1px solid #b3b3b3;
             padding: 20px;
             margin-bottom: 40px;
             border-radius: 8px;
@@ -70,7 +71,7 @@
         .toc h2 {
             margin-top: 0;
             border: none;
-            color: #1e3a8a;
+            color: #00a651;
         }
         
         .toc ul {
@@ -83,7 +84,7 @@
         }
         
         .toc a {
-            color: #2563eb;
+            color: #007336;
             text-decoration: none;
         }
         
@@ -92,8 +93,8 @@
         }
         
         .screenshot-placeholder {
-            background-color: #f3f4f6;
-            border: 2px dashed #9ca3af;
+            background-color: #f5f5f5;
+            border: 2px dashed #999999;
             padding: 60px 20px;
             text-align: center;
             margin: 20px 0;
@@ -101,14 +102,14 @@
         }
         
         .screenshot-placeholder p {
-            color: #6b7280;
+            color: #666666;
             font-style: italic;
             margin-bottom: 10px;
         }
         
         .screenshot-instruction {
-            background-color: #fef3c7;
-            border: 1px solid #fbbf24;
+            background-color: #fff3e0;
+            border: 1px solid #ff9800;
             padding: 15px;
             margin: 10px 0;
             border-radius: 4px;
@@ -116,22 +117,22 @@
         }
         
         .note {
-            background-color: #dbeafe;
-            border-left: 4px solid #3b82f6;
+            background-color: #e1f5fe;
+            border-left: 4px solid #03a9f4;
             padding: 15px;
             margin: 20px 0;
         }
         
         .tip {
-            background-color: #d1fae5;
-            border-left: 4px solid #10b981;
+            background-color: #e8f5e9;
+            border-left: 4px solid #388e3c;
             padding: 15px;
             margin: 20px 0;
         }
         
         .warning {
-            background-color: #fee2e2;
-            border-left: 4px solid #ef4444;
+            background-color: #fef5f5;
+            border-left: 4px solid #cf0000;
             padding: 15px;
             margin: 20px 0;
         }
@@ -143,12 +144,13 @@
         
         .step-number {
             font-weight: bold;
-            color: #1e3a8a;
+            color: #cf0000;
             margin-right: 10px;
         }
         
         code {
-            background-color: #f3f4f6;
+            background-color: #f5f5f5;
+            color: #333333;
             padding: 2px 6px;
             border-radius: 3px;
             font-family: 'Consolas', 'Monaco', monospace;
@@ -161,14 +163,15 @@
         }
         
         th, td {
-            border: 1px solid #ddd;
+            border: 1px solid #e0e0e0;
             padding: 12px;
             text-align: left;
         }
         
         th {
-            background-color: #f3f4f6;
+            background-color: #fafafa;
             font-weight: bold;
+            color: #333333;
         }
         
         .feature-grid {
@@ -179,8 +182,8 @@
         }
         
         .feature-card {
-            background-color: #f9fafb;
-            border: 1px solid #e5e7eb;
+            background-color: #fafafa;
+            border: 1px solid #e0e0e0;
             padding: 20px;
             border-radius: 8px;
         }
@@ -188,7 +191,7 @@
         .button-example {
             display: inline-block;
             padding: 8px 16px;
-            background-color: #3b82f6;
+            background-color: #cf0000;
             color: white;
             border-radius: 4px;
             text-decoration: none;
@@ -207,6 +210,102 @@
         .status-pending { background-color: #fef3c7; color: #92400e; }
         .status-collection { background-color: #dbeafe; color: #1e40af; }
         .status-closed { background-color: #e5e7eb; color: #374151; }
+        
+        /* Print-specific styles to prevent page breaks */
+        @media print {
+            /* Prevent page breaks inside images and their containers */
+            img, 
+            .screenshot-placeholder,
+            .screenshot-instruction {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                display: block;
+            }
+            
+            /* Ensure images fit within page */
+            img {
+                max-width: 100% !important;
+                height: auto !important;
+            }
+            
+            /* Keep related content together */
+            .step,
+            .feature-card,
+            .note,
+            .tip,
+            .warning,
+            table {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            
+            /* Prevent breaks after headings */
+            h1, h2, h3, h4, h5, h6 {
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+            
+            /* Keep table rows together */
+            tr {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            
+            /* Add space before major sections */
+            section {
+                page-break-before: auto;
+            }
+            
+            /* Force new page for major sections if needed */
+            #getting-started,
+            #dashboard,
+            #customer-management,
+            #workflows,
+            #documents,
+            #master-notes,
+            #best-practices,
+            #troubleshooting {
+                page-break-before: always;
+            }
+            
+            /* Keep first section on same page as TOC */
+            #getting-started {
+                page-break-before: auto;
+            }
+            
+            /* Adjust margins for print */
+            body {
+                margin: 0;
+                background: white;
+            }
+            
+            .container {
+                max-width: 100%;
+                margin: 0;
+                padding: 20px;
+                box-shadow: none;
+            }
+            
+            /* Hide header background for cleaner print */
+            header {
+                background-color: white !important;
+                color: #00a651 !important;
+                border: 2px solid #00a651;
+                margin-bottom: 20px;
+            }
+            
+            /* Ensure TOC doesn't break */
+            .toc {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            
+            /* Keep feature grid items together */
+            .feature-grid {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+        }
     </style>
 </head>
 <body>
@@ -240,6 +339,7 @@
                         <li><a href="#customer-details">3.2 Customer Details</a></li>
                         <li><a href="#recording-actions">3.3 Recording Actions</a></li>
                         <li><a href="#quick-actions">3.4 Quick Actions Panel</a></li>
+                        <li><a href="#customer-status-management">3.5 Customer Status Management</a></li>
                     </ul>
                 </li>
                 <li><a href="#workflows">4. Collection Workflows</a>
@@ -250,6 +350,7 @@
                     </ul>
                 </li>
                 <li><a href="#documents">5. Document Management</a></li>
+                <li><a href="#master-notes">5.5 Master Notes Management</a></li>
                 <li><a href="#best-practices">6. Best Practices</a></li>
                 <li><a href="#troubleshooting">7. Troubleshooting</a></li>
             </ul>
@@ -267,10 +368,13 @@
             </div>
             
             <div class="screenshot-placeholder">
-                <p>Login Page Screenshot</p>
+                <p>Login Page</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Navigate to the login page, ensure the language switcher and login form are visible. 
-                    Capture the entire login screen including the CollectionCRM logo, username/password fields, and "Remember Me" checkbox.
+                    <img src="Image/Login_Page.png" alt="Login Page" style="
+                        /* width: 100%; */
+                        width: 50%;
+                        border-radius: 6px;
+                    ">
                 </div>
             </div>
             
@@ -294,10 +398,13 @@
             <p>After logging in, you'll see the main interface with:</p>
             
             <div class="screenshot-placeholder">
-                <p>Main Interface Screenshot</p>
+                <p>Main Interface</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> After login, capture the full screen showing the header with user info, 
-                    sidebar navigation (Dashboard, Customers, Settings), and the main dashboard content area.
+                    <img src="Image/Navigation.png" alt="Main Interface" style="
+                        /* width: 100%; */
+                        width: 100%;
+                        border-radius: 2px;
+                    ">
                 </div>
             </div>
             
@@ -324,10 +431,13 @@
             <p>The dashboard is your home screen, providing an overview of your daily performance and assigned customers.</p>
             
             <div class="screenshot-placeholder">
-                <p>Dashboard Overview Screenshot</p>
+                <p>Dashboard Overview</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Navigate to the Dashboard. Capture the full page showing all three sections: 
-                    Performance Metrics cards at the top, Priority Customers list in the middle, and Recent Activities at the bottom.
+                    <img src="Image/Dashboard.png" alt="Dashboard" style="
+                        /* width: 100%; */
+                        width: 100%;
+                        border-radius: 2px;
+                    ">
                 </div>
             </div>
             
@@ -368,14 +478,6 @@
             <h3 id="priority-customers">2.2 Priority Customers</h3>
             <p>This section shows customers assigned to you that require attention:</p>
             
-            <div class="screenshot-placeholder">
-                <p>Priority Customers List Screenshot</p>
-                <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> In the Dashboard, scroll to the Priority Customers section. 
-                    Show the search bar and at least 3-4 customer entries with their CIF, name, company, segment, and status badges.
-                </div>
-            </div>
-            
             <ul>
                 <li><strong>Search:</strong> Find specific customers by their CIF (Customer ID)</li>
                 <li><strong>Customer Information:</strong> View CIF, name, company, segment, and current status</li>
@@ -399,10 +501,13 @@
             <p>Access the customer list by clicking "Customers" in the sidebar navigation.</p>
             
             <div class="screenshot-placeholder">
-                <p>Customer List Page Screenshot</p>
+                <p>Customer List Page</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Navigate to Customers page. Show both the basic search bar and 
-                    the "Advanced Search" button. Include the customer table with various status badges visible.
+                    <img src="Image/Customer_Search.png" alt="Customer Search" style="
+                        /* width: 100%; */
+                        width: 100%;
+                        border-radius: 2px;
+                    ">
                 </div>
             </div>
             
@@ -411,14 +516,6 @@
             
             <h4>Advanced Search</h4>
             <p>Click "Advanced Search" to access additional filters:</p>
-            
-            <div class="screenshot-placeholder">
-                <p>Advanced Search Filters Screenshot</p>
-                <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Click "Advanced Search" to expand the filter panel. 
-                    Show all available filter fields including name, ID numbers, segment dropdown, and status dropdown.
-                </div>
-            </div>
             
             <table>
                 <thead>
@@ -459,10 +556,13 @@
             <p>Click on any customer to view their comprehensive profile:</p>
             
             <div class="screenshot-placeholder">
-                <p>Customer Detail Page Screenshot</p>
+                <p>Customer Detail Page</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Open any customer detail page. Capture the header section showing 
-                    customer name, CIF, status, and contact information. Include the tab navigation showing all available tabs.
+                     <img src="Image/Customer_Detail.png" alt="Customer Detail" style="
+                        /* width: 100%; */
+                        width: 100%;
+                        border-radius: 2px;
+                    ">
                 </div>
             </div>
             
@@ -520,11 +620,18 @@
             <p>Recording collection actions is a core function. Access it by clicking "Record Action" button.</p>
             
             <div class="screenshot-placeholder">
-                <p>Record Action Modal Screenshot</p>
+                <p>Record Action Modal</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Click "Record Action" button to open the modal. 
-                    Show the action recording interface with action type dropdown, subtype, result, and the loan list 
-                    with checkboxes. Include the FUD date field and notes section.
+                    <img src="Image/Record_Action_Customer.png" alt="Record_Action_Customer" style="
+                        /* width: 100%; */
+                        width: 100%;
+                        border-radius: 2px;
+                    ">
+                    <img src="Image/Record_Action_Loan.png" alt="Record_Action_Customer" style="
+                        /* width: 100%; */
+                        width: 100%;
+                        border-radius: 2px;
+                    ">
                 </div>
             </div>
             
@@ -574,17 +681,7 @@
             <h3 id="quick-actions">3.4 Quick Actions Panel</h3>
             <p>The fixed action panel at the bottom provides quick access to common actions:</p>
             
-            <div class="screenshot-placeholder">
-                <p>Quick Actions Panel Screenshot</p>
-                <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> On any customer detail page, scroll to show the fixed bottom panel. 
-                    Include all quick action buttons (SMS, Email, Call, Record Action) and the last contact information.
-                </div>
-            </div>
-            
             <ul>
-                <li><span class="button-example">Send SMS</span> - Quick SMS to customer</li>
-                <li><span class="button-example">Send Email</span> - Quick email to customer</li>
                 <li><span class="button-example">Make Call</span> - Initiate phone call</li>
                 <li><span class="button-example">Record Action</span> - Open action recording modal</li>
             </ul>
@@ -592,13 +689,129 @@
             <div class="note">
                 <strong>Note:</strong> The panel also shows "Last Contact" date and "Days Since Contact" for quick reference.
             </div>
+            
+            <h3 id="customer-status-management">3.5 Customer Status Management</h3>
+            <p>Customer status management allows you to track and update various status types for each customer. The system maintains five different status categories to provide comprehensive customer state tracking.</p>
+            
+            <h4>Status Categories</h4>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Customer Status</h4>
+                    <p>Overall customer relationship status (Active, Pending, Collection, Closed, etc.)</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Collateral Status</h4>
+                    <p>Status of customer collateral assets and security</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Processing State</h4>
+                    <p>Current stage in collection workflow with optional substates</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Lending Violation</h4>
+                    <p>Status of any lending compliance violations or breaches</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Recovery Ability</h4>
+                    <p>Assessment of customer's ability to recover and repay</p>
+                </div>
+            </div>
+            
+            <h4>Viewing Status Information</h4>
+            
+            <p>Status information is displayed in the Customer Status section of the customer detail page:</p>
+            
+            <div class="step">
+                <span class="step-number">Step 1:</span> Navigate to a customer's detail page
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 2:</span> Locate the "Customer Status" card
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 3:</span> View the five status boxes showing current status for each category
+            </div>
+            
+            <h4>Viewing Status History</h4>
+            
+            <div class="step">
+                <span class="step-number">Step 1:</span> Click on any status box to view its history
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 2:</span> Review the chronological list of status changes
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 3:</span> View details including:
+                <ul>
+                    <li>Date and time of change</li>
+                    <li>Previous and new status</li>
+                    <li>Agent who made the change</li>
+                    <li>Notes or comments</li>
+                </ul>
+            </div>
+            
+            <h4>Updating Customer Status</h4>
+            
+            <div class="step">
+                <span class="step-number">Step 1:</span> Click the "Update" button in the Customer Status card, or click "Update Status" from a status history modal
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 2:</span> Select the status type you want to update:
+                <ul>
+                    <li><strong>Customer Status:</strong> Select from available customer status options</li>
+                    <li><strong>Collateral Status:</strong> Choose collateral and set its status</li>
+                    <li><strong>Processing State:</strong> Select state and optional substate</li>
+                    <li><strong>Lending Violation:</strong> Set violation status</li>
+                    <li><strong>Recovery Ability:</strong> Assess recovery potential</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 3:</span> Fill in required fields:
+                <ul>
+                    <li><strong>Status/State:</strong> Choose the new status value</li>
+                    <li><strong>Substate:</strong> (Processing State only) Select appropriate substate if available</li>
+                    <li><strong>Collateral Number:</strong> (Collateral Status only) Select which collateral</li>
+                    <li><strong>Action Date:</strong> Date and time of status change (defaults to now)</li>
+                    <li><strong>Notes:</strong> Optional explanation for the status change</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 4:</span> Click "Update Status" to save the change
+            </div>
+            
+            <div class="note">
+                <strong>Note:</strong> For Processing State updates, substates are dynamically loaded based on the selected state. Only mapped substates will be available for selection.
+            </div>
+            
+            <div class="tip">
+                <strong>Best Practice:</strong> Always add meaningful notes when updating status to provide context for other agents and maintain a clear audit trail.
+            </div>
+            
+            <h4>Status Update Validation</h4>
+            
+            <p>The system validates status updates to ensure data integrity:</p>
+            
+            <ul>
+                <li><strong>Required Fields:</strong> Status/state selection and action date are mandatory</li>
+                <li><strong>Date Validation:</strong> Action date cannot be in the future</li>
+                <li><strong>Collateral Requirement:</strong> Collateral status updates require selecting a collateral asset</li>
+                <li><strong>Substate Dependencies:</strong> Processing state substates are only available for mapped states</li>
+                <li><strong>Notes Limit:</strong> Notes are limited to 500 characters</li>
+            </ul>
         </section>
 
         <section id="workflows">
             <h2>4. Collection Workflows</h2>
             
             <h3 id="action-types">4.1 Action Types</h3>
-            <p>Understanding action types helps you record activities accurately:</p>
+            <p>Understanding action types helps you record activities accurately. The action type, sub-type and result can be configured by admin (refer admin guide)</p>
             
             <table>
                 <thead>
@@ -645,14 +858,6 @@
             <h3 id="promises">4.2 Promise to Pay</h3>
             <p>When a customer commits to making a payment:</p>
             
-            <div class="screenshot-placeholder">
-                <p>Promise to Pay Form Screenshot</p>
-                <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> In the Record Action modal, select an action result that triggers 
-                    Promise to Pay (PTP). Show the additional PTP fields for amount and date that appear.
-                </div>
-            </div>
-            
             <ol>
                 <li>Select action result that indicates promise (e.g., "Customer Promised to Pay")</li>
                 <li>Enter the promised amount in VND</li>
@@ -673,7 +878,7 @@
             <p>The system can automatically calculate follow-up dates based on action results:</p>
             
             <ul>
-                <li><strong>Automatic FUD:</strong> System calculates based on configured rules</li>
+                <li><strong>Automatic FUD:</strong> System calculates based on configured rules (refer to admin guide)</li>
                 <li><strong>Manual Override:</strong> You can set a custom follow-up date</li>
                 <li><strong>FUD Types:</strong>
                     <ul>
@@ -693,10 +898,13 @@
             <p>Managing customer documents is essential for maintaining complete records.</p>
             
             <div class="screenshot-placeholder">
-                <p>Documents Tab Screenshot</p>
+                <p>Documents Tab</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Navigate to a customer's Documents tab. Show the upload area, 
-                    filter options, and at least 2-3 document cards with their action buttons (View, Download, Delete).
+                    <img src="Image/Document.png" alt="Document" style="
+                        /* width: 100%; */
+                        width: 100%;
+                        border-radius: 2px;
+                    ">
                 </div>
             </div>
             
@@ -744,6 +952,96 @@
                 <li>Filter by loan account</li>
                 <li>Filter by upload date range</li>
             </ul>
+            
+            <h3 id="master-notes">5.5 Master Notes Management</h3>
+            <p>Master Notes provide a central place to record general information and observations about a customer that don't fit into specific action records.</p>
+            
+            <h4>Understanding Master Notes</h4>
+            
+            <p>Master Notes are different from action notes:</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Master Notes</th>
+                        <th>Action Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>General customer observations</td>
+                        <td>Specific to individual actions</td>
+                    </tr>
+                    <tr>
+                        <td>Persistent customer information</td>
+                        <td>Time-stamped activity records</td>
+                    </tr>
+                    <tr>
+                        <td>Editable by authorized agents</td>
+                        <td>Immutable once recorded</td>
+                    </tr>
+                    <tr>
+                        <td>One per customer</td>
+                        <td>Multiple per customer</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h4>Viewing Master Notes</h4>
+            
+            <div class="step">
+                <span class="step-number">Step 1:</span> Navigate to a customer's detail page
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 2:</span> Scroll down to the "Master Notes" section in the Customer Status card
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 3:</span> Review any existing notes about the customer
+            </div>
+            
+            <h4>Editing Master Notes</h4>
+            
+            <div class="step">
+                <span class="step-number">Step 1:</span> Click the "Edit" button next to "Master Notes"
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 2:</span> Enter or modify the notes in the text area
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 3:</span> Click "Save" to store changes, or "Cancel" to discard
+            </div>
+            
+            <h4>What to Include in Master Notes</h4>
+            
+            <div class="tip">
+                <strong>Good Master Notes Examples:</strong>
+                <ul>
+                    <li>Customer communication preferences</li>
+                    <li>Special circumstances or hardships</li>
+                    <li>Contact relationship details</li>
+                    <li>Payment behavior patterns</li>
+                    <li>Dispute or complaint history summary</li>
+                    <li>Legal or compliance considerations</li>
+                </ul>
+            </div>
+            
+            <div class="warning">
+                <strong>Avoid in Master Notes:</strong>
+                <ul>
+                    <li>Specific action details (use action notes instead)</li>
+                    <li>Temporary information that changes frequently</li>
+                    <li>Personal opinions not relevant to collection</li>
+                    <li>Confidential information that shouldn't be widely shared</li>
+                </ul>
+            </div>
+            
+            <div class="note">
+                <strong>Note:</strong> Master Notes are saved automatically when you click "Save". The system will prevent navigation away if you have unsaved changes.
+            </div>
         </section>
 
         <section id="best-practices">

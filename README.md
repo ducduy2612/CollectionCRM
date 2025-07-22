@@ -17,12 +17,15 @@ The system follows a microservices architecture with the following components:
   - Bank Synchronization Service: Integration with banking systems
   - Payment Processing Service: Handling payments and transactions
   - Collection Workflow Service: Managing collection processes and agent workflows
+  - Campaign Engine: Campaign management and assignment strategies
+  - Audit Service: System-wide audit logging and compliance tracking
 - **Infrastructure**:
   - PostgreSQL: Primary database
   - Elasticsearch: Search engine
   - Kafka: Message broker for event-driven communication
   - Redis: Caching and session management
-  - Prometheus & Grafana: Monitoring and alerting
+  - MinIO: Object storage for documents and attachments
+  - Prometheus & Grafana: Monitoring and alerting (to be developed)
 
 ## Directory Structure
 
@@ -35,15 +38,9 @@ The system follows a microservices architecture with the following components:
   - `compose/`: Docker Compose configurations
 - `infrastructure/`: Infrastructure components
   - `database/`: PostgreSQL setup
-  - `search/`: Elasticsearch setup
-  - `messaging/`: Kafka setup
-  - `caching/`: Redis setup
-  - `monitoring/`: Prometheus and Grafana setup
-- `tests/`: Test files
 - `deployment/`: Deployment configurations
 - `etl/`: ETL processes
 - `scripts/`: Utility scripts
-- `config/`: Configuration files
 - `docs/`: Documentation
 - `plan/`: Planning documents
 - `mockups/`: UI mockups
@@ -89,6 +86,10 @@ The development environment features:
 - Environment-specific configuration via .env files
 
 For detailed documentation of docker setup, check [DOCKER README](docker/README.md)
+
+### Generating Test Data
+
+For instructions on generating realistic test data for development and testing, see [Database Scripts README](infrastructure/database/scripts/README.md). The scripts can generate millions of customers, loans, and related data using PostgreSQL's COPY command for efficient bulk loading.
 
 ## Implementation Roadmap
 

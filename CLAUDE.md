@@ -33,32 +33,33 @@ src/
 
 ## Development Commands
 
-### Frontend Development
+**Important**: All development is done inside Docker containers. You don't need to install Node.js, PostgreSQL, or other dependencies locally. The Docker environment handles everything.
+
+### Frontend Development (inside Docker)
 ```bash
-cd src/frontend
-npm run dev              # Start Vite dev server (port 5173)
-npm run build            # Build for production
-npm run lint             # Run ESLint
-npm test                 # Run tests with Vitest
-npm run test:coverage    # Run tests with coverage
+# Frontend runs in the frontend-dev container on port 5173
+# Hot-reloading is enabled through volume mounts
+# To run frontend commands:
+docker compose -f docker/compose/docker-compose.dev.yml exec frontend-dev npm run lint
+docker compose -f docker/compose/docker-compose.dev.yml exec frontend-dev npm test
 ```
 
-### Backend Service Development
+### Backend Service Development (inside Docker)
 For any backend service (replace `{service-name}` with actual service):
 ```bash
-cd src/services/{service-name}
-npm run dev              # Start with hot-reload using ts-node-dev
-npm run build            # Compile TypeScript
-npm start                # Start production server (requires build)
-npm run lint             # Run ESLint
-npm test                 # Run Jest tests
-npm run test:coverage    # Run tests with coverage
+# Services run in their respective containers with hot-reloading
+# To run commands inside a service container:
+docker compose -f docker/compose/docker-compose.dev.yml exec {service-name} npm run lint
+docker compose -f docker/compose/docker-compose.dev.yml exec {service-name} npm test
 ```
 
 ### Docker Development Environment
+
+**All development happens inside Docker containers** - no local Node.js or database installation required!
+
 ```bash
 # Using convenience script (recommended)
-./docker-dev.sh up          # Start all services
+./docker-dev.sh up          # Start all services in Docker
 ./docker-dev.sh frontend    # Start only frontend + required services
 ./docker-dev.sh down        # Stop all services
 ./docker-dev.sh logs -f     # Follow logs
@@ -66,26 +67,32 @@ npm run test:coverage    # Run tests with coverage
 ./docker-dev.sh clean       # Remove all containers and volumes
 
 # Direct Docker Compose
-docker compose -f docker/compose/docker-compose.dev.yml up frontend-dev
+docker compose -f docker/compose/docker-compose.dev.yml up    # Start all services
+docker compose -f docker/compose/docker-compose.dev.yml up frontend-dev    # Start specific service
 ```
 
 ### Database Operations
 ```bash
-# Run migrations (from infrastructure/database)
-npm run migrate:up       # Apply pending migrations
-npm run migrate:down     # Rollback last migration
-npm run migrate:create   # Create new migration file
+# Database initialization is handled automatically by Docker
+# The init script at infrastructure/database/init/00-init-db.sql runs when the PostgreSQL container starts
+# It sets up all schemas, tables, functions, triggers, and seed data
+
+# For manual database operations:
+psql -U postgres -d collectioncrm -f infrastructure/database/init/00-init-db.sql
 ```
 
-### Running Individual Tests
+### Running Individual Tests (inside Docker)
 ```bash
-# Frontend (Vitest)
-npm test -- path/to/test.spec.ts
-npm test -- --grep "specific test name"
+# Frontend tests (Vitest) - run inside frontend-dev container
+docker compose -f docker/compose/docker-compose.dev.yml exec frontend-dev npm test -- path/to/test.spec.ts
+docker compose -f docker/compose/docker-compose.dev.yml exec frontend-dev npm test -- --grep "specific test name"
 
-# Backend (Jest)
-npm test -- path/to/test.spec.ts
-npm test -- --testNamePattern="specific test"
+# Backend tests (Jest) - run inside service container
+docker compose -f docker/compose/docker-compose.dev.yml exec {service-name} npm test -- path/to/test.spec.ts
+docker compose -f docker/compose/docker-compose.dev.yml exec {service-name} npm test -- --testNamePattern="specific test"
+
+# Or use the convenience script
+./docker-dev.sh exec frontend-dev npm test
 ```
 
 ## Key Development Patterns
@@ -119,6 +126,8 @@ Each service has its own PostgreSQL schema:
 
 ## Environment Setup
 
+**Prerequisites**: Only Docker and Docker Compose are required. All other dependencies (Node.js, PostgreSQL, Redis, etc.) run inside containers.
+
 1. Copy all .env.example files:
 ```bash
 cp src/frontend/.env.example src/frontend/.env
@@ -130,8 +139,13 @@ cp src/services/workflow-service/.env.example src/services/workflow-service/.env
 
 2. Start Docker development environment:
 ```bash
-./docker-dev.sh up
+./docker-dev.sh up    # This starts all services inside Docker containers
 ```
+
+3. Access the application:
+- Frontend: http://localhost:5173 (Vite dev server inside Docker)
+- API Gateway: http://localhost:3000
+- Individual services are accessible on their respective ports
 
 ## Common Tasks
 
@@ -153,27 +167,12 @@ cp src/services/workflow-service/.env.example src/services/workflow-service/.env
 3. Add translations to locale files
 4. Write tests alongside component files
 
-### Debugging Microservices
+### Debugging Microservices (inside Docker)
 - Check service logs: `./docker-dev.sh logs -f {service-name}`
 - Access service directly: `http://localhost:{service-port}`
-- Service ports: auth(3001), api-gateway(3000), bank-sync(3002), workflow(3003)
-
-## Testing Strategy
-
-### Unit Tests
-- Colocated with source files (*.test.ts, *.spec.ts)
-- Mock external dependencies
-- Focus on business logic
-
-### Integration Tests
-- Test API endpoints with real database
-- Located in `tests/integration/`
-- Use test database schemas
-
-### Frontend Tests
-- Component tests with React Testing Library
-- Mock API calls with MSW
-- Test user interactions and accessibility
+- Service ports: auth(3001), api-gateway(3000), bank-sync(3002), workflow(3003), campaign-engine(3004), payment(3005), audit(3010)
+- Execute commands inside containers: `./docker-dev.sh exec {service-name} sh`
+- All debugging happens within the Docker environment
 
 ## Important Considerations
 

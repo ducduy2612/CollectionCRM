@@ -78,7 +78,7 @@ const PriorityCustomers: React.FC<PriorityCustomersProps> = ({
           </Alert>
         )}
 
-        <div className="overflow-x-auto">
+        <div className="max-h-96 overflow-y-auto overflow-x-auto">
           {loading ? (
             <div className="flex justify-center items-center py-8">
               <Spinner size="lg" />

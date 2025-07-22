@@ -14,20 +14,23 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: #333333;
             background-color: #f5f5f5;
         }
+
+
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background-color: #ffffff;
+            color: #333333;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
         
         header {
-            background-color: #7c3aed;
+            background-color: #00a651;
             color: white;
             padding: 30px 0;
             text-align: center;
@@ -40,28 +43,28 @@
         }
         
         h2 {
-            color: #7c3aed;
+            color: #00a651;
             margin-top: 40px;
             margin-bottom: 20px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #7c3aed;
+            border-bottom: 2px solid #00a651;
         }
         
         h3 {
-            color: #8b5cf6;
+            color: #007336;
             margin-top: 30px;
             margin-bottom: 15px;
         }
         
         h4 {
-            color: #a78bfa;
+            color: #006633;
             margin-top: 20px;
             margin-bottom: 10px;
         }
         
         .toc {
-            background-color: #f3e8ff;
-            border: 1px solid #ddd;
+            background-color: #f0faf4;
+            border: 1px solid #b3b3b3;
             padding: 20px;
             margin-bottom: 40px;
             border-radius: 8px;
@@ -70,7 +73,7 @@
         .toc h2 {
             margin-top: 0;
             border: none;
-            color: #7c3aed;
+            color: #00a651;
         }
         
         .toc ul {
@@ -83,7 +86,7 @@
         }
         
         .toc a {
-            color: #8b5cf6;
+            color: #007336;
             text-decoration: none;
         }
         
@@ -92,23 +95,23 @@
         }
         
         .screenshot-placeholder {
-            background-color: #f3f4f6;
-            border: 2px dashed #9ca3af;
-            padding: 60px 20px;
+            background-color: #f5f5f5;
+            border: 2px dashed #999999;
+            padding: 0;
             text-align: center;
-            margin: 20px 0;
+            margin: 10px 0;
             border-radius: 8px;
         }
         
         .screenshot-placeholder p {
-            color: #6b7280;
+            color: #666666;
             font-style: italic;
             margin-bottom: 10px;
         }
         
         .screenshot-instruction {
-            background-color: #fef3c7;
-            border: 1px solid #fbbf24;
+            background-color: #fff3e0;
+            border: 1px solid #ff9800;
             padding: 15px;
             margin: 10px 0;
             border-radius: 4px;
@@ -116,29 +119,29 @@
         }
         
         .note {
-            background-color: #ede9fe;
-            border-left: 4px solid #8b5cf6;
+            background-color: #e1f5fe;
+            border-left: 4px solid #03a9f4;
             padding: 15px;
             margin: 20px 0;
         }
         
         .tip {
-            background-color: #d1fae5;
-            border-left: 4px solid #10b981;
+            background-color: #e8f5e9;
+            border-left: 4px solid #388e3c;
             padding: 15px;
             margin: 20px 0;
         }
         
         .warning {
-            background-color: #fee2e2;
-            border-left: 4px solid #ef4444;
+            background-color: #fef5f5;
+            border-left: 4px solid #cf0000;
             padding: 15px;
             margin: 20px 0;
         }
         
         .permission-required {
-            background-color: #fef3c7;
-            border: 1px solid #f59e0b;
+            background-color: #fff3e0;
+            border: 1px solid #ff9800;
             padding: 10px;
             margin: 10px 0;
             border-radius: 4px;
@@ -147,7 +150,7 @@
         
         .permission-badge {
             display: inline-block;
-            background-color: #7c3aed;
+            background-color: #00a651;
             color: white;
             padding: 4px 12px;
             border-radius: 12px;
@@ -163,12 +166,13 @@
         
         .step-number {
             font-weight: bold;
-            color: #7c3aed;
+            color: #cf0000;
             margin-right: 10px;
         }
         
         code {
-            background-color: #f3f4f6;
+            background-color: #f5f5f5;
+            color: #333333;
             padding: 2px 6px;
             border-radius: 3px;
             font-family: 'Consolas', 'Monaco', monospace;
@@ -181,14 +185,15 @@
         }
         
         th, td {
-            border: 1px solid #ddd;
+            border: 1px solid #e0e0e0;
             padding: 12px;
             text-align: left;
         }
         
         th {
-            background-color: #f3f4f6;
+            background-color: #fafafa;
             font-weight: bold;
+            color: #333333;
         }
         
         .feature-grid {
@@ -199,8 +204,8 @@
         }
         
         .feature-card {
-            background-color: #f9fafb;
-            border: 1px solid #e5e7eb;
+            background-color: #fafafa;
+            border: 1px solid #e0e0e0;
             padding: 20px;
             border-radius: 8px;
         }
@@ -208,11 +213,104 @@
         .button-example {
             display: inline-block;
             padding: 8px 16px;
-            background-color: #8b5cf6;
+            background-color: #cf0000;
             color: white;
             border-radius: 4px;
             text-decoration: none;
             margin: 5px;
+        }
+        
+        /* Print-specific styles to prevent page breaks */
+        @media print {
+            /* Prevent page breaks inside images and their containers */
+            img, 
+            .screenshot-placeholder,
+            .screenshot-instruction {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                display: block;
+            }
+            
+            /* Ensure images fit within page */
+            img {
+                max-width: 100% !important;
+                height: auto !important;
+            }
+            
+            /* Keep related content together */
+            .step,
+            .feature-card,
+            .permission-matrix,
+            .note,
+            .tip,
+            .warning,
+            .permission-required,
+            table {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            
+            /* Prevent breaks after headings */
+            h1, h2, h3, h4, h5, h6 {
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+            
+            /* Keep table rows together */
+            tr {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            
+            /* Add space before major sections */
+            section {
+                page-break-before: auto;
+            }
+            
+            /* Force new page for major sections if needed */
+            #overview,
+            #user-management,
+            #action-config,
+            #fud-config,
+            #campaign-management,
+            #customer-assignment,
+            #audit-log,
+            #best-practices-admin,
+            #troubleshooting-admin {
+                page-break-before: always;
+            }
+            
+            /* Keep first section on same page as TOC */
+            #overview {
+                page-break-before: auto;
+            }
+            
+            /* Adjust margins for print */
+            body {
+                margin: 0;
+                background: white;
+            }
+            
+            .container {
+                max-width: 100%;
+                margin: 0;
+                padding: 20px;
+                box-shadow: none;
+            }
+            
+            /* Hide header background for cleaner print */
+            header {
+                background-color: white !important;
+                color: #00a651 !important;
+                border: 2px solid #00a651;
+                margin-bottom: 20px;
+            }
+            
+            /* Ensure TOC doesn't break */
+            .toc {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
         }
         
         .tab-nav {
@@ -232,13 +330,13 @@
         }
         
         .tab-button.active {
-            border-bottom-color: #8b5cf6;
-            color: #8b5cf6;
+            border-bottom-color: #00a651;
+            color: #00a651;
             font-weight: 500;
         }
         
         .permission-matrix {
-            background-color: #f9fafb;
+            background-color: #fafafa;
             padding: 20px;
             border-radius: 8px;
             margin: 20px 0;
@@ -255,7 +353,7 @@
         
         ul.permission-list li {
             padding: 8px 0;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e0e0e0;
         }
         
         ul.permission-list li:last-child {
@@ -311,7 +409,7 @@
                     </ul>
                 </li>
                 <li><a href="#customer-assignment">6. Customer Assignment Upload</a></li>
-                <li><a href="#system-config">7. System Configuration</a></li>
+                <li><a href="#audit-log">7. Audit Log</a></li>
                 <li><a href="#best-practices-admin">8. Administrative Best Practices</a></li>
                 <li><a href="#troubleshooting-admin">9. Troubleshooting for Admins</a></li>
             </ul>
@@ -349,7 +447,7 @@
                             <td>Operations Manager</td>
                         </tr>
                         <tr>
-                            <td><span class="permission-badge">FUD_config:all</span></td>
+                            <td><span class="permission-badge">FUD_config:edit</span></td>
                             <td>Manage Follow-Up Date automation rules</td>
                             <td>Supervisor, Manager</td>
                         </tr>
@@ -364,9 +462,19 @@
                             <td>Team Lead, Supervisor</td>
                         </tr>
                         <tr>
-                            <td><span class="permission-badge">system_admin</span></td>
-                            <td>Access system-wide configuration</td>
-                            <td>System Administrator</td>
+                            <td><span class="permission-badge">audit_view</span></td>
+                            <td>View system audit logs for security and compliance</td>
+                            <td>Auditor, Compliance Officer</td>
+                        </tr>
+                        <tr>
+                            <td><span class="permission-badge">customer_info:*</span></td>
+                            <td>Manage customer information (add, update, delete)</td>
+                            <td>Agent, Team Lead</td>
+                        </tr>
+                        <tr>
+                            <td><span class="permission-badge">customer_doc:*</span></td>
+                            <td>Manage customer documents (upload, download, delete)</td>
+                            <td>Agent, Team Lead</td>
                         </tr>
                     </tbody>
                 </table>
@@ -381,8 +489,11 @@
             <div class="screenshot-placeholder">
                 <p>Settings Dashboard Screenshot</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Navigate to Settings page. Capture the full settings dashboard showing 
-                    all available configuration cards. Ensure various cards are visible based on permissions.
+                    <img src="Image/System_setting.png" alt="Settings Dashboard Screenshot" style="
+                        /* width: 100%; */
+                        width: 100%;
+                        border-radius: 6px;
+                    ">
                 </div>
             </div>
             
@@ -411,8 +522,8 @@
             <div class="screenshot-placeholder">
                 <p>User Management Main Screen</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Navigate to Settings > User Management. Show the main screen with 
-                    user list table and the "Users" and "Roles" tabs visible at the top.
+                    <img src="Image/User_Management.png" alt="Settings Dashboard Screenshot" style="width: 100%; border-radius: 6px;">
+
                 </div>
             </div>
             
@@ -421,7 +532,7 @@
             <h4>Creating a New User</h4>
             
             <div class="step">
-                <span class="step-number">Step 1:</span> Click the "Create User" button
+                <span class="step-number">Step 1:</span> Click the "Add User" button
             </div>
             
             <div class="step">
@@ -431,7 +542,7 @@
                     <li><strong>Email:</strong> User's email address</li>
                     <li><strong>Full Name:</strong> Display name</li>
                     <li><strong>Password:</strong> Initial password (user should change on first login)</li>
-                    <li><strong>Roles:</strong> Select one or more roles</li>
+                    <li><strong>Role:</strong> Select user role (single role per user)</li>
                     <li><strong>Active:</strong> Toggle to enable/disable account</li>
                 </ul>
             </div>
@@ -439,13 +550,12 @@
             <div class="screenshot-placeholder">
                 <p>Create User Modal</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Click "Create User" to open the modal. Show all fields including 
-                    the role selection dropdown and active toggle switch.
+                    <img src="Image/Add_user.png" alt="Settings Dashboard Screenshot" style="width: 100%; border-radius: 8px;">
                 </div>
             </div>
             
             <div class="step">
-                <span class="step-number">Step 3:</span> Click "Create" to save the new user
+                <span class="step-number">Step 3:</span> Click "Add User" to save the new user
             </div>
             
             <h4>Editing Users</h4>
@@ -498,8 +608,7 @@
             <div class="screenshot-placeholder">
                 <p>Roles Tab</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Click on the "Roles" tab. Show the roles list with at least 3-4 roles, 
-                    their descriptions, and action buttons.
+                    <img src="Image/Role_tab.png" alt="Settings Dashboard Screenshot" style="width: 100%; border-radius: 8px;">
                 </div>
             </div>
             
@@ -510,7 +619,7 @@
             </div>
             
             <div class="step">
-                <span class="step-number">Step 2:</span> Click "Create Role"
+                <span class="step-number">Step 2:</span> Click "Add Role"
             </div>
             
             <div class="step">
@@ -525,8 +634,7 @@
             <div class="screenshot-placeholder">
                 <p>Create Role Modal with Permissions</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Open Create Role modal. Show the permissions selection area with 
-                    several permissions checked. Include both resource:action format permissions.
+                    <img src="Image/add_role.png" alt="Settings Dashboard Screenshot" style="width: 100%; border-radius: 8px;">
                 </div>
             </div>
             
@@ -539,8 +647,17 @@
                 <li>System tracks which users have each role</li>
             </ul>
             
+            <div class="note">
+                <strong>Permission Actions:</strong>
+                <ul>
+                    <li><strong>customer_info:</strong> add, update, delete - for managing customer information</li>
+                    <li><strong>customer_doc:</strong> upload, download, delete - for managing customer documents</li>
+                    <li><strong>Other resources:</strong> view, edit, create, delete - standard CRUD operations</li>
+                </ul>
+            </div>
+            
             <div class="tip">
-                <strong>Best Practice:</strong> Create roles that match your organizational structure (e.g., Agent, Team Lead, Supervisor, Manager, Admin) rather than creating custom roles for individual users.
+                <strong>Best Practice:</strong> Create roles that match your organizational structure (e.g., agent, team_lead, supervisor, manager, admin) rather than creating custom roles for individual users. Note that each user can only have one role assigned.
             </div>
             
             <h3 id="user-sessions">2.3 User Sessions</h3>
@@ -550,8 +667,7 @@
             <div class="screenshot-placeholder">
                 <p>User Sessions Modal</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Click "View Sessions" for any user. Show the sessions list with 
-                    device info, IP addresses, and last activity times.
+                    <img src="Image/User_session.png" alt="Settings Dashboard Screenshot" style="width: 100%; border-radius: 8px;">
                 </div>
             </div>
             
@@ -586,8 +702,7 @@
             <div class="screenshot-placeholder">
                 <p>Actions Configuration Main Screen</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Navigate to Settings > Actions Config. Show the tab navigation with 
-                    all five tabs visible: Action Types, Action Subtypes, Action Results, Mappings, and Statistics.
+                        <img src="Image/Action_main.png" alt="Settings Dashboard Screenshot" style="width: 100%; border-radius: 8px;">
                 </div>
             </div>
             
@@ -662,8 +777,7 @@
             <div class="screenshot-placeholder">
                 <p>Action Subtypes Tab</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Click on Action Subtypes tab. Show the list with parent action type 
-                    column and several subtypes for different action types.
+                    <img src="Image/Action_subtypes.png" alt="Settings Dashboard Screenshot" style="width: 100%; border-radius: 8px;">
                 </div>
             </div>
             
@@ -737,8 +851,7 @@
             <div class="screenshot-placeholder">
                 <p>Mappings Configuration</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Navigate to Mappings tab. Show the interface for linking action types 
-                    with their available subtypes and results.
+                    <img src="Image/Action_Mappings.png" alt="Settings Dashboard Screenshot" style="width: 100%; border-radius: 8px;">
                 </div>
             </div>
             
@@ -794,7 +907,7 @@
             <h2>4. FUD Auto Configuration</h2>
             
             <div class="permission-required">
-                <strong>Required Permission:</strong> <span class="permission-badge">FUD_config:all</span>
+                <strong>Required Permission:</strong> <span class="permission-badge">FUD_config:edit</span>
             </div>
             
             <p>Follow-Up Date (FUD) automation helps ensure timely follow-ups based on action results.</p>
@@ -802,8 +915,7 @@
             <div class="screenshot-placeholder">
                 <p>FUD Configuration Main Screen</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Navigate to Settings > FUD Auto Config. Show the list of FUD rules 
-                    with columns for action result, calculation type, days offset, priority, and active status.
+                    <img src="Image/FUD.png" alt="Settings Dashboard Screenshot" style="width: 100%; border-radius: 8px;">
                 </div>
             </div>
             
@@ -832,8 +944,7 @@
             <div class="screenshot-placeholder">
                 <p>Create FUD Rule Modal</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Open Create FUD Rule modal. Show all fields including the 
-                    calculation type dropdown and days offset input.
+                    <img src="Image/FUD_add.png" alt="Settings Dashboard Screenshot" style="width: 100%; border-radius: 8px;">
                 </div>
             </div>
             
@@ -910,19 +1021,38 @@
                 <strong>Required Permission:</strong> <span class="permission-badge">campaign_management</span>
             </div>
             
-            <p>Create and manage collection campaigns to organize and prioritize collection efforts.</p>
+            <p>The Campaign Management system provides a sophisticated framework for organizing and prioritizing collection efforts through campaign groups and campaigns. This hierarchical structure ensures customers are systematically assigned to the most appropriate collection strategies.</p>
             
             <div class="screenshot-placeholder">
                 <p>Campaign Management Overview</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Navigate to Settings > Queue Campaign Config. Show the four tabs: 
-                    Campaign Groups, Campaigns, Custom Fields, and Processing.
+                    <img src="Image/Campain_main.png" alt="Settings Dashboard Screenshot" style="width: 100%; border-radius: 8px;">
                 </div>
+            </div>
+            
+            <div class="note">
+                <strong>Key Concept:</strong> The campaign system uses a two-tier hierarchy:
+                <ul>
+                    <li><strong>Campaign Groups:</strong> High-level categories that organize related campaigns</li>
+                    <li><strong>Campaigns:</strong> Specific collection strategies within each group, with prioritized rules</li>
+                </ul>
             </div>
             
             <h3 id="campaign-groups">5.1 Campaign Groups</h3>
             
-            <p>Organize campaigns into logical groups for better management.</p>
+            <p>Campaign Groups are logical containers that organize multiple related campaigns. Each group represents a distinct collection strategy or customer segment approach.</p>
+            
+            <h4>Understanding Campaign Groups</h4>
+            
+            <div class="feature-card">
+                <h4>Group Characteristics</h4>
+                <ul>
+                    <li><strong>Multiple Campaigns:</strong> Each group contains multiple campaigns with different criteria</li>
+                    <li><strong>Customer Distribution:</strong> A customer can appear in different campaign groups simultaneously</li>
+                    <li><strong>Independent Processing:</strong> Groups are evaluated independently of each other</li>
+                    <li><strong>Strategic Segmentation:</strong> Groups typically represent major collection strategies</li>
+                </ul>
+            </div>
             
             <h4>Creating Campaign Groups</h4>
             
@@ -937,95 +1067,316 @@
             <div class="step">
                 <span class="step-number">Step 3:</span> Enter:
                 <ul>
-                    <li><strong>Group Name:</strong> Descriptive name</li>
-                    <li><strong>Description:</strong> Purpose and scope</li>
+                    <li><strong>Group Name:</strong> Descriptive name (must be unique)</li>
+                    <li><strong>Description:</strong> Clear explanation of the group's purpose and strategy</li>
                 </ul>
             </div>
             
-            <h4>Example Campaign Groups</h4>
-            
-            <ul>
-                <li><strong>Early Stage:</strong> 1-30 days past due</li>
-                <li><strong>Mid Stage:</strong> 31-90 days past due</li>
-                <li><strong>Late Stage:</strong> 90+ days past due</li>
-                <li><strong>Legal:</strong> Accounts in legal process</li>
-                <li><strong>Special Handling:</strong> VIP or sensitive accounts</li>
-            </ul>
-            
-            <h3 id="campaigns">5.2 Campaigns</h3>
-            
-            <p>Create specific campaigns within groups with defined criteria and rules.</p>
-            
-            <div class="screenshot-placeholder">
-                <p>Campaign Creation Form</p>
-                <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Click "Create Campaign" in the Campaigns tab. Show the form with 
-                    campaign group selection, name, base conditions, and contact rules fields.
-                </div>
-            </div>
-            
-            <h4>Campaign Configuration</h4>
+            <h4>Common Campaign Group Examples</h4>
             
             <table>
                 <thead>
                     <tr>
-                        <th>Setting</th>
-                        <th>Description</th>
-                        <th>Example</th>
+                        <th>Group Name</th>
+                        <th>Purpose</th>
+                        <th>Typical Campaigns</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Campaign Name</td>
-                        <td>Unique identifier</td>
-                        <td>"Q1 2025 Early Stage"</td>
+                        <td>Early Stage</td>
+                        <td>Initial collection efforts (1-30 DPD)</td>
+                        <td>Soft Reminder, First Call, SMS Notification</td>
                     </tr>
                     <tr>
-                        <td>Campaign Group</td>
-                        <td>Parent group</td>
-                        <td>"Early Stage"</td>
+                        <td>Mid Stage</td>
+                        <td>Intensified efforts (31-90 DPD)</td>
+                        <td>Urgent Call, Field Visit Prep, Settlement Offer</td>
                     </tr>
                     <tr>
-                        <td>Base Conditions</td>
-                        <td>Criteria for inclusion</td>
-                        <td>DPD 1-30, Balance > 1M VND</td>
+                        <td>Late Stage</td>
+                        <td>Final attempts (90+ DPD)</td>
+                        <td>Final Notice, Legal Warning, Write-off Evaluation</td>
                     </tr>
                     <tr>
-                        <td>Contact Rules</td>
-                        <td>How to contact customers</td>
-                        <td>Max 3 calls/day, SMS after 2 failed calls</td>
+                        <td>Risk-Based</td>
+                        <td>Segmented by risk score</td>
+                        <td>High Risk Priority, Medium Risk Standard, Low Risk Auto</td>
                     </tr>
                     <tr>
-                        <td>Priority</td>
-                        <td>Campaign importance</td>
-                        <td>High/Medium/Low</td>
+                        <td>Product-Specific</td>
+                        <td>Different products need different approaches</td>
+                        <td>Credit Card Recovery, Personal Loan, Mortgage</td>
                     </tr>
                 </tbody>
             </table>
             
+            <h3 id="campaigns">5.2 Campaigns</h3>
+            
+            <p>Campaigns are specific collection strategies within a group. Each campaign has defined criteria (base conditions) and priority rules that determine customer assignment.</p>
+            
+            <div class="warning">
+                <strong>Critical Rule:</strong> Within a campaign group, each customer can only be assigned to ONE campaign - the highest priority campaign they qualify for. This ensures no duplicate efforts within the same strategic approach.
+            </div>
+            
+            <h4>Campaign Priority System</h4>
+            
+            <p>The priority system is fundamental to how campaigns work:</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Priority Assignment</h4>
+                    <ul>
+                        <li>Each campaign has a priority number (1-999)</li>
+                        <li>Lower numbers = higher priority</li>
+                        <li>Priority must be unique within a group</li>
+                        <li>System evaluates campaigns in priority order</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>Customer Assignment Logic</h4>
+                    <ul>
+                        <li>Customers are evaluated against campaigns in priority order</li>
+                        <li>First matching campaign wins</li>
+                        <li>Once assigned, customer skips remaining campaigns in that group</li>
+                        <li>Ensures most important campaigns get first selection</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <h4>Creating Campaigns</h4>
+            
+            <div class="screenshot-placeholder">
+                <p>Campaign Creation Form</p>
+                <div class="screenshot-instruction">
+                    <img src="Image/Campain_add.png" alt="Settings Dashboard Screenshot" style="width: 100%; border-radius: 8px;">
+                </div>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 1:</span> Select the Campaign Group this campaign belongs to
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 2:</span> Configure campaign settings:
+                <ul>
+                    <li><strong>Campaign Name:</strong> Unique identifier within the group</li>
+                    <li><strong>Priority:</strong> Number from 1-999 (must be unique within group)</li>
+                    <li><strong>Base Conditions:</strong> Define criteria for customer eligibility</li>
+                    <li><strong>Contact Rules:</strong> Specify how to contact qualified customers</li>
+                </ul>
+            </div>
+            
+            <h4>Base Conditions Configuration</h4>
+            
+            <p>Base conditions determine which customers qualify for a campaign. All conditions must be met for a customer to be eligible.</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Condition Type</th>
+                        <th>Field Examples</th>
+                        <th>Operators</th>
+                        <th>Use Case</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Loan Data</td>
+                        <td>dpd, outstanding_balance, loan_type</td>
+                        <td>=, >, <, BETWEEN</td>
+                        <td>DPD between 30-60</td>
+                    </tr>
+                    <tr>
+                        <td>Customer Data</td>
+                        <td>segment, region, age</td>
+                        <td>=, !=, IN</td>
+                        <td>Segment = 'Premium'</td>
+                    </tr>
+                    <tr>
+                        <td>Custom Fields</td>
+                        <td>risk_score, payment_propensity</td>
+                        <td>>, <, >=, <=</td>
+                        <td>risk_score > 70</td>
+                    </tr>
+                    <tr>
+                        <td>Historical Data</td>
+                        <td>previous_promises, contact_attempts</td>
+                        <td>=, >, <</td>
+                        <td>contact_attempts < 5</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h4>Campaign Priority Example</h4>
+            
+            <div class="note">
+                <strong>Example Scenario:</strong> Early Stage Campaign Group
+                <ol>
+                    <li><strong>Priority 1 - VIP Soft Touch:</strong> Balance > 10M AND customer_segment = 'VIP'</li>
+                    <li><strong>Priority 2 - High Balance Focus:</strong> Balance > 5M AND dpd <= 15</li>
+                    <li><strong>Priority 3 - Standard Early:</strong> dpd BETWEEN 1 AND 30</li>
+                </ol>
+                <p>A VIP customer with 12M balance and 10 DPD would be assigned to "VIP Soft Touch" (Priority 1) and would NOT appear in the other campaigns.</p>
+            </div>
+            
+            <h4>Contact Selection Rules</h4>
+            
+            <p>Once a customer is assigned to a campaign, contact selection rules determine which phone numbers or contact methods to use.</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Rule Priority</h4>
+                    <ul>
+                        <li>Each rule has a priority (1-999)</li>
+                        <li>Rules are evaluated in priority order</li>
+                        <li>Multiple rules can apply to one customer</li>
+                        <li>Allows sophisticated contact strategies</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>Contact Types</h4>
+                    <ul>
+                        <li><strong>Customer Direct:</strong> Primary mobile, home, work</li>
+                        <li><strong>References:</strong> Emergency contacts, guarantors</li>
+                        <li><strong>Alternative:</strong> Spouse, family members</li>
+                        <li><strong>All:</strong> Include all available contacts</li>
+                    </ul>
+                </div>
+            </div>
+            
             <h3 id="custom-fields">5.3 Custom Fields</h3>
             
-            <p>Define additional data fields for campaigns to capture specific information.</p>
+            <p>Custom fields allow you to use externally calculated data (like risk scores or payment propensity) in your campaign conditions. These fields are pre-calculated outside the system and uploaded for use in campaign evaluation.</p>
             
-            <h4>Common Custom Fields</h4>
+            <h4>Understanding Custom Fields</h4>
             
-            <ul>
-                <li><strong>Risk Score:</strong> Customer risk rating</li>
-                <li><strong>Payment History:</strong> Previous payment behavior</li>
-                <li><strong>Contact Preference:</strong> Preferred contact method</li>
-                <li><strong>Special Instructions:</strong> Account-specific notes</li>
-            </ul>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>What Are Custom Fields?</h4>
+                    <ul>
+                        <li>Additional data attributes calculated externally</li>
+                        <li>Stored at the loan level</li>
+                        <li>Can be used in base conditions and contact rules</li>
+                        <li>Support various data types (number, string, date, boolean)</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>Common Custom Fields</h4>
+                    <ul>
+                        <li><strong>risk_score:</strong> Numerical risk rating (0-100)</li>
+                        <li><strong>payment_propensity:</strong> Likelihood to pay (0.0-1.0)</li>
+                        <li><strong>collection_priority:</strong> Text priority level (high/medium/low)</li>
+                        <li><strong>contact_preference:</strong> Preferred contact method</li>
+                        <li><strong>special_handling:</strong> Boolean flag for special cases</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <h4>Registering Custom Fields</h4>
+            
+            <div class="step">
+                <span class="step-number">Step 1:</span> Navigate to Custom Fields tab in Campaign Management
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 2:</span> Click "Add Custom Field"
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 3:</span> Define the field:
+                <ul>
+                    <li><strong>Field Name:</strong> Unique identifier (e.g., "risk_score")</li>
+                    <li><strong>Data Type:</strong> Select from: string, number, date, boolean</li>
+                    <li><strong>Description:</strong> Explain what this field represents</li>
+                </ul>
+            </div>
+            
+            <div class="note">
+                <strong>Important:</strong> After registering custom fields, the actual values must be uploaded through the system's data import functionality. Custom fields are typically calculated by external analytics systems and then imported.
+            </div>
+            
+            <h4>Using Custom Fields in Campaigns</h4>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Custom Field</th>
+                        <th>Data Type</th>
+                        <th>Example Condition</th>
+                        <th>Campaign Use Case</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>risk_score</td>
+                        <td>number</td>
+                        <td>risk_score > 75</td>
+                        <td>High-risk customer campaign</td>
+                    </tr>
+                    <tr>
+                        <td>payment_propensity</td>
+                        <td>number</td>
+                        <td>payment_propensity >= 0.8</td>
+                        <td>Likely payers soft approach</td>
+                    </tr>
+                    <tr>
+                        <td>collection_priority</td>
+                        <td>string</td>
+                        <td>collection_priority = 'high'</td>
+                        <td>Priority account focus</td>
+                    </tr>
+                    <tr>
+                        <td>last_payment_date</td>
+                        <td>date</td>
+                        <td>last_payment_date < '2024-01-01'</td>
+                        <td>Long-term non-payers</td>
+                    </tr>
+                </tbody>
+            </table>
             
             <h3 id="processing-runs">5.4 Processing Runs</h3>
             
-            <p>Monitor campaign execution and results.</p>
+            <p>Processing runs execute the campaign logic, evaluating customers against all configured campaigns and generating assignments. The system can process 500,000 to 1 million customers in approximately 30 minutes.</p>
             
             <div class="screenshot-placeholder">
                 <p>Processing Runs List</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Navigate to Processing tab. Show the list of processing runs with 
-                    status, start/end times, and statistics. Include at least one completed and one running process.
+                    <img src="Image/Campain_process.png" alt="Settings Dashboard Screenshot" style="width: 100%; border-radius: 8px;">
                 </div>
+            </div>
+            
+            <h4>How Processing Works</h4>
+            
+            <div class="feature-card">
+                <h4>Processing Flow</h4>
+                <ol>
+                    <li><strong>Customer Selection:</strong> System identifies all active customers to process</li>
+                    <li><strong>Group Evaluation:</strong> Each campaign group is processed independently</li>
+                    <li><strong>Campaign Priority:</strong> Within each group, campaigns are evaluated by priority</li>
+                    <li><strong>Condition Matching:</strong> Base conditions are checked for each customer</li>
+                    <li><strong>Assignment:</strong> Customer assigned to first matching campaign in each group</li>
+                    <li><strong>Contact Selection:</strong> Appropriate contact details selected based on rules</li>
+                    <li><strong>Output Generation:</strong> Final assignment list created for agents</li>
+                </ol>
+            </div>
+            
+            <h4>Initiating a Processing Run</h4>
+            
+            <div class="step">
+                <span class="step-number">Step 1:</span> Click "New Processing Run" on the Processing Runs tab
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 2:</span> Select processing parameters:
+                <ul>
+                    <li><strong>Campaign Groups:</strong> Which groups to include (or select all)</li>
+                    <li><strong>Contact Restriction:</strong> Allow maximum number of contacts per customer</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 3:</span> Review estimated processing time and click "Start Processing"
             </div>
             
             <h4>Processing Run Details</h4>
@@ -1037,34 +1388,72 @@
                 <button class="tab-button">Errors</button>
             </div>
             
-            <ul>
-                <li><strong>Overview Tab:</strong> Summary statistics and run parameters</li>
-                <li><strong>Assignments Tab:</strong> How accounts were distributed to agents</li>
-                <li><strong>Results Tab:</strong> Campaign performance metrics</li>
-                <li><strong>Errors Tab:</strong> Any processing errors or issues</li>
-            </ul>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tab</th>
+                        <th>Information Displayed</th>
+                        <th>Key Metrics</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Overview</td>
+                        <td>Summary of the processing run</td>
+                        <td>Start/end time, total customers, campaigns evaluated</td>
+                    </tr>
+                    <tr>
+                        <td>Assignments</td>
+                        <td>Customer-to-campaign mappings</td>
+                        <td>Customers per campaign, distribution percentages</td>
+                    </tr>
+                    <tr>
+                        <td>Results</td>
+                        <td>Campaign engine metrics</td>
+                        <td>Match rates, contact availability, processing time</td>
+                    </tr>
+                    <tr>
+                        <td>Errors</td>
+                        <td>Processing issues and failures</td>
+                        <td>Failed evaluations, data quality issues, system errors</td>
+                    </tr>
+                    <tr>
+                        <td>Export</td>
+                        <td>Export Campaign Contacts</td>
+                        <td>CSV file listing contacts assigned to campaign</td>
+                    </tr>
+                </tbody>
+            </table>
             
-            <h4>Key Metrics</h4>
+            <h4>Understanding Processing Results</h4>
             
             <div class="feature-grid">
                 <div class="feature-card">
-                    <h4>Processing Stats</h4>
+                    <h4>Assignment Statistics</h4>
                     <ul>
-                        <li>Total accounts processed</li>
-                        <li>Successful assignments</li>
-                        <li>Failed assignments</li>
-                        <li>Processing duration</li>
+                        <li><strong>Total Processed:</strong> Number of customers evaluated</li>
+                        <li><strong>Assigned:</strong> Customers matched to at least one campaign</li>
+                        <li><strong>Contacts Selected:</strong> Contacts matching selection rule</li>
+                        <li><strong>Campaign Processed:</strong> Number of campaigns processed with data</li>
                     </ul>
                 </div>
                 <div class="feature-card">
-                    <h4>Assignment Distribution</h4>
+                    <h4>Campaign Performance</h4>
                     <ul>
-                        <li>Accounts per agent</li>
-                        <li>Distribution method used</li>
-                        <li>Load balancing results</li>
-                        <li>Special handling cases</li>
+                        <li><strong>Customers Assigned:</strong> Number of customers assigned to campaigns</li>
+                        <li><strong>Customers/Sec:</strong> Customers processed per second</li>
+                        <li><strong>Duration:</strong> Time taken for processing</li>
+                        <li><strong>Contacts Selected:</strong> Contacts matching selection rule</li>
                     </ul>
                 </div>
+            </div>
+            
+            <div class="tip">
+                <strong>Best Practice:</strong> Always run in Test mode first to preview results before executing a Production run. This allows you to verify campaign logic and catch configuration issues without affecting actual assignments.
+            </div>
+            
+            <div class="warning">
+                <strong>Important:</strong> Production runs will immediately update customer assignments and make them available to agents. Ensure all campaigns are properly configured before initiating a production run.
             </div>
         </section>
 
@@ -1080,8 +1469,7 @@
             <div class="screenshot-placeholder">
                 <p>Customer Assignment Upload Screen</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Navigate to Settings > Customer Assignment Upload. Show the upload 
-                    interface with drag-and-drop area and the "Download Template" button.
+                    <img src="Image/Customer_main.png" alt="Settings Dashboard Screenshot" style="width: 100%; border-radius: 8px;">
                 </div>
             </div>
             
@@ -1141,7 +1529,7 @@
                     </tr>
                     <tr>
                         <td>Maximum Size</td>
-                        <td>10 MB</td>
+                        <td>50 MB</td>
                     </tr>
                     <tr>
                         <td>Encoding</td>
@@ -1187,59 +1575,167 @@
                 <strong>Required Permission:</strong> <span class="permission-badge">audit_view</span>
             </div>
             
-            <p>View and analyze system audit logs with date-based filtering for security monitoring and compliance.</p>
+            <p>Monitor system activities, user actions, and security events for compliance and troubleshooting purposes.</p>
             
             <div class="screenshot-placeholder">
-                <p>Audit Log Screen</p>
+                <p>Audit Log Main Screen</p>
                 <div class="screenshot-instruction">
-                    <strong>How to capture:</strong> Navigate to Settings > Audit Log. Show the main 
-                    audit log interface with filters and log entries.
+                    <img src="Image/Audit_log_main.png" alt="Audit Log Screenshot" style="width: 100%; border-radius: 8px;">
                 </div>
             </div>
             
-            <h3>Key Features</h3>
+            <h3>Audit Log Features</h3>
             
             <div class="feature-grid">
                 <div class="feature-card">
-                    <h4>Comprehensive Logging</h4>
+                    <h4>Event Tracking</h4>
                     <ul>
-                        <li>All system events tracked</li>
-                        <li>Service-level monitoring</li>
-                        <li>User actions recorded</li>
-                        <li>Entity change tracking</li>
+                        <li>User authentication events</li>
+                        <li>Data modifications</li>
+                        <li>Permission changes</li>
+                        <li>System configuration updates</li>
+                        <li>API access logs</li>
                     </ul>
                 </div>
                 <div class="feature-card">
-                    <h4>Advanced Filtering</h4>
+                    <h4>Filtering Options</h4>
                     <ul>
                         <li>Date range selection</li>
-                        <li>Service name filtering</li>
-                        <li>Event type categorization</li>
-                        <li>Action-based search</li>
+                        <li>Service name filter</li>
+                        <li>Event type filter</li>
+                        <li>Action filter</li>
+                        <li>Sort by timestamp or event</li>
                     </ul>
                 </div>
                 <div class="feature-card">
                     <h4>Log Details</h4>
                     <ul>
-                        <li>Timestamp tracking</li>
+                        <li>Timestamp (date & time)</li>
+                        <li>Service origin</li>
+                        <li>Event classification</li>
                         <li>User agent information</li>
-                        <li>Entity identification</li>
-                        <li>Metadata viewing</li>
-                    </ul>
-                </div>
-                <div class="feature-card">
-                    <h4>Data Management</h4>
-                    <ul>
-                        <li>Sortable columns</li>
-                        <li>Pagination controls</li>
-                        <li>Adjustable page size</li>
-                        <li>Real-time refresh</li>
+                        <li>Entity details</li>
+                        <li>Metadata (JSON format)</li>
                     </ul>
                 </div>
             </div>
             
-            <div class="info">
-                <strong>Statistics:</strong> The audit log system currently monitors 8 services
+            <h3>Using the Audit Log</h3>
+            
+            <h4>Searching and Filtering</h4>
+            
+            <div class="step">
+                <span class="step-number">Step 1:</span> Set date range using Start Date and End Date fields
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 2:</span> Apply filters:
+                <ul>
+                    <li><strong>Service:</strong> Filter by specific microservice (e.g., auth-service, workflow-service)</li>
+                    <li><strong>Event Type:</strong> Filter by event category (e.g., LOGIN, UPDATE, DELETE)</li>
+                    <li><strong>Action:</strong> Filter by specific action performed</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 3:</span> Configure sort order:
+                <ul>
+                    <li>Sort by: Created At, Timestamp, Event Type, Service Name, or Action</li>
+                    <li>Order: Ascending or Descending</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">Step 4:</span> Click "Apply Filters" to search
+            </div>
+            
+            <h4>Reading Log Entries</h4>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Timestamp</td>
+                        <td>When the event occurred</td>
+                        <td>2025-01-22 14:30:45</td>
+                    </tr>
+                    <tr>
+                        <td>Service</td>
+                        <td>Which microservice generated the log</td>
+                        <td>auth-service</td>
+                    </tr>
+                    <tr>
+                        <td>Event Type</td>
+                        <td>Category of event</td>
+                        <td>USER_LOGIN</td>
+                    </tr>
+                    <tr>
+                        <td>Action</td>
+                        <td>Specific action performed</td>
+                        <td>authenticate</td>
+                    </tr>
+                    <tr>
+                        <td>User Agent</td>
+                        <td>Browser/client information</td>
+                        <td>Mozilla/5.0...</td>
+                    </tr>
+                    <tr>
+                        <td>Entity</td>
+                        <td>Affected resource type and ID</td>
+                        <td>user/123456</td>
+                    </tr>
+                    <tr>
+                        <td>Metadata</td>
+                        <td>Additional event details</td>
+                        <td>Click "View metadata" to expand</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h4>Common Use Cases</h4>
+            
+            <div class="tip">
+                <h4>Security Monitoring</h4>
+                <ul>
+                    <li>Track failed login attempts</li>
+                    <li>Monitor permission changes</li>
+                    <li>Detect unusual access patterns</li>
+                    <li>Review data export activities</li>
+                </ul>
+            </div>
+            
+            <div class="tip">
+                <h4>Compliance Auditing</h4>
+                <ul>
+                    <li>Document user access history</li>
+                    <li>Track data modifications</li>
+                    <li>Verify authorization compliance</li>
+                    <li>Generate audit reports</li>
+                </ul>
+            </div>
+            
+            <div class="tip">
+                <h4>Troubleshooting</h4>
+                <ul>
+                    <li>Investigate user-reported issues</li>
+                    <li>Trace API errors</li>
+                    <li>Identify performance bottlenecks</li>
+                    <li>Debug integration problems</li>
+                </ul>
+            </div>
+            
+            <div class="note">
+                <strong>Note:</strong> Audit logs are retained for 90 days by default. Contact your system administrator if you need to access older logs or export log data for archival purposes.
+            </div>
+            
+            <div class="warning">
+                <strong>Privacy Notice:</strong> Audit logs may contain sensitive information. Access should be restricted to authorized personnel only. Always follow your organization's data privacy policies when reviewing logs.
             </div>
         </section>
 
@@ -1367,7 +1863,7 @@
                 <h4>Upload Failures</h4>
                 <ol>
                     <li>Verify file format (CSV)</li>
-                    <li>Check file size (<10MB)</li>
+                    <li>Check file size (<50MB)</li>
                     <li>Confirm column headers match template</li>
                     <li>Validate data in each row</li>
                     <li>Look for special characters or encoding issues</li>

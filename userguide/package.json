@@ -1,0 +1,15 @@
+{
+  "name": "html-to-pdf-converter",
+  "version": "1.0.0",
+  "description": "Convert HTML documentation to PDF using Puppeteer",
+  "main": "convert-to-pdf.js",
+  "scripts": {
+    "convert": "node convert-to-pdf.js",
+    "convert-all": "node convert-to-pdf.js",
+    "convert-admin": "node -e \"require('./convert-to-pdf.js').convertToPDF('CollectionCRM_Admin_Guide.html', 'CollectionCRM_Admin_Guide.pdf')\"",
+    "convert-user": "node -e \"require('./convert-to-pdf.js').convertToPDF('CollectionCRM_User_Guide.html', 'CollectionCRM_User_Guide.pdf')\""
+  },
+  "dependencies": {
+    "puppeteer": "^21.0.0"
+  }
+}
