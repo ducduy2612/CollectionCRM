@@ -77,6 +77,7 @@ declare -A SERVER3_IMAGES=(
     ["workflow-service"]="workflow-service-latest.tar.gz"
     ["campaign-engine"]="campaign-engine-latest.tar.gz"
     ["payment-service"]="payment-service-latest.tar.gz"
+    ["audit-service"]="audit-service-latest.tar.gz"
     ["minio"]="minio_minio_latest.tar.gz"
 )
 

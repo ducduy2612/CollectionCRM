@@ -120,23 +120,87 @@ sudo mkdir -p /var/lib/collectioncrm
 sudo chown -R $USER:$USER /var/lib/collectioncrm
 ```
 
-## Step 2: Deploy CollectionCRM Package
+## Step 2: Prepare Deployment Package
 
-### 2.1 Extract Package
+### 2.1 Build Docker Images (On Development Machine)
+
+Before deploying to production servers, you need to build all Docker images:
+
+```bash
+# Navigate to CollectionCRM project root
+cd /path/to/CollectionCRM
+
+# Build all Docker images
+./deployment/builder/build-all.sh
+
+# This will create images in deployment/package/docker-images/
+# The build process will:
+# - Build all application services (frontend, api-gateway, auth-service, etc.)
+# - Pull all required infrastructure images (PostgreSQL, Redis, Nginx, etc.)
+# - Generate manifest.json and checksums
+```
+
+### 2.2 Create Deployment Package
+
+```bash
+# Create the deployment package with Docker images
+cd /path/to/CollectionCRM
+
+# Create tar.gz with deployment files
+tar -czf collectioncrm-3-server-setup.tar.gz deployment/3-server-setup/
+
+# Create tar file with Docker images (this will be large, ~2-3GB)
+cd deployment/package/docker-images
+tar -cf ../../../docker-images.tar *.tar.gz manifest.json checksums.sha256
+cd ../../../
+```
+
+### 2.3 Copy Package to Servers
+
+Copy both the deployment package and Docker images to all three servers:
+
+```bash
+# Copy to Server 1 (Database)
+scp collectioncrm-3-server-setup.tar.gz user@<SERVER1_IP>:/opt/collectioncrm/
+scp docker-images.tar user@<SERVER1_IP>:/opt/collectioncrm/
+
+# Copy to Server 2 (Cache)
+scp collectioncrm-3-server-setup.tar.gz user@<SERVER2_IP>:/opt/collectioncrm/
+scp docker-images.tar user@<SERVER2_IP>:/opt/collectioncrm/
+
+# Copy to Server 3 (Application)
+scp collectioncrm-3-server-setup.tar.gz user@<SERVER3_IP>:/opt/collectioncrm/
+scp docker-images.tar user@<SERVER3_IP>:/opt/collectioncrm/
+```
+
+> **Note**: If you have limited bandwidth, you can copy images only to the servers that need them:
+> - Server 1: Only database-related images
+> - Server 2: Only cache/message queue images  
+> - Server 3: All application and nginx images
+
+## Step 3: Deploy CollectionCRM
+
+### 3.1 Extract Package
 
 On **all three servers**, extract the CollectionCRM deployment package:
 
 ```bash
 cd /opt/collectioncrm
 
-# Extract the deployment package
-tar -xzf collectioncrm-3-server-setup.tar.gz
+# Extract the deployment package (contents go directly to /opt/collectioncrm/)
+tar -xzf collectioncrm-3-server-setup.tar.gz --strip-components=2
+
+# Extract Docker images to the docker-images directory
+mkdir -p docker-images
+cd docker-images
+tar -xf ../docker-images.tar
+cd ..
 
 # Make scripts executable
 chmod +x scripts/*.sh
 ```
 
-### 2.2 Configure Network
+### 3.2 Configure Network
 
 Run on **all three servers** (same command):
 

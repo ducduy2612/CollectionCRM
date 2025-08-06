@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# CollectionCRM Docker Network Setup Script
-# Creates and configures the external Docker network for cross-server communication
+# CollectionCRM Multi-Server Network Setup Script
+# Configures each server's local Docker networks and validates cross-server connectivity
+# IMPORTANT: This script does NOT create cross-server Docker networks (which is impossible)
+# Instead, it sets up local networks on each server and validates actual server-to-server connectivity
 
 set -e
 
@@ -17,10 +19,24 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="$(dirname "$SCRIPT_DIR")"
 CONFIG_FILE="${BASE_DIR}/deployment.conf"
 
-# Default network configuration
+# Default network configuration for local Docker networks
 DEFAULT_NETWORK_NAME="collectioncrm-network"
 DEFAULT_NETWORK_SUBNET="172.20.0.0/16"
 DEFAULT_NETWORK_GATEWAY="172.20.0.1"
+
+# Server configuration - these MUST be set to actual server IPs
+# Use the same variable names as install.sh for consistency
+DB_SERVER_IP="${DB_SERVER_IP:-}"    # Database server IP (Server 1)
+CACHE_SERVER_IP="${CACHE_SERVER_IP:-}"  # Cache server IP (Server 2)
+APP_SERVER_IP="${APP_SERVER_IP:-}"      # Application server IP (Server 3)
+
+# Also support the old variable names for backward compatibility
+SERVER1_IP="${SERVER1_IP:-$DB_SERVER_IP}"
+SERVER2_IP="${SERVER2_IP:-$CACHE_SERVER_IP}"
+SERVER3_IP="${SERVER3_IP:-$APP_SERVER_IP}"
+
+# Current server role detection
+CURRENT_SERVER_ROLE="${SERVER_ROLE:-auto}"
 
 # Functions
 log() {
@@ -44,7 +60,7 @@ warning() {
     log "$1" "$YELLOW"
 }
 
-# Load configuration
+# Load configuration and validate server IPs
 load_config() {
     if [ -f "$CONFIG_FILE" ]; then
         source "$CONFIG_FILE"
@@ -54,6 +70,55 @@ load_config() {
     NETWORK_NAME="${NETWORK_NAME:-$DEFAULT_NETWORK_NAME}"
     NETWORK_SUBNET="${NETWORK_SUBNET:-$DEFAULT_NETWORK_SUBNET}"
     NETWORK_GATEWAY="${NETWORK_GATEWAY:-$DEFAULT_NETWORK_GATEWAY}"
+    
+    # Load server IPs from deployment.conf if available
+    if [ -n "$DB_SERVER_IP" ]; then
+        SERVER1_IP="$DB_SERVER_IP"
+    fi
+    if [ -n "$CACHE_SERVER_IP" ]; then
+        SERVER2_IP="$CACHE_SERVER_IP"
+    fi
+    if [ -n "$APP_SERVER_IP" ]; then
+        SERVER3_IP="$APP_SERVER_IP"
+    fi
+    
+    # Validate server IPs are set (either from config file or environment)
+    if [ -z "$SERVER1_IP" ] || [ -z "$SERVER2_IP" ] || [ -z "$SERVER3_IP" ]; then
+        error "Server IPs must be configured in deployment.conf or set as environment variables (DB_SERVER_IP, CACHE_SERVER_IP, APP_SERVER_IP)."
+    fi
+    
+    # Detect current server role if not explicitly set
+    if [ "$CURRENT_SERVER_ROLE" = "auto" ]; then
+        detect_server_role
+    fi
+}
+
+# Detect which server we're running on
+detect_server_role() {
+    local current_ip=$(hostname -I | awk '{print $1}')
+    
+    # Use the primary variable names for comparison
+    local db_ip="${DB_SERVER_IP:-$SERVER1_IP}"
+    local cache_ip="${CACHE_SERVER_IP:-$SERVER2_IP}"
+    local app_ip="${APP_SERVER_IP:-$SERVER3_IP}"
+    
+    if [ "$current_ip" = "$db_ip" ]; then
+        CURRENT_SERVER_ROLE="server1"
+        NETWORK_NAME="collectioncrm-server1-network"
+    elif [ "$current_ip" = "$cache_ip" ]; then
+        CURRENT_SERVER_ROLE="server2"
+        NETWORK_NAME="collectioncrm-server2-network"
+    elif [ "$current_ip" = "$app_ip" ]; then
+        CURRENT_SERVER_ROLE="server3"
+        NETWORK_NAME="collectioncrm-server3-network"
+    else
+        warning "Could not auto-detect server role. Current IP: $current_ip"
+        warning "Expected IPs: DB=$db_ip, Cache=$cache_ip, App=$app_ip"
+        warning "Please set SERVER_ROLE environment variable (server1, server2, or server3)"
+        CURRENT_SERVER_ROLE="unknown"
+    fi
+    
+    info "Detected server role: $CURRENT_SERVER_ROLE"
 }
 
 check_docker() {
@@ -130,10 +195,6 @@ create_network() {
         --driver bridge \
         --subnet="$NETWORK_SUBNET" \
         --gateway="$NETWORK_GATEWAY" \
-        --opt com.docker.network.bridge.name=br-collectioncrm \
-        --opt com.docker.network.bridge.enable_icc=true \
-        --opt com.docker.network.bridge.enable_ip_masquerade=true \
-        --opt com.docker.network.driver.mtu=1500 \
         "$NETWORK_NAME"; then
         success "Network created successfully"
     else
@@ -141,8 +202,9 @@ create_network() {
     fi
 }
 
+# Verify local Docker network and cross-server connectivity
 verify_network() {
-    info "Verifying network configuration..."
+    info "Verifying local Docker network configuration..."
     
     # Get network ID
     local network_id=$(docker network ls --filter "name=^${NETWORK_NAME}$" --format "{{.ID}}")
@@ -159,23 +221,95 @@ verify_network() {
     local subnet=$(echo "$details" | grep -m1 '"Subnet":' | awk -F'"' '{print $4}')
     local gateway=$(echo "$details" | grep -m1 '"Gateway":' | awk -F'"' '{print $4}')
     
-    info "Network details:"
+    info "Local network details:"
     info "  ID: $network_id"
     info "  Driver: $driver"
     info "  Subnet: $subnet"
     info "  Gateway: $gateway"
     
-    # Test network connectivity (if possible)
-    if command -v ping &> /dev/null; then
-        info "Testing gateway connectivity..."
-        if ping -c 1 -W 2 "$NETWORK_GATEWAY" &> /dev/null; then
-            success "Gateway is reachable"
-        else
-            warning "Gateway is not reachable (this is normal if no containers are running)"
-        fi
-    fi
+    success "Local network verification completed"
     
-    success "Network verification completed"
+    # Test cross-server connectivity
+    test_cross_server_connectivity
+}
+
+# Test connectivity to other servers
+test_cross_server_connectivity() {
+    info "Testing cross-server connectivity..."
+    
+    # Use consistent variable names
+    local db_ip="${DB_SERVER_IP:-$SERVER1_IP}"
+    local cache_ip="${CACHE_SERVER_IP:-$SERVER2_IP}"
+    local app_ip="${APP_SERVER_IP:-$SERVER3_IP}"
+    local servers=("$db_ip:Database" "$cache_ip:Cache" "$app_ip:Application")
+    local current_ip=$(hostname -I | awk '{print $1}')
+    
+    for server_info in "${servers[@]}"; do
+        local server_ip=$(echo "$server_info" | cut -d: -f1)
+        local server_name=$(echo "$server_info" | cut -d: -f2)
+        
+        # Skip testing connectivity to ourselves
+        if [ "$server_ip" = "$current_ip" ]; then
+            info "  $server_name Server ($server_ip): Current server - skipping"
+            continue
+        fi
+        
+        if command -v ping &> /dev/null; then
+            if ping -c 2 -W 3 "$server_ip" &> /dev/null; then
+                success "  $server_name Server ($server_ip): Reachable"
+            else
+                warning "  $server_name Server ($server_ip): Not reachable"
+            fi
+        else
+            info "  $server_name Server ($server_ip): Cannot test (ping not available)"
+        fi
+    done
+    
+    # Test specific service ports if this is the application server
+    if [ "$CURRENT_SERVER_ROLE" = "server3" ]; then
+        test_service_ports
+    fi
+}
+
+# Test connectivity to specific service ports
+test_service_ports() {
+    info "Testing service port connectivity..."
+    
+    # Use consistent variable names
+    local db_ip="${DB_SERVER_IP:-$SERVER1_IP}"
+    local cache_ip="${CACHE_SERVER_IP:-$SERVER2_IP}"
+    
+    # Database server ports
+    test_port "$db_ip" 5432 "PostgreSQL"
+    test_port "$db_ip" 6432 "PgBouncer"
+    
+    # Cache server ports
+    test_port "$cache_ip" 6379 "Redis"
+    test_port "$cache_ip" 9092 "Kafka"
+    test_port "$cache_ip" 2181 "Zookeeper"
+}
+
+# Test connectivity to a specific port
+test_port() {
+    local host="$1"
+    local port="$2"
+    local service="$3"
+    
+    if command -v nc &> /dev/null; then
+        if nc -z -w3 "$host" "$port" &> /dev/null; then
+            success "    $service ($host:$port): Connected"
+        else
+            warning "    $service ($host:$port): Connection failed"
+        fi
+    elif command -v telnet &> /dev/null; then
+        if timeout 3 telnet "$host" "$port" &> /dev/null; then
+            success "    $service ($host:$port): Connected"
+        else
+            warning "    $service ($host:$port): Connection failed"
+        fi
+    else
+        info "    $service ($host:$port): Cannot test (nc/telnet not available)"
+    fi
 }
 
 configure_firewall() {
@@ -212,32 +346,27 @@ configure_firewall() {
 
 display_usage_info() {
     echo ""
-    info "Network Usage Information:"
-    info "================================"
-    info "Network Name: $NETWORK_NAME"
-    info "Subnet: $NETWORK_SUBNET"
+    info "Multi-Server Network Configuration:"
+    info "===================================="
+    info "Current Server Role: $CURRENT_SERVER_ROLE"
+    info "Local Network Name: $NETWORK_NAME"
+    info "Local Network Subnet: $NETWORK_SUBNET"
     echo ""
-    info "IP Address Allocation:"
-    info "  Database Server (Server 1):"
-    info "    - PostgreSQL: 172.20.1.10"
-    info "    - PgBouncer: 172.20.1.11"
-    info "    - Backup: 172.20.1.12"
+    info "Server Configuration:"
+    info "  Database Server (Server 1): ${DB_SERVER_IP:-$SERVER1_IP}"
+    info "    - PostgreSQL: ${DB_SERVER_IP:-$SERVER1_IP}:5432"
+    info "    - PgBouncer: ${DB_SERVER_IP:-$SERVER1_IP}:6432"
     echo ""
-    info "  Cache Server (Server 2):"
-    info "    - Redis: 172.20.2.10"
-    info "    - Zookeeper: 172.20.2.11"
-    info "    - Kafka: 172.20.2.12"
+    info "  Cache Server (Server 2): ${CACHE_SERVER_IP:-$SERVER2_IP}"
+    info "    - Redis: ${CACHE_SERVER_IP:-$SERVER2_IP}:6379"
+    info "    - Zookeeper: ${CACHE_SERVER_IP:-$SERVER2_IP}:2181"
+    info "    - Kafka: ${CACHE_SERVER_IP:-$SERVER2_IP}:9092"
     echo ""
-    info "  Application Server (Server 3):"
-    info "    - Nginx: 172.20.3.10"
-    info "    - Frontend: 172.20.3.11"
-    info "    - API Gateway: 172.20.3.12"
-    info "    - Auth Service: 172.20.3.13"
-    info "    - Bank Sync: 172.20.3.14"
-    info "    - Workflow: 172.20.3.15"
-    info "    - Campaign: 172.20.3.16"
-    info "    - Payment: 172.20.3.17"
-    info "    - MinIO: 172.20.3.18"
+    info "  Application Server (Server 3): ${APP_SERVER_IP:-$SERVER3_IP}"
+    info "    - Nginx: ${APP_SERVER_IP:-$SERVER3_IP}:80, ${APP_SERVER_IP:-$SERVER3_IP}:443"
+    info "    - All microservices accessible through Nginx reverse proxy"
+    echo ""
+    info "IMPORTANT: Cross-server communication uses actual server IPs, not Docker network IPs!"
     echo ""
 }
 
@@ -246,6 +375,14 @@ main() {
     echo "======================================"
     echo "CollectionCRM Network Setup"
     echo "======================================"
+    echo ""
+    
+    # Display server configuration
+    info "Server Configuration:"
+    info "  DB_SERVER_IP (Database/Server1): ${DB_SERVER_IP:-${SERVER1_IP:-NOT_SET}}"
+    info "  CACHE_SERVER_IP (Cache/Server2): ${CACHE_SERVER_IP:-${SERVER2_IP:-NOT_SET}}"
+    info "  APP_SERVER_IP (Application/Server3): ${APP_SERVER_IP:-${SERVER3_IP:-NOT_SET}}"
+    info "  Current Server Role: $CURRENT_SERVER_ROLE"
     echo ""
     
     # Check if running as root

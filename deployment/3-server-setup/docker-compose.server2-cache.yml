@@ -2,6 +2,12 @@ version: '3.8'
 
 # Server 2: Cache/Message Server (Redis + Kafka + Zookeeper)
 # Specifications: 4 cores, 8GB RAM, 100GB SSD
+# 
+# IMPORTANT: This configuration uses actual server IPs for cross-server communication
+# Set the following environment variables before deployment:
+# - SERVER1_IP: IP address of the database server
+# - SERVER2_IP: IP address of this cache server 
+# - SERVER3_IP: IP address of the application server
 
 x-common-config: &common-config
   restart: unless-stopped
@@ -39,10 +45,9 @@ services:
     volumes:
       - redis-data:/data
     ports:
-      - "6379:6379"  # Expose to other servers
+      - "${SERVER2_IP:-0.0.0.0}:6379:6379"  # Bind to server IP for cross-server access
     networks:
-      collectioncrm-network:
-        ipv4_address: 172.20.2.10
+      - collectioncrm-network
     healthcheck:
       test: ["CMD", "redis-cli", "--pass", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
@@ -76,8 +81,7 @@ services:
       - zookeeper-data:/var/lib/zookeeper/data
       - zookeeper-logs:/var/lib/zookeeper/log
     networks:
-      collectioncrm-network:
-        ipv4_address: 172.20.2.11
+      - collectioncrm-network
     healthcheck:
       test: ["CMD-SHELL", "echo 'srvr' | nc localhost 2181 | grep -q 'Mode: standalone'"]
       interval: 30s
@@ -102,7 +106,7 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
       KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:19092
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://172.20.2.12:9092,EXTERNAL://172.20.2.12:19092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://${SERVER2_IP}:9092,EXTERNAL://${SERVER2_IP}:19092
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
@@ -124,11 +128,10 @@ services:
     volumes:
       - kafka-data:/var/lib/kafka/data
     ports:
-      - "9092:9092"
-      - "19092:19092"
+      - "${SERVER2_IP:-0.0.0.0}:9092:9092"
+      - "${SERVER2_IP:-0.0.0.0}:19092:19092"
     networks:
-      collectioncrm-network:
-        ipv4_address: 172.20.2.12
+      - collectioncrm-network
     depends_on:
       zookeeper:
         condition: service_healthy
@@ -176,3 +179,4 @@ volumes:
 networks:
   collectioncrm-network:
     external: true
+    name: collectioncrm-server2-network

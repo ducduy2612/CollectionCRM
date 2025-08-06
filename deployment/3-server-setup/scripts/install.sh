@@ -86,6 +86,39 @@ load_configuration() {
 }
 
 create_default_config() {
+    info "Creating configuration file - you will need to provide server IP addresses"
+    
+    # Get current server IP
+    CURRENT_IP=$(hostname -I | awk '{print $1}')
+    
+    # Prompt for server IPs
+    echo ""
+    info "Please provide the IP addresses for your 3 servers:"
+    
+    read -p "Server 1 (Database) IP address: " DB_SERVER_IP
+    read -p "Server 2 (Cache/Message) IP address: " CACHE_SERVER_IP  
+    read -p "Server 3 (Application) IP address: " APP_SERVER_IP
+    
+    echo ""
+    info "Configure external access for the web application:"
+    read -p "External IP/Domain for web access (e.g., 47.130.144.236 or app.example.com): " EXTERNAL_ACCESS_HOST
+    read -p "External port for web access (default: 8089): " EXTERNAL_ACCESS_PORT
+    EXTERNAL_ACCESS_PORT=${EXTERNAL_ACCESS_PORT:-8089}
+    
+    # Validate IPs
+    validate_ip() {
+        local ip=$1
+        if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+            return 0
+        else
+            return 1
+        fi
+    }
+    
+    if ! validate_ip "$DB_SERVER_IP" || ! validate_ip "$CACHE_SERVER_IP" || ! validate_ip "$APP_SERVER_IP"; then
+        error "Invalid IP address format. Please provide valid IPv4 addresses."
+    fi
+    
     cat > "$CONFIG_FILE" << EOF
 # CollectionCRM Deployment Configuration
 # Generated on $(date)
@@ -98,6 +131,15 @@ NETWORK_NAME="collectioncrm-network"
 DB_SERVER="${DEFAULT_DB_SERVER}"
 CACHE_SERVER="${DEFAULT_CACHE_SERVER}"
 APP_SERVER="${DEFAULT_APP_SERVER}"
+
+# Server IP Addresses (REQUIRED for 3-server setup)
+DB_SERVER_IP="$DB_SERVER_IP"
+CACHE_SERVER_IP="$CACHE_SERVER_IP"
+APP_SERVER_IP="$APP_SERVER_IP"
+
+# External Access Configuration
+EXTERNAL_ACCESS_HOST="$EXTERNAL_ACCESS_HOST"
+EXTERNAL_ACCESS_PORT="$EXTERNAL_ACCESS_PORT"
 
 # Installation Mode
 # Options: local (current server), server1, server2, server3, all
@@ -125,7 +167,11 @@ VERSION="latest"
 TZ="Asia/Ho_Chi_Minh"
 EOF
     
-    info "Created default configuration file at $CONFIG_FILE"
+    info "Created configuration file at $CONFIG_FILE"
+    info "Server IPs configured:"
+    info "  Database Server (Server 1): $DB_SERVER_IP"
+    info "  Cache Server (Server 2): $CACHE_SERVER_IP" 
+    info "  Application Server (Server 3): $APP_SERVER_IP"
 }
 
 generate_passwords() {
@@ -257,16 +303,35 @@ install_server() {
             ;;
     esac
     
+    # Export server IPs for setup-network.sh
+    export DB_SERVER_IP="$DB_SERVER_IP"
+    export CACHE_SERVER_IP="$CACHE_SERVER_IP" 
+    export APP_SERVER_IP="$APP_SERVER_IP"
+    export SERVER1_IP="$DB_SERVER_IP"
+    export SERVER2_IP="$CACHE_SERVER_IP"
+    export SERVER3_IP="$APP_SERVER_IP"
+    
     # Setup network first
     "$SCRIPT_DIR/setup-network.sh"
     
     # Load Docker images if available
-    if [ -f "$SCRIPT_DIR/load-images.sh" ]; then
-        "$SCRIPT_DIR/load-images.sh" "$server_type"
-    fi
+    load_images "$server_type"
     
     # Create environment file
     create_env_file "$server_type"
+    
+    # Create service-specific environment files
+    create_service_env_files "$server_type"
+    
+    # Export server IPs for Docker Compose
+    export SERVER1_IP="$DB_SERVER_IP"
+    export SERVER2_IP="$CACHE_SERVER_IP"
+    export SERVER3_IP="$APP_SERVER_IP"
+    
+    info "Starting services with server IPs:"
+    info "  SERVER1_IP=$SERVER1_IP"
+    info "  SERVER2_IP=$SERVER2_IP"
+    info "  SERVER3_IP=$SERVER3_IP"
     
     # Start services
     cd "$BASE_DIR"
@@ -314,6 +379,11 @@ VERSION=$VERSION
 
 # Timezone
 TZ=$TZ
+
+# Export server IPs for Docker Compose
+SERVER1_IP=$DB_SERVER_IP
+SERVER2_IP=$CACHE_SERVER_IP  
+SERVER3_IP=$APP_SERVER_IP
 EOF
     
     # Server-specific additions
@@ -340,6 +410,312 @@ EOF
     
     chmod 600 "$env_file"
     success "Environment file created"
+}
+
+load_images() {
+    local server_type="$1"
+    
+    if [ -f "$SCRIPT_DIR/load-images.sh" ]; then
+        info "Loading Docker images..."
+        "$SCRIPT_DIR/load-images.sh" "$server_type" || warning "Image loading failed or skipped"
+    else
+        info "No image loader found, will pull from registry"
+    fi
+}
+
+create_service_env_files() {
+    local server_type="$1"
+    
+    info "Creating service-specific environment files for $server_type..."
+    
+    # Load configuration variables
+    if [ ! -f "$CONFIG_FILE" ]; then
+        error "Configuration file not found: $CONFIG_FILE"
+    fi
+    
+    source "$CONFIG_FILE"
+    
+    # Create env directory
+    mkdir -p "$BASE_DIR/env"
+    
+    # Validate server IPs are configured
+    if [ -z "$DB_SERVER_IP" ] || [ -z "$CACHE_SERVER_IP" ] || [ -z "$APP_SERVER_IP" ]; then
+        error "Server IP addresses not configured in $CONFIG_FILE. Please run configuration setup first."
+    fi
+    
+    info "Using server IPs:"
+    info "  Database Server: $DB_SERVER_IP"
+    info "  Cache Server: $CACHE_SERVER_IP"
+    info "  Application Server: $APP_SERVER_IP"
+    
+    case "$server_type" in
+        server3)
+            # API Gateway env file
+            cat > "$BASE_DIR/env/api-gateway.env" << EOF
+# API Gateway Configuration - Production Environment
+PORT=3000
+NODE_ENV=production
+LOG_LEVEL=info
+
+# Redis Configuration (Docker network IP)
+REDIS_HOST=$CACHE_SERVER_IP
+REDIS_PORT=6379
+REDIS_PASSWORD=$REDIS_PASSWORD
+
+# Rate Limiting
+RATE_LIMIT_MAX_REQUESTS=10000
+RATE_LIMIT_WINDOW_MS=900000
+
+# Service URLs (internal Docker network)
+AUTH_SERVICE_URL=http://auth-service:3001
+BANK_SERVICE_URL=http://bank-sync-service:3002
+WORKFLOW_SERVICE_URL=http://workflow-service:3003
+CAMPAIGN_SERVICE_URL=http://campaign-engine:3004
+PAYMENT_SERVICE_URL=http://payment-service:3005
+
+# Service Timeouts (ms)
+AUTH_SERVICE_TIMEOUT=30000
+BANK_SERVICE_TIMEOUT=45000
+PAYMENT_SERVICE_TIMEOUT=30000
+WORKFLOW_SERVICE_TIMEOUT=45000
+
+# CORS Configuration
+ALLOWED_ORIGINS=http://localhost,https://${APP_DOMAIN:-app.collectioncrm.com},http://$EXTERNAL_ACCESS_HOST:$EXTERNAL_ACCESS_PORT
+
+# Security
+TRUST_PROXY=true
+
+# License Configuration
+LICENSE_KEY=${LICENSE_KEY:-demo-license}
+EOF
+
+            # Auth Service env file
+            cat > "$BASE_DIR/env/auth-service.env" << EOF
+# Auth Service Configuration - Production Environment
+PORT=3001
+NODE_ENV=production
+
+# Database configuration (Docker network IP)
+DB_HOST=$DB_SERVER_IP
+DB_PORT=6432
+DB_DATABASE=$POSTGRES_DB
+DB_USERNAME=$POSTGRES_USER
+DB_PASSWORD=$POSTGRES_PASSWORD
+DB_SSL=false
+DB_SSL_REJECT_UNAUTHORIZED=false
+DB_POOL_MIN=10
+DB_POOL_MAX=50
+DB_POOL_IDLE_TIMEOUT=30000
+DB_POOL_ACQUIRE_TIMEOUT=60000
+
+# Redis configuration (Docker network IP)
+REDIS_HOST=$CACHE_SERVER_IP
+REDIS_PORT=6379
+REDIS_PASSWORD=$REDIS_PASSWORD
+
+# Auth configuration
+JWT_SECRET=$JWT_SECRET
+JWT_EXPIRATION=24h
+SESSION_TTL=604800
+
+# Kafka configuration (Docker network IP)
+KAFKA_BROKERS=$CACHE_SERVER_IP:9092
+KAFKA_CLIENT_ID=auth-service-prod
+KAFKA_RETRY_ATTEMPTS=5
+KAFKA_RETRY_INITIAL_TIME=3000
+KAFKA_GROUP_ID=auth-service-prod
+
+# Logging configuration
+LOG_LEVEL=info
+LOG_FORMAT=json
+LOG_TIMESTAMP=true
+EOF
+
+            # Bank Sync Service env file
+            cat > "$BASE_DIR/env/bank-sync-service.env" << EOF
+# Bank Sync Service Configuration - Production Environment
+PORT=3002
+NODE_ENV=production
+
+# Database configuration
+DB_HOST=$DB_SERVER_IP
+DB_PORT=6432
+DB_DATABASE=$POSTGRES_DB
+DB_USERNAME=$POSTGRES_USER
+DB_PASSWORD=$POSTGRES_PASSWORD
+DB_SSL=false
+
+# Redis configuration
+REDIS_HOST=$CACHE_SERVER_IP
+REDIS_PORT=6379
+REDIS_PASSWORD=$REDIS_PASSWORD
+
+# Kafka configuration
+KAFKA_BROKERS=$CACHE_SERVER_IP:9092
+KAFKA_CLIENT_ID=bank-sync-service-prod
+KAFKA_GROUP_ID=bank-sync-service-prod
+
+# Logging
+LOG_LEVEL=info
+EOF
+
+            # Workflow Service env file
+            cat > "$BASE_DIR/env/workflow-service.env" << EOF
+# Workflow Service Configuration - Production Environment
+PORT=3003
+NODE_ENV=production
+
+# Database configuration
+DB_HOST=$DB_SERVER_IP
+DB_PORT=6432
+DB_DATABASE=$POSTGRES_DB
+DB_USERNAME=$POSTGRES_USER
+DB_PASSWORD=$POSTGRES_PASSWORD
+DB_SSL=false
+DB_SSL_REJECT_UNAUTHORIZED=false
+DB_POOL_MIN=25
+DB_POOL_MAX=200
+DB_POOL_IDLE_TIMEOUT=30000
+DB_POOL_ACQUIRE_TIMEOUT=60000
+DB_POOL_CREATE_TIMEOUT=30000
+DB_POOL_DESTROY_TIMEOUT=5000
+DB_POOL_REAP_INTERVAL=1000
+DB_POOL_CREATE_RETRY_INTERVAL=100
+DB_STATEMENT_TIMEOUT=120000
+
+# API configuration
+API_PREFIX=/api/v1/workflow
+API_VERSION=v1
+
+# Logging configuration
+LOG_LEVEL=info
+LOG_FORMAT=json
+LOG_TIMESTAMP=true
+
+# Kafka configuration
+KAFKA_BROKERS=$CACHE_SERVER_IP:9092
+KAFKA_CLIENT_ID=workflow-service-prod
+KAFKA_GROUP_ID=workflow-service-prod
+KAFKA_RETRY_ATTEMPTS=5
+KAFKA_RETRY_INITIAL_TIME=3000
+KAFKA_AUTO_COMMIT_INTERVAL=5000
+
+# MinIO Configuration
+MINIO_ENDPOINT=minio
+MINIO_PORT=9000
+MINIO_USE_SSL=false
+MINIO_ACCESS_KEY=$MINIO_ROOT_USER
+MINIO_SECRET_KEY=$MINIO_ROOT_PASSWORD
+MINIO_REGION=us-east-1
+
+# Document Storage
+DOCUMENTS_BUCKET=collection-documents
+TEMP_BUCKET=collection-temp
+MAX_FILE_SIZE=52428800
+ALLOWED_MIME_TYPES=application/pdf,image/jpeg,image/jpg,image/png,image/gif,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+EOF
+
+            # Campaign Engine env file
+            cat > "$BASE_DIR/env/campaign-engine.env" << EOF
+# Campaign Engine Configuration - Production Environment
+PORT=3004
+NODE_ENV=production
+
+# Database configuration
+DB_HOST=$DB_SERVER_IP
+DB_PORT=6432
+DB_DATABASE=$POSTGRES_DB
+DB_USERNAME=$POSTGRES_USER
+DB_PASSWORD=$POSTGRES_PASSWORD
+DB_SSL=false
+
+# Redis configuration
+REDIS_HOST=$CACHE_SERVER_IP
+REDIS_PORT=6379
+REDIS_PASSWORD=$REDIS_PASSWORD
+
+# Kafka configuration
+KAFKA_BROKERS=$CACHE_SERVER_IP:9092
+KAFKA_CLIENT_ID=campaign-engine-prod
+KAFKA_GROUP_ID=campaign-engine-prod
+
+# Logging
+LOG_LEVEL=info
+EOF
+
+            # Payment Service env file
+            cat > "$BASE_DIR/env/payment-service.env" << EOF
+# Payment Service Configuration - Production Environment
+PORT=3005
+NODE_ENV=production
+
+# Database configuration
+DB_HOST=$DB_SERVER_IP
+DB_PORT=6432
+DB_DATABASE=$POSTGRES_DB
+DB_USERNAME=$POSTGRES_USER
+DB_PASSWORD=$POSTGRES_PASSWORD
+DB_SSL=false
+
+# Redis configuration
+REDIS_HOST=$CACHE_SERVER_IP
+REDIS_PORT=6379
+REDIS_PASSWORD=$REDIS_PASSWORD
+
+# Kafka configuration
+KAFKA_BROKERS=$CACHE_SERVER_IP:9092
+KAFKA_CLIENT_ID=payment-service-prod
+KAFKA_GROUP_ID=payment-service-prod
+
+# Logging
+LOG_LEVEL=info
+EOF
+
+            # Audit Service env file
+            cat > "$BASE_DIR/env/audit-service.env" << EOF
+# Audit Service Configuration - Production Environment
+PORT=3010
+NODE_ENV=production
+
+# Database configuration
+DB_HOST=$DB_SERVER_IP
+DB_PORT=6432
+DB_DATABASE=$POSTGRES_DB
+DB_USERNAME=$POSTGRES_USER
+DB_PASSWORD=$POSTGRES_PASSWORD
+DB_SSL=false
+
+# Database Pool Configuration
+DB_POOL_MAX=20
+DB_POOL_MIN=5
+DB_POOL_IDLE_TIMEOUT=30000
+DB_POOL_ACQUIRE_TIMEOUT=60000
+
+# API Configuration
+API_PREFIX=/api/v1/audit
+
+# Kafka configuration
+KAFKA_BROKERS=$CACHE_SERVER_IP:9092
+KAFKA_CLIENT_ID=audit-service-prod
+KAFKA_GROUP_ID=audit-service-prod
+KAFKA_RETRY_ATTEMPTS=8
+KAFKA_RETRY_INITIAL_TIME=5000
+
+# Audit Service Configuration
+AUDIT_RETENTION_DAYS=365
+AUDIT_BATCH_SIZE=1000
+
+# Logging
+LOG_LEVEL=info
+EOF
+
+            chmod 600 "$BASE_DIR/env"/*.env
+            success "Service environment files created for $server_type"
+            ;;
+        *)
+            info "No service environment files needed for $server_type"
+            ;;
+    esac
 }
 
 main() {

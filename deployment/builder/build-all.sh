@@ -30,6 +30,7 @@ SERVICES=(
     "workflow-service"
     "campaign-engine"
     "payment-service"
+    "audit-service"
 )
 
 # Infrastructure images from Docker Hub
