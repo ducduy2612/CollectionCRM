@@ -36,7 +36,6 @@ export class AuditController {
         eventType: req.query.eventType as string,
         serviceName: req.query.serviceName as string,
         action: req.query.action as string,
-        ipAddress: req.query.ipAddress as string,
         startDate: req.query.startDate ? new Date(req.query.startDate as string) : undefined,
         endDate: req.query.endDate ? new Date(req.query.endDate as string) : undefined,
       };

@@ -91,6 +91,7 @@ services:
       - workflow-service
       - campaign-engine
       - payment-service
+      - audit-service
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
       interval: 30s
@@ -268,6 +269,39 @@ services:
           memory: 512M
         reservations:
           cpus: '0.5'
+          memory: 256M
+
+  # Audit Service
+  audit-service:
+    image: collectioncrm/audit-service:${VERSION:-latest}
+    container_name: collectioncrm-audit-service
+    <<: *common-config
+    env_file:
+      - ./env/audit-service.env
+    environment:
+      - NODE_ENV=production
+      - PORT=3010
+      - DB_HOST=192.168.100.10
+      - DB_PORT=6432
+      - REDIS_HOST=192.168.100.20
+      - REDIS_PORT=6379
+      - KAFKA_BROKERS=192.168.100.20:19092
+      - KAFKAJS_NO_PARTITIONER_WARNING=1
+      - TZ=${TZ:-Asia/Ho_Chi_Minh}
+    expose:
+      - "3010"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
           memory: 256M
 
   # MinIO Object Storage (Optional for workflow attachments)

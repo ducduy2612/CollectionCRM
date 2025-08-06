@@ -2,6 +2,12 @@ version: '3.8'
 
 # Server 1: Database Server (PostgreSQL + PgBouncer + Backup)
 # Specifications: 4 cores, 8-16GB RAM, 250GB SSD
+# 
+# IMPORTANT: This configuration uses actual server IPs for cross-server communication
+# Set the following environment variables before deployment:
+# - SERVER1_IP: IP address of this database server
+# - SERVER2_IP: IP address of the cache server 
+# - SERVER3_IP: IP address of the application server
 
 x-common-config: &common-config
   restart: unless-stopped
@@ -44,10 +50,9 @@ services:
       - ./postgres-init:/docker-entrypoint-initdb.d:ro
       - ./backups:/backups
     ports:
-      - "5432:5432"  # Expose to other servers
+      - "${SERVER1_IP:-0.0.0.0}:5432:5432"  # Bind to server IP for cross-server access
     networks:
-      collectioncrm-network:
-        ipv4_address: 172.20.1.10
+      - collectioncrm-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-collectioncrm} -d ${POSTGRES_DB:-collectioncrm}"]
       interval: 10s
@@ -56,10 +61,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '3'
+          cpus: '1'
           memory: 6G
         reservations:
-          cpus: '2'
+          cpus: '1'
           memory: 4G
 
   # PgBouncer Connection Pooler
@@ -74,6 +79,7 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_NAME: ${POSTGRES_DB:-collectioncrm}
       ADMIN_USERS: ${POSTGRES_USER:-collectioncrm}
+      LISTEN_PORT: 6432
       # Pool settings for production
       POOL_MODE: transaction
       MAX_CLIENT_CONN: 5000
@@ -92,10 +98,9 @@ services:
       CLIENT_LOGIN_TIMEOUT: 60
       STATS_PERIOD: 60
     ports:
-      - "6432:6432"  # Expose to other servers
+      - "${SERVER1_IP:-0.0.0.0}:6432:6432"  # Bind to server IP for cross-server access
     networks:
-      collectioncrm-network:
-        ipv4_address: 172.20.1.11
+      - collectioncrm-network
     depends_on:
       postgres:
         condition: service_healthy
@@ -132,8 +137,7 @@ services:
     volumes:
       - ./backups:/backups
     networks:
-      collectioncrm-network:
-        ipv4_address: 172.20.1.12
+      - collectioncrm-network
     depends_on:
       postgres:
         condition: service_healthy
@@ -162,3 +166,4 @@ volumes:
 networks:
   collectioncrm-network:
     external: true
+    name: collectioncrm-server1-network

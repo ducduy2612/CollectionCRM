@@ -358,7 +358,7 @@
         <ul>
             <li><strong>90% Less Expensive</strong> than traditional collection systems</li>
             <li><strong>No Hidden Costs</strong> - transparent pricing with no surprise fees</li>
-            <li><strong>Quick ROI</strong> - typically pays for itself within 3-6 months</li>
+            <li><strong>Quick ROI</strong> - typically pays for itself within 2-3 months</li>
             <li><strong>Scales with Your Business</strong> - grow without breaking the bank</li>
         </ul>
 
@@ -375,7 +375,7 @@
             <li><strong>Configure, Don't Code</strong> - customize workflows, rules, and processes through UI</li>
             <li><strong>No Change Requests</strong> - make modifications instantly without waiting for developers</li>
             <li><strong>Your Rules, Your Way</strong> - adapt to any collection strategy or regulation</li>
-            <li><strong>Fast Implementation</strong> - 3-6 months vs 12-18 months for traditional systems</li>
+            <li><strong>Fast Implementation</strong> - 2-3 months vs 12-18 months for traditional systems</li>
         </ul>
 
         <h4>📈 Effortless Scaling</h4>
@@ -471,7 +471,7 @@
                 <li><strong>CollectionCRM Cost</strong>: $50K-$150K total (vs $500K-$2M for competitors)</li>
                 <li><strong>Additional Recovery</strong>: $20-40 million annually</li>
                 <li><strong>Cost Savings</strong>: $150K-$300K in operational expenses</li>
-                <li><strong>Payback Period</strong>: <strong>3-6 months</strong> (vs 2-3 years for expensive systems)</li>
+                <li><strong>Payback Period</strong>: <strong>2-3 months</strong> (vs 2-3 years for expensive systems)</li>
                 <li><strong>3-Year Savings</strong>: <strong>$1.5M-$3M</strong> compared to traditional systems</li>
             </ul>
         </div>
@@ -552,7 +552,7 @@
                     <td><strong>Implementation</strong></td>
                     <td>❌ 12-18 months</td>
                     <td>⚠️ 6-12 months</td>
-                    <td>✅ <strong>3-6 months</strong></td>
+                    <td>✅ <strong>2-3 months</strong></td>
                 </tr>
                 <tr>
                     <td><strong>Mobile/Field Support</strong></td>
@@ -570,7 +570,7 @@
                     <td><strong>ROI Timeline</strong></td>
                     <td>❌ 2-3 years</td>
                     <td>⚠️ 1-2 years</td>
-                    <td>✅ <strong>3-6 months</strong></td>
+                    <td>✅ <strong>2-3 months</strong></td>
                 </tr>
             </tbody>
         </table>
@@ -832,7 +832,7 @@ graph TB
                     <td><strong>Implementation Time</strong></td>
                     <td>❌ 12-18 months</td>
                     <td>⚠️ 6-9 months</td>
-                    <td>✅ <strong>3-6 months</strong></td>
+                    <td>✅ <strong>2-3 months</strong></td>
                 </tr>
             </tbody>
         </table>
@@ -970,7 +970,7 @@ graph TB
             <ul>
                 <li>📊 Scaled to <strong>5x volume</strong> with minimal overhead</li>
                 <li>🔗 Integrated with <strong>15 different systems</strong></li>
-                <li>⏱️ Implementation completed in <strong>4 months</strong></li>
+                <li>⏱️ Implementation completed in <strong>2 months</strong></li>
                 <li>🎯 Collection efficiency improved by <strong>55%</strong></li>
             </ul>
         </div>
@@ -1298,7 +1298,7 @@ graph TB
                 <p>Successful Implementations</p>
             </div>
             <div class="metric-card">
-                <h3>3-6</h3>
+                <h3>2-3</h3>
                 <p>Months Average Implementation</p>
             </div>
             <div class="metric-card">
@@ -1424,39 +1424,70 @@ gantt
 
         <h3>Deployment Models</h3>
 
-        <h4>Option 1: Cloud-First (Recommended)</h4>
+        <h4>Option 1: Single Server (Small-Medium Scale)</h4>
         <div class="highlight">
-            <p><strong>Best for</strong>: Organizations prioritizing speed and scalability</p>
+            <p><strong>Best for</strong>: Organizations with < 1M loans, < 100 concurrent agents</p>
+            <p><strong>Cost</strong>: ~$200-400/month</p>
+            <p><strong>Complexity</strong>: Low</p>
+            <p><strong>Server Specifications</strong>:</p>
+            <ul>
+                <li><strong>CPU</strong>: 8-16 cores</li>
+                <li><strong>RAM</strong>: 32-64GB</li>
+                <li><strong>Storage</strong>: 500GB-1TB SSD</li>
+                <li><strong>Components</strong>: All services (PostgreSQL, Redis, Kafka, microservices) on one server</li>
+            </ul>
             <p><strong>Benefits</strong>:</p>
             <ul>
-                <li>✅ <strong>Fastest Implementation</strong>: 3-4 months typical timeline</li>
-                <li>✅ <strong>Lower Risk</strong>: Proven cloud infrastructure and automation</li>
-                <li>✅ <strong>Scalability</strong>: Automatic scaling based on demand</li>
-                <li>✅ <strong>Cost Efficiency</strong>: Pay-as-you-grow model</li>
+                <li>✅ <strong>Lowest Cost</strong>: Minimal infrastructure investment</li>
+                <li>✅ <strong>Simple Management</strong>: Single server to maintain</li>
+                <li>✅ <strong>Quick Setup</strong>: Can be deployed in days</li>
+                <li>✅ <strong>Easy Backup</strong>: Simple backup procedures</li>
             </ul>
         </div>
 
-        <h4>Option 2: On-Premises</h4>
+        <h4>Option 2: 3-Server Setup (Recommended)</h4>
         <div class="highlight">
-            <p><strong>Best for</strong>: Organizations with strict data residency requirements</p>
+            <p><strong>Best for</strong>: Organizations with 1-10M loans, 500-1000 concurrent agents</p>
+            <p><strong>Cost</strong>: ~$600-1200/month</p>
+            <p><strong>Complexity</strong>: Medium</p>
+            <p><strong>Server Configuration</strong>:</p>
+            <ul>
+                <li><strong>Server 1 - Database</strong>: PostgreSQL (4 cores, 8-16GB RAM, 250GB SSD)</li>
+                <li><strong>Server 2 - Cache/Message</strong>: Redis + Kafka (4 cores, 8GB RAM, 100GB SSD)</li>
+                <li><strong>Server 3 - Application/LB</strong>: All microservices + Nginx (8 cores, 16GB RAM, 100GB-1TB SSD - disk size depending on amount of documents storage)</li>
+            </ul>
             <p><strong>Benefits</strong>:</p>
             <ul>
-                <li>✅ <strong>Data Control</strong>: Complete control over data location and access</li>
-                <li>✅ <strong>Compliance</strong>: Meet specific regulatory and security requirements</li>
-                <li>✅ <strong>Integration</strong>: Direct integration with on-premises systems</li>
-                <li>✅ <strong>Customization</strong>: Full control over infrastructure configuration</li>
+                <li>✅ <strong>Best Value</strong>: Optimal balance of cost and performance</li>
+                <li>✅ <strong>Separation of Concerns</strong>: Database, cache, and apps on separate servers</li>
+                <li>✅ <strong>Room to Grow</strong>: Can scale to millions of accounts</li>
+                <li>✅ <strong>Production Ready</strong>: Professional setup without over-engineering</li>
             </ul>
         </div>
 
-        <h4>Option 3: Hybrid Deployment</h4>
+        <h4>Option 3: Docker Swarm Cluster (Large Scale)</h4>
         <div class="highlight">
-            <p><strong>Best for</strong>: Organizations balancing control and flexibility</p>
+            <p><strong>Best for</strong>: Organizations with 10M+ loans, 2000+ concurrent agents</p>
+            <p><strong>Cost</strong>: $1500+/month</p>
+            <p><strong>Complexity</strong>: High</p>
             <p><strong>Benefits</strong>:</p>
             <ul>
-                <li>✅ <strong>Flexibility</strong>: Sensitive data on-premises, processing in cloud</li>
-                <li>✅ <strong>Performance</strong>: Optimal placement based on usage patterns</li>
-                <li>✅ <strong>Risk Mitigation</strong>: Gradual migration to cloud capabilities</li>
-                <li>✅ <strong>Cost Optimization</strong>: Balanced cost and control model</li>
+                <li>✅ <strong>Enterprise Scale</strong>: Handle massive volumes</li>
+                <li>✅ <strong>High Availability</strong>: Automatic failover and redundancy</li>
+                <li>✅ <strong>Container Orchestration</strong>: Advanced deployment capabilities</li>
+                <li>✅ <strong>Multi-Region Support</strong>: Deploy across data centers</li>
+            </ul>
+        </div>
+
+        <h3>Why We Recommend the 3-Server Setup</h3>
+        <div class="highlight">
+            <p>Based on real-world implementations, the 3-server setup provides:</p>
+            <ul>
+                <li>✅ <strong>90% Cost Savings</strong> vs traditional 9+ server deployments</li>
+                <li>✅ <strong>Same Performance</strong> as complex architectures</li>
+                <li>✅ <strong>Easier Management</strong> with fewer moving parts</li>
+                <li>✅ <strong>Clear Scaling Path</strong> when you need to grow</li>
+                <li>✅ <strong>Proven in Production</strong> handling 6M+ loans</li>
             </ul>
         </div>
 
@@ -1543,7 +1574,7 @@ gantt
                 <li><strong>Additional Recovery</strong>: $200-400M annually</li>
                 <li><strong>Cost Savings</strong>: $15-30M in operational efficiency</li>
                 <li><strong>Implementation Cost</strong>: $2-5M total investment</li>
-                <li><strong>Payback Period</strong>: 3-6 months</li>
+                <li><strong>Payback Period</strong>: 2-3 months</li>
                 <li><strong>3-Year ROI</strong>: 1,500-3,000%</li>
             </ul>
         </div>
@@ -1747,7 +1778,7 @@ gantt
 
         <h4>What Makes CollectionCRM Different</h4>
         <ul>
-            <li><strong>Pay Back in Months</strong>: System typically pays for itself in 3-6 months</li>
+            <li><strong>Pay Back in Months</strong>: System typically pays for itself in 2-3 months</li>
             <li><strong>Proven Success</strong>: 98% of implementations succeed and exceed expectations</li>
             <li><strong>Built by Collection Experts</strong>: Designed by people who understand your challenges</li>
             <li><strong>No Vendor Lock-in</strong>: Your data stays yours, export anytime</li>
@@ -1758,10 +1789,9 @@ gantt
 
     <div class="footer">
         <h2>Contact Information</h2>
-        <p>📧 <strong>Sales</strong>: sales@collectioncrm.com</p>
-        <p>📞 <strong>Phone</strong>: +1 (555) 123-4567</p>
-        <p>🌐 <strong>Website</strong>: www.collectioncrm.com</p>
-        <p>📅 <strong>Demo</strong>: https://xpm-collectioncrm.ddns.net/</p>
+        <p>📧 <strong>Support</strong>: support@xpm.io.vn</p>
+        <p>📞 <strong>Phone</strong>: +84 355 822 465</p>
+        <p>🌐 <strong>Website</strong>: www.xpm.io.vn</p>
         <hr>
         <p><em>Transform Your Collection Operations Today</em></p>
         <p><strong>© 2025 CollectionCRM. All rights reserved.</strong></p>

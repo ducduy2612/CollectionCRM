@@ -13,7 +13,6 @@ export interface AuditLogFilters {
   action?: string;
   startDate?: Date;
   endDate?: Date;
-  ipAddress?: string;
 }
 
 export interface PaginationOptions {
@@ -70,7 +69,6 @@ export class AuditLogRepository {
     if (filters.eventType) where.eventType = filters.eventType;
     if (filters.serviceName) where.serviceName = filters.serviceName;
     if (filters.action) where.action = filters.action;
-    if (filters.ipAddress) where.ipAddress = filters.ipAddress;
 
     // Date range filter
     if (filters.startDate && filters.endDate) {

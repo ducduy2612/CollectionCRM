@@ -1,0 +1,42 @@
+# CollectionCRM Deployment Configuration
+# Example configuration for 3-server setup
+# Copy to deployment.conf and update with your actual server IPs
+
+# Network Configuration
+NETWORK_SUBNET="172.20.0.0/16"
+NETWORK_NAME="collectioncrm-network"
+
+# Server Roles
+DB_SERVER="server1"
+CACHE_SERVER="server2"
+APP_SERVER="server3"
+
+# Server IP Addresses (REQUIRED for 3-server setup)
+# Replace these with your actual server IP addresses
+DB_SERVER_IP="10.0.1.100"      # Replace with Server 1 IP
+CACHE_SERVER_IP="10.0.1.101"   # Replace with Server 2 IP
+APP_SERVER_IP="10.0.1.102"     # Replace with Server 3 IP
+
+# Installation Mode
+INSTALL_MODE="local"
+
+# Database Configuration
+POSTGRES_USER="collectioncrm"
+POSTGRES_DB="collectioncrm"
+POSTGRES_PASSWORD="your_secure_postgres_password_here"
+
+# Redis Configuration
+REDIS_PASSWORD="your_secure_redis_password_here"
+
+# MinIO Configuration
+MINIO_ROOT_USER="minioadmin"
+MINIO_ROOT_PASSWORD="your_secure_minio_password_here"
+
+# JWT Secret
+JWT_SECRET="your_secure_jwt_secret_here"
+
+# Version
+VERSION="latest"
+
+# Timezone
+TZ="Asia/Ho_Chi_Minh"
