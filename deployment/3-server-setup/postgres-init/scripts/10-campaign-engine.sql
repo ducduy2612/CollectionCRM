@@ -91,7 +91,7 @@ CREATE TABLE campaign_engine.contact_rule_outputs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     contact_selection_rule_id UUID NOT NULL,
     related_party_type VARCHAR(50) NOT NULL, -- e.g., 'customer', 'reference'
-    contact_type VARCHAR(50) NOT NULL, -- e.g., 'mobile', 'home', 'work', 'all'
+    contact_type VARCHAR(50), -- e.g., 'mobile', 'home', 'work', 'all', NULL for all types
     relationship_patterns JSONB, -- Optional: JSON array of relationship types to exclude (e.g., ['parent', 'spouse', 'colleague'])
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -107,6 +107,7 @@ COMMENT ON TABLE campaign_engine.contact_rule_outputs IS 'Specifies which contac
 CREATE TABLE campaign_engine.custom_fields (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     field_name VARCHAR(100) NOT NULL UNIQUE,
+    field_column VARCHAR(20) NOT NULL UNIQUE, -- Maps to field_1, field_2, etc.
     data_type VARCHAR(50) NOT NULL, -- e.g., 'string', 'number', 'date', 'boolean'
     description TEXT NOT NULL, -- Defines how to retrieve or calculate the value
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -363,17 +364,6 @@ CREATE OR REPLACE FUNCTION campaign_engine.process_campaign(
     p_max_contacts_per_customer INTEGER DEFAULT 3
 ) RETURNS TABLE (
     cif VARCHAR,
-    segment VARCHAR,
-    status VARCHAR,
-    total_loans BIGINT,
-    active_loans BIGINT,
-    overdue_loans BIGINT,
-    client_outstanding NUMERIC,
-    total_due_amount NUMERIC,
-    overdue_outstanding NUMERIC,
-    max_dpd INTEGER,
-    avg_dpd NUMERIC,
-    utilization_ratio NUMERIC,
     contact_id UUID,
     contact_type VARCHAR,
     contact_value VARCHAR,
@@ -406,18 +396,7 @@ BEGIN
     v_query := format('
         CREATE TEMP TABLE temp_campaign_customers_%s AS
         SELECT DISTINCT 
-            lcd.cif,
-            lcd.segment,
-            lcd.customer_status as status,
-            lcd.total_loans,
-            lcd.active_loans,
-            lcd.overdue_loans,
-            lcd.client_outstanding,
-            lcd.total_due_amount,
-            lcd.overdue_outstanding,
-            lcd.max_dpd,
-            lcd.avg_dpd,
-            lcd.utilization_ratio
+            lcd.*
         FROM bank_sync_service.loan_campaign_data lcd
         WHERE %s %s',
         replace(p_campaign_id::text, '-', '_'),
@@ -460,18 +439,7 @@ BEGIN
     -- Return final results
     v_query := format('
         SELECT 
-            tc.cif,
-            tc.segment,
-            tc.status,
-            tc.total_loans,
-            tc.active_loans,
-            tc.overdue_loans,
-            tc.client_outstanding,
-            tc.total_due_amount,
-            tc.overdue_outstanding,
-            tc.max_dpd,
-            tc.avg_dpd,
-            tc.utilization_ratio,
+            tcon.cif,
             tcon.contact_id,
             tcon.contact_type,
             tcon.contact_value,
@@ -483,10 +451,7 @@ BEGIN
             tcon.is_primary,
             tcon.is_verified,
             tcon.source
-        FROM temp_campaign_customers_%s tc
-        LEFT JOIN temp_campaign_contacts_%s tcon ON tc.cif = tcon.cif
-        ORDER BY tc.cif, tcon.rule_priority NULLS LAST, tcon.is_primary DESC',
-        replace(p_campaign_id::text, '-', '_'),
+        FROM temp_campaign_contacts_%s tcon',
         replace(p_campaign_id::text, '-', '_')
     );
     
@@ -543,12 +508,25 @@ BEGIN
         
         -- Determine field reference
         IF v_data_source = 'custom_fields' THEN
-            -- For custom fields, we need to cast for numeric comparisons
-            IF v_operator IN ('>', '>=', '<', '<=') THEN
-                v_field_ref := format('(lcd.custom_fields->>%L)::numeric', v_field_name);
-            ELSE
-                v_field_ref := format('lcd.custom_fields->>%L', v_field_name);
-            END IF;
+            -- For custom fields, look up the column mapping
+            DECLARE
+                v_field_column TEXT;
+            BEGIN
+                SELECT field_column INTO v_field_column
+                FROM campaign_engine.custom_fields
+                WHERE field_name = v_field_name;
+                
+                IF v_field_column IS NULL THEN
+                    RAISE EXCEPTION 'Custom field % not found in mapping', v_field_name;
+                END IF;
+                
+                -- Use the mapped column directly
+                IF v_operator IN ('>', '>=', '<', '<=') THEN
+                    v_field_ref := format('lcd.%I::numeric', v_field_column);
+                ELSE
+                    v_field_ref := format('lcd.%I', v_field_column);
+                END IF;
+            END;
         ELSE
             v_field_ref := format('lcd.%I', v_field_name);
         END IF;
@@ -635,6 +613,7 @@ BEGIN
             ''bank_sync''::varchar as source
         FROM %I tc
         JOIN bank_sync_service.phones p ON tc.cif = p.cif
+        WHERE p.ref_cif IS NULL
         
         UNION
         
@@ -653,6 +632,7 @@ BEGIN
             ''user_input''::varchar as source
         FROM %I tc
         JOIN workflow_service.phones wp ON tc.cif = wp.cif
+        WHERE wp.ref_cif IS NULL
         
         UNION
         
@@ -671,7 +651,7 @@ BEGIN
             ''bank_sync''::varchar as source
         FROM %I tc
         JOIN bank_sync_service.reference_customers rc ON tc.cif = rc.primary_cif
-        JOIN bank_sync_service.phones rp ON rc.ref_cif = rp.cif
+        JOIN bank_sync_service.phones rp ON rc.ref_cif = rp.ref_cif
         
         UNION
         
@@ -690,8 +670,28 @@ BEGIN
             ''user_input''::varchar as source
         FROM %I tc
         JOIN workflow_service.reference_customers wrc ON tc.cif = wrc.primary_cif
-        JOIN workflow_service.phones wrp ON wrc.ref_cif = wrp.cif',
+        JOIN workflow_service.phones wrp ON wrc.ref_cif = wrp.ref_cif
+        
+        UNION
+        
+        SELECT DISTINCT ON (cif, contact_id)
+            tc.cif,
+            wp.id as contact_id,
+            wp.type as contact_type,
+            wp.number as contact_value,
+            ''reference''::varchar as related_party_type,
+            rc.ref_cif as related_party_cif,
+            rc.name as related_party_name,
+            rc.relationship_type,
+            0 as rule_priority,
+            wp.is_primary,
+            wp.is_verified,
+            ''mixed''::varchar as source
+        FROM %I tc
+        JOIN bank_sync_service.reference_customers rc ON tc.cif = rc.primary_cif
+        JOIN workflow_service.phones wp ON rc.ref_cif = wp.ref_cif',
         CASE WHEN v_has_rules THEN v_all_contacts_table ELSE v_table_name END,
+        p_customers_table,
         p_customers_table,
         p_customers_table,
         p_customers_table,
@@ -931,7 +931,6 @@ DECLARE
     v_data_source TEXT;
     v_field_ref TEXT;
     v_condition_sql TEXT;
-    v_needs_lcd_join BOOLEAN := FALSE;
 BEGIN
     IF p_conditions IS NULL OR jsonb_typeof(p_conditions) != 'array' OR jsonb_array_length(p_conditions) = 0 THEN
         RETURN '1=1';
@@ -946,22 +945,27 @@ BEGIN
         
         -- Determine field reference
         IF v_data_source = 'custom_fields' THEN
-            -- For custom fields, we need to cast for numeric comparisons
-            IF v_operator IN ('>', '>=', '<', '<=') THEN
-                v_field_ref := format('(lcd.custom_fields->>%L)::numeric', v_field_name);
-            ELSE
-                v_field_ref := format('lcd.custom_fields->>%L', v_field_name);
-            END IF;
-            v_needs_lcd_join := TRUE;
-        ELSIF v_field_name IN ('segment', 'status', 'total_loans', 'active_loans', 
-                               'overdue_loans', 'client_outstanding', 'total_due_amount',
-                               'overdue_outstanding', 'max_dpd', 'avg_dpd', 'utilization_ratio') THEN
-            -- These fields are available in the temp customer table
-            v_field_ref := format('tc.%I', CASE WHEN v_field_name = 'customer_status' THEN 'status' ELSE v_field_name END);
+            -- For custom fields, look up the column mapping
+            DECLARE
+                v_field_column TEXT;
+            BEGIN
+                SELECT field_column INTO v_field_column
+                FROM campaign_engine.custom_fields
+                WHERE field_name = v_field_name;
+                
+                IF v_field_column IS NULL THEN
+                    RAISE EXCEPTION 'Custom field % not found in mapping', v_field_name;
+                END IF;
+                
+                -- Use the mapped column directly
+                IF v_operator IN ('>', '>=', '<', '<=') THEN
+                    v_field_ref := format('tc.%I::numeric', v_field_column);
+                ELSE
+                    v_field_ref := format('tc.%I', v_field_column);
+                END IF;
+            END;
         ELSE
-            -- Other fields need to be joined from loan_campaign_data
-            v_field_ref := format('lcd.%I', v_field_name);
-            v_needs_lcd_join := TRUE;
+            v_field_ref := format('tc.%I', v_field_name);
         END IF;
         
         -- Build condition based on operator (similar to build_conditions_where_clause)
@@ -1002,14 +1006,9 @@ BEGIN
         
         v_conditions := array_append(v_conditions, v_condition_sql);
     END LOOP;
-    
-    -- If we need loan_campaign_data join, wrap conditions in EXISTS
-    IF v_needs_lcd_join THEN
-        RETURN format('EXISTS (SELECT 1 FROM bank_sync_service.loan_campaign_data lcd WHERE lcd.cif = tc.cif AND %s)',
-            array_to_string(v_conditions, ' AND '));
-    ELSE
-        RETURN array_to_string(v_conditions, ' AND ');
-    END IF;
+
+    RETURN array_to_string(v_conditions, ' AND ');
+
 END;
 $$ LANGUAGE plpgsql;
 
@@ -1510,3 +1509,175 @@ $$ LANGUAGE plpgsql;
 
 COMMENT ON FUNCTION campaign_engine.safe_file_write(TEXT, TEXT, BOOLEAN) IS 'Safely writes content to files with error handling for SQL debugging';
 COMMENT ON FUNCTION campaign_engine.ensure_debug_directory() IS 'Checks if debug directory is writable';
+
+----------------------------------------------
+-- Function to list selected contacts for each campaign by processing run ID
+
+CREATE OR REPLACE FUNCTION campaign_engine.list_selected_contacts_by_run(
+    p_processing_run_id UUID
+) RETURNS TABLE (
+    campaign_group_name VARCHAR(100),
+    campaign_name VARCHAR(100),
+    campaign_priority INTEGER,
+    cif VARCHAR(50),
+    contact_type VARCHAR(50),
+    contact_value VARCHAR(100),
+    related_party_type VARCHAR(50),
+    related_party_cif VARCHAR(50),
+    related_party_name VARCHAR(200),
+    relationship_type VARCHAR(100),
+    is_primary BOOLEAN,
+    is_verified BOOLEAN,
+    contact_source VARCHAR(20)
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        cr.campaign_group_name,
+        cr.campaign_name,
+        cr.priority AS campaign_priority,
+        ca.cif,
+        sc.contact_type,
+        sc.contact_value,
+        sc.related_party_type,
+        sc.related_party_cif,
+        sc.related_party_name,
+        sc.relationship_type,
+        sc.is_primary,
+        sc.is_verified,
+        sc.source AS contact_source
+    FROM campaign_engine.campaign_processing_runs cpr
+    INNER JOIN campaign_engine.campaign_results cr ON cpr.id = cr.processing_run_id
+    INNER JOIN campaign_engine.customer_assignments ca ON cr.id = ca.campaign_result_id
+    LEFT JOIN campaign_engine.selected_contacts sc ON ca.id = sc.customer_assignment_id
+    WHERE cpr.id = p_processing_run_id
+    ORDER BY 
+        cr.campaign_group_name,
+        cr.priority,
+        cr.campaign_name,
+        ca.cif,
+        sc.rule_priority,
+        sc.contact_type;
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION campaign_engine.list_selected_contacts_by_run(UUID) IS 'Lists all selected contacts for each campaign in a processing run';
+
+
+
+-- Loan-Level Aggregates Materialized View for Campaign Engine
+-- This view provides one row per loan with customer-level aggregates included
+-- Eliminates the need for multiple joins during campaign processing
+
+CREATE MATERIALIZED VIEW bank_sync_service.loan_campaign_data AS
+WITH customer_aggregates AS (
+    SELECT 
+        c.id as customer_id,
+        c.cif,
+        c.segment,
+        c.status as customer_status,
+        
+        -- Customer-level loan counts
+        COUNT(l.account_number) as total_loans,
+        COUNT(CASE WHEN l.status = 'OPEN' THEN 1 END) as active_loans,
+        COUNT(CASE WHEN l.dpd > 0 THEN 1 END) as overdue_loans,
+        
+        -- Customer-level financial aggregates
+        COALESCE(SUM(l.outstanding), 0) as client_outstanding,
+        COALESCE(SUM(l.due_amount), 0) as total_due_amount,
+        COALESCE(SUM(CASE WHEN l.dpd > 0 THEN l.outstanding ELSE 0 END), 0) as overdue_outstanding,
+        COALESCE(SUM(CASE WHEN l.dpd > 0 THEN l.due_amount ELSE 0 END), 0) as overdue_due_amount,
+        
+        -- Customer-level risk metrics
+        MAX(l.dpd) as max_dpd,
+        AVG(l.dpd) as avg_dpd,
+        COALESCE(SUM(l.outstanding) / NULLIF(SUM(l.original_amount), 0), 0) as utilization_ratio
+    
+    FROM bank_sync_service.customers c
+    LEFT JOIN bank_sync_service.loans l ON c.cif = l.cif
+    -- Join with workflow_service.customer_cases to filter by f_update
+    INNER JOIN workflow_service.customer_cases cc ON c.cif = cc.cif
+    WHERE c.cif IS NOT NULL
+      AND (cc.f_update IS NULL OR cc.f_update < NOW())
+    GROUP BY c.id, c.cif, c.segment, c.status
+)
+SELECT 
+    -- Customer fields
+    ca.customer_id,
+    ca.cif,
+    ca.segment,
+    ca.customer_status,
+    
+    -- Loan-specific fields
+    l.account_number,
+    l.product_type,
+    l.outstanding as loan_outstanding,
+    l.due_amount as loan_due_amount,
+    l.dpd as loan_dpd,
+    l.delinquency_status,
+    l.status as loan_status,
+    l.original_amount,
+    
+    -- Customer aggregates (repeated for each loan)
+    ca.total_loans,
+    ca.active_loans,
+    ca.overdue_loans,
+    ca.client_outstanding,
+    ca.total_due_amount,
+    ca.overdue_outstanding,
+    ca.overdue_due_amount,
+    ca.max_dpd,
+    ca.avg_dpd,
+    ca.utilization_ratio,
+    
+    -- Custom fields for this loan
+    lcf.field_1,
+    lcf.field_2,
+    lcf.field_3,
+    lcf.field_4,
+    lcf.field_5,
+    lcf.field_6,
+    lcf.field_7,
+    lcf.field_8,
+    lcf.field_9,
+    lcf.field_10,
+    lcf.field_11,
+    lcf.field_12,
+    lcf.field_13,
+    lcf.field_14,
+    lcf.field_15,
+    lcf.field_16,
+    lcf.field_17,
+    lcf.field_18,
+    lcf.field_19,
+    lcf.field_20,
+    
+    -- Timestamps
+    l.updated_at as loan_updated_at,
+    NOW() as calculated_at
+
+FROM customer_aggregates ca
+JOIN bank_sync_service.loans l ON ca.cif = l.cif
+LEFT JOIN bank_sync_service.loan_custom_fields lcf ON l.account_number = lcf.account_number;
+
+-- Create indexes for performance
+CREATE UNIQUE INDEX idx_loan_campaign_data_account ON bank_sync_service.loan_campaign_data(account_number);
+CREATE INDEX idx_loan_campaign_data_cif ON bank_sync_service.loan_campaign_data(cif);
+CREATE INDEX idx_loan_campaign_data_segment ON bank_sync_service.loan_campaign_data(segment);
+CREATE INDEX idx_loan_campaign_data_customer_status ON bank_sync_service.loan_campaign_data(customer_status);
+CREATE INDEX idx_loan_campaign_data_client_outstanding ON bank_sync_service.loan_campaign_data(client_outstanding);
+CREATE INDEX idx_loan_campaign_data_max_dpd ON bank_sync_service.loan_campaign_data(max_dpd);
+CREATE INDEX idx_loan_campaign_data_loan_dpd ON bank_sync_service.loan_campaign_data(loan_dpd);
+CREATE INDEX idx_loan_campaign_data_loan_status ON bank_sync_service.loan_campaign_data(loan_status);
+CREATE INDEX idx_loan_campaign_data_product_type ON bank_sync_service.loan_campaign_data(product_type);
+
+-- Function to refresh the materialized view
+CREATE OR REPLACE FUNCTION bank_sync_service.refresh_loan_campaign_data()
+RETURNS void AS $$
+BEGIN
+    REFRESH MATERIALIZED VIEW CONCURRENTLY bank_sync_service.loan_campaign_data;
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON MATERIALIZED VIEW bank_sync_service.loan_campaign_data IS 'Loan-level view with customer aggregates for campaign evaluation. One row per loan. Refresh regularly via scheduled job.';
+COMMENT ON FUNCTION bank_sync_service.refresh_loan_campaign_data() IS 'Refreshes loan campaign data materialized view. Should be called regularly (e.g., every hour or after loan updates).';

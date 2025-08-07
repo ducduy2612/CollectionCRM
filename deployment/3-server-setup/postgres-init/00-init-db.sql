@@ -99,6 +99,10 @@ END $$;
 \echo 'Running scripts/11-document-storage.sql...'
 \i /docker-entrypoint-initdb.d/scripts/11-document-storage.sql
 
+-- 12. Audit Service
+\echo 'Running scripts/12-audit-service.sql...'
+\i /docker-entrypoint-initdb.d/scripts/12-audit-service.sql
+
 -- =============================================
 -- Verify installation
 -- =============================================
@@ -120,6 +124,9 @@ SELECT COUNT(*) FROM pg_tables WHERE schemaname = 'workflow_service';
 
 \echo 'Tables in campaign_engine schema:'
 SELECT COUNT(*) FROM pg_tables WHERE schemaname = 'campaign_engine';
+
+\echo 'Tables in audit_service schema:'
+SELECT COUNT(*) FROM pg_tables WHERE schemaname = 'audit_service';
 
 -- Count materialized views
 \echo 'Materialized views:'

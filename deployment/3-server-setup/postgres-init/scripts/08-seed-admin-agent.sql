@@ -16,15 +16,21 @@ INSERT INTO workflow_service.agents (
     is_active,
     created_by,
     updated_by
-) VALUES (
-    'bebdec9e-960d-477c-80b1-16bb05666fd5', -- admin user ID from auth_service.users
-    'EMP001',
-    'System Administrator',
-    'admin@collectioncrm.local',
-    '+84000000000',
-    'ADMIN',
-    'ADMINISTRATION',
-    true,
-    'system',
-    'system'
-) ON CONFLICT (employee_id) DO NOTHING;
+)
+SELECT 
+    u.id as user_id,
+    'EMP001' as employee_id,
+    CONCAT(u.first_name, ' ', u.last_name) as name,
+    u.email,
+    '+84000000000' as phone,
+    'ADMIN' as type,
+    'ADMINISTRATION' as team,
+    true as is_active,
+    'system' as created_by,
+    'system' as updated_by
+FROM auth_service.users u
+WHERE u.role = 'ADMIN' 
+AND u.username = 'admin'
+ORDER BY u.created_at ASC
+LIMIT 1
+ON CONFLICT (employee_id) DO NOTHING;

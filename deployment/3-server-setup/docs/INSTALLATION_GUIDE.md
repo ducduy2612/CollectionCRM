@@ -412,6 +412,141 @@ Open your web browser and navigate to:
 
 You should see the CollectionCRM login page.
 
+## Step 4.5: Generate Test Data (Optional)
+
+This step is optional and should only be performed if you want to populate the database with test data for development, testing, or performance evaluation purposes. **Do not run this on production systems with real data.**
+
+The test data generation script will create realistic test data including customers, loans, and related entities in the bank_sync_service schema, which is used by the Bank Sync Service.
+
+### 4.5.1 Prepare Test Data Generation
+
+On **Server 1** (Database Server):
+
+```bash
+# Navigate to the deployment directory
+cd /opt/collectioncrm
+
+# Load the deployment configuration to get database credentials
+source deployment.conf
+
+# Copy the test data generation scripts into the PostgreSQL container
+docker cp scripts/gen-test-data collectioncrm-postgres:/tmp/
+```
+
+### 4.5.2 Execute Test Data Generation Script
+
+Run the test data generation script inside the PostgreSQL container with the appropriate database credentials:
+
+```bash
+# Execute the test data generation script inside the PostgreSQL container
+docker exec -it collectioncrm-postgres bash -c "
+cd /tmp/gen-test-data &&
+chmod +x *.sql &&
+DB_HOST=localhost DB_PORT=5432 DB_NAME=${POSTGRES_DB} DB_USER=${POSTGRES_USER} DB_PASSWORD=${POSTGRES_PASSWORD} ./run-performance-test-data-generation.sh
+"
+```
+
+The script will:
+
+1. Check prerequisites (psql availability, database connection, disk space)
+2. Check if staging_bank schema already exists and prompt to regenerate if needed
+3. Prompt you to select a data generation scale:
+   - **small**: 1,000 customers, 3,000 loans (< 1 minute)
+   - **medium**: 10,000 customers, 30,000 loans (1-5 minutes)
+   - **large**: 100,000 customers, 300,000 loans (5-15 minutes)
+   - **xlarge**: 1,000,000 customers, 3,000,000 loans (30-60 minutes)
+4. Generate test data in the staging_bank schema
+5. Ask for confirmation before loading data to the bank_sync_service schema
+
+> **Note**: The script is interactive and will require user input at several points. Make sure to monitor the process and respond to prompts as needed.
+
+### 4.5.3 Example Output
+
+```
+[2023-08-07 04:40:01] Starting CollectionCRM Performance Test Data Generation
+[2023-08-07 04:40:01] Database: collectioncrm @ localhost:5432
+[2023-08-07 04:40:01] Checking prerequisites...
+[2023-08-07 04:40:01] Testing database connection...
+[2023-08-07 04:40:01] Disk space check passed. Available: 120GB
+[2023-08-07 04:40:01] Checking existing staging_bank schema...
+[2023-08-07 04:40:01] Select data generation scale:
+[2023-08-07 04:40:01]   1) small   - 1K customers, 3K loans (< 1 minute)
+[2023-08-07 04:40:01]   2) medium  - 10K customers, 30K loans (1-5 minutes)
+[2023-08-07 04:40:01]   3) large   - 100K customers, 300K loans (5-15 minutes)
+[2023-08-07 04:40:01]   4) xlarge  - 1M customers, 3M loans (30-60 minutes)
+Enter your choice (1-4) [default: 1]: 2
+[2023-08-07 04:40:05] Selected scale: medium
+[2023-08-07 04:40:05] Starting MEDIUM scale test data generation...
+[2023-08-07 04:40:05] Generating:
+[2023-08-07 04:40:05]   - 10,000 customers
+[2023-08-07 04:40:05]   - 30,000 loans
+[2023-08-07 04:40:05]   - 10,000 reference customers
+[2023-08-07 04:42:30] Successfully completed: Test data generation
+[2023-08-07 04:42:30] Data generation completed in 2 minutes and 25 seconds
+[2023-08-07 04:42:30] WARNING: The next step will TRUNCATE all data in bank_sync_service schema!
+Do you want to load test data into bank_sync_service schema? (y/N): y
+[2023-08-07 04:42:35] Loading data from staging_bank to bank_sync_service...
+[2023-08-07 04:43:10] Successfully completed: Loading test data
+[2023-08-07 04:43:10] Data loading completed in 0 minutes and 35 seconds
+[2023-08-07 04:43:10] Fetching final row counts...
+       table_full_name        | formatted_count
+-----------------------------+------------------
+ bank_sync_service.customers |         10,000
+ bank_sync_service.loans     |         30,000
+ bank_sync_service.reference_customers |         10,000
+ bank_sync_service.collaterals |         15,000
+ bank_sync_service.phones    |         25,000
+ bank_sync_service.addresses |         20,000
+ bank_sync_service.emails    |         18,000
+ bank_sync_service.due_segmentations |         30,000
+ bank_sync_service.loan_collaterals |         12,000
+ bank_sync_service.loan_custom_fields |         40,000
+[2023-08-07 04:43:10] Performance test data has been successfully loaded!
+[2023-08-07 04:43:10] You can now run performance tests against the bank_sync_service schema.
+```
+
+### 4.5.4 Verify Test Data
+
+After the script completes, you can verify that the test data was created successfully:
+
+```bash
+# Check row counts in the bank_sync_service schema
+docker exec -it collectioncrm-postgres psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "
+SELECT table_name, COUNT(*) as row_count
+FROM information_schema.tables
+WHERE table_schema = 'bank_sync_service'
+GROUP BY table_name
+ORDER BY table_name;"
+```
+
+### 4.5.5 Clean Up Test Data (Optional)
+
+If you need to remove the test data later:
+
+```bash
+# Truncate test data from the bank_sync_service schema (keeps schema structure)
+docker exec -it collectioncrm-postgres psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "
+DO \$\$
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN SELECT tablename FROM pg_tables WHERE schemaname = 'bank_sync_service' LOOP
+        EXECUTE 'TRUNCATE TABLE bank_sync_service.' || quote_ident(r.tablename) || ' CASCADE;';
+    END LOOP;
+END \$\$;
+
+# Drop the staging_bank schema (used only for test data generation)
+DROP SCHEMA IF EXISTS staging_bank CASCADE;"
+
+# Remove the test data scripts from the container
+docker exec collectioncrm-postgres rm -rf /tmp/gen-test-data
+```
+
+> **Important Notes**:
+> - Generating test data, especially at large or xlarge scales, will consume significant disk space and may impact database performance. Ensure you have adequate resources before proceeding.
+> - This process will truncate any existing data in the bank_sync_service schema. Do not run this on production systems with real data.
+> - The script is interactive and requires user input. Make sure to monitor the process and respond to prompts as needed.
+
 ## Step 5: Initial Configuration
 
 ### 5.1 Access Admin Panel
