@@ -80,7 +80,7 @@ const CustomerHeader: React.FC<CustomerHeaderProps> = ({ customer, onReferenceCl
                 
                 {customer.type === 'ORGANIZATION' && (
                   <div className="text-sm text-neutral-600 mt-1">
-                    {customer.registrationNumber && <p>{t('forms:labels.reference')}: {customer.registrationNumber}</p>}
+                    {customer.registrationNumber && <p>{t('forms:labels.registration_number')}: {customer.registrationNumber}</p>}
                     {customer.taxId && <p>{t('forms:labels.tax_id')}: {customer.taxId}</p>}
                   </div>
                 )}
