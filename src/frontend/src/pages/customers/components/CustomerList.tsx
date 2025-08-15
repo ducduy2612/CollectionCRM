@@ -133,9 +133,9 @@ const CustomerList: React.FC<CustomerListProps> = ({ onCustomerSelect }) => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">{t('forms:labels.tax_id')}</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">{t('forms:labels.national_id')}</label>
                 <Input
-                  placeholder={t('forms:labels.tax_id')}
+                  placeholder={t('forms:labels.national_id')}
                   name="nationalId"
                   value={searchParams.nationalId}
                   onChange={handleInputChange}
@@ -143,9 +143,9 @@ const CustomerList: React.FC<CustomerListProps> = ({ onCustomerSelect }) => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">{t('forms:labels.employer')}</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">{t('forms:labels.company_name')}</label>
                 <Input
-                  placeholder={t('forms:labels.employer')}
+                  placeholder={t('forms:labels.company_name')}
                   name="companyName"
                   value={searchParams.companyName}
                   onChange={handleInputChange}
@@ -153,9 +153,9 @@ const CustomerList: React.FC<CustomerListProps> = ({ onCustomerSelect }) => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">{t('forms:labels.reference')}</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">{t('forms:labels.registration_number')}</label>
                 <Input
-                  placeholder={t('forms:labels.reference')}
+                  placeholder={t('forms:labels.registration_number')}
                   name="registrationNumber"
                   value={searchParams.registrationNumber}
                   onChange={handleInputChange}
