@@ -139,10 +139,14 @@ const DashboardPage: React.FC = () => {
         throw new Error('Agent ID not available');
       }
       
-      // Get the agent's recent actions
+      // Get the agent's recent actions from the last week
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      
       const actionsData = await workflowApi.getAgentActions(agentIdToUse, {
         pageSize: 10,
-        page: page
+        page: page,
+        startDate: oneWeekAgo.toISOString()
       });
       
       setRecentActivities(actionsData.actions);

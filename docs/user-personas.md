@@ -1,6 +1,6 @@
-# Collection CRM User Personas
+# Collexis User Personas
 
-This document outlines detailed user personas for the Collection CRM system, focusing on two key roles: Collection Agents and Supervisors. These personas are based on the system's data model, architecture, and operational requirements.
+This document outlines detailed user personas for the Collexis system, focusing on two key roles: Collection Agents and Supervisors. These personas are based on the system's data model, architecture, and operational requirements.
 
 ## Persona 1: Collection Agent
 
@@ -306,7 +306,7 @@ Linh manages the entire collection department with multiple teams of agents acro
 
 ## Design Implications
 
-These personas highlight several key requirements for the Collection CRM system:
+These personas highlight several key requirements for the Collexis system:
 
 1. **Dual-Mode Interface**: The system must support both manual and auto-dialer modes with appropriate interfaces for each context.
 
@@ -324,4 +324,4 @@ These personas highlight several key requirements for the Collection CRM system:
 
 8. **Scalability**: The system must support approximately 2,000 concurrent collection agents while maintaining performance.
 
-By addressing the needs, pain points, and workflows of these key personas, the Collection CRM system can significantly improve operational efficiency and collection outcomes.
+By addressing the needs, pain points, and workflows of these key personas, the Collexis system can significantly improve operational efficiency and collection outcomes.

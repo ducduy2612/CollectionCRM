@@ -26,9 +26,9 @@ export function getSwaggerOptions(serverUrl: string) {
     definition: {
       openapi: '3.0.0',
       info: {
-        title: 'Collection CRM API',
+        title: 'Collexis API',
         version: version || '1.0.0',
-        description: 'Collection CRM API Documentation',
+        description: 'Collexis API Documentation',
         contact: {
           name: 'API Support',
           email: 'support@collectioncrm.com',

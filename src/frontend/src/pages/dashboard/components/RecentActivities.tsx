@@ -35,8 +35,11 @@ const RecentActivities: React.FC<RecentActivitiesProps> = ({
   const { formatDate: formatLocalizedDate } = useLocalization();
 
   // Helper function to format date with localization
-  const formatTime = (dateString: string) => {
+  const formatDateTime = (dateString: string) => {
     return formatLocalizedDate(dateString, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
       hour12: true
@@ -224,7 +227,7 @@ const RecentActivities: React.FC<RecentActivitiesProps> = ({
                             </div>
                           </TableCell>
                           <TableCell className="whitespace-nowrap text-sm text-neutral-900">
-                            {formatTime(activity.actionDate || activity.createdAt)}
+                            {formatDateTime(activity.actionDate || activity.createdAt)}
                           </TableCell>
                           <TableCell className="whitespace-nowrap text-sm">
                             <div className="flex items-center">

@@ -1,8 +1,8 @@
-# Collection CRM Replacement Project Specification
+# Collexis Replacement Project Specification
 
 ## Overview
 
-This document serves as the comprehensive specification for the Collection CRM replacement project. The system is designed to manage collection activities for financial institutions, handling customer data, loan details, collection workflows, and integrations with external systems.
+This document serves as the comprehensive specification for the Collexis replacement project. The system is designed to manage collection activities for financial institutions, handling customer data, loan details, collection workflows, and integrations with external systems.
 
 ## Table of Contents
 

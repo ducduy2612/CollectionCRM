@@ -1,6 +1,6 @@
 # Frontend Application
 
-This directory contains the React frontend application for the Collection CRM system.
+This directory contains the React frontend application for the Collexis system.
 
 ## Technology Stack
 

@@ -1,7 +1,7 @@
 {
   "name": "bank-sync-service",
   "version": "1.0.0",
-  "description": "Bank Synchronization Service for Collection CRM",
+  "description": "Bank Synchronization Service for Collexis",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

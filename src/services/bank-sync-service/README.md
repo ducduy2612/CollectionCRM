@@ -1,6 +1,6 @@
 # Bank Synchronization Service
 
-This directory contains the Bank Synchronization Service for the Collection CRM system.
+This directory contains the Bank Synchronization Service for the Collexis system.
 
 ## Technology Stack
 

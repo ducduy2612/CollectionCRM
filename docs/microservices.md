@@ -1,6 +1,6 @@
-# Microservices Architecture Specification for Collection CRM System
+# Microservices Architecture Specification for Collexis System
 
-Based on the data model, I've broken down the Collection CRM system into 4 distinct microservices as requested.
+Based on the data model, I've broken down the Collexis system into 4 distinct microservices as requested.
 
 ## 1. Bank Synchronization Microservice
 
@@ -476,7 +476,7 @@ This separation improves maintainability, allows for independent scaling based o
 ## 4. Authentication Microservice
 
 ### Purpose
-Manages user authentication, authorization, and session management by integrating with the bank's Active Directory system. This microservice serves as the central identity provider for the Collection CRM system, handling user authentication, role-based access control, and secure token management.
+Manages user authentication, authorization, and session management by integrating with the bank's Active Directory system. This microservice serves as the central identity provider for the Collexis system, handling user authentication, role-based access control, and secure token management.
 
 ### Core Entities
 - User

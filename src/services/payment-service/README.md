@@ -1,6 +1,6 @@
 # Payment Processing Service
 
-This directory contains the Payment Processing Service for the Collection CRM system.
+This directory contains the Payment Processing Service for the Collexis system.
 
 ## Technology Stack
 

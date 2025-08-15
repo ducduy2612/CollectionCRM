@@ -1,6 +1,6 @@
 # Containerized Technology Stack
 
-This document outlines the proposed containerized technology stack for the Collection CRM replacement project, designed to simplify development and testing before deciding on a cloud deployment strategy.
+This document outlines the proposed containerized technology stack for the Collexis replacement project, designed to simplify development and testing before deciding on a cloud deployment strategy.
 
 ## Overview
 

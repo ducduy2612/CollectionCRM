@@ -1,10 +1,10 @@
-# Collection CRM UI Components
+# Collexis UI Components
 
-This directory contains all the UI components for the Collection CRM frontend application. The components are built using React, TypeScript, Tailwind CSS, and follow VPBank's brand guidelines.
+This directory contains all the UI components for the Collexis frontend application. The components are built using React, TypeScript, Tailwind CSS, and follow collexis's brand guidelines.
 
 ## Design System
 
-The design system is based on VPBank's brand colors:
+The design system is based on collexis's brand colors:
 - **Primary**: Green (#00a651)
 - **Secondary**: Red (#cf0000)
 

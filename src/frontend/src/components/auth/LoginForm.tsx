@@ -84,7 +84,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, error }) => {
               </svg>
             </div>
           </div>
-          <h2 className="text-3xl font-bold text-neutral-900">Collection CRM</h2>
+          <h2 className="text-3xl font-bold text-neutral-900">Collexis</h2>
           <p className="mt-2 text-sm text-neutral-600">{tAuth('login.subtitle')}</p>
         </div>
 

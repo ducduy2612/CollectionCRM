@@ -1,7 +1,7 @@
 {
   "name": "payment-service",
   "version": "1.0.0",
-  "description": "Payment Service for Collection CRM - Records and tracks payments from external systems",
+  "description": "Payment Service for Collexis - Records and tracks payments from external systems",
   "main": "dist/app.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/app.ts",

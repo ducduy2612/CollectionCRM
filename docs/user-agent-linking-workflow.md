@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the high-level architecture and workflow for linking users (managed in auth-service) to agents (managed in collection-workflow-service) in the Collection CRM system.
+This document outlines the high-level architecture and workflow for linking users (managed in auth-service) to agents (managed in collection-workflow-service) in the Collexis system.
 
 ## Architecture Overview
 

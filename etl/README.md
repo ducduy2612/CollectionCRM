@@ -1,13 +1,13 @@
 # ETL Directory
 
-This directory contains Extract, Transform, Load (ETL) processes for the Collection CRM system.
+This directory contains Extract, Transform, Load (ETL) processes for the Collexis system.
 
 ## Purpose
 
 The ETL processes are responsible for:
 - Extracting data from external systems (T24 Core Banking, W4 System, LOS System, etc.)
-- Transforming data to match the Collection CRM data model
-- Loading data into the Collection CRM database and search engine
+- Transforming data to match the Collexis data model
+- Loading data into the Collexis database and search engine
 
 ## Components
 

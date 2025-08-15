@@ -1,6 +1,6 @@
 # Docker Directory
 
-This directory contains all Docker-related files for containerizing the Collection CRM system.
+This directory contains all Docker-related files for containerizing the Collexis system.
 
 ## Structure
 

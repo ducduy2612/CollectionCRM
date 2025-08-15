@@ -1,6 +1,6 @@
-# Collection CRM User Journey Maps and Workflows
+# Collexis User Journey Maps and Workflows
 
-This document outlines detailed user journey maps and workflows for the Collection CRM system, based on the previously defined user personas. The journeys focus on key workflows for Collection Agents and Supervisors, highlighting the sequence of steps, decision points, information needs, and potential optimization opportunities.
+This document outlines detailed user journey maps and workflows for the Collexis system, based on the previously defined user personas. The journeys focus on key workflows for Collection Agents and Supervisors, highlighting the sequence of steps, decision points, information needs, and potential optimization opportunities.
 
 ## 1. Collection Agent (Minh Nguyen) Journeys
 
@@ -503,7 +503,7 @@ flowchart TD
 
 ## Summary of User Journeys and Workflows
 
-The user journey maps and workflows created for the Collection CRM system provide a comprehensive view of how Collection Agents and Supervisors interact with the system to perform their key tasks. These journeys highlight:
+The user journey maps and workflows created for the Collexis system provide a comprehensive view of how Collection Agents and Supervisors interact with the system to perform their key tasks. These journeys highlight:
 
 1. **For Collection Agents:**
    - The structured approach to handling customer interactions in both manual and auto modes
@@ -523,4 +523,4 @@ The journeys also identify several common pain points and optimization opportuni
 - **Decision Support:** Providing guidance at key decision points
 - **System Integration:** Ensuring seamless interaction between different components
 
-These user journey maps provide a foundation for detailed system design and can be used to validate that the Collection CRM system effectively supports the needs of its primary users.
+These user journey maps provide a foundation for detailed system design and can be used to validate that the Collexis system effectively supports the needs of its primary users.

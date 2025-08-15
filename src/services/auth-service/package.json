@@ -1,7 +1,7 @@
 {
   "name": "auth-service",
   "version": "1.0.0",
-  "description": "Authentication Service for Collection CRM",
+  "description": "Authentication Service for Collexis",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

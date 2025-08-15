@@ -1,10 +1,10 @@
-# Data Migration Plan for Collection CRM
+# Data Migration Plan for Collexis
 
-This document outlines the comprehensive data migration plan for transitioning from existing systems to the new Collection CRM system.
+This document outlines the comprehensive data migration plan for transitioning from existing systems to the new Collexis system.
 
 ## 1. Overview
 
-The data migration process involves transferring data from multiple source systems to the new Collection CRM system while ensuring data integrity, completeness, and consistency. The primary source systems include:
+The data migration process involves transferring data from multiple source systems to the new Collexis system while ensuring data integrity, completeness, and consistency. The primary source systems include:
 
 1. **T24 Core Banking System**: Customer, loan, and collateral data
 2. **W4 System**: Case tracking data
@@ -772,7 +772,7 @@ In case of critical issues during cutover, the following rollback plan will be e
 
 ## 11. Conclusion
 
-The data migration plan provides a comprehensive approach to migrating data from existing systems to the new Collection CRM system. By following this plan, the migration team can ensure a smooth transition with minimal disruption to business operations.
+The data migration plan provides a comprehensive approach to migrating data from existing systems to the new Collexis system. By following this plan, the migration team can ensure a smooth transition with minimal disruption to business operations.
 
 The phased approach allows for incremental migration and validation, reducing risk and allowing for course correction if needed. The detailed mapping, validation rules, and cutover plan provide a solid foundation for a successful migration.
 

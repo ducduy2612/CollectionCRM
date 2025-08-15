@@ -1,6 +1,6 @@
-# Collection CRM Common Modules
+# Collexis Common Modules
 
-This package contains common modules and utilities used across the Collection CRM microservices.
+This package contains common modules and utilities used across the Collexis microservices.
 
 ## Redis Module
 

@@ -1,10 +1,10 @@
-# Collection CRM API Contracts
+# Collexis API Contracts
 
-This directory contains the API contracts for the Collection CRM system, organized by microservice. Each API contract follows the OpenAPI 3.0 specification format and includes detailed information about endpoints, request/response formats, and data models.
+This directory contains the API contracts for the Collexis system, organized by microservice. Each API contract follows the OpenAPI 3.0 specification format and includes detailed information about endpoints, request/response formats, and data models.
 
 ## Overview
 
-The Collection CRM system is divided into four microservices, each with its own API:
+The Collexis system is divided into four microservices, each with its own API:
 
 1. **Bank Synchronization Microservice**: Manages data synchronization from external banking systems and provides access to customer, loan, and collateral data.
 2. **Payment Processing Microservice**: Handles real-time payment processing and synchronization with external payment systems.

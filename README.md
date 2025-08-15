@@ -1,10 +1,10 @@
-laude# Collection CRM
+laude# Collexis
 
-A comprehensive Collection CRM system built using a containerized microservices architecture.
+A comprehensive Collexis system built using a containerized microservices architecture.
 
 ## Project Overview
 
-This Collection CRM system is designed to manage the entire debt collection process, from bank synchronization to payment processing and collection workflows. The system is built using a containerized approach with Docker, making it easy to deploy and scale.
+This Collexis system is designed to manage the entire debt collection process, from bank synchronization to payment processing and collection workflows. The system is built using a containerized approach with Docker, making it easy to deploy and scale.
 
 ## Architecture
 

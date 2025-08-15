@@ -1,6 +1,6 @@
 # API Gateway Service
 
-The API Gateway serves as the entry point for all client requests to the Collection CRM microservices. It handles routing, authentication, rate limiting, and provides a unified API interface.
+The API Gateway serves as the entry point for all client requests to the Collexis microservices. It handles routing, authentication, rate limiting, and provides a unified API interface.
 
 ## Features
 

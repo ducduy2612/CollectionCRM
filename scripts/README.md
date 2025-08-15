@@ -1,6 +1,6 @@
 # Scripts Directory
 
-This directory contains utility scripts for the Collection CRM system.
+This directory contains utility scripts for the Collexis system.
 
 ## Purpose
 

@@ -1,6 +1,6 @@
 # Data Model
 
-This document outlines the data model for the Collection CRM system based on the actual PostgreSQL database schema.
+This document outlines the data model for the Collexis system based on the actual PostgreSQL database schema.
 
 ## Overview
 
@@ -119,7 +119,7 @@ interface UserSession {
 ```typescript
 interface Customer extends SynchronizedEntity {
   id: string;                     // UUID primary key
-  cif: string;                    // VPBANK CIF (unique, natural key)
+  cif: string;                    // collexis CIF (unique, natural key)
   type: 'INDIVIDUAL' | 'ORGANIZATION'; // Customer type
   
   // For individuals

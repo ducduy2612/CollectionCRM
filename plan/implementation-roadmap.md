@@ -1,6 +1,6 @@
-# Collection CRM Implementation Roadmap (Containerized Approach)
+# Collexis Implementation Roadmap (Containerized Approach)
 
-This document provides a detailed roadmap for implementing the Collection CRM system using a containerized approach, breaking down each phase into specific tasks and subtasks.
+This document provides a detailed roadmap for implementing the Collexis system using a containerized approach, breaking down each phase into specific tasks and subtasks.
 
 ## Phase 1: Project Setup and Planning (Weeks 1-4)
 

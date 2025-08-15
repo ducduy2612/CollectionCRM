@@ -154,7 +154,7 @@ const Sidebar: React.FC<SidebarProps> = ({ items, collapsed = true, onToggle }) 
         {!collapsed && (
           <div className="p-4 border-t border-neutral-200">
             <div className="text-xs text-neutral-500">
-              Collection CRM v2.0.1
+              Collexis v2.0.1
             </div>
           </div>
         )}

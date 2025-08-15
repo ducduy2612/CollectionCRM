@@ -1,6 +1,6 @@
 # Infrastructure Directory
 
-This directory contains configuration and setup for all infrastructure components of the Collection CRM system.
+This directory contains configuration and setup for all infrastructure components of the Collexis system.
 
 ## Structure
 

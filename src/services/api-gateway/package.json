@@ -1,7 +1,7 @@
 {
   "name": "api-gateway",
   "version": "1.0.0",
-  "description": "API Gateway for Collection CRM",
+  "description": "API Gateway for Collexis",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

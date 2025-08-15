@@ -2,7 +2,7 @@
 
 /* Custom CSS Variables and Theme Configuration */
 @theme {
-  /* Primary Colors - VPBank Green */
+  /* Primary Colors - collexis Green */
   --color-primary-50: #f0faf4;
   --color-primary-100: #e6f5ec;
   --color-primary-200: #66ca89;
@@ -14,7 +14,7 @@
   --color-primary-800: #00592e;
   --color-primary-900: #004d26;
   
-  /* Secondary Colors - VPBank Red */
+  /* Secondary Colors - collexis Red */
   --color-secondary-50: #fef5f5;
   --color-secondary-100: #fde6e6;
   --color-secondary-200: #f16666;

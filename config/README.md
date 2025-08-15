@@ -1,6 +1,6 @@
 # Configuration Directory
 
-This directory contains configuration files for the Collection CRM system.
+This directory contains configuration files for the Collexis system.
 
 ## Purpose
 

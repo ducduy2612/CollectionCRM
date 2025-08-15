@@ -1,4 +1,4 @@
-/* Collection CRM Design System
+/* Collexis Design System
  * A modern, professional design system for a financial/banking application
  */
 
@@ -53,11 +53,11 @@
   --accent-orange-500: #f97316; /* Orange for notifications */
   
   /* VP Bank Style Red Accent */
-  --vpbank-red-700: #b71c1c;
-  --vpbank-red-600: #c62828;
-  --vpbank-red-500: #d32f2f;
-  --vpbank-red-400: #e53935;
-  --vpbank-red-100: #ffebee;
+  --collexis-red-700: #b71c1c;
+  --collexis-red-600: #c62828;
+  --collexis-red-500: #d32f2f;
+  --collexis-red-400: #e53935;
+  --collexis-red-100: #ffebee;
 }
 
 /* ========== TYPOGRAPHY ========== */
@@ -275,13 +275,13 @@ p {
   background-color: var(--danger-600);
 }
 
-.btn-vpbank-red {
-  background-color: var(--vpbank-red-500);
+.btn-collexis-red {
+  background-color: var(--collexis-red-500);
   color: white;
 }
 
-.btn-vpbank-red:hover {
-  background-color: var(--vpbank-red-600);
+.btn-collexis-red:hover {
+  background-color: var(--collexis-red-600);
 }
 
 .btn-warning {

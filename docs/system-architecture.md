@@ -2,10 +2,10 @@
 
 ## System Boundaries
 
-The Collection CRM system operates within the following boundaries:
+The Collexis system operates within the following boundaries:
 
 1. **Internal Systems**:
-   - Core Collection CRM application
+   - Core Collexis application
    - Data warehouse for reporting and analytics
    - Authentication and authorization service
 
@@ -24,7 +24,7 @@ The Collection CRM system operates within the following boundaries:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           Collection CRM System                              │
+│                           Collexis System                              │
 │                                                                             │
 │  ┌───────────────┐      ┌───────────────┐      ┌───────────────────────┐    │
 │  │               │      │               │      │                       │    │
@@ -117,12 +117,12 @@ The Collection CRM system operates within the following boundaries:
 
 1. **Customer and Loan Data Flow**:
    - Daily ETL processes extract data from T24, W4, and LOS
-   - Data is transformed and loaded into the Collection CRM database
+   - Data is transformed and loaded into the Collexis database
    - Changes to contact information in CRM are not synchronized back to source systems
 
 2. **Payment Data Flow**:
    - Real-time payment updates are received from the Payment Processing System
-   - Payment data is processed and stored in the Collection CRM database
+   - Payment data is processed and stored in the Collexis database
    - Payment status is reflected in customer accounts and collection tasks
 
 3. **Collection Activity Flow**:

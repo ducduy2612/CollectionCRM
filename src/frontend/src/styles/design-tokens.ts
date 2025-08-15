@@ -1,29 +1,29 @@
-// Design tokens for Collection CRM
-// Based on VPBank brand colors
+// Design tokens for Collexis
+// Based on collexis brand colors
 
 export const colors = {
-  // Primary Colors - VPBank Green
+  // Primary Colors - collexis Green
   primary: {
     900: '#004d26', // Darkest green
     800: '#00592e', // Dark green
     700: '#006633', // Medium-dark green
     600: '#007336', // Medium green
-    500: '#00803a', // VPBank primary green
-    400: '#00a651', // VPBank brand green (main)
+    500: '#00803a', // collexis primary green
+    400: '#00a651', // collexis brand green (main)
     300: '#33b86d', // Light green
     200: '#66ca89', // Lighter green
     100: '#e6f5ec', // Palest green
     50: '#f0faf4',  // Very light green
   },
   
-  // Secondary Colors - VPBank Red
+  // Secondary Colors - collexis Red
   secondary: {
     900: '#7a0000', // Darkest red
     800: '#8b0000', // Dark red
     700: '#9c0000', // Medium-dark red
     600: '#ad0000', // Medium red
     500: '#be0000', // Standard red
-    400: '#cf0000', // VPBank red
+    400: '#cf0000', // collexis red
     300: '#e03333', // Light red
     200: '#f16666', // Lighter red
     100: '#fde6e6', // Palest red

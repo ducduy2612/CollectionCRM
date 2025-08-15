@@ -1,6 +1,6 @@
 # Source Code Directory
 
-This directory contains all the source code for the Collection CRM system.
+This directory contains all the source code for the Collexis system.
 
 ## Structure
 

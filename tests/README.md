@@ -1,6 +1,6 @@
 # Tests Directory
 
-This directory contains all test files for the Collection CRM system.
+This directory contains all test files for the Collexis system.
 
 ## Structure
 

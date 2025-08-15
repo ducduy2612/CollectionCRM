@@ -1,10 +1,10 @@
 # Database Schema Design
 
-This document outlines the physical database schema for the Collection CRM system, mapping the logical data model to database tables with appropriate optimizations.
+This document outlines the physical database schema for the Collexis system, mapping the logical data model to database tables with appropriate optimizations.
 
 ## Schema Organization for Microservices Architecture
 
-The database schema is organized into separate schemas that align with the microservices architecture of the Collection CRM system. This organization provides several benefits:
+The database schema is organized into separate schemas that align with the microservices architecture of the Collexis system. This organization provides several benefits:
 
 1. **Clear Domain Boundaries**: Each schema corresponds to a specific microservice domain, making it easier to understand which tables belong to which service.
 

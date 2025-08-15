@@ -1,8 +1,8 @@
-# Collection CRM Implementation Project Plan
+# Collexis Implementation Project Plan
 
 ## Overview
 
-This document outlines the high-level project plan for implementing the Collection CRM system. The plan is divided into phases with estimated timelines and key deliverables.
+This document outlines the high-level project plan for implementing the Collexis system. The plan is divided into phases with estimated timelines and key deliverables.
 
 ## Project Phases
 
